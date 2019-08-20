@@ -1,0 +1,1 @@
+cd fe && yarn start

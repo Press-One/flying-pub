@@ -1,0 +1,20 @@
+definitions:
+  services:
+    docker:
+      memory: 4096
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: pub
+          size: 2x
+          services:
+            - docker
+          caches:
+            - docker
+          script:
+            - export IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/pub:$BITBUCKET_BRANCH
+            - docker build -t $IMAGE_NAME .
+            - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
+            - docker push $IMAGE_NAME

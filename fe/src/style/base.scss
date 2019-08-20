@@ -1,0 +1,156 @@
+@import './utilities/utilities.scss';
+@import './github.markdown.scss';
+
+html {
+  @include table {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+/************************************** BODY STYLES **************************************/
+body {
+  font-family: 'Nunito Sans', "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/************************************** IMAGE STYLES **************************************/
+img {
+  max-width: 100%;
+}
+
+/************************************** UTILITIES STYLES **************************************/
+@include utilities();
+
+/************************************** BUTTON STYLES **************************************/
+button.primary,
+.bg-button-color {
+  background-color: $button-color !important;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &.Mui-disabled {
+    color: #fff !important;
+    background-color: #999 !important;
+  }
+}
+
+/************************************** ANCHOR STYLES **************************************/
+a {
+  color: $link-color;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+/************************************** BORDER STYLES **************************************/
+.border {
+  height: 1px;
+}
+
+/************************************** MODAL STYLES **************************************/
+.modal-content {
+  border-radius: 5px;
+  box-shadow: 2px 4px 18px 1px rgba(0, 0, 0, 0.24);
+}
+
+/************************************** FROM STYLES **************************************/
+.radio {
+  &>span {
+    padding: 12px 8px !important;
+  }
+
+  svg {
+    color: $link-color !important;
+  }
+}
+
+/************************************** GITTER STYLES **************************************/
+.gitter-chat-embed {
+  width: 435px;
+  z-index: 99;
+  top: 78px;
+  left: 65px;
+  box-shadow: none;
+  border: none;
+  border-right: 1px solid #ddd;
+
+  &.is-collapsed {
+    display: none;
+  }
+
+  .gitter-chat-embed-action-bar {
+    display: none;
+  }
+
+  &:after {
+    display: none;
+  }
+}
+
+/************************************** SNACKBAR STYLES **************************************/
+.snackBar {
+  &>div {
+    background: $button-color !important;
+  }
+
+  button {
+    color: #fff !important;
+  }
+}
+
+
+/************************************** PAGE STYLES **************************************/
+.page-container,
+.page-layout-wrapper {
+  min-height: 90vh;
+}
+
+.page-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+
+  .box-bg {
+    background-color: #fff;
+    border: 1px solid #ececec;
+  }
+}
+
+/************************************** LINEAR PROGRESS STYLES **************************************/
+.po-linearProgress {
+  background: #d8d8d8 !important;
+  height: 8px !important;
+
+  div {
+    background: $link-color;
+  }
+}
+
+/************************************** Tooltip STYLES **************************************/
+div[role="tooltip"] div {
+  background-color: $link-color;
+}
+
+/************************************** SVG STYLES **************************************/
+.MuiSvgIcon-root {
+  font-size: inherit !important;
+}
+
+/************************************** TAB STYLES **************************************/
+.MuiTab-textColorPrimary {
+  &.Mui-selected {
+    color: $link-color !important;
+  }
+}
+
+.MuiTabs-indicator {
+  background: $link-color !important;
+}

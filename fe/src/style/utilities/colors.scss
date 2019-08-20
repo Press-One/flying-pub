@@ -1,0 +1,62 @@
+@mixin colors($name, $color) {
+  .#{$name} {
+    color: $color;
+  }
+
+  .bg-#{$name} {
+    background-color: $color;
+  }
+}
+
+$gray-light-color: #999;
+$gray-lighter-color0: #bdbdbd;
+$gray-lighter-color: #f2f2f2;
+$gray-color: #888888;
+$gray-lighter-color1: #d8d8d8;
+$gray-darker-color: #6d6d6d;
+$page-bg: #f7f7f7;
+$dark-color: #4a4a4a;
+$white-color: white;
+$black-color: black;
+$orange-color: #996c52;
+$headline-color: #468f9d;
+$navbar-color: #4b9eae;
+$light-box-color: #7fb5bf;
+$button-color: #69b0bd;
+$link-color: #22b0c3;
+$greyblue-color: #58c2c1;
+$nice-blue-color: #1880b8;
+$orangey-yellow-color: #f5a623;
+$border-color: #85e1e0;
+$title-color: #16b3b3;
+$dark-peach-color: #de7b56;
+$title-color: #707070;
+$accent-color: #ff687b;
+$pig-pink-color: #e27b88;
+
+body {
+  @include colors(gray-color, $gray-color);
+  @include colors(gray-darker-color, $gray-darker-color);
+  @include colors(dark-color, $dark-color);
+  @include colors(white-color, $white-color);
+  @include colors(black-color, $black-color);
+  @include colors(orange-color, $orange-color);
+  @include colors(gray-light-color, $gray-light-color);
+  @include colors(gray-lighter-color, $gray-lighter-color);
+  @include colors(gray-lighter-color0, $gray-lighter-color0);
+  @include colors(headline-color, $headline-color);
+  @include colors(navbar-color, $navbar-color);
+  @include colors(light-box-color, $light-box-color);
+  @include colors(button-color, $button-color);
+  @include colors(link-color, $link-color);
+  @include colors(greyblue-color, $greyblue-color);
+  @include colors(nice-blue-color, $nice-blue-color);
+  @include colors(orangey-yellow-color, $orangey-yellow-color);
+  @include colors(border-color, $border-color);
+  @include colors(dark-peach-color, $dark-peach-color);
+  @include colors(page-bg, $page-bg);
+  @include colors(title-color, $title-color);
+  @include colors(accent-color, $accent-color);
+  @include colors(pig-pink-color, $pig-pink-color);
+  @include colors(gray-lighter-color1, $gray-lighter-color1);
+}

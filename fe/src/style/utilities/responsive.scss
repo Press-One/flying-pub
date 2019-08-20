@@ -1,0 +1,5 @@
+@mixin table {
+    @media screen and (max-width: 975px) {
+        @content;
+    }
+}
