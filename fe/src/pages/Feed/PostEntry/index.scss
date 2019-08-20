@@ -1,0 +1,11 @@
+@import '../../../style/utilities/colors.scss';
+
+.post {
+  border-top: #EBF2F6 1px solid;
+
+  .title {
+    &:hover {
+      color: $black-color;
+    }
+  }
+}

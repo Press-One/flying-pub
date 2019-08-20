@@ -1,6 +1,7 @@
 import React from 'react';
+import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
-import { createUserStore } from './user';
+import { createFeedStore } from './feed';
 
 const storeContext = React.createContext<any>(null);
 
@@ -10,7 +11,7 @@ interface IProps {
 
 export const StoreProvider = ({ children }: IProps) => {
   const store = {
-    user: useLocalStore(createUserStore),
+    feedStore: useLocalStore(createFeedStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };
@@ -20,5 +21,7 @@ export const useStore = () => {
   if (!store) {
     throw new Error('You have forgot to use StoreProvider');
   }
+  (window as any).toJS = toJS;
+  (window as any).store = store;
   return store;
 };
