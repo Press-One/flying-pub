@@ -34,8 +34,12 @@ export function createFeedStore() {
     rssUrl: '',
     per: 10,
     page: 1,
+    guid: '',
     get pagePosts(): Post[] {
       return this.feed.items.slice(0, this.page * this.per);
+    },
+    get currentPost() {
+      return this.feed.items.find((item: Post) => item.guid === this.guid);
     },
     setFeed(feed: Feed) {
       this.isFetched = true;
@@ -52,6 +56,9 @@ export function createFeedStore() {
     },
     setPage(page: number) {
       this.page = page;
+    },
+    setGuid(guid: string) {
+      this.guid = guid;
     },
   };
 }

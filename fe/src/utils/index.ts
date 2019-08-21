@@ -1,10 +1,11 @@
 import { parse } from 'query-string';
+import moment from 'moment';
 
 export { default as Endpoint } from './endpoint';
 
 export const getQueryObject = () => {
-  return parse(window.location.search)
-}
+  return parse(window.location.search);
+};
 
 export const ago = (timestamp: string) => {
   const now = new Date().getTime();
@@ -13,21 +14,13 @@ export const ago = (timestamp: string) => {
   const minute = 1000 * 60;
   const hour = minute * 60;
   const day = hour * 24;
-  const month = day * 30;
-  const year = month * 12;
-  const _year = diffValue / year;
-  const _month = diffValue / month;
   const _week = diffValue / (7 * day);
   const _day = diffValue / day;
   const _hour = diffValue / hour;
   const _min = diffValue / minute;
   let result = '';
-  if (_year >= 1) {
-    result = Math.floor(_year) + '年前';
-  } else if (_month >= 1) {
-    result = Math.floor(_month) + '个月前';
-  } else if (_week >= 1) {
-    result = Math.floor(_week) + '周前';
+  if (_week >= 1) {
+    result = moment(timestamp).format('YYYY-MM-DD');
   } else if (_day >= 1) {
     result = Math.floor(_day) + '天前';
   } else if (_hour >= 1) {

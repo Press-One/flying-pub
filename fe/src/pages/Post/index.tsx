@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import { ago } from '../../utils';
 
 import './index.scss';
 
@@ -17,8 +18,9 @@ export default observer((props: any) => {
     return null;
   }
 
-  const { id } = props.match.params;
-  const post = feedStore.feed.items[id];
+  const { guid } = props.match.params;
+  feedStore.setGuid(decodeURIComponent(guid));
+  const { currentPost: post } = feedStore;
 
   return (
     <div className="push-top-lg post po-fade-in">
@@ -28,7 +30,7 @@ export default observer((props: any) => {
         </div>
       </Link>
       <h2 className="po-text-26 dark-color push-none title">{post.title}</h2>
-      <div className="push-top gray-color po-text-16">霍炬 | 2019-09-12</div>
+      <div className="push-top gray-color po-text-16">用户名 | {ago(post.pubDate)}</div>
       <div
         className="push-top-lg po-text-18 black-color markdown-body pad-bottom-md"
         dangerouslySetInnerHTML={{ __html: post.content }}

@@ -9,7 +9,6 @@ export default observer(() => {
 
   React.useEffect(() => {
     const { feedScrollTop } = cacheStore;
-    console.log(` ------------- feedScrollTop ---------------`, feedScrollTop);
     window.scroll(0, feedScrollTop);
     const debounceScroll = debounce(() => {
       const { documentElement } = document;
@@ -38,8 +37,8 @@ export default observer(() => {
         <div className="gray-color text-center po-text-16">{feedStore.feed.description}</div>
       </div>
       <div className="push-top-xl pad-bottom-lg">
-        {feedStore.pagePosts.map((item: any, index: number) => {
-          return <PostEntry post={item} index={index} rssUrl={feedStore.rssUrl} key={item.title} />;
+        {feedStore.pagePosts.map((item: any) => {
+          return <PostEntry post={item} rssUrl={feedStore.rssUrl} key={item.title} />;
         })}
       </div>
     </div>

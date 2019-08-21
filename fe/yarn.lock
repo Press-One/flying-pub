@@ -6737,6 +6737,11 @@ mobx@^5.13.0:
   resolved "https://registry.npm.taobao.org/mobx/download/mobx-5.13.0.tgz#0fd68f10aa5ff2d146a4ed9e145b53337cfbca59"
   integrity sha1-D9aPEKpf8tFGpO2eFFtTM3z7ylk=
 
+moment@^2.24.0:
+  version "2.24.0"
+  resolved "https://registry.npm.taobao.org/moment/download/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
+  integrity sha1-DQVdU/UFKqZTyfbraLtdEr9cK1s=
+
 move-concurrently@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npm.taobao.org/move-concurrently/download/move-concurrently-1.0.1.tgz#be2c005fda32e0b29af1f05d7c4b33214c701f92"
