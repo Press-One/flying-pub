@@ -2,6 +2,7 @@ import React from 'react';
 import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
 import { createFeedStore } from './feed';
+import { createCacheStore } from './cache';
 
 const storeContext = React.createContext<any>(null);
 
@@ -12,6 +13,7 @@ interface IProps {
 export const StoreProvider = ({ children }: IProps) => {
   const store = {
     feedStore: useLocalStore(createFeedStore),
+    cacheStore: useLocalStore(createCacheStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };

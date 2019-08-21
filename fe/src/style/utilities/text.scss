@@ -1,54 +1,71 @@
 .text-center {
   text-align: center;
 }
+
 .text-left {
   text-align: left;
 }
+
 .text-right {
   text-align: right;
 }
+
 .po-text-12 {
   font-size: 12px;
 }
+
 .po-text-14 {
   font-size: 14px;
 }
+
 .po-text-16 {
   font-size: 16px;
 }
+
 .po-text-18 {
   font-size: 18px;
 }
+
 .po-text-20 {
   font-size: 20px;
 }
+
 .po-text-22 {
   font-size: 22px;
 }
+
 .po-text-24 {
   font-size: 24px;
 }
+
 .po-text-26 {
   font-size: 26px;
 }
+
 .po-text-28 {
   font-size: 28px;
 }
+
 .po-text-30 {
   font-size: 30px;
 }
+
 .po-text-32 {
   font-size: 32px;
 }
+
 .po-text-34 {
   font-size: 34px;
 }
+
 .po-text-36 {
   font-size: 36px;
 }
+
 .po-text-40 {
   font-size: 40px;
 }
+
 .po-text-50 {
   font-size: 50px;
 }
@@ -99,6 +116,7 @@
 .po-icon-text {
   display: flex;
   align-items: center;
+
   .mat-icon {
     margin-right: 3px;
   }
@@ -107,6 +125,7 @@
 .po-text-icon {
   display: flex;
   align-items: center;
+
   .mat-icon {
     margin-left: 3px;
   }
@@ -126,4 +145,8 @@
 
 .line-through {
   text-decoration: line-through;
+}
+
+.po-ls {
+  letter-spacing: .034em;
 }

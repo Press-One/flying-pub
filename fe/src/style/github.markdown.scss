@@ -1,10 +1,9 @@
 .markdown-body {
   p {
-    color: #3B3B3B;
-    font-size: 14px;
     line-height: 1.75;
     margin-bottom: 20px !important;
     letter-spacing: .034em;
+    word-break: break-all;
   }
 
   .pl-c {
@@ -596,7 +595,7 @@
     padding: 0.2em 0.4em;
     margin: 0;
     font-size: 85%;
-    background-color: rgba(27,31,35,0.05);
+    background-color: rgba(27, 31, 35, 0.05);
     border-radius: 3px;
   }
 
@@ -685,28 +684,46 @@
 
   hr {
     border-bottom-color: #eee;
-  } 
-    
-  center, p {
+  }
+
+  center,
+  p {
     margin-bottom: 20px;
   }
 
-  iframe { width: 100%; height: 455px; }
+  iframe {
+    width: 100%;
+    height: 455px;
+  }
 
-  @media only screen and (max-width:1156px){
-      iframe { height: 380px; }
+  @media only screen and (max-width:1156px) {
+    iframe {
+      height: 380px;
+    }
   }
-  @media only screen and (max-width:945px){
-      iframe { height: 574px; }
+
+  @media only screen and (max-width:945px) {
+    iframe {
+      height: 574px;
+    }
   }
-  @media only screen and (max-width:414px){
-      iframe { height: 218px; }
+
+  @media only screen and (max-width:414px) {
+    iframe {
+      height: 218px;
+    }
   }
-  @media only screen and (max-width:375px){
-      iframe { height: 196px; }
+
+  @media only screen and (max-width:375px) {
+    iframe {
+      height: 196px;
+    }
   }
-  @media only screen and (max-width:320px){
-    iframe { height: 165px; }
+
+  @media only screen and (max-width:320px) {
+    iframe {
+      height: 165px;
+    }
   }
 
   img {

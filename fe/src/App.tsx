@@ -14,7 +14,7 @@ const AppRouter = () => {
   return (
     <StoreProvider>
       <Router>
-        <div>
+        <div className="po-page-width po-center push-top-xxl">
           <Route path="/" exact component={Home} />
           <Route path="/:rssUrl" component={TryFetch} />
           <Route path="/:rssUrl" exact component={Feed} />

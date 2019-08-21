@@ -1,0 +1,14 @@
+@import "../../style/utilities/colors.scss";
+
+.post {
+  position: relative;
+
+  .back-btn {
+    position: absolute;
+    top: 0;
+    left: -150px;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: $gray-lighter-color0 1px solid;
+  }
+}

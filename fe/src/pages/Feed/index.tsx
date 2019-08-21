@@ -5,9 +5,12 @@ import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 
 export default observer(() => {
-  const { feedStore } = useStore();
+  const { feedStore, cacheStore } = useStore();
 
   React.useEffect(() => {
+    const { feedScrollTop } = cacheStore;
+    console.log(` ------------- feedScrollTop ---------------`, feedScrollTop);
+    window.scroll(0, feedScrollTop);
     const debounceScroll = debounce(() => {
       const { documentElement } = document;
       const scrollTop = documentElement.scrollTop;
@@ -15,16 +18,21 @@ export default observer(() => {
       if (triggerBottomPosition - scrollTop < 500) {
         feedStore.loadMore();
       }
+      cacheStore.setFeedScrollTop(scrollTop);
     }, 500);
     window.addEventListener('scroll', debounceScroll);
-  }, [feedStore]);
+
+    return () => {
+      window.removeEventListener('scroll', debounceScroll);
+    };
+  }, [feedStore, cacheStore]);
 
   if (!feedStore.isFetched) {
     return null;
   }
 
   return (
-    <div className="po-page-width po-center push-top-xxl">
+    <div className="po-fade-in">
       <div>
         <h1 className="text-center dark-color po-text-34">{feedStore.feed.title}</h1>
         <div className="gray-color text-center po-text-16">{feedStore.feed.description}</div>
