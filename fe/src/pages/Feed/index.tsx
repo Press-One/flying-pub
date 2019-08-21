@@ -4,6 +4,7 @@ import { useStore } from '../../store';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 import Loading from '../../components/Loading';
+import { isMobile } from '../../utils';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -41,10 +42,18 @@ export default observer(() => {
   return (
     <div className="po-fade-in pad-bottom-lg">
       <div>
-        <h1 className="text-center dark-color po-text-34">{feedStore.feed.title}</h1>
-        <div className="gray-color text-center po-text-16">{feedStore.feed.description}</div>
+        <h1
+          className={`push-none text-center dark-color po-height-15 po-text-${
+            isMobile ? '28' : '34'
+          }`}
+        >
+          {feedStore.feed.title}
+        </h1>
+        <div className="gray-color text-center po-text-16 push-top">
+          {feedStore.feed.description}
+        </div>
       </div>
-      <div className="push-top-xl">
+      <div className={`push-top-${isMobile ? 'lg' : 'xl'}`}>
         {feedStore.pagePosts.map((item: any) => {
           return <PostEntry post={item} rssUrl={feedStore.rssUrl} key={item.title} />;
         })}

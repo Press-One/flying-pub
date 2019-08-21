@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Feed from './pages/Feed';
 import Post from './pages/Post';
 import TryFetch from './pages/TryFetch';
+import { isMobile } from './utils';
 
 import { StoreProvider } from './store';
 
@@ -14,7 +15,7 @@ const AppRouter = () => {
   return (
     <StoreProvider>
       <Router>
-        <div className="po-page-width po-center push-top-xxl">
+        <div className={`po-page-width po-center push-top-${isMobile ? 'lg' : 'xxl'}`}>
           <Route path="/" exact component={Home} />
           <Route path="/:rssUrl" component={TryFetch} />
           <Route path="/:rssUrl" exact component={Feed} />

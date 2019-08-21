@@ -1,3 +1,5 @@
+@import "../../style/utilities/responsive.scss";
+
 .po-width-100 {
   width: 100px;
 }
@@ -83,4 +85,8 @@
 
 .po-page-width {
   width: 720px;
+
+  @include mobile {
+    width: 90vw;
+  }
 }

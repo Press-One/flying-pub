@@ -2,7 +2,7 @@
 @import './github.markdown.scss';
 
 html {
-  @include table {
+  @include mobile {
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -15,6 +15,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-y: auto;
+  -webkit-font-smoothing: auto;
 }
 
 /************************************** IMAGE STYLES **************************************/
