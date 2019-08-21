@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Feed from './pages/Feed';
 import Post from './pages/Post';
+import TryFetch from './pages/TryFetch';
 
 import { StoreProvider } from './store';
 
@@ -15,6 +16,7 @@ const AppRouter = () => {
       <Router>
         <div>
           <Route path="/" exact component={Home} />
+          <Route path="/:rssUrl" component={TryFetch} />
           <Route path="/:rssUrl" exact component={Feed} />
           <Route path="/:rssUrl/:id" component={Post} />
         </div>

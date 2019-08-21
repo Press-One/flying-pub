@@ -1,24 +1,26 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
-import Api from '../../api';
 import PostEntry from './PostEntry';
+import debounce from 'lodash.debounce';
 
-export default observer((props: any) => {
+export default observer(() => {
   const { feedStore } = useStore();
 
   React.useEffect(() => {
-    (async () => {
-      const { rssUrl } = props.match.params;
-      const decodedRssUrl = decodeURIComponent(rssUrl);
-      const feed = await Api.fetchFeed(decodedRssUrl);
-      feedStore.setFeed(feed);
-      feedStore.setRssUrl(rssUrl);
-    })();
-  }, [feedStore, props]);
+    const debounceScroll = debounce(() => {
+      const { documentElement } = document;
+      const scrollTop = documentElement.scrollTop;
+      const triggerBottomPosition = documentElement.scrollHeight - window.innerHeight;
+      if (triggerBottomPosition - scrollTop < 500) {
+        feedStore.loadMore();
+      }
+    }, 500);
+    window.addEventListener('scroll', debounceScroll);
+  }, [feedStore]);
 
   if (!feedStore.isFetched) {
-    return <div>loading...</div>;
+    return null;
   }
 
   return (
@@ -28,7 +30,7 @@ export default observer((props: any) => {
         <div className="gray-color text-center po-text-16">{feedStore.feed.description}</div>
       </div>
       <div className="push-top-xl pad-bottom-lg">
-        {feedStore.feed.items.map((item: any, index: number) => {
+        {feedStore.pagePosts.map((item: any, index: number) => {
           return <PostEntry post={item} index={index} rssUrl={feedStore.rssUrl} key={item.title} />;
         })}
       </div>

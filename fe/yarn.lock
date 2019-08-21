@@ -1355,6 +1355,11 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/classnames@^2.2.9":
+  version "2.2.9"
+  resolved "https://registry.npm.taobao.org/@types/classnames/download/@types/classnames-2.2.9.tgz?cache=0&sync_timestamp=1562086035227&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fclassnames%2Fdownload%2F%40types%2Fclassnames-2.2.9.tgz#d868b6febb02666330410fe7f58f3c4b8258be7b"
+  integrity sha1-2Gi2/rsCZmMwQQ/n9Y88S4JYvns=
+
 "@types/history@*":
   version "4.7.2"
   resolved "https://registry.npm.taobao.org/@types/history/download/@types/history-4.7.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fhistory%2Fdownload%2F%40types%2Fhistory-4.7.2.tgz#0e670ea254d559241b6eeb3894f8754991e73220"
@@ -1379,6 +1384,18 @@
   dependencies:
     "@types/istanbul-lib-coverage" "*"
     "@types/istanbul-lib-report" "*"
+
+"@types/lodash.debounce@^4.0.6":
+  version "4.0.6"
+  resolved "https://registry.npm.taobao.org/@types/lodash.debounce/download/@types/lodash.debounce-4.0.6.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Flodash.debounce%2Fdownload%2F%40types%2Flodash.debounce-4.0.6.tgz#c5a2326cd3efc46566c47e4c0aa248dc0ee57d60"
+  integrity sha1-xaIybNPvxGVmxH5MCqJI3A7lfWA=
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
+  version "4.14.137"
+  resolved "https://registry.npm.taobao.org/@types/lodash/download/@types/lodash-4.14.137.tgz#8a4804937dc6462274ffcc088df8f14fc1b368e2"
+  integrity sha1-ikgEk33GRiJ0/8wIjfjxT8GzaOI=
 
 "@types/node@^12.7.1":
   version "12.7.1"
@@ -2634,6 +2651,11 @@ class-utils@^0.3.5:
     define-property "^0.2.5"
     isobject "^3.0.0"
     static-extend "^0.1.1"
+
+classnames@^2.2.6:
+  version "2.2.6"
+  resolved "https://registry.npm.taobao.org/classnames/download/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
+  integrity sha1-Q5Nb/90pHzJtrQogUwmzjQD2UM4=
 
 clean-css@4.2.x:
   version "4.2.1"
@@ -6314,6 +6336,11 @@ lodash._reinterpolate@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npm.taobao.org/lodash._reinterpolate/download/lodash._reinterpolate-3.0.0.tgz#0ccf2d89166af03b3663c796538b75ac6e114d9d"
   integrity sha1-DM8tiRZq8Ds2Y8eWU4t1rG4RTZ0=
+
+lodash.debounce@^4.0.8:
+  version "4.0.8"
+  resolved "https://registry.npm.taobao.org/lodash.debounce/download/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
+  integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
 
 lodash.memoize@^4.1.2:
   version "4.1.2"

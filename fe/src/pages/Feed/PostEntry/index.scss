@@ -6,6 +6,7 @@
   .title {
     &:hover {
       color: $black-color;
+      transition: all .5s;
     }
   }
 }
