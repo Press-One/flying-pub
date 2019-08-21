@@ -11,7 +11,33 @@ export default observer((props: any) => {
   const { feedStore } = useStore();
 
   React.useEffect(() => {
+    if (feedStore.currentPost) {
+      document.title = feedStore.currentPost.title;
+    }
+  });
+
+  React.useEffect(() => {
     window.scrollTo(0, 0);
+    const bindOpenInNewTab = (e: any) => {
+      if (e.target.tagName === 'A') {
+        const href = e.target.getAttribute('href');
+        window.open(href);
+        e.preventDefault();
+      }
+    };
+    setTimeout(() => {
+      const markdownBody = document.querySelector('.markdown-body');
+      if (markdownBody) {
+        markdownBody.addEventListener('click', bindOpenInNewTab);
+      }
+    }, 2000);
+
+    return () => {
+      const markdownBody = document.querySelector('.markdown-body');
+      if (markdownBody) {
+        markdownBody.addEventListener('click', bindOpenInNewTab);
+      }
+    };
   }, []);
 
   if (!feedStore.isFetched) {

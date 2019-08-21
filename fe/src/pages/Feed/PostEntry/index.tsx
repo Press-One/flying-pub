@@ -11,8 +11,8 @@ export default (props: any) => {
         <h2 className="po-text-24 dark-color push-none title po-cp">{post.title}</h2>
       </Link>
       <div className="push-top gray-color">用户名 | {ago(post.pubDate)}</div>
-      <div className="push-top po-text-16 gray-darker-color po-height-175">
-        {post.contentSnippet.slice(0, 300)}
+      <div className="push-top po-text-16 gray-darker-color po-height-175 po-text-line-3">
+        {post.contentSnippet.slice(0, 150)}
       </div>
     </div>
   );

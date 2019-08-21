@@ -8,6 +8,13 @@ export default observer(() => {
   const { feedStore, cacheStore } = useStore();
 
   React.useEffect(() => {
+    const { title } = feedStore.feed;
+    if (title) {
+      document.title = title;
+    }
+  });
+
+  React.useEffect(() => {
     const { feedScrollTop } = cacheStore;
     window.scroll(0, feedScrollTop);
     const debounceScroll = debounce(() => {
