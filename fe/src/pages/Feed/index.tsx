@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
+import Loading from '../../components/Loading';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -38,16 +39,17 @@ export default observer(() => {
   }
 
   return (
-    <div className="po-fade-in">
+    <div className="po-fade-in pad-bottom-lg">
       <div>
         <h1 className="text-center dark-color po-text-34">{feedStore.feed.title}</h1>
         <div className="gray-color text-center po-text-16">{feedStore.feed.description}</div>
       </div>
-      <div className="push-top-xl pad-bottom-lg">
+      <div className="push-top-xl">
         {feedStore.pagePosts.map((item: any) => {
           return <PostEntry post={item} rssUrl={feedStore.rssUrl} key={item.title} />;
         })}
       </div>
+      {feedStore.hasMore && <Loading size={24} spaceSize={'small'} />}
     </div>
   );
 });

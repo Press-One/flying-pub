@@ -41,6 +41,9 @@ export function createFeedStore() {
     get currentPost() {
       return this.feed.items.find((item: Post) => item.guid === this.guid);
     },
+    get hasMore() {
+      return this.page * this.per < this.feed.items.length;
+    },
     setFeed(feed: Feed) {
       this.isFetched = true;
       this.feed = feed;
