@@ -4,7 +4,7 @@ import { useStore } from '../../store';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 import Loading from '../../components/Loading';
-import { isMobile } from '../../utils';
+import { isMobile, getPostSelector } from '../../utils';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -16,9 +16,22 @@ export default observer(() => {
     }
   });
 
+  const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
+    if (feedScrollTop === 0 && postId) {
+      const postDom: any = document.querySelector(`#${getPostSelector(postId)}`);
+      if (!postDom) {
+        return;
+      }
+      window.scroll(0, postDom!.offsetTop - window.innerHeight / 2 + 100);
+    } else {
+      window.scroll(0, feedScrollTop);
+    }
+  };
+
   React.useEffect(() => {
     const { feedScrollTop } = cacheStore;
-    window.scroll(0, feedScrollTop);
+    const { postId } = feedStore;
+    restoreScrollPosition(feedScrollTop, postId);
     const debounceScroll = debounce(() => {
       const { documentElement } = document;
       const scrollTop = documentElement.scrollTop;

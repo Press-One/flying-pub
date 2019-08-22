@@ -1,4 +1,4 @@
-interface Feed {
+export interface Feed {
   description: string;
   feedUrl: string;
   generator: string;
@@ -8,7 +8,7 @@ interface Feed {
   title: string;
 }
 
-interface Post {
+export interface Post {
   content: string;
   contentSnippet: string;
   guid?: string;
@@ -18,6 +18,28 @@ interface Post {
   pubDate: string;
   title: string;
 }
+
+export const getPostId = (post: Post): string => {
+  return post.guid || post.id || '';
+};
+
+const findByPostId = (postId: string) => {
+  return (post: Post) => {
+    return getPostId(post) === postId;
+  };
+};
+
+const getPagePosts = (posts: Post[], length: number) => {
+  return posts.slice(0, length);
+};
+
+const getUniquePosts = (aPost: Post, posts: Post[]) => {
+  const filteredPosts: Post[] = posts.filter((post: Post) => {
+    return getPostId(post) !== getPostId(aPost);
+  });
+  filteredPosts.unshift(aPost);
+  return filteredPosts;
+};
 
 export function createFeedStore() {
   let feed: Feed = {
@@ -29,6 +51,7 @@ export function createFeedStore() {
     link: '',
     title: '',
   };
+  let prePushedPost: any;
   return {
     feed,
     isFetched: false,
@@ -36,13 +59,19 @@ export function createFeedStore() {
     per: 10,
     page: 1,
     postId: '',
+    prePushedPost,
     get pagePosts(): Post[] {
-      return this.feed.items.slice(0, this.page * this.per);
+      const posts = getPagePosts(this.feed.items, this.page * this.per);
+      if (this.prePushedPost) {
+        return getUniquePosts(this.prePushedPost, posts);
+      }
+      return posts;
     },
     get currentPost() {
-      return this.feed.items.find((item: Post) => {
-        return (item.guid || item.id) === this.postId;
+      const post: Post | undefined = this.feed.items.find((item: Post) => {
+        return getPostId(item) === this.postId;
       });
+      return post;
     },
     get hasMore() {
       return this.page * this.per < this.feed.items.length;
@@ -65,6 +94,12 @@ export function createFeedStore() {
     },
     setPostId(postId: string) {
       this.postId = postId;
+      const pagePosts = getPagePosts(this.feed.items, this.page * this.per);
+      const post = pagePosts.find(findByPostId(this.postId));
+      if (!post) {
+        this.prePushedPost = this.feed.items.find(findByPostId(this.postId));
+      }
+      return;
     },
   };
 }

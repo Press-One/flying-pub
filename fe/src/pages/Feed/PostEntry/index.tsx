@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ago, isMobile } from '../../../utils';
+import { ago, isMobile, getPostSelector } from '../../../utils';
+import { getPostId } from '../../../store/feed';
 import './index.scss';
 
 export default (props: any) => {
   const { post, rssUrl } = props;
   return (
-    <Link to={`/${rssUrl}/${encodeURIComponent(post.guid || post.id)}`}>
+    <Link to={`/${rssUrl}/${encodeURIComponent(getPostId(post))}`}>
+      <div id={getPostSelector(getPostId(post))} />
       <div
         className={`post-entry po-cp pad-top${isMobile ? '-md' : '-lg'} pad-bottom${
           isMobile ? '-md' : '-lg'
