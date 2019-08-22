@@ -1,11 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
-import { useStore } from '../../store';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
-import { ago, isMobile } from '../../utils';
 import Viewer from 'react-viewer';
+import marked from 'marked';
+import { useStore } from '../../store';
+import { ago, isMobile } from '../../utils';
 
 import 'react-viewer/dist/index.css';
 import './index.scss';
@@ -85,7 +86,7 @@ export default observer((props: any) => {
       </div>
       <div
         className={`push-top-lg po-text-18 black-color markdown-body pad-bottom-md`}
-        dangerouslySetInnerHTML={{ __html: post.content }}
+        dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
       />
       {!isMobile && post.content.length > 1500 && (
         <div className="back-top-btn flex v-center gray-color po-cp po-text-22" onClick={backToTop}>
