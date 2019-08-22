@@ -1,8 +1,6 @@
 import { parse } from 'query-string';
 import moment from 'moment';
 
-export { default as Endpoint } from './endpoint';
-
 export const getQueryObject = () => {
   return parse(window.location.search);
 };
