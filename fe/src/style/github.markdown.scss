@@ -6,6 +6,13 @@
   p {
     margin-bottom: 20px !important;
 
+    img {
+      max-width: 100%;
+      display: block;
+      background: 0 0;
+      margin-right: auto;
+      margin-left: auto;
+    }
   }
 
   .pl-c {
