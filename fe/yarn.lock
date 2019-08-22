@@ -2704,7 +2704,7 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
-classnames@^2.2.6:
+classnames@^2.2.5, classnames@^2.2.6:
   version "2.2.6"
   resolved "https://registry.npm.taobao.org/classnames/download/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
   integrity sha1-Q5Nb/90pHzJtrQogUwmzjQD2UM4=
@@ -8711,6 +8711,13 @@ react-transition-group@^4.0.0:
     dom-helpers "^3.4.0"
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
+
+react-viewer@^2.10.2:
+  version "2.10.2"
+  resolved "https://registry.npm.taobao.org/react-viewer/download/react-viewer-2.10.2.tgz#9d8c178ead261ed4894bf123ed9dba3a9fb2ee64"
+  integrity sha1-nYwXjq0mHtSJS/Ej7Z26Op+y7mQ=
+  dependencies:
+    classnames "^2.2.5"
 
 react@^16.9.0:
   version "16.9.0"

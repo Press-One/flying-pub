@@ -5,11 +5,15 @@ import { useStore } from '../../store';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import { ago, isMobile } from '../../utils';
+import Viewer from 'react-viewer';
 
+import 'react-viewer/dist/index.css';
 import './index.scss';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
+  const [showImage, setShowImage] = React.useState(false);
+  const [imgSrc, setImgSrc] = React.useState('');
 
   React.useEffect(() => {
     if (feedStore.currentPost) {
@@ -19,24 +23,28 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
-    const bindOpenInNewTab = (e: any) => {
+    const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
         const href = e.target.getAttribute('href');
         window.open(href);
         e.preventDefault();
+      } else if (e.target.tagName === 'IMG') {
+        setImgSrc(e.target.src);
+        setShowImage(true);
       }
     };
+
     setTimeout(() => {
       const markdownBody = document.querySelector('.markdown-body');
       if (markdownBody) {
-        markdownBody.addEventListener('click', bindOpenInNewTab);
+        markdownBody.addEventListener('click', bindClickEvent);
       }
     }, 2000);
 
     return () => {
       const markdownBody = document.querySelector('.markdown-body');
       if (markdownBody) {
-        markdownBody.addEventListener('click', bindOpenInNewTab);
+        markdownBody.addEventListener('click', bindClickEvent);
       }
     };
   }, []);
@@ -84,6 +92,14 @@ export default observer((props: any) => {
           <ArrowUpward />
         </div>
       )}
+      <Viewer
+        onMaskClick={() => setShowImage(false)}
+        noNavbar={true}
+        noToolbar={true}
+        visible={showImage}
+        onClose={() => setShowImage(false)}
+        images={[{ src: imgSrc }]}
+      />
     </div>
   );
 });
