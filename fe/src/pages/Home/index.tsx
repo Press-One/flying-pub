@@ -11,7 +11,7 @@ export default () => {
   };
 
   return (
-    <div className="text-center po-push-page-middle">
+    <div className="text-center po-push-page-middle po-width-50 po-center">
       <Input autoFocus fullWidth required placeholder="请输入 RSS 链接" onChange={handleChange} />
       {rssUrl && (
         <div className="push-top-lg">

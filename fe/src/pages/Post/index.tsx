@@ -81,7 +81,7 @@ export default observer((props: any) => {
       <h2 className={`po-text-${isMobile ? '24' : '26'} dark-color push-none title po-height-15`}>
         {post.title}
       </h2>
-      <div className={`push-top gray-color po-text-${isMobile ? '14' : '16'}`}>
+      <div className={`push-top-sm gray-color po-text-${isMobile ? '14' : '16'}`}>
         用户名 | {ago(post.pubDate)}
       </div>
       <div
