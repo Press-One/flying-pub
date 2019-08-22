@@ -155,3 +155,8 @@ div[role="tooltip"] div {
 .MuiTabs-indicator {
   background: $link-color !important;
 }
+
+/************************************** INPUT STYLES **************************************/
+.MuiInput-underline:after {
+  border-bottom: 2px solid $link-color !important;
+}

@@ -79,7 +79,7 @@ export default observer((props: any) => {
         className={`push-top-lg po-text-18 black-color markdown-body pad-bottom-md`}
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
-      {!isMobile && (
+      {!isMobile && post.content.length > 1500 && (
         <div className="back-top-btn flex v-center gray-color po-cp po-text-22" onClick={backToTop}>
           <ArrowUpward />
         </div>
