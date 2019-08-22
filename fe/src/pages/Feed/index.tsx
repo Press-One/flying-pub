@@ -4,6 +4,7 @@ import { useStore } from '../../store';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 import Loading from '../../components/Loading';
+import TitleMapping from '../../hardCode/titleMapping';
 import { isMobile, getPostSelector } from '../../utils';
 
 export default observer(() => {
@@ -60,7 +61,7 @@ export default observer(() => {
             isMobile ? '28' : '34'
           }`}
         >
-          {feedStore.feed.title}
+          {TitleMapping[feedStore.feed.title] || feedStore.feed.title}
         </h1>
         <div className="gray-color text-center po-text-16 push-top">
           {feedStore.feed.description}
