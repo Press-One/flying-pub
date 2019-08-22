@@ -11,7 +11,8 @@ interface Feed {
 interface Post {
   content: string;
   contentSnippet: string;
-  guid: string;
+  guid?: string;
+  id?: string;
   isoDate: string;
   link: string;
   pubDate: string;
@@ -34,12 +35,14 @@ export function createFeedStore() {
     rssUrl: '',
     per: 10,
     page: 1,
-    guid: '',
+    postId: '',
     get pagePosts(): Post[] {
       return this.feed.items.slice(0, this.page * this.per);
     },
     get currentPost() {
-      return this.feed.items.find((item: Post) => item.guid === this.guid);
+      return this.feed.items.find((item: Post) => {
+        return (item.guid || item.id) === this.postId;
+      });
     },
     get hasMore() {
       return this.page * this.per < this.feed.items.length;
@@ -60,8 +63,8 @@ export function createFeedStore() {
     setPage(page: number) {
       this.page = page;
     },
-    setGuid(guid: string) {
-      this.guid = guid;
+    setPostId(postId: string) {
+      this.postId = postId;
     },
   };
 }

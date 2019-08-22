@@ -56,8 +56,8 @@ export default observer((props: any) => {
     }
   };
 
-  const { guid } = props.match.params;
-  feedStore.setGuid(decodeURIComponent(guid));
+  const { postId } = props.match.params;
+  feedStore.setPostId(decodeURIComponent(postId));
   const { currentPost: post } = feedStore;
 
   return (

@@ -6,7 +6,7 @@ import './index.scss';
 export default (props: any) => {
   const { post, rssUrl } = props;
   return (
-    <Link to={`/${rssUrl}/${encodeURIComponent(post.guid)}`}>
+    <Link to={`/${rssUrl}/${encodeURIComponent(post.guid || post.id)}`}>
       <div
         className={`post-entry po-cp pad-top${isMobile ? '-md' : '-lg'} pad-bottom${
           isMobile ? '-md' : '-lg'

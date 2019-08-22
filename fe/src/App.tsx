@@ -19,7 +19,7 @@ const AppRouter = () => {
           <Route path="/" exact component={Home} />
           <Route path="/:rssUrl" component={TryFetch} />
           <Route path="/:rssUrl" exact component={Feed} />
-          <Route path="/:rssUrl/:guid" component={Post} />
+          <Route path="/:rssUrl/:postId" component={Post} />
         </div>
       </Router>
     </StoreProvider>
