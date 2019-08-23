@@ -8,8 +8,6 @@ if (process.env.NODE_ENV === 'production') {
   Sentry.init();
 }
 
-Sentry.init();
-
 ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
