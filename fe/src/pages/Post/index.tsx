@@ -69,6 +69,10 @@ export default observer((props: any) => {
   feedStore.setPostId(decodeURIComponent(postId));
   const { currentPost: post } = feedStore;
 
+  if (!post) {
+    return null;
+  }
+
   return (
     <div className="post po-fade-in">
       {!isMobile && (

@@ -6,6 +6,9 @@ import './index.scss';
 
 export default (props: any) => {
   const { post, rssUrl } = props;
+  if (!post) {
+    return null;
+  }
   return (
     <Link to={`/${rssUrl}/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
