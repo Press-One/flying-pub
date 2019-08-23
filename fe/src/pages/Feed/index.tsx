@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
+import { getPostId, Post } from '../../store/feed';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 import Loading from '../../components/Loading';
@@ -68,8 +69,8 @@ export default observer(() => {
         </div>
       </div>
       <div className={`push-top-${isMobile ? 'lg' : 'xl'}`}>
-        {feedStore.pagePosts.map((item: any) => {
-          return <PostEntry post={item} rssUrl={feedStore.rssUrl} key={item.title} />;
+        {feedStore.pagePosts.map((post: Post) => {
+          return <PostEntry post={post} rssUrl={feedStore.rssUrl} key={getPostId(post)} />;
         })}
       </div>
       {feedStore.hasMore && <Loading size={24} spaceSize={'small'} />}
