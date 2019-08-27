@@ -89,7 +89,7 @@ export default observer((props: any) => {
         用户名 | {ago(post.pubDate)}
       </div>
       <div
-        className={`push-top-lg po-text-18 black-color markdown-body pad-bottom-md`}
+        className={`push-top-lg po-text-16 black-color markdown-body pad-bottom-md`}
         dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
       />
       {!isMobile && post.content.length > 1500 && (
