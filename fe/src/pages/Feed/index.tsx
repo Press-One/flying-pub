@@ -5,8 +5,9 @@ import { getPostId, Post } from '../../store/feed';
 import PostEntry from './PostEntry';
 import debounce from 'lodash.debounce';
 import Loading from '../../components/Loading';
-import TitleMapping from '../../hardCode/titleMapping';
 import { isMobile, getPostSelector } from '../../utils';
+
+import './index.scss';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -55,15 +56,16 @@ export default observer(() => {
   }
 
   return (
-    <div className="po-fade-in pad-bottom-lg">
+    <div className="po-fade-in pad-bottom-lg feed-page">
       <div>
         <h1
           className={`push-none text-center dark-color po-height-15 po-text-${
             isMobile ? '28' : '34'
           }`}
         >
-          {TitleMapping[feedStore.feed.title] || feedStore.feed.title}
+          {feedStore.feed.title}
         </h1>
+        <div className="push-top-sm po-width-10 hr po-center" />
         <div className="gray-color text-center po-text-16 push-top">
           {feedStore.feed.description}
         </div>

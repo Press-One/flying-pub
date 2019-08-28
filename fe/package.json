@@ -14,6 +14,7 @@
     "@types/react-dom": "^16.8.5",
     "@types/react-router-dom": "^4.3.4",
     "classnames": "^2.2.6",
+    "front-matter": "^3.0.2",
     "lodash.debounce": "^4.0.8",
     "marked": "^0.7.0",
     "mobx": "^5.13.0",
@@ -30,7 +31,7 @@
     "typescript": "^3.4.5"
   },
   "scripts": {
-    "start": "PORT=4201 react-scripts start",
+    "start": "PORT=4008 react-scripts start",
     "build": "react-scripts build && cp ./build/index.html ./build/404.html",
     "server": "http-server ./build -p 4008",
     "test": "react-scripts test",

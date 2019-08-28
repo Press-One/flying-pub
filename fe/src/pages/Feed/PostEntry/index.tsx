@@ -22,7 +22,7 @@ export default (props: any) => {
         </h2>
 
         <div className={`push-top-sm gray-color${isMobile ? ' po-text-12' : ''}`}>
-          用户名 | {ago(post.pubDate)}
+          {post.author} | {ago(post.pubDate)}
         </div>
         <div className={`push-top po-text-16 gray-darker-color po-height-175 po-text-line-3`}>
           {post.contentSnippet.slice(0, 150)}

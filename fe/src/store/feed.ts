@@ -1,3 +1,6 @@
+import fm from 'front-matter';
+import TitleMapping from '../hardCode/titleMapping';
+
 export interface Feed {
   description: string;
   feedUrl: string;
@@ -9,6 +12,11 @@ export interface Feed {
 }
 
 export interface Post {
+  attributes?: {
+    author: string;
+    avatar: string;
+    title: string;
+  };
   content: string;
   contentSnippet: string;
   guid?: string;
@@ -39,6 +47,15 @@ const getUniquePosts = (aPost: Post, posts: Post[]) => {
   });
   filteredPosts.unshift(aPost);
   return filteredPosts;
+};
+
+const extractFrontMatter = (post: Post): Post => {
+  const fmContent: any = fm(post.content);
+  const fmContentSnippet: any = fm(post.contentSnippet);
+  post.attributes = fmContent.attributes;
+  post.content = fmContent.body;
+  post.contentSnippet = fmContentSnippet.body;
+  return post;
 };
 
 export function createFeedStore() {
@@ -78,6 +95,9 @@ export function createFeedStore() {
     },
     setFeed(feed: Feed) {
       this.isFetched = true;
+      feed.items = feed.items.map(extractFrontMatter);
+      feed.title = TitleMapping[feed.title || 'box'] || feed.title;
+      feed.description = feed.description || 'Mixin 群：7000102093';
       this.feed = feed;
     },
     setRssUrl(rssUrl: string) {
