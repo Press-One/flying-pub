@@ -1,5 +1,6 @@
 import fm from 'front-matter';
 import TitleMapping from '../hardCode/titleMapping';
+import removeMd from 'remove-markdown';
 
 export interface Feed {
   description: string;
@@ -54,7 +55,7 @@ const extractFrontMatter = (post: Post): Post => {
   const fmContentSnippet: any = fm(post.contentSnippet);
   post.attributes = fmContent.attributes;
   post.content = fmContent.body;
-  post.contentSnippet = fmContentSnippet.body;
+  post.contentSnippet = removeMd(fmContentSnippet.body);
   return post;
 };
 
