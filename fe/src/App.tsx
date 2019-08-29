@@ -15,7 +15,7 @@ const AppRouter = () => {
   return (
     <StoreProvider>
       <Router>
-        <div className={`po-page-width po-center push-top-${isMobile ? 'md' : 'xxl'}`}>
+        <div className={`po-page-width po-center push-top-${isMobile ? 'md' : 'xl'}`}>
           <Route path="/" exact component={Home} />
           <Route path="/:rssUrl" component={TryFetch} />
           <Route path="/:rssUrl" exact component={Feed} />
