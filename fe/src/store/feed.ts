@@ -59,6 +59,12 @@ const extractFrontMatter = (post: Post): Post => {
   return post;
 };
 
+const sortByPubDate = (posts: Post[]) => {
+  return posts.sort((p1: any, p2: any) => {
+    return new Date(p2.pubDate).getTime() - new Date(p1.pubDate).getTime();
+  });
+};
+
 export function createFeedStore() {
   let feed: Feed = {
     description: '',
@@ -97,6 +103,8 @@ export function createFeedStore() {
     setFeed(feed: Feed) {
       this.isFetched = true;
       feed.items = feed.items.map(extractFrontMatter);
+      const sortedFiles = sortByPubDate(feed.items);
+      feed.items = sortedFiles;
       feed.title = TitleMapping[feed.title || 'box'] || feed.title;
       feed.description = feed.description || 'Mixin 群：7000102093';
       this.feed = feed;
