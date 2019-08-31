@@ -5,12 +5,12 @@ import { getPostId } from '../../../store/feed';
 import './index.scss';
 
 export default (props: any) => {
-  const { post, rssUrl } = props;
+  const { post } = props;
   if (!post) {
     return null;
   }
   return (
-    <Link to={`/${rssUrl}/${encodeURIComponent(getPostId(post))}`}>
+    <Link to={`/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
       <div
         className={`post-entry po-cp pad-top${isMobile ? '-md' : '-lg'} pad-bottom${

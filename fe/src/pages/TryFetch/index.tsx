@@ -12,7 +12,8 @@ export default observer((props: any) => {
       if (feedStore.isFetched) {
         return;
       }
-      const { rssUrl } = props.match.params;
+      const { REACT_APP_MEDIUM_XML } = process.env;
+      const rssUrl = REACT_APP_MEDIUM_XML || '';
       const decodedRssUrl = decodeURIComponent(rssUrl);
       const feed = await Api.fetchFeed(decodedRssUrl);
       feedStore.setFeed(feed);

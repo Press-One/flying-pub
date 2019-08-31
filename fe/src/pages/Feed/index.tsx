@@ -72,7 +72,7 @@ export default observer(() => {
       </div>
       <div className={`push-top-${isMobile ? 'lg' : 'xl'}`}>
         {feedStore.pagePosts.map((post: Post) => {
-          return <PostEntry post={post} rssUrl={feedStore.rssUrl} key={getPostId(post)} />;
+          return <PostEntry post={post} key={getPostId(post)} />;
         })}
       </div>
       {feedStore.hasMore && <Loading size={24} spaceSize={'small'} />}

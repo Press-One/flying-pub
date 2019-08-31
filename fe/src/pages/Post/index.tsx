@@ -76,7 +76,7 @@ export default observer((props: any) => {
   return (
     <div className="post po-fade-in">
       {!isMobile && (
-        <Link to={`/${feedStore.rssUrl}`}>
+        <Link to={`/`}>
           <div className="back-btn flex h-center gray-color po-cp">
             <ArrowBackIos /> 返回
           </div>
