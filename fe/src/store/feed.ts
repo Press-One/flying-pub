@@ -1,5 +1,4 @@
 import fm from 'front-matter';
-import TitleMapping from '../hardCode/titleMapping';
 import removeMd from 'remove-markdown';
 
 export interface Feed {
@@ -65,6 +64,25 @@ const sortByPubDate = (posts: Post[]) => {
   });
 };
 
+interface FeedInfo {
+  title: string;
+  description: string;
+}
+
+const getFeedInfo = (): FeedInfo => {
+  const { host } = window.location;
+  if (host.startsWith('xue')) {
+    return {
+      title: 'XUE.cn 自学编程',
+      description: '学习是一种社交行为'
+    }
+  }
+  return {
+    title: 'BOX 定投践行社群',
+    description: 'Mixin 群：7000102093'
+  }
+}
+
 export function createFeedStore() {
   let feed: Feed = {
     description: '',
@@ -105,8 +123,8 @@ export function createFeedStore() {
       feed.items = feed.items.map(extractFrontMatter);
       const sortedFiles = sortByPubDate(feed.items);
       feed.items = sortedFiles;
-      feed.title = TitleMapping[feed.title || 'box'] || feed.title;
-      feed.description = feed.description || 'Mixin 群：7000102093';
+      feed.title = getFeedInfo().title || feed.title;
+      feed.description = getFeedInfo().description || feed.description;
       this.feed = feed;
     },
     setRssUrl(rssUrl: string) {
