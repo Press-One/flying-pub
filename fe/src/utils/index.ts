@@ -38,3 +38,16 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 export const getPostSelector = (postId: string) => {
   return 'post-' + postId.replace(/[^\w]/g, '');
 };
+
+export const getTopicAddress = () => {
+  const { host } = window.location;
+  const boxTopicAddress = '982c3165cd167532a9924d048fec0a7eda9ad2a0';
+  const xueTopicAddress = '';
+  if (host.startsWith('box')) {
+    return boxTopicAddress;
+  }
+  if (host.startsWith('xue')) {
+    return xueTopicAddress;
+  }
+  return boxTopicAddress;
+}
