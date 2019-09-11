@@ -42,7 +42,7 @@ export const getPostSelector = (postId: string) => {
 export const getTopicAddress = () => {
   const { host } = window.location;
   const boxTopicAddress = '982c3165cd167532a9924d048fec0a7eda9ad2a0';
-  const xueTopicAddress = '';
+  const xueTopicAddress = 'ee3dcad1aee352bacaa1bef4cd5b38baa4a90c97';
   if (host.startsWith('box')) {
     return boxTopicAddress;
   }
