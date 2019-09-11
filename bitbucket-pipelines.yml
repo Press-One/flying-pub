@@ -16,7 +16,7 @@ pipelines:
           script:
             - export IMAGE_NAME=$DOCKER_REGISTRY_CN_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
             - docker build -t $IMAGE_NAME .
-            - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
+            - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_CN_DOMAIN
             - docker push $IMAGE_NAME
     master:
       - step:
