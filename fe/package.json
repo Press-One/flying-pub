@@ -35,8 +35,8 @@
   "scripts": {
     "start": "PORT=4008 react-scripts start",
     "build": "react-scripts build && cp ./build/index.html ./build/404.html",
+    "test": "react-scripts build && cp ./build/index.html ./build/404.html",
     "server": "http-server ./build -p 4008",
-    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

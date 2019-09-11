@@ -15,7 +15,7 @@ pipelines:
             - docker
           script:
             - export IMAGE_NAME=$DOCKER_REGISTRY_CN_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
-            - docker build -t $IMAGE_NAME .
+            - docker build -f Dockerfile-production -t $IMAGE_NAME .
             - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_CN_DOMAIN
             - docker push $IMAGE_NAME
     master:
@@ -28,6 +28,6 @@ pipelines:
             - docker
           script:
             - export IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
-            - docker build -t $IMAGE_NAME .
+            - docker build -f Dockerfile-test -t $IMAGE_NAME .
             - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
             - docker push $IMAGE_NAME
