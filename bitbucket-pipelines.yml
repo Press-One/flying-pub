@@ -5,19 +5,6 @@ definitions:
 
 pipelines:
   branches:
-    release:
-      - step:
-          name: medium
-          size: 2x
-          services:
-            - docker
-          caches:
-            - docker
-          script:
-            - export IMAGE_NAME=$DOCKER_REGISTRY_CN_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
-            - docker build -f Dockerfile-production -t $IMAGE_NAME .
-            - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_CN_DOMAIN
-            - docker push $IMAGE_NAME
     master:
       - step:
           name: medium
@@ -31,3 +18,10 @@ pipelines:
             - docker build -f Dockerfile-test -t $IMAGE_NAME .
             - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
             - docker push $IMAGE_NAME
+    release:
+      - step:
+          name: medium
+          services:
+            - docker
+          script:
+            - ssh -tt base@base.tinfinite.com "sudo chmod 755 -R build_shortcuts && cd ./build_shortcuts && ./15_build_medium.sh"
