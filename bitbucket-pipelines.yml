@@ -21,7 +21,10 @@ pipelines:
     release:
       - step:
           name: medium
+          size: 2x
           services:
+            - docker
+          caches:
             - docker
           script:
             - ssh -tt base@base.tinfinite.com "sudo chmod 755 -R build_shortcuts && cd ./build_shortcuts && ./15_build_medium.sh"
