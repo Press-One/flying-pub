@@ -1,3 +1,5 @@
+image: node:10.15.2
+
 definitions:
   services:
     docker:
@@ -13,6 +15,7 @@ pipelines:
             - docker
           caches:
             - docker
+            - node
           script:
             - export BOX_IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:box
             - export XUE_IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:xue
