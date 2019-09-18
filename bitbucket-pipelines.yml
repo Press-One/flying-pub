@@ -14,13 +14,10 @@ pipelines:
           caches:
             - docker
           script:
-            - export BOX_IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:box
-            - export XUE_IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:xue
-            - docker build -f Dockerfile-test -t $BOX_IMAGE_NAME .
+            - export IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
+            - docker build -f Dockerfile-test -t $IMAGE_NAME .
             - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
-            - docker tag $(docker images | awk '{print $3}' | awk 'NR==2') $XUE_IMAGE_NAME
-            - docker push $BOX_IMAGE_NAME
-            - docker push $XUE_IMAGE_NAME
+            - docker push $IMAGE_NAME
     release:
       - step:
           name: medium
