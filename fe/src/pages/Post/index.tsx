@@ -5,6 +5,7 @@ import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Viewer from 'react-viewer';
 import marked from 'marked';
+import WaitingForFeed from '../../components/WaitingForFeed';
 import { useStore } from '../../store';
 import { ago, isMobile } from '../../utils';
 
@@ -70,7 +71,7 @@ export default observer((props: any) => {
   const { currentPost: post } = feedStore;
 
   if (!post) {
-    return null;
+    return <WaitingForFeed />;
   }
 
   return (

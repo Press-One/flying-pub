@@ -1,0 +1,15 @@
+@import "../../style/utilities/colors.scss";
+
+.waiting-for-feed {
+  margin-top: 30vh;
+
+  img {
+    width: 150px;
+  }
+
+  .btn {
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: $gray-lighter-color0 1px solid;
+  }
+}
