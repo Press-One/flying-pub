@@ -13,12 +13,17 @@ export default observer((props: any) => {
       if (feedStore.isFetched) {
         return;
       }
-      const { REACT_APP_POSTS_XML } = process.env;
-      const rssUrl = `${REACT_APP_POSTS_XML}/${getTopicAddress()}`;
-      const decodedRssUrl = decodeURIComponent(rssUrl);
-      const feed = await Api.fetchFeed(decodedRssUrl);
-      feedStore.setFeed(feed);
-      feedStore.setRssUrl(rssUrl);
+      try {
+        const { REACT_APP_POSTS_XML } = process.env;
+        const rssUrl = `${REACT_APP_POSTS_XML}/${getTopicAddress()}`;
+        const decodedRssUrl = decodeURIComponent(rssUrl);
+        const feed = await Api.fetchFeed(decodedRssUrl);
+        feedStore.setFeed(feed);
+        feedStore.setRssUrl(rssUrl);
+      } catch (err) {
+        console.log(err);
+      }
+      
     })();
   }, [feedStore, props]);
 
