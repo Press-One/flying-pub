@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
 import Api from '../../api';
 import Loading from '../../components/Loading';
-import { getTopicAddress } from '../../utils';
+import { getTopicAddress, getXmlUrl } from '../../utils';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
@@ -14,8 +14,7 @@ export default observer((props: any) => {
         return;
       }
       try {
-        const { REACT_APP_POSTS_XML } = process.env;
-        const rssUrl = `${REACT_APP_POSTS_XML}/${getTopicAddress()}`;
+        const rssUrl = `${getXmlUrl()}/${getTopicAddress()}`;
         const decodedRssUrl = decodeURIComponent(rssUrl);
         const feed = await Api.fetchFeed(decodedRssUrl);
         feedStore.setFeed(feed);

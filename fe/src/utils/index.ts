@@ -52,3 +52,11 @@ export const getTopicAddress = () => {
   }
   return boxTopicAddress;
 }
+
+export const getXmlUrl = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  if (isDevelopment) {
+    return 'https%3A%2F%2Fatom.xue.cn%2Foutput';
+  }
+  return `${encodeURIComponent(window.location.origin)}%2Foutput`
+}
