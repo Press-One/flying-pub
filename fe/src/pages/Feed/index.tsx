@@ -15,7 +15,7 @@ export default observer(() => {
   React.useEffect(() => {
     const { title } = feedStore.feed;
     if (title) {
-      document.title = title;
+      document.title = `${title} - 飞贴`;
     }
   });
 

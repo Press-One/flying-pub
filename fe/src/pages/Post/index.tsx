@@ -19,7 +19,8 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     if (feedStore.currentPost) {
-      document.title = feedStore.currentPost.title;
+      const { title } = feedStore.currentPost;
+      document.title = `${title} - 飞贴`;
     }
   });
 
