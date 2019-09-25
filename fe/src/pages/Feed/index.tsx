@@ -39,6 +39,9 @@ export default observer(() => {
       const { documentElement } = document;
       const scrollTop = documentElement.scrollTop;
       const triggerBottomPosition = documentElement.scrollHeight - window.innerHeight;
+      console.log(` ------------- triggerBottomPosition ---------------`, triggerBottomPosition);
+      console.log(` ------------- scrollTop ---------------`, scrollTop);
+      console.log(` ------------- triggerBottomPosition - scrollTop ---------------`, triggerBottomPosition - scrollTop);
       if (triggerBottomPosition - scrollTop < 500) {
         feedStore.loadMore();
       }
