@@ -36,9 +36,10 @@ export default observer(() => {
     const { postId } = feedStore;
     restoreScrollPosition(feedScrollTop, postId);
     const debounceScroll = debounce(() => {
-      const { documentElement } = document;
-      const scrollTop = documentElement.scrollTop;
-      const triggerBottomPosition = documentElement.scrollHeight - window.innerHeight;
+      const scrollElement = document.scrollingElement || document.documentElement;
+      const scrollTop = scrollElement.scrollTop;
+      const triggerBottomPosition = scrollElement.scrollHeight - window.innerHeight;
+      console.log(` ------------- scrollElement ---------------`, scrollElement);
       console.log(` ------------- triggerBottomPosition ---------------`, triggerBottomPosition);
       console.log(` ------------- scrollTop ---------------`, scrollTop);
       console.log(` ------------- triggerBottomPosition - scrollTop ---------------`, triggerBottomPosition - scrollTop);
