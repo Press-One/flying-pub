@@ -14,6 +14,7 @@ export default observer((props: any) => {
         return;
       }
       const rssUrl = `${getXmlUrl()}/${getTopicAddress()}`;
+      feedStore.setRssUrl(rssUrl);
       try {
         const decodedRssUrl = decodeURIComponent(rssUrl);
         const feed = await Api.fetchFeed(decodedRssUrl);
@@ -24,8 +25,6 @@ export default observer((props: any) => {
           items: []
         });
       }
-      feedStore.setRssUrl(rssUrl);
-      
     })();
   }, [feedStore, props]);
 
