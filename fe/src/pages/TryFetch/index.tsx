@@ -13,15 +13,18 @@ export default observer((props: any) => {
       if (feedStore.isFetched) {
         return;
       }
+      const rssUrl = `${getXmlUrl()}/${getTopicAddress()}`;
       try {
-        const rssUrl = `${getXmlUrl()}/${getTopicAddress()}`;
         const decodedRssUrl = decodeURIComponent(rssUrl);
         const feed = await Api.fetchFeed(decodedRssUrl);
         feedStore.setFeed(feed);
-        feedStore.setRssUrl(rssUrl);
       } catch (err) {
         console.log(err);
+        feedStore.setFeed({
+          items: []
+        });
       }
+      feedStore.setRssUrl(rssUrl);
       
     })();
   }, [feedStore, props]);
