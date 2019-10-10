@@ -25,4 +25,4 @@ pipelines:
           services:
             - docker
           script:
-            - ssh -tt base@xue.cn "sudo chmod 755 -R build_shortcuts && cd ./build_shortcuts && ./15_build_medium.sh"
+            - ssh -J huoju@139.198.2.168 huoju@192.168.0.3 "sudo chmod 755 -R build_shortcuts && cd ./build_shortcuts && ./15_build_medium.sh"
