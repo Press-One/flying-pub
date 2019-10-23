@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
 import Api from '../../api';
 import Loading from '../../components/Loading';
-import { getTopicAddress, getXmlUrl } from '../../utils';
+import { getXmlUrl } from '../../utils';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
@@ -13,7 +13,7 @@ export default observer((props: any) => {
       if (feedStore.isFetched) {
         return;
       }
-      const rssUrl = `${getXmlUrl()}/${getTopicAddress()}`;
+      const rssUrl = `${getXmlUrl()}`;
       feedStore.setRssUrl(rssUrl);
       try {
         const decodedRssUrl = decodeURIComponent(rssUrl);
@@ -21,8 +21,9 @@ export default observer((props: any) => {
         feedStore.setFeed(feed);
       } catch (err) {
         console.log(err);
+        alert('请先登陆');
         feedStore.setFeed({
-          items: []
+          items: [],
         });
       }
     })();

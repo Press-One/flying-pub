@@ -1,6 +1,11 @@
 import { parse } from 'query-string';
 import moment from 'moment';
 
+export const getApiEndpoint = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return isDevelopment ? 'http://localhost:8098' : window.location.origin;
+};
+
 export const getQueryObject = () => {
   return parse(window.location.search);
 };
@@ -39,24 +44,6 @@ export const getPostSelector = (postId: string) => {
   return 'post-' + postId.replace(/[^\w]/g, '');
 };
 
-export const getTopicAddress = () => {
-  const { host } = window.location;
-  const { REACT_APP_BOX_TOPIC_ADDRESS, REACT_APP_XUE_TOPIC_ADDRESS } = process.env;
-  const boxTopicAddress = REACT_APP_BOX_TOPIC_ADDRESS;
-  const xueTopicAddress = REACT_APP_XUE_TOPIC_ADDRESS;
-  if (host.startsWith('box')) {
-    return boxTopicAddress;
-  }
-  if (host.startsWith('xue')) {
-    return xueTopicAddress;
-  }
-  return boxTopicAddress;
-}
-
 export const getXmlUrl = () => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  if (isDevelopment) {
-    return 'https%3A%2F%2Fatom.xue.cn%2Foutput';
-  }
-  return `${encodeURIComponent(window.location.origin)}%2Foutput`
-}
+  return `${getApiEndpoint()}/api/atom`;
+};
