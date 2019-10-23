@@ -41,6 +41,18 @@ const errors = {
 
   // File
   ERR_FILE_NOT_PUBLISHED: 'This file can not be updated because it\'s not published',
+
+  // 钱包
+  ERR_WALLET_TRANSFER_VIA_MIXIN: 'Error transferring via Mixin wallet',
+  ERR_WALLET_FAIL_TO_CREATE_WALLET: 'Error creating Mixin wallet.',
+  ERR_WALLET_WRONG_PIN: 'Error creating new pin for Mixin wallet.',
+  ERR_WALLET_FAIL_TO_UPDATE_PIN: 'Error updating pin for Mixin wallet.',
+  ERR_WALLET_FAIL_TO_UPDATE_AVATAR: 'Error updating avatar for Mixin wallet.',
+  ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET: 'Error accessing Mixin wallet.',
+  ERR_WALLET_STATUS: 'Error wallet status.',
+  ERR_WALLET_FETCH_BALANCE: 'Error fetching balance of user.',
+  ERR_WALLET_TO_USER_WALLET_NOT_EXISTS: 'Error wallet status of to-user.',
+  ERR_WALLET_WITHDRAW_REQUEST: 'Error withdraw request.',
 };
 
 const codes = Object.keys(errors);

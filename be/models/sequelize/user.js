@@ -23,6 +23,24 @@ const User = sequelize.define('users', {
   publicKey: {
     type: Sequelize.TEXT
   },
+  mixinClientId: {
+    type: Sequelize.STRING
+  },
+  mixinAesKey: {
+    type: Sequelize.STRING
+  },
+  mixinPin: {
+    type: Sequelize.STRING
+  },
+  mixinSessionId: {
+    type: Sequelize.STRING
+  },
+  mixinPrivateKey: {
+    type: Sequelize.TEXT
+  },
+  mixinAccount: {
+    type: Sequelize.TEXT
+  }
 }, {
   timestamps: true,
   charset: 'utf8',

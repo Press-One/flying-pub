@@ -28,7 +28,9 @@ exports.ensureAuthorization = () => {
         userId
       }
     } = decodedToken;
-    const user = await User.get(userId);
+    const user = await User.get(userId, {
+      withProfile: true
+    });
     ctx.verification.user = user;
     assert(user, Errors.ERR_NOT_FOUND('user'));
     await next();
