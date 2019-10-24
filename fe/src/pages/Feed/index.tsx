@@ -56,7 +56,7 @@ export default observer(() => {
   }
 
   return (
-    <div className="po-fade-in pad-bottom-lg feed-page">
+    <div className="w-7/12 m-auto po-fade-in pad-bottom-lg feed-page">
       <div>
         <h1
           className={`push-none text-center dark-color po-height-15 po-text-${

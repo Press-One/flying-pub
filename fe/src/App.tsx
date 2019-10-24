@@ -1,23 +1,31 @@
 import React from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
+import Header from './layouts/header';
 import Feed from './pages/Feed';
 import Post from './pages/Post';
+import Wallet from './pages/Wallet';
 import TryFetch from './pages/TryFetch';
+
 import { isMobile } from './utils';
 
 import { StoreProvider } from './store';
 
-import './style/base.scss';
+import './styles/tailwind.css';
+import './styles/base.scss';
 
 const AppRouter = () => {
   return (
     <StoreProvider>
       <Router>
-        <div className={`po-page-width po-center push-top-${isMobile ? 'md' : 'xl'}`}>
-          <Route path="/" component={TryFetch} />
-          <Route path="/" exact component={Feed} />
-          <Route path="/:postId" component={Post} />
+        <div>
+          <Header />
+          <div className={`container push-top-${isMobile ? 'md' : 'xl'}`}>
+            <Route path="/" component={TryFetch} />
+            <Route path="/" exact component={Feed} />
+            <Route path="/posts/:postId" exact component={Post} />
+            <Route path="/wallet" exact component={Wallet} />
+          </div>
         </div>
       </Router>
     </StoreProvider>

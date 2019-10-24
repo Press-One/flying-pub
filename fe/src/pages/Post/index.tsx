@@ -1,13 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Link } from 'react-router-dom';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Viewer from 'react-viewer';
 import marked from 'marked';
-import WaitingForFeed from '../../components/WaitingForFeed';
-import { useStore } from '../../store';
-import { ago, isMobile } from '../../utils';
+import WaitingForFeed from 'components/WaitingForFeed';
+import BackButton from 'components/BackButton';
+import { useStore } from 'store';
+import { ago, isMobile } from 'utils';
 
 import 'react-viewer/dist/index.css';
 import './index.scss';
@@ -76,14 +75,8 @@ export default observer((props: any) => {
   }
 
   return (
-    <div className="post po-fade-in">
-      {!isMobile && (
-        <Link to={`/`}>
-          <div className="back-btn flex h-center gray-color po-cp">
-            <ArrowBackIos /> 返回
-          </div>
-        </Link>
-      )}
+    <div className="w-7/12 m-auto post po-fade-in relative">
+      {!isMobile && <BackButton />}
       <h2 className={`po-text-${isMobile ? '24' : '26'} dark-color push-none title po-height-15`}>
         {post.title}
       </h2>

@@ -10,10 +10,11 @@ html {
 
 /************************************** BODY STYLES **************************************/
 body {
-  font-family: "lucida grande", "lucida sans unicode", lucida, helvetica, "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+  font-family: "open_sans, Open Sans, PingFang SC, Microsoft YaHei, 微软雅黑, STXihei, 华文细黑, sans-serif";
   font-size: 14px;
   margin: 0;
   padding: 0;
+  line-height: 1.5;
   overflow-y: auto;
   -webkit-font-smoothing: auto;
 }
@@ -27,6 +28,10 @@ img {
 @include utilities();
 
 /************************************** BUTTON STYLES **************************************/
+button {
+  outline: none !important;
+}
+
 button.primary,
 .bg-button-color {
   background-color: $button-color !important;
@@ -43,17 +48,7 @@ button.primary,
 
 /************************************** ANCHOR STYLES **************************************/
 a {
-  color: $link-color;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.9;
-  }
-}
-
-/************************************** BORDER STYLES **************************************/
-.border {
-  height: 1px;
+  outline: none;
 }
 
 /************************************** MODAL STYLES **************************************/
@@ -157,6 +152,31 @@ div[role="tooltip"] div {
 }
 
 /************************************** INPUT STYLES **************************************/
-.MuiInput-underline:after {
-  border-bottom: 2px solid $link-color !important;
+.MuiTextField-root {
+
+  label,
+  input,
+  textarea {
+    font-size: 14px !important;
+  }
+
+  div::after {
+    border-bottom: #888;
+
+    &:hover {
+      border-bottom: #888;
+    }
+  }
+
+  fieldset {
+    border-color: rgba(0, 0, 0, 0.23) !important;
+  }
+
+  .MuiOutlinedInput-input {
+    padding: 12px;
+  }
+
+  .Mui-focused fieldset {
+    border-color: #1bb0e6 !important;
+  }
 }

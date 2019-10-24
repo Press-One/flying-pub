@@ -10,7 +10,7 @@ export default (props: any) => {
     return null;
   }
   return (
-    <Link to={`/${encodeURIComponent(getPostId(post))}`}>
+    <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
       <div
         className={`post-entry po-cp pad-top${isMobile ? '-md' : '-lg'} pad-bottom${
