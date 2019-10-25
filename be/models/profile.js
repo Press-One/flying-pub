@@ -41,10 +41,13 @@ exports.isExist = async (providerId, options = {}) => {
   return !!profile;
 }
 
-exports.createProfile = async (profile, options = {}) => {
+exports.createProfile = async (data = {}) => {
   const {
+    userId,
+    profile,
     provider
-  } = options;
+  } = data;
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(provider, Errors.ERR_IS_REQUIRED('provider'));
   attempt(profile, {
     id: Joi.number().required(),
@@ -53,13 +56,8 @@ exports.createProfile = async (profile, options = {}) => {
     bio: Joi.any().optional(),
     raw: Joi.string().required(),
   });
-  const user = await User.create({
-    providerId: profile.id,
-    provider
-  });
-  assert(user, Errors.ERR_IS_REQUIRED('user'));
   const insertedProfile = await Profile.create({
-    userId: user.id,
+    userId,
     provider,
     providerId: profile.id,
     name: profile.name,

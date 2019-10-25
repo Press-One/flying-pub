@@ -13,6 +13,7 @@ const index = require('./routes/index');
 const user = require('./routes/user');
 const auth = require('./routes/auth');
 const atom = require('./routes/atom');
+const finance = require('./routes/finance');
 const logout = require('./routes/logout');
 const ping = require('./routes/ping');
 
@@ -45,6 +46,7 @@ router.use('/', index.routes(), index.allowedMethods());
 router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
 router.use('/api/atom', ensureAuthorization(), atom.routes(), atom.allowedMethods());
+router.use('/api/finance', ensureAuthorization(), finance.routes(), finance.allowedMethods());
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());

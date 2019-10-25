@@ -1,7 +1,10 @@
 const Mixin = require('mixin-node');
 const util = require('../utils');
 const config = require('../config');
+const User = require('./user');
+const Wallet = require('./sequelize/wallet');
 const {
+  assert,
   assertFault,
   Errors
 } = require('./validator')
@@ -26,11 +29,11 @@ const aesCryptoWallet = data => {
   return data;
 };
 
-exports.aesDecryptWallet = data => {
+const aesDecryptWallet = data => {
   const {
     aesDecrypt
   } = util.crypto;
-  if (!data.mixinPrivateKey) {
+  if (!data.mixinAccount) {
     return data;
   }
   data.mixinAesKey = aesDecrypt(data.mixinAesKey, config.aesKey256);
@@ -41,8 +44,9 @@ exports.aesDecryptWallet = data => {
   return data;
 };
 
-exports.createWallet = async user => {
+const generateWallet = async user => {
   assertFault(user, Errors.ERR_IS_REQUIRED(user));
+  assertFault(user.name, Errors.ERR_IS_REQUIRED('user.name'))
   let mxRaw = await mixin.account.createUser(user.name);
   assertFault(
     mxRaw && mxRaw.data && mxRaw.publickey && mxRaw.privatekey,
@@ -83,3 +87,48 @@ exports.createWallet = async user => {
 
   return aesCryptoWallet(wallet);
 };
+
+exports.tryCreateWallet = async (userId) => {
+  assert(userId, Errors.ERR_IS_INVALID('userId'));
+
+  let user = await User.get(userId, {
+    withProfile: true,
+  });
+  assert(user, Errors.ERR_NOT_FOUND('user'));
+
+  if (user.mixinClientId) {
+    console.log(`${userId}： 钱包已存在，无需初始化`);
+    return user;
+  }
+
+  const walletData = await generateWallet(user);
+  const wallet = await Wallet.create({
+    userId,
+    ...walletData
+  });
+
+  return wallet;
+};
+
+exports.getByUserId = async userId => {
+  const wallet = await Wallet.findOne({
+    where: {
+      userId
+    }
+  });
+  return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
+}
+
+exports.getByAddress = async (address) => {
+  const user = await User.getByAddress(address, {
+    withWallet: true
+  });
+  return {
+    mixinClientId: user.mixinClientId,
+    mixinAesKey: user.mixinAesKey,
+    mixinPin: user.mixinPin,
+    mixinSessionId: user.mixinSessionId,
+    mixinPrivateKey: user.mixinPrivateKey,
+    mixinAccount: user.mixinAccount
+  }
+}

@@ -9,33 +9,44 @@ const {
   Errors
 } = require('./validator')
 
-const packUser = (user, options = {}) => {
+const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED('user'));
+
+  let derivedUser = {
+    ...user
+  };
+
   const {
-    withKeys,
-    withWallet
+    withProfile,
+    withWallet,
+    withKeys
   } = options;
-  if (withKeys) {
-    user.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.aesKey256);
-    delete user.aesEncryptedHexOfPrivateKey;
-  } else {
-    delete user.publicKey;
-    delete user.aesEncryptedHexOfPrivateKey;
-  }
-  let packedUser = user;
-  if (withWallet) {
-    packedUser = {
-      ...packedUser,
-      ...Wallet.aesDecryptWallet(packedUser)
+
+  if (withProfile) {
+    const profile = await Profile.getByUserId(user.id);
+    assert(profile, Errors.ERR_NOT_FOUND('profile'));
+    derivedUser = {
+      ...derivedUser,
+      ...profile
     }
-  } else if (user.mixinAccount) {
-    delete user.mixinAesKey;
-    delete user.mixinPin;
-    delete user.mixinSessionId;
-    delete user.mixinPrivateKey;
-    delete user.mixinAccount;
   }
-  return packedUser;
+  if (withWallet) {
+    const wallet = await Wallet.getByUserId(user.id);
+    assert(wallet, Errors.ERR_NOT_FOUND('wallet'));
+    derivedUser = {
+      ...derivedUser,
+      ...wallet
+    }
+  }
+  if (withKeys) {
+    derivedUser.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.aesKey256);
+  } else {
+    delete derivedUser.publicKey;
+  }
+  delete derivedUser.aesEncryptedHexOfPrivateKey;
+  console.log(` ------------- options ---------------`, options);
+  console.log(` ------------- derivedUser ---------------`, derivedUser);
+  return derivedUser;
 }
 
 const packProfile = profile => ({
@@ -78,7 +89,7 @@ exports.create = async (data) => {
   assert(publicKey, Errors.ERR_IS_REQUIRED('publicKey'));
   assert(address, Errors.ERR_IS_REQUIRED('address'));
 
-  let user = await User.create({
+  const user = await User.create({
     providerId,
     provider,
     aesEncryptedHexOfPrivateKey,
@@ -86,12 +97,10 @@ exports.create = async (data) => {
     address,
   });
 
-  user = await tryInitWallet(user.toJSON().id);
-
-  return user;
+  return packUser(user.toJSON());
 }
 
-const update = async (userId, data) => {
+exports.update = async (userId, data) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(data, Errors.ERR_IS_REQUIRED('data'));
 
@@ -104,28 +113,6 @@ const update = async (userId, data) => {
   return true;
 }
 
-const tryInitWallet = async (userId) => {
-  assert(userId, Errors.ERR_IS_INVALID('userId'));
-
-  let user = await exports.get(userId, {
-    withKeys: true
-  });
-  assert(user, Errors.ERR_NOT_FOUND('user'));
-
-  if (user.mixinClientId) {
-    console.log(`${userId}： 钱包已存在，无需初始化`);
-    return user;
-  }
-
-  const wallet = await Wallet.createWallet(user);
-  await update(userId, wallet);
-  user = await exports.get(userId, {
-    withKeys: true
-  });
-
-  return user;
-};
-
 exports.hasWallet = async (userId) => {
   const user = await exports.get(userId, {
     withWallet: true
@@ -133,35 +120,34 @@ exports.hasWallet = async (userId) => {
   return !!user.mixinClientId;
 };
 
-exports.get = async (id, options = {}) => {
+exports.get = async (id, options) => {
+  return await get({
+    id
+  }, options);
+}
+
+exports.getByAddress = async (address, options) => {
+  return await get({
+    address
+  }, options);
+}
+
+const get = async (query = {}, options = {}) => {
   const {
     withWallet,
     withKeys,
     withProfile,
   } = options;
-  const promises = [
-    User.findOne({
-      where: {
-        id
-      }
-    }),
-  ];
-  if (withProfile) {
-    promises.push(Profile.getByUserId(id));
-  }
-  const res = await Promise.all(promises);
-  if (!res[0]) {
-    return null;
-  }
-  if (withProfile && !res[1]) {
-    return null;
-  }
-  const user = packUser(res[0].toJSON(), {
-    withWallet,
-    withKeys
+  const user = await User.findOne({
+    where: query
   });
-  return withProfile ? {
-    ...user,
-    ...packProfile(res[1])
-  } : user;
+  if (!user) {
+    return null;
+  }
+  const derivedUser = await packUser(user.toJSON(), {
+    withWallet,
+    withKeys,
+    withProfile,
+  });
+  return derivedUser;
 }

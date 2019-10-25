@@ -36,6 +36,7 @@
     "koa-session": "^5.12.3",
     "koa-static": "^2.0.0",
     "koa-views": "^5.0.1",
+    "mathjs": "^6.2.3",
     "mixin-node": "^1.0.25",
     "mysql2": "^1.7.0",
     "passport-github2": "^0.1.11",

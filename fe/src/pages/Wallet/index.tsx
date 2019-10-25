@@ -34,7 +34,7 @@ const TabContent = (props: any) => {
 };
 
 export default () => {
-  const [tab, setTab] = React.useState('receipts');
+  const [tab, setTab] = React.useState('assets');
 
   return (
     <div className="w-9/12 m-auto relative">

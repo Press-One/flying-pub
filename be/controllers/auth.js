@@ -7,9 +7,10 @@ const {
   assert,
   Errors
 } = require('../models/validator');
+const User = require('../models/User');
 const Profile = require('../models/profile');
+const Wallet = require('../models/wallet');
 const Token = require('../models/token');
-const User = require('../models/user');
 const Log = require('../models/log');
 
 const providers = ['pressone', 'github', 'mixin'];
@@ -163,9 +164,16 @@ const tryCreateUser = async (ctx, user, provider) => {
   });
   let insertedProfile = {};
   if (isNewUser) {
-    insertedProfile = await Profile.createProfile(profile, {
+    const user = await User.create({
+      providerId: profile.id,
       provider
     });
+    insertedProfile = await Profile.createProfile({
+      userId: user.id,
+      profile,
+      provider
+    });
+    await Wallet.tryCreateWallet(user.id);
     Log.create(insertedProfile.userId, `我被创建了`);
   } else {
     insertedProfile = await Profile.get(profile.id);

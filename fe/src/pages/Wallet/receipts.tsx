@@ -58,7 +58,7 @@ const Receipt = (receipt: any) => {
               'text-green-400': receipt.amount > 0,
               'text-red-400': receipt.amount < 0,
             },
-            'font-bold text-lg mr-2',
+            'font-bold text-lg mr-1',
           )}
         >
           {receipt.amount}

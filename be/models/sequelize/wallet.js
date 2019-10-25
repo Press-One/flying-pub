@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./');
 
-const Profile = sequelize.define('profiles', {
+const Wallet = sequelize.define('wallets', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -11,25 +11,23 @@ const Profile = sequelize.define('profiles', {
     type: Sequelize.BIGINT,
     unique: true
   },
-  provider: {
+  mixinClientId: {
     type: Sequelize.STRING
   },
-  providerId: {
-    type: Sequelize.BIGINT
-  },
-  name: {
+  mixinAesKey: {
     type: Sequelize.STRING
   },
-  avatar: {
-    type: Sequelize.TEXT,
+  mixinPin: {
+    type: Sequelize.STRING
   },
-  bio: {
-    type: Sequelize.TEXT,
-    allowNull: true,
+  mixinSessionId: {
+    type: Sequelize.STRING
   },
-  raw: {
-    type: Sequelize.TEXT,
-    allowNull: true
+  mixinPrivateKey: {
+    type: Sequelize.TEXT
+  },
+  mixinAccount: {
+    type: Sequelize.TEXT
   }
 }, {
   timestamps: true,
@@ -37,8 +35,8 @@ const Profile = sequelize.define('profiles', {
   collate: 'utf8_general_ci'
 });
 
-Profile.sync({
+Wallet.sync({
   force: true
 });
 
-module.exports = Profile;
+module.exports = Wallet;
