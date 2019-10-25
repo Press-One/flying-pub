@@ -35,8 +35,6 @@ const Wallet = sequelize.define('wallets', {
   collate: 'utf8_general_ci'
 });
 
-Wallet.sync({
-  force: true
-});
+Wallet.sync();
 
 module.exports = Wallet;

@@ -1,14 +1,18 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStore } from 'store';
+// import Loading from 'components/Loading';
 import { assetIconMap } from './utils';
 import FinanceApi from './api';
 
-const assets = ['btc', 'eth', 'eos', 'box', 'prs', 'xin'];
+const assets = ['cnb', 'btc', 'eth', 'eos', 'box', 'prs', 'xin'];
 
-const Asset = (asset: any) => {
+const Asset = (asset: any, amount: number) => {
   const recharge = async () => {
     try {
       const { paymentUrl } = await FinanceApi.recharge({
-        amount: 1,
+        amount: 0.0001,
+        currency: asset.toUpperCase(),
       });
       window.open(paymentUrl);
     } catch (err) {
@@ -21,7 +25,7 @@ const Asset = (asset: any) => {
       <div className="flex items-center">
         <img src={assetIconMap[asset]} alt={asset} width="40" height="40" />
         <div className="flex items-center ml-4">
-          <span className="font-bold mr-1 text-lg">{String(Math.random() * 3).slice(0, 5)}</span>
+          <span className="font-bold mr-1 text-lg">{amount}</span>
           <span className="text-xs">{asset.toUpperCase()}</span>
         </div>
       </div>
@@ -35,12 +39,29 @@ const Asset = (asset: any) => {
   );
 };
 
-export default () => {
+export default observer(() => {
+  const { walletStore } = useStore();
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const balance = await FinanceApi.getBalance();
+        walletStore.setBalance(balance);
+      } catch (err) {}
+      walletStore.setIsFetched(true);
+    })();
+  }, [walletStore]);
+
+  const { balance } = walletStore;
+
+  // if (!isFetched) {
+  //   return <Loading spaceSize="large" />;
+  // }
+
   return (
     <div>
       {assets.map((asset: any) => {
-        return <div key={asset}>{Asset(asset)}</div>;
+        return <div key={asset}>{Asset(asset, balance[asset.toUpperCase()] || 0)}</div>;
       })}
     </div>
   );
-};
+});

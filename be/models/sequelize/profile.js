@@ -37,8 +37,6 @@ const Profile = sequelize.define('profiles', {
   collate: 'utf8_general_ci'
 });
 
-Profile.sync({
-  force: true
-});
+Profile.sync();
 
 module.exports = Profile;

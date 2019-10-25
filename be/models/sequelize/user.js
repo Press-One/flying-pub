@@ -29,8 +29,6 @@ const User = sequelize.define('users', {
   collate: 'utf8_general_ci'
 });
 
-User.sync({
-  force: true
-});
+User.sync();
 
 module.exports = User;

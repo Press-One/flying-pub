@@ -118,17 +118,3 @@ exports.getByUserId = async userId => {
   });
   return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
 }
-
-exports.getByAddress = async (address) => {
-  const user = await User.getByAddress(address, {
-    withWallet: true
-  });
-  return {
-    mixinClientId: user.mixinClientId,
-    mixinAesKey: user.mixinAesKey,
-    mixinPin: user.mixinPin,
-    mixinSessionId: user.mixinSessionId,
-    mixinPrivateKey: user.mixinPrivateKey,
-    mixinAccount: user.mixinAccount
-  }
-}

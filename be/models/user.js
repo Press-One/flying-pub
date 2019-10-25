@@ -44,8 +44,6 @@ const packUser = async (user, options = {}) => {
     delete derivedUser.publicKey;
   }
   delete derivedUser.aesEncryptedHexOfPrivateKey;
-  console.log(` ------------- options ---------------`, options);
-  console.log(` ------------- derivedUser ---------------`, derivedUser);
   return derivedUser;
 }
 

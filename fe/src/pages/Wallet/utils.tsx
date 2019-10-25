@@ -1,4 +1,5 @@
 export const assetIconMap: any = {
+  cnb: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
   btc: 'https://xue-images.pek3b.qingstor.com/1024-btc.png',
   eth: 'https://xue-images.pek3b.qingstor.com/1024-eth.png',
   eos: 'https://xue-images.pek3b.qingstor.com/1024-eos.png',

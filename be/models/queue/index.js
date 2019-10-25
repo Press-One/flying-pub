@@ -1,8 +1,12 @@
+const config = require('../../config');
+const MixinQueue = require('./mixin');
 const queues = [];
 
 exports.up = () => {
   console.log(` ------------- 队列开始启动 ---------------`);
-  // queues.push(BlockQueue.create());
+  if (config.mixin.sync) {
+    queues.push(MixinQueue.create());
+  }
 }
 
 exports.down = () => {

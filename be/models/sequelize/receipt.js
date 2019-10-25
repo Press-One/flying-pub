@@ -23,7 +23,7 @@ const Receipt = sequelize.define('receipts', {
     type: Sequelize.STRING
   },
   amount: {
-    type: Sequelize.BIGINT
+    type: Sequelize.DOUBLE
   },
   status: {
     type: Sequelize.STRING
@@ -51,15 +51,15 @@ const Receipt = sequelize.define('receipts', {
     type: Sequelize.STRING,
     allowNull: true
   },
-  forFileRId: {
-    type: Sequelize.STRING,
-    allowNull: true
-  },
   fromProviderUserId: {
     type: Sequelize.STRING,
     allowNull: true
   },
   toProviderUserId: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
+  objectRId: {
     type: Sequelize.STRING,
     allowNull: true
   },

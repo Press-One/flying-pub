@@ -3,6 +3,7 @@ import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
 import { createFeedStore } from './feed';
 import { createCacheStore } from './cache';
+import { createWalletStore } from './wallet';
 
 const storeContext = React.createContext<any>(null);
 
@@ -14,6 +15,7 @@ export const StoreProvider = ({ children }: IProps) => {
   const store = {
     feedStore: useLocalStore(createFeedStore),
     cacheStore: useLocalStore(createCacheStore),
+    walletStore: useLocalStore(createWalletStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };

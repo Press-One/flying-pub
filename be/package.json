@@ -11,6 +11,11 @@
     "test": "node ./test",
     "test-watch": "./node_modules/.bin/nodemon ./test"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "session.json"
+    ]
+  },
   "dependencies": {
     "@koa/cors": "2",
     "aes-js": "^3.1.2",
@@ -47,6 +52,7 @@
     "prs-utility": "^0.0.4",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
+    "rfc3339nano": "^1.0.2",
     "runkoa": "^1.3.1",
     "sequelize": "^5.13.0",
     "socket.io": "^2.2.0",
