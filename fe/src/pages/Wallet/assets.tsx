@@ -1,13 +1,15 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
-// import Loading from 'components/Loading';
+import WithdrawModal from './withdrawModal';
 import { assetIconMap } from './utils';
 import FinanceApi from './api';
 
 const assets = ['cnb', 'btc', 'eth', 'eos', 'box', 'prs', 'xin'];
 
-const Asset = (asset: any, amount: number) => {
+const Asset = (props: any) => {
+  const { snackbarStore } = useStore();
+  const { asset, amount } = props;
   const recharge = async () => {
     try {
       const { paymentUrl } = await FinanceApi.recharge({
@@ -18,6 +20,16 @@ const Asset = (asset: any, amount: number) => {
     } catch (err) {
       console.log(` ------------- err ---------------`, err);
     }
+  };
+
+  const onWithdraw = (currency: string) => {
+    if (Number(amount) === 0) {
+      snackbarStore.show({
+        message: '没有余额可以提现哦',
+      });
+      return;
+    }
+    props.onWithdraw(currency);
   };
 
   return (
@@ -33,14 +45,22 @@ const Asset = (asset: any, amount: number) => {
         <span className="text-blue-400 text-sm mr-2 cursor-pointer p-1" onClick={recharge}>
           转入
         </span>
-        <span className="text-blue-400 text-sm cursor-pointer p-1">转出</span>
+        <span
+          className="text-blue-400 text-sm cursor-pointer p-1"
+          onClick={() => onWithdraw(asset.toUpperCase())}
+        >
+          转出
+        </span>
       </div>
     </div>
   );
 };
 
 export default observer(() => {
-  const { walletStore } = useStore();
+  const { userStore, walletStore } = useStore();
+  const [currency, setCurrency] = React.useState('');
+  const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);
+
   React.useEffect(() => {
     (async () => {
       try {
@@ -51,17 +71,32 @@ export default observer(() => {
     })();
   }, [walletStore]);
 
-  const { balance } = walletStore;
+  const onWithdraw = (currency: string) => {
+    setCurrency(currency);
+    setOpenWithdrawModal(true);
+  };
 
-  // if (!isFetched) {
-  //   return <Loading spaceSize="large" />;
-  // }
+  const { balance } = walletStore;
 
   return (
     <div>
       {assets.map((asset: any) => {
-        return <div key={asset}>{Asset(asset, balance[asset.toUpperCase()] || 0)}</div>;
+        return (
+          <div key={asset}>
+            <Asset
+              asset={asset}
+              amount={balance[asset.toUpperCase()] || 0}
+              onWithdraw={(currency: string) => onWithdraw(currency)}
+            />
+          </div>
+        );
       })}
+      <WithdrawModal
+        currency={currency}
+        mixinAccount={userStore.mixinAccount}
+        open={openWithdrawModal}
+        onClose={() => setOpenWithdrawModal(false)}
+      />
     </div>
   );
 });

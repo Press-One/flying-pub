@@ -1,6 +1,10 @@
 import Parser from 'rss-parser';
+import request from '../../request';
 
 export default {
+  async fetchUser() {
+    return request('/api/user');
+  },
   async fetchFeed(rssUrl: string) {
     const res = await fetch(rssUrl, {
       credentials: 'include',

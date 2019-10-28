@@ -53,6 +53,7 @@ const errors = {
   ERR_WALLET_FETCH_BALANCE: 'Error fetching balance of user.',
   ERR_WALLET_TO_USER_WALLET_NOT_EXISTS: 'Error wallet status of to-user.',
   ERR_WALLET_WITHDRAW_REQUEST: 'Error withdraw request.',
+  ERR_WALLET_FAIL_TO_CREATE_WITHDRAW_RECEIPT: 'Error creating withdraw receipt.',
 };
 
 const codes = Object.keys(errors);

@@ -12,4 +12,12 @@ export default {
       },
     });
   },
+  async withdraw(payload: any) {
+    return request('/api/finance/withdraw', {
+      method: 'POST',
+      body: {
+        payload,
+      },
+    });
+  },
 };

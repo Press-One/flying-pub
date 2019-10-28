@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStore } from '../../store';
-import Api from '../../api';
-import Loading from '../../components/Loading';
-import { getXmlUrl } from '../../utils';
+import { useStore } from 'store';
+import Api from './api';
+import Loading from 'components/Loading';
+import { getXmlUrl } from 'utils';
 
 export default observer((props: any) => {
-  const { feedStore } = useStore();
+  const { userStore, feedStore } = useStore();
 
   React.useEffect(() => {
     (async () => {
@@ -26,8 +26,15 @@ export default observer((props: any) => {
           items: [],
         });
       }
+      try {
+        const user = await Api.fetchUser();
+        userStore.setUser(user);
+      } catch (err) {
+        console.log(err);
+      }
+      userStore.setIsFetched(true);
     })();
-  }, [feedStore, props]);
+  }, [userStore, feedStore, props]);
 
   if (!feedStore.isFetched) {
     return <Loading isPage={true} />;

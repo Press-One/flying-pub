@@ -7,6 +7,8 @@ import Post from './pages/Post';
 import Wallet from './pages/Wallet';
 import TryFetch from './pages/TryFetch';
 
+import SnackBar from 'components/SnackBar';
+
 import { isMobile } from './utils';
 
 import { StoreProvider } from './store';
@@ -20,12 +22,13 @@ const AppRouter = () => {
       <Router>
         <div>
           <Header />
-          <div className={`container push-top-${isMobile ? 'md' : 'xl'}`}>
+          <div className={`container m-auto push-top-${isMobile ? 'md' : 'xl'}`}>
             <Route path="/" component={TryFetch} />
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />
             <Route path="/wallet" exact component={Wallet} />
           </div>
+          <SnackBar />
         </div>
       </Router>
     </StoreProvider>

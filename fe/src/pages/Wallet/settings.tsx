@@ -7,24 +7,7 @@ export default () => {
   const [password2, setPassword2] = React.useState('');
 
   return (
-    <div className="text-sm">
-      <div className="font-bold">绑定 Mixin</div>
-      <div className="mt-1 text-gray-800">
-        {/* <div>
-          绑定 Mixin 之后可以把资产转入该 Mixin 账号。
-          <a href="mixin" className="text-blue-400">
-            去绑定
-          </a>
-        </div> */}
-        <div>
-          <div>Mixin 昵称：陈俊鸿</div>
-          <div>Mixin ID：c39c2ecc-2109-499f-b6c4-d6f278ea29fb</div>
-          <a href="mixin" className="block text-blue-400 mt-1">
-            重新绑定
-          </a>
-        </div>
-      </div>
-      <div className="border-t border-gray-400 my-4" />
+    <div className="text-sm mt-5">
       <div className="font-bold">设置支付密码</div>
       <div className="text-gray-800">
         <div className="-mt-1" />

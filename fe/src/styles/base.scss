@@ -93,12 +93,8 @@ a {
 
 /************************************** SNACKBAR STYLES **************************************/
 .snackBar {
-  &>div {
-    background: $button-color !important;
-  }
-
-  button {
-    color: #fff !important;
+  .MuiTypography-root {
+    background: #63b3ed !important;
   }
 }
 

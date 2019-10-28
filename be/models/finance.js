@@ -60,6 +60,7 @@ const create = async (receipt, options = {}) => {
     provider: Joi.string().required(),
     memo: Joi.string().optional(),
     toProviderUserId: Joi.string().optional(),
+    fromProviderUserId: Joi.string().optional(),
     objectType: Joi.string().optional(),
   });
   receipt.amount = parseAmount(receipt.amount);
@@ -93,15 +94,27 @@ const getMixinPaymentUrl = (options = {}) => {
     '&memo=' + encodeURIComponent(memo));
 };
 
-exports.recharge = async (toAddress, currency, amount, memo) => {
-  const user = await User.getByAddress(toAddress);
-  const wallet = await Wallet.getByUserId(user.id);
+exports.recharge = async (data = {}) => {
+  data.amount = parseAmount(data.amount);
+  data.memo = data.memo || '飞贴提现';
+  const {
+    userId,
+    currency,
+    amount,
+    memo
+  } = data;
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(currency, Errors.ERR_IS_REQUIRED('currency'));
+  assert(amount, Errors.ERR_IS_REQUIRED('amount'));
+  const wallet = await Wallet.getByUserId(userId);
   assert(wallet, Errors.ERR_NOT_FOUND('user wallet'));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
-  memo = memo || '飞贴充值';
+  const user = await User.get(userId, {
+    withProfile: true
+  });
   const receipt = await create({
-    fromAddress: toAddress,
-    toAddress: toAddress,
+    fromAddress: user.address,
+    toAddress: user.address,
     type: 'RECHARGE',
     currency: currency,
     amount: amount,
@@ -122,17 +135,141 @@ exports.recharge = async (toAddress, currency, amount, memo) => {
   return paymentUrl;
 };
 
+exports.withdraw = async (data = {}) => {
+  data.amount = parseAmount(data.amount);
+  data.memo = data.memo || '飞贴提现';
+  const {
+    userId,
+    currency,
+    amount,
+    memo = '飞贴提现'
+  } = data;
+  assert(amount, Errors.ERR_IS_INVALID('amount'));
+  const wallet = await Wallet.getByUserId(userId);
+  assert(wallet, Errors.ERR_NOT_FOUND('user wallet'));
+  assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
+  // @todo: 检查最大交易限额
+  const asset = await getAsset({
+    currency,
+    clientId: wallet.mixinClientId,
+    sessionId: wallet.mixinSessionId,
+    privateKey: wallet.mixinPrivateKey,
+  });
+  assertFault(asset, Errors.ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET);
+  console.log(` ------------- amount ---------------`, amount);
+  console.log(` ------------- asset.balance ---------------`, asset.balance);
+  assert(
+    !mathjs.larger(amount, asset.balance) || mathjs.equal(amount, asset.balance),
+    Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
+    402
+  );
+  const user = await User.get(userId, {
+    withProfile: true
+  });
+  const mixinAccountId = JSON.parse(user.raw).user_id;
+  assert(mixinAccountId, Errors.ERR_NOT_FOUND('mixinAccountId'));
+  const receipt = await create({
+    fromAddress: user.address,
+    toAddress: user.address,
+    type: 'WITHDRAW',
+    currency: currency,
+    amount: amount,
+    status: 'INITIALIZED',
+    provider: 'MIXIN',
+    memo,
+    fromProviderUserId: wallet.mixinClientId,
+    toProviderUserId: mixinAccountId
+  });
+  assertFault(receipt, Errors.ERR_WALLET_FAIL_TO_CREATE_WITHDRAW_RECEIPT);
+  const tfRaw = await transfer({
+    currency,
+    mixinAccountId,
+    amount,
+    memo,
+    mixinPin: wallet.mixinPin,
+    mixinAesKey: wallet.mixinAesKey,
+    mixinClientId: wallet.mixinClientId,
+    mixinSessionId: wallet.mixinSessionId,
+    mixinPrivateKey: wallet.mixinPrivateKey,
+    traceId: receipt.uuid,
+  });
+  await updateByUuid({
+    status: tfRaw ? 'SUCCESS' : 'FAILED',
+    raw: tfRaw || null,
+    snapshotId: tfRaw.snapshot_id,
+    uuid: tfRaw.trace_id,
+    // viewToken: tfRaw.viewToken
+  }, receipt.uuid, null);
+  const latestAsset = await getAsset({
+    currency,
+    clientId: wallet.mixinClientId,
+    sessionId: wallet.mixinSessionId,
+    privateKey: wallet.mixinPrivateKey,
+  });
+  assertFault(latestAsset, Errors.ERR_WALLET_FETCH_BALANCE);
+  // socketIo.sendToAddress(userId, 'balance', asset);
+  return true;
+}
+
+const transfer = async (data = {}) => {
+  data.amount = parseAmount(data.amount);
+  const {
+    currency,
+    mixinAccountId,
+    amount,
+    memo,
+    mixinPin,
+    mixinAesKey,
+    mixinClientId,
+    mixinSessionId,
+    mixinPrivateKey,
+    traceId
+  } = data;
+  assert((amount), Errors.ERR_IS_INVALID('amount'));
+  assert(currency, Errors.ERR_IS_REQUIRED('currency'));
+  assert(mixinAccountId, Errors.ERR_IS_REQUIRED('mixinAccountId'));
+  assert(amount, Errors.ERR_IS_REQUIRED('amount'));
+  assert(memo, Errors.ERR_IS_REQUIRED('memo'));
+  assert(mixinPin, Errors.ERR_IS_REQUIRED('mixinPin'));
+  assert(mixinAesKey, Errors.ERR_IS_REQUIRED('currency'));
+  assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
+  assert(mixinSessionId, Errors.ERR_IS_REQUIRED('mixinSessionId'));
+  assert(mixinPrivateKey, Errors.ERR_IS_REQUIRED('mixinPrivateKey'));
+  assert(traceId, Errors.ERR_IS_REQUIRED('traceId'));
+  const result = await mixin.account.transfer(
+    currencyMap[currency], mixinAccountId, amount, memo, {
+      pin: mixinPin,
+      aesKey: mixinAesKey,
+      client_id: mixinClientId,
+      session_id: mixinSessionId,
+      privateKey: mixinPrivateKey
+    },
+    traceId
+  );
+  assertFault(result && result.data, `Errors.ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET: ${JSON.stringify(result.error)}`);
+  // result.data.viewToken = getViewToken(result.data.snapshot_id);
+  return result.data;
+};
+
 exports.getBalanceByUserId = async (userId, currency) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   const wallet = await Wallet.getByUserId(userId);
-  const resp = await getAsset(
-    currency, wallet.mixinClientId,
-    wallet.mixinSessionId, wallet.mixinPrivateKey
-  );
+  const resp = await getAsset({
+    currency,
+    clientId: wallet.mixinClientId,
+    sessionId: wallet.mixinSessionId,
+    privateKey: wallet.mixinPrivateKey,
+  });
   return Number(resp.balance);
 }
 
-const getAsset = async (currency, clientId, sessionId, privateKey) => {
+const getAsset = async (data = {}) => {
+  const {
+    currency,
+    clientId,
+    sessionId,
+    privateKey
+  } = data;
   assert(currency, Errors.ERR_IS_REQUIRED('currency'));
   assert(clientId, Errors.ERR_IS_REQUIRED('clientId'));
   assert(sessionId, Errors.ERR_IS_REQUIRED('sessionId'));
@@ -158,11 +295,16 @@ const getAsset = async (currency, clientId, sessionId, privateKey) => {
   };
 };
 
-const updateByUuid = async (receipt, uuid, options) => {
+const updateByUuid = async (receipt, uuid) => {
   assert(receipt && Object.keys(receipt).length, Errors.ERR_IS_INVALID('receipt'));
   assert(receipt.raw || receipt.toRaw, Errors.ERR_IS_INVALID('receipt raw'));
+  if (receipt.raw) {
+    receipt.raw = JSON.stringify(receipt.raw);
+  }
+  if (receipt.toRaw) {
+    receipt.toRaw = JSON.stringify(receipt.toRaw);
+  }
   assert(uuid, Errors.ERR_IS_REQUIRED('uuid'));
-  options = options || {};
   console.log(` ------------- receipt ---------------`, receipt);
   await Receipt.update(receipt, {
     where: {

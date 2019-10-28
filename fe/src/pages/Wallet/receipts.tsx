@@ -70,5 +70,11 @@ const Receipt = (receipt: any) => {
 };
 
 export default () => {
-  return <div>{receipts.map(Receipt)}</div>;
+  return (
+    <div>
+      {receipts.map((receipt: any) => (
+        <div key={receipt.id}>{Receipt(receipt)}</div>
+      ))}
+    </div>
+  );
 };

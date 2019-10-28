@@ -1,7 +1,6 @@
 const Finance = require('../models/finance');
 const {
   assert,
-  Errors
 } = require('../models/validator');
 const {
   pTryLock,
@@ -34,25 +33,44 @@ exports.getBalance = async ctx => {
 
 exports.recharge = async ctx => {
   const data = ctx.request.body.payload;
-  assert(data, Errors.ERR_IS_REQUIRED('data'));
-  assert(data.amount, Errors.ERR_IS_REQUIRED('data.amount'));
-  assert(data.currency, Errors.ERR_IS_REQUIRED('data.currency'));
   const {
     user
   } = ctx.verification;
-  assert(user, Errors.ERR_IS_REQUIRED('user'));
-  assert(user.address, Errors.ERR_IS_REQUIRED('user.address'));
-  const key = `RECHARGE_${user.address}`;
+  const key = `RECHARGE_${user.id}`;
   try {
     await assertTooManyRequests(key);
-    const paymentUrl = await Finance.recharge(
-      user.address,
-      data.currency,
-      data.amount,
-      undefined, undefined
-    );
+    const paymentUrl = await Finance.recharge({
+      userId: user.id,
+      currency: data && data.currency,
+      amount: data && data.amount
+    });
     ctx.ok({
       paymentUrl
+    });
+  } catch (err) {
+    console.log(` ------------- err ---------------`, err);
+    ctx.er(err);
+  } finally {
+    pUnLock(key);
+  }
+};
+
+exports.withdraw = async ctx => {
+  const data = ctx.request.body.payload;
+  const {
+    user
+  } = ctx.verification;
+  const key = `WITHDRAW_${user.id}`;
+  try {
+    await assertTooManyRequests(key);
+    await Finance.withdraw({
+      userId: user.id,
+      currency: data && data.currency,
+      amount: data && data.amount,
+      memo: data && data.memo,
+    });
+    ctx.ok({
+      success: true
     });
   } catch (err) {
     console.log(` ------------- err ---------------`, err);

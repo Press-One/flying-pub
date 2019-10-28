@@ -22,7 +22,7 @@ const User = sequelize.define('users', {
   },
   publicKey: {
     type: Sequelize.TEXT
-  }
+  },
 }, {
   timestamps: true,
   charset: 'utf8',

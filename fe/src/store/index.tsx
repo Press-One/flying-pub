@@ -1,9 +1,11 @@
 import React from 'react';
 import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
+import { createUserStore } from './user';
 import { createFeedStore } from './feed';
 import { createCacheStore } from './cache';
 import { createWalletStore } from './wallet';
+import { createSnackbarStore } from './snackbar';
 
 const storeContext = React.createContext<any>(null);
 
@@ -13,9 +15,11 @@ interface IProps {
 
 export const StoreProvider = ({ children }: IProps) => {
   const store = {
+    userStore: useLocalStore(createUserStore),
     feedStore: useLocalStore(createFeedStore),
     cacheStore: useLocalStore(createCacheStore),
     walletStore: useLocalStore(createWalletStore),
+    snackbarStore: useLocalStore(createSnackbarStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };
