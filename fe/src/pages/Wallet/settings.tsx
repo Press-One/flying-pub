@@ -31,10 +31,6 @@ export default observer(() => {
   const [pin2, setPin2] = React.useState('');
   const { snackbarStore, walletStore } = useStore();
 
-  React.useEffect(() => {
-    fetchIsCustomPinExist();
-  }, []);
-
   const fetchIsCustomPinExist = async () => {
     try {
       const isCustomPinExist = await FinanceApi.isCustomPinExist();
@@ -43,6 +39,10 @@ export default observer(() => {
       console.log(` ------------- err ---------------`, err);
     }
   };
+
+  React.useEffect(() => {
+    fetchIsCustomPinExist();
+  }, [fetchIsCustomPinExist]);
 
   const submit = async (pin: string, pin2: string, options: any = {}) => {
     const { isCustomPinExist, oldPin } = options;
@@ -99,7 +99,7 @@ export default observer(() => {
 
   return (
     <div className="text-sm mt-5">
-      <div className="font-bold">设置支付密码</div>
+      <div className="font-bold">{isCustomPinExist ? '修改' : '设置'}支付密码</div>
       <div className="text-gray-800">
         <div className="-mt-1" />
         {isCustomPinExist && (

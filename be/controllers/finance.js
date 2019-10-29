@@ -122,3 +122,16 @@ exports.isCustomPinExist = async ctx => {
   const wallet = await Wallet.getByUserId(user.id);
   ctx.ok(!!wallet.customPin);
 }
+
+exports.validatePin = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED('data'));
+  const {
+    pinCode
+  } = data;
+  const isValid = await Wallet.validatePin(user.id, pinCode);
+  ctx.ok(isValid);
+}

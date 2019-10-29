@@ -1,3 +1,5 @@
+export const assets = ['cnb', 'btc', 'eth', 'eos', 'box', 'prs'];
+
 export const assetIconMap: any = {
   cnb: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
   btc: 'https://xue-images.pek3b.qingstor.com/1024-btc.png',

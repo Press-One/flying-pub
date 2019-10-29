@@ -5,6 +5,8 @@ import Viewer from 'react-viewer';
 import marked from 'marked';
 import WaitingForFeed from 'components/WaitingForFeed';
 import BackButton from 'components/BackButton';
+import Button from 'components/Button';
+import RewardModal from './rewardModal';
 import { useStore } from 'store';
 import { ago, isMobile } from 'utils';
 
@@ -15,6 +17,7 @@ export default observer((props: any) => {
   const { feedStore } = useStore();
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
+  const [openRewardModal, setOpenRewardModal] = React.useState(false);
 
   React.useEffect(() => {
     if (feedStore.currentPost) {
@@ -66,6 +69,10 @@ export default observer((props: any) => {
     }
   };
 
+  const reward = () => {
+    setOpenRewardModal(true);
+  };
+
   const { postId } = props.match.params;
   feedStore.setPostId(decodeURIComponent(postId));
   const { currentPost: post } = feedStore;
@@ -92,6 +99,10 @@ export default observer((props: any) => {
           <ArrowUpward />
         </div>
       )}
+      <div className="text-center pb-10" onClick={reward}>
+        <Button>打赏</Button>
+      </div>
+      <RewardModal open={openRewardModal} onClose={() => setOpenRewardModal(false)} />
       <Viewer
         onMaskClick={() => setShowImage(false)}
         noNavbar={true}

@@ -5,7 +5,8 @@ const {
   withdraw,
   getReceipts,
   updateCustomPin,
-  isCustomPinExist
+  isCustomPinExist,
+  validatePin
 } = require('../controllers/finance');
 
 router.get('/balance', getBalance);
@@ -13,6 +14,7 @@ router.post('/recharge', recharge);
 router.post('/withdraw', withdraw);
 router.get('/receipts', getReceipts);
 router.post('/pin', updateCustomPin);
-router.get('/isCustomPinExist', isCustomPinExist);
+router.get('/pin/exist', isCustomPinExist);
+router.post('/pin/validate', validatePin);
 
 module.exports = router;

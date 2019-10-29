@@ -2,10 +2,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import WithdrawModal from './withdrawModal';
-import { assetIconMap } from './utils';
+import { assets, assetIconMap } from './utils';
 import FinanceApi from './api';
-
-const assets = ['cnb', 'btc', 'eth', 'eos', 'box', 'prs', 'xin'];
 
 const Asset = (props: any) => {
   const { snackbarStore } = useStore();

@@ -7525,6 +7525,11 @@ osenv@0, osenv@^0.1.4:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
+otp-input-react@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.npmjs.org/otp-input-react/-/otp-input-react-0.2.0.tgz#722966d800ca60ddd32d5613a202d0cad7cb3cd6"
+  integrity sha512-YzqsIEJ3/YSAMehjABFv4LPqvpwDZL7lyDyA4vFtt0CPtdXrJu2i+hWT96UHAjBEq2e4zDpw3osgRT/6FQ6JKw==
+
 p-defer@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npm.taobao.org/p-defer/download/p-defer-1.0.0.tgz#9f6eb182f6c9aa8cd743004a7d4f96b196b0fb0c"

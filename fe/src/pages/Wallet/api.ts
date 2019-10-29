@@ -32,6 +32,6 @@ export default {
     });
   },
   async isCustomPinExist() {
-    return request('/api/finance/isCustomPinExist');
+    return request('/api/finance/pin/exist');
   },
 };
