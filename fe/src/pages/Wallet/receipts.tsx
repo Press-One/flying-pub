@@ -57,11 +57,9 @@ export default observer(() => {
       try {
         const receipts = await FinanceApi.getReceipts();
         walletStore.setReceipts(receipts);
-      } catch (err) {
-        console.log(` ------------- err ---------------`, err);
-      }
+      } catch (err) {}
     })();
-  }, []);
+  }, [walletStore]);
 
   return (
     <div>

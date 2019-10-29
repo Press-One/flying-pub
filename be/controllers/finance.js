@@ -1,6 +1,8 @@
 const Finance = require('../models/finance');
+const Wallet = require('../models/wallet');
 const {
   assert,
+  Errors
 } = require('../models/validator');
 const {
   pTryLock,
@@ -93,4 +95,30 @@ exports.getReceipts = async ctx => {
     status: 'SUCCESS'
   });
   ctx.body = receipts;
+}
+
+exports.updateCustomPin = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED('data'));
+  const {
+    pinCode,
+    oldPinCode
+  } = data;
+  await Wallet.updateCustomPin(user.id, pinCode, {
+    oldPinCode
+  });
+  ctx.ok({
+    success: true
+  });
+}
+
+exports.isCustomPinExist = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+  const wallet = await Wallet.getByUserId(user.id);
+  ctx.ok(!!wallet.customPin);
 }

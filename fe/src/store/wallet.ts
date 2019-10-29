@@ -3,6 +3,7 @@ export function createWalletStore() {
     isFetched: false,
     balance: {},
     receipts: [],
+    isCustomPinExist: false,
     setIsFetched(status: boolean) {
       this.isFetched = status;
     },
@@ -11,6 +12,9 @@ export function createWalletStore() {
     },
     setReceipts(receipts: any) {
       this.receipts = receipts;
+    },
+    setIsCustomPinExist(status: boolean) {
+      this.isCustomPinExist = status;
     },
   };
 }

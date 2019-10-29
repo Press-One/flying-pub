@@ -11,6 +11,10 @@ const Wallet = sequelize.define('wallets', {
     type: Sequelize.BIGINT,
     unique: true
   },
+  customPin: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
   mixinClientId: {
     type: Sequelize.STRING
   },

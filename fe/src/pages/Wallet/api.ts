@@ -23,4 +23,15 @@ export default {
   async getReceipts() {
     return request('/api/finance/receipts');
   },
+  async updatePin(payload: any) {
+    return request('/api/finance/pin', {
+      method: 'POST',
+      body: {
+        payload,
+      },
+    });
+  },
+  async isCustomPinExist() {
+    return request('/api/finance/isCustomPinExist');
+  },
 };

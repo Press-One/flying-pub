@@ -4,6 +4,10 @@ const config = require('../config');
 const User = require('./user');
 const Wallet = require('./sequelize/wallet');
 const {
+  aesCrypto,
+  aesDecrypt
+} = util.crypto;
+const {
   assert,
   assertFault,
   Errors
@@ -18,9 +22,6 @@ const mixin = new Mixin({
 });
 
 const aesCryptoWallet = data => {
-  const {
-    aesCrypto
-  } = util.crypto;
   data.mixinAesKey = aesCrypto(data.mixinAesKey, config.aesKey256);
   data.mixinPin = aesCrypto(data.mixinPin, config.aesKey256);
   data.mixinSessionId = aesCrypto(data.mixinSessionId, config.aesKey256);
@@ -30,9 +31,6 @@ const aesCryptoWallet = data => {
 };
 
 const aesDecryptWallet = data => {
-  const {
-    aesDecrypt
-  } = util.crypto;
   if (!data.mixinAccount) {
     return data;
   }
@@ -110,11 +108,35 @@ exports.tryCreateWallet = async (userId) => {
   return wallet;
 };
 
-exports.getByUserId = async userId => {
+const getByUserId = async userId => {
   const wallet = await Wallet.findOne({
     where: {
       userId
     }
   });
   return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
+}
+exports.getByUserId = getByUserId;
+
+exports.updateCustomPin = async (userId, pinCode, options = {}) => {
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'))
+  assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
+  const wallet = await getByUserId(userId);
+  if (wallet.customPin) {
+    const {
+      oldPinCode
+    } = options;
+    assert(oldPinCode, Errors.ERR_IS_REQUIRED('oldPinCode'))
+    const cryptoOldPin = aesCrypto(oldPinCode, config.aesKey256);
+    assert(wallet.customPin === cryptoOldPin, Errors.ERR_WALLET_MISMATCH_PIN);
+  }
+  const cryptoPin = aesCrypto(pinCode, config.aesKey256);
+  await Wallet.update({
+    customPin: cryptoPin,
+  }, {
+    where: {
+      userId
+    }
+  });
+  return true;
 }
