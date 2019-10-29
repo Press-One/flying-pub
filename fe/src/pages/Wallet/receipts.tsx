@@ -1,39 +1,17 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { assetIconMap } from './utils';
+import FinanceApi from './api';
+import { useStore } from 'store';
 
-const receipts = [
-  {
-    asset: 'btc',
-    amount: -0.005,
-    post: '定投改变命运（第三版连载）',
-  },
-  {
-    asset: 'prs',
-    amount: -6,
-    post: '越牛的人越谦虚',
-  },
-  {
-    asset: 'eth',
-    amount: -1,
-    post: '定投BOX记录',
-  },
-  {
-    asset: 'box',
-    amount: -0.5,
-    post: '活着，就是巨大的价值',
-  },
-  {
-    asset: 'eos',
-    amount: -1,
-    post: '做自己喜欢做的产品或服务，卖出去！',
-  },
-  {
-    asset: 'xin',
-    amount: -1,
-    post: '由傻逼想到的',
-  },
-];
+const getTypeName = (type: string) => {
+  const map: any = {
+    RECHARGE: '充值',
+    WITHDRAW: '提现',
+  };
+  return map[type];
+};
 
 const Receipt = (receipt: any) => {
   return (
@@ -41,15 +19,17 @@ const Receipt = (receipt: any) => {
       <div className="flex items-center text-gray-700 text-sm">
         <img
           className="mr-4"
-          src={assetIconMap[receipt.asset]}
-          alt={receipt.asset}
+          src={assetIconMap[receipt.currency.toLowerCase()]}
+          alt={receipt.currency}
           width="40"
           height="40"
         />
-        打赏文章
-        <a href="mixin" className="text-blue-400 ml-2">
-          {receipt.post}
-        </a>
+        {getTypeName(receipt.type)}
+        {receipt.type === 'AWARD' && (
+          <a href="mixin" className="text-blue-400 ml-2">
+            {receipt.post}
+          </a>
+        )}
       </div>
       <div className="flex items-center">
         <span
@@ -63,18 +43,31 @@ const Receipt = (receipt: any) => {
         >
           {receipt.amount}
         </span>
-        <span className="text-xs">{receipt.asset.toUpperCase()}</span>
+        <span className="text-xs">{receipt.currency}</span>
       </div>
     </div>
   );
 };
 
-export default () => {
+export default observer(() => {
+  const { walletStore } = useStore();
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const receipts = await FinanceApi.getReceipts();
+        walletStore.setReceipts(receipts);
+      } catch (err) {
+        console.log(` ------------- err ---------------`, err);
+      }
+    })();
+  }, []);
+
   return (
     <div>
-      {receipts.map((receipt: any) => (
+      {walletStore.receipts.map((receipt: any) => (
         <div key={receipt.id}>{Receipt(receipt)}</div>
       ))}
     </div>
   );
-};
+});

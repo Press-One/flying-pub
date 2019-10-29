@@ -20,4 +20,7 @@ export default {
       },
     });
   },
+  async getReceipts() {
+    return request('/api/finance/receipts');
+  },
 };

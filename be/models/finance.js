@@ -7,6 +7,8 @@ const config = require('../config');
 const User = require('./user');
 const Wallet = require('./wallet');
 const Receipt = require('./sequelize/receipt');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const {
   Joi,
   assert,
@@ -447,3 +449,23 @@ exports.syncMixinSnapshots = async () => {
     throw err;
   }
 };
+
+exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
+  const {
+    offset = 0, limit, status
+  } = options;
+  const receipts = await Receipt.findAll({
+    where: {
+      [Op.or]: [{
+        fromAddress: userAddress
+      }, {
+        toAddress: userAddress
+      }],
+      status
+    },
+    offset,
+    limit
+  });
+  return receipts.map(receipt => receipt.toJSON());
+}

@@ -79,3 +79,18 @@ exports.withdraw = async ctx => {
     pUnLock(key);
   }
 };
+
+exports.getReceipts = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+  const {
+    offset = 0, limit
+  } = ctx.query;
+  const receipts = await Finance.getReceiptsByUserAddress(user.address, {
+    offset,
+    limit: Math.min(~~limit || 10, 100),
+    status: 'SUCCESS'
+  });
+  ctx.body = receipts;
+}
