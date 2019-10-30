@@ -9,6 +9,7 @@ import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import Api from './api';
+import WalletApi from '../Wallet/api';
 
 export default (props: any) => {
   const { open, onClose } = props;
@@ -16,7 +17,7 @@ export default (props: any) => {
   const [selectedAsset, setSelectedAsset] = React.useState('cnb');
   const [amount, setAmount] = React.useState('0.01');
   const [memo, setMemo] = React.useState('打赏给刘娟娟');
-  const [paymentMethod, setPaymentMethod] = React.useState('mixin');
+  const [paymentMethod, setPaymentMethod] = React.useState('balance');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [paymentUrl, setPaymentUrl] = React.useState('');
@@ -48,19 +49,13 @@ export default (props: any) => {
             pinCode: value,
           });
           if (isValid) {
-            await Api.reward(
-              fileRId,
-              {
-                toAddress,
-                currency: selectedAsset.toUpperCase(),
-                amount,
-                memo,
-                toMixinClientId,
-              },
-              {
-                method: 'balance',
-              },
-            );
+            await Api.reward(fileRId, {
+              toAddress,
+              currency: selectedAsset.toUpperCase(),
+              amount,
+              memo,
+              toMixinClientId,
+            });
           } else {
             snackbarStore.show({
               message: '支付密码错误，请重试',
@@ -75,22 +70,20 @@ export default (props: any) => {
     }
   };
 
-  const getRewardPaymentUrl = async () => {
+  const getRechargePaymentUrl = async () => {
     setIframeLoading(true);
     try {
-      const { paymentUrl } = await Api.reward(
-        fileRId,
-        {
-          toAddress,
-          currency: selectedAsset.toUpperCase(),
-          amount,
-          memo,
-          toMixinClientId,
-        },
-        {
-          method: 'mixin',
-        },
-      );
+      // const { paymentUrl } = await WalletApi.recharge(fileRId, {
+      //   toAddress,
+      //   currency: ,
+      //   amount,
+      //   memo,
+      //   toMixinClientId,
+      // });
+      const { paymentUrl } = await WalletApi.recharge({
+        amount,
+        currency: selectedAsset.toUpperCase(),
+      });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
       setPaymentUrl(paymentUrl);
     } catch (err) {
@@ -202,7 +195,7 @@ export default (props: any) => {
           <Button
             onClick={() => {
               if (paymentMethod === 'mixin') {
-                getRewardPaymentUrl();
+                getRechargePaymentUrl();
                 setStep(5);
               } else {
                 setStep(4);

@@ -3,14 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import WithdrawModal from './withdrawModal';
 import { assets, assetIconMap } from './utils';
-import FinanceApi from './api';
+import Api from './api';
 
 const Asset = (props: any) => {
   const { snackbarStore } = useStore();
   const { asset, amount } = props;
   const recharge = async () => {
     try {
-      const { paymentUrl } = await FinanceApi.recharge({
+      const { paymentUrl } = await Api.recharge({
         amount: 1,
         currency: asset.toUpperCase(),
       });
@@ -62,7 +62,7 @@ export default observer(() => {
   React.useEffect(() => {
     (async () => {
       try {
-        const balance = await FinanceApi.getBalance();
+        const balance = await Api.getBalance();
         walletStore.setBalance(balance);
       } catch (err) {}
       walletStore.setIsFetched(true);

@@ -25,6 +25,12 @@ const parseAmount = (amount) => {
     mathjs.larger(amount, 0) && amount;
 };
 
+const bigFormat = (bignumber) => {
+  return mathjs.format(bignumber, {
+    notation: 'fixed'
+  });
+};
+
 const currencyMapAsset = {
   CNB: '965e5c6e-434c-3fa9-b780-c50f43cd955c',
   BTC: 'c6d0c728-2624-429b-8e0d-d9d19b6592fa',
@@ -301,19 +307,6 @@ const getAsset = async (data = {}) => {
   };
 };
 
-const syncRewardAmount = async (fileRId) => {
-  const receipts = await getReceiptsByFileRId(fileRId);
-  let rewardAmount = 0;
-  for (const receipt of receipts) {
-    const amount = mathjs.bignumber(receipt.amount);
-    rewardAmount = mathjs.add(rewardAmount, amount);
-  }
-  console.log(` ------------- rewardAmount ---------------`, rewardAmount);
-  await Reward.upsert(fileRId, {
-    amount: parseAmount(rewardAmount)
-  });
-}
-
 const updateReceiptByUuid = async (uuid, data) => {
   assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID('data'));
   assert(data.raw || data.toRaw, Errors.ERR_IS_INVALID('data raw'));
@@ -330,14 +323,6 @@ const updateReceiptByUuid = async (uuid, data) => {
       uuid
     }
   });
-  const receipt = await Receipt.findOne({
-    where: {
-      uuid
-    }
-  });
-  if (receipt.type === 'REWARD' && receipt.status === 'SUCCESS') {
-    await syncRewardAmount(receipt.objectRId);
-  }
   // try {
   //   const resp = await utility.execute(sql, values);
   //   if (options.quick) {
@@ -490,7 +475,10 @@ exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
       status
     },
     offset,
-    limit
+    limit,
+    order: [
+      ['updatedAt', 'DESC']
+    ]
   });
   return receipts.map(receipt => receipt.toJSON());
 }
@@ -616,10 +604,26 @@ const getRewardPaymentUrl = async (data = {}) => {
   return paymentUrl;
 }
 
-exports.payForFile = async (data = {}, options = {}) => {
-  const {
-    byMixin
-  } = options;
+const syncRewardAmount = async (fileRId) => {
+  const receipts = await getReceiptsByFileRId(fileRId);
+  const summary = {};
+  for (const receipt of receipts) {
+    if (!summary[receipt.currency]) {
+      summary[receipt.currency] = 0;
+    }
+    const amount = mathjs.bignumber(receipt.amount);
+    summary[receipt.currency] = mathjs.add(summary[receipt.currency], amount);
+  }
+  console.log(` ------------- summary ---------------`, summary);
+  for (const currency in summary) {
+    summary[currency] = bigFormat(summary[currency])
+  }
+  await Reward.upsert(fileRId, {
+    summary: JSON.stringify(summary)
+  });
+}
+
+exports.payForFile = async (data = {}) => {
   data.memo = data.memo || '打赏文章 - 飞贴';
   data = attempt(data, {
     userId: Joi.number().required(),
@@ -643,33 +647,18 @@ exports.payForFile = async (data = {}, options = {}) => {
     withProfile: true
   });
   const fromAddress = user.address;
-  if (byMixin) {
-    const paymentUrl = await getRewardPaymentUrl({
-      userId,
-      fromAddress,
-      toAddress,
-      type: 'REWARD',
-      objectType: 'FILE',
-      objectRId: fileRId,
-      currency,
-      amount,
-      memo,
-      toMixinClientId
-    });
-    return paymentUrl;
-  } else {
-    await transferToUser({
-      userId,
-      fromAddress,
-      toAddress,
-      type: 'REWARD',
-      objectType: 'FILE',
-      objectRId: fileRId,
-      currency,
-      amount,
-      memo,
-      toMixinClientId
-    });
-  }
+  await transferToUser({
+    userId,
+    fromAddress,
+    toAddress,
+    type: 'REWARD',
+    objectType: 'FILE',
+    objectRId: fileRId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId
+  });
+  await syncRewardAmount(fileRId);
   return true;
 }

@@ -1,6 +1,7 @@
 const Finance = require('../models/finance');
 const Wallet = require('../models/wallet');
 const Reward = require('../models/reward')
+const User = require('../models/user')
 const {
   assert,
   Errors
@@ -142,9 +143,6 @@ exports.reward = async ctx => {
   const {
     fileRId
   } = ctx.params;
-  const {
-    method
-  } = ctx.request.query;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('payload'));
   const {
@@ -153,7 +151,7 @@ exports.reward = async ctx => {
   const key = `REWARD_${user.id}`;
   try {
     await assertTooManyRequests(key);
-    const ret = await Finance.payForFile({
+    await Finance.payForFile({
       userId: user.id,
       toAddress: data.toAddress,
       fileRId,
@@ -161,15 +159,7 @@ exports.reward = async ctx => {
       amount: data.amount,
       memo: data.memo,
       toMixinClientId: data.toMixinClientId,
-    }, {
-      byMixin: method === 'mixin'
     });
-    if (method === 'mixin') {
-      ctx.ok({
-        paymentUrl: ret
-      });
-      return;
-    }
     ctx.ok({
       success: true
     });
@@ -181,13 +171,24 @@ exports.reward = async ctx => {
   }
 }
 
-exports.getFileReward = async ctx => {
+exports.getRewardSummary = async ctx => {
   const {
     fileRId
   } = ctx.params;
   const reward = await Reward.get(fileRId);
-  const amount = reward ? reward.amount : 0;
+  const summary = reward ? JSON.parse(reward.summary) : {};
+  const receipts = await Finance.getReceiptsByFileRId(fileRId);
+  const userAddressSet = new Set();
+  for (const receipt of receipts) {
+    userAddressSet.add(receipt.fromAddress);
+  }
+  const userAddressArr = Array.from(userAddressSet)
+  const tasks = userAddressArr.map(address => User.getByAddress(address, {
+    withProfile: true
+  }));
+  const users = await Promise.all(tasks)
   ctx.ok({
-    amount
+    amountMap: summary,
+    users
   });
 }

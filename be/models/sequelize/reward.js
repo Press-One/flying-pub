@@ -10,8 +10,8 @@ const Reward = sequelize.define('rewards', {
   fileRId: {
     type: Sequelize.STRING,
   },
-  amount: {
-    type: Sequelize.DOUBLE
+  summary: {
+    type: Sequelize.STRING
   },
 }, {
   timestamps: true,

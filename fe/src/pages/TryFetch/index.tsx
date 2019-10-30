@@ -21,7 +21,6 @@ export default observer((props: any) => {
         feedStore.setFeed(feed);
       } catch (err) {
         console.log(err);
-        alert('请先登陆');
         feedStore.setFeed({
           items: [],
         });

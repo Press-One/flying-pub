@@ -1,16 +1,15 @@
 import request from '../../request';
 
 export default {
-  async reward(fileRId: string, payload: any, options: any = {}) {
-    const { method } = options;
-    return request(`/api/finance/reward/${fileRId}?method=${method}`, {
+  async reward(fileRId: string, payload: any) {
+    return request(`/api/finance/reward/${fileRId}`, {
       method: 'POST',
       body: {
         payload,
       },
     });
   },
-  async getReward(fileRId: string) {
+  async getRewardSummary(fileRId: string) {
     return request(`/api/finance/reward/${fileRId}`);
   },
   async validatePin(payload: any) {

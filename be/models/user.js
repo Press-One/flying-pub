@@ -13,7 +13,8 @@ const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED('user'));
 
   let derivedUser = {
-    ...user
+    id: user.id,
+    address: user.address,
   };
 
   const {
@@ -27,7 +28,8 @@ const packUser = async (user, options = {}) => {
     assert(profile, Errors.ERR_NOT_FOUND('profile'));
     derivedUser = {
       ...derivedUser,
-      ...profile
+      name: profile.name,
+      avatar: profile.avatar,
     }
   }
   if (withWallet) {
@@ -46,12 +48,6 @@ const packUser = async (user, options = {}) => {
   delete derivedUser.aesEncryptedHexOfPrivateKey;
   return derivedUser;
 }
-
-const packProfile = profile => ({
-  name: profile.name,
-  avatar: profile.avatar,
-  bio: profile.bio,
-})
 
 const generateKey = () => {
   const {

@@ -8,7 +8,7 @@ const {
   isCustomPinExist,
   validatePin,
   reward,
-  getFileReward
+  getRewardSummary
 } = require('../controllers/finance');
 
 router.get('/balance', getBalance);
@@ -19,6 +19,6 @@ router.post('/pin', updateCustomPin);
 router.get('/pin/exist', isCustomPinExist);
 router.post('/pin/validate', validatePin);
 router.post('/reward/:fileRId', reward);
-router.get('/reward/:fileRId', getFileReward);
+router.get('/reward/:fileRId', getRewardSummary);
 
 module.exports = router;

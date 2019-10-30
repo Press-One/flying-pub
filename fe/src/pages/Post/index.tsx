@@ -6,6 +6,7 @@ import marked from 'marked';
 import WaitingForFeed from 'components/WaitingForFeed';
 import BackButton from 'components/BackButton';
 import Button from 'components/Button';
+import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import { useStore } from 'store';
 import { ago, isMobile } from 'utils';
@@ -20,7 +21,7 @@ export default observer((props: any) => {
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
-  const [rewardAmount, setRewardAmount] = React.useState(0);
+  const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
 
   React.useEffect(() => {
     if (currentPost) {
@@ -32,8 +33,9 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (currentPost) {
-        const { amount } = await Api.getReward(currentPost.id);
-        setRewardAmount(amount);
+        const rewardSummary = await Api.getRewardSummary(currentPost.id);
+        console.log(` ------------- rewardSummary ---------------`, rewardSummary);
+        setRewardSummary(rewardSummary);
       }
     })();
     window.scrollTo(0, 0);
@@ -111,7 +113,7 @@ export default observer((props: any) => {
       <div className="text-center pb-10" onClick={reward}>
         <Button>打赏</Button>
       </div>
-      <div className="text-blue-400">已打赏金额：{rewardAmount}</div>
+      <RewardSummary summary={rewardSummary} />
       <RewardModal open={openRewardModal} onClose={() => setOpenRewardModal(false)} />
       <Viewer
         onMaskClick={() => setShowImage(false)}

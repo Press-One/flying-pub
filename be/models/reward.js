@@ -21,7 +21,7 @@ exports.upsert = async (fileRId, data) => {
   assert(fileRId, Errors.ERR_IS_REQUIRED('fileRId'))
   assert(data, Errors.ERR_IS_REQUIRED('data'))
   data = attempt(data, {
-    amount: Joi.string().trim().required(),
+    summary: Joi.string().trim().required(),
   });
   const reward = await get(fileRId);
   if (reward) {
