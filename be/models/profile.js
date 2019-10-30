@@ -1,10 +1,9 @@
-const User = require('./user');
 const Profile = require('./sequelize/profile');
-const Errors = require('../models/validator/errors');
 const Joi = require('joi');
 const {
   attempt,
-  assert
+  assert,
+  Errors
 } = require('../models/validator');
 
 exports.get = async providerId => {

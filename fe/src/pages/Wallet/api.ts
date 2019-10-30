@@ -1,4 +1,5 @@
 import request from '../../request';
+import qs from 'query-string';
 
 export default {
   async getBalance() {
@@ -20,8 +21,9 @@ export default {
       },
     });
   },
-  async getReceipts() {
-    return request('/api/finance/receipts');
+  async getReceipts(options: any = {}) {
+    const query = qs.stringify(options) ? `?${qs.stringify(options)}` : '';
+    return request(`/api/finance/receipts${query}`);
   },
   async updatePin(payload: any) {
     return request('/api/finance/pin', {

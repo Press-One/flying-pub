@@ -54,6 +54,7 @@ const errors = {
   ERR_WALLET_TO_USER_WALLET_NOT_EXISTS: 'Error wallet status of to-user.',
   ERR_WALLET_WITHDRAW_REQUEST: 'Error withdraw request.',
   ERR_WALLET_FAIL_TO_CREATE_WITHDRAW_RECEIPT: 'Error creating withdraw receipt.',
+  ERR_WALLET_FAIL_TO_CREATE_REWARD_RECEIPT: 'Error creating reward receipt.',
   ERR_WALLET_MISMATCH_PIN: 'Error mismatching pin.',
 };
 

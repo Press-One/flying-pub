@@ -11,7 +11,7 @@ const Asset = (props: any) => {
   const recharge = async () => {
     try {
       const { paymentUrl } = await FinanceApi.recharge({
-        amount: 0.0001,
+        amount: 1,
         currency: asset.toUpperCase(),
       });
       window.open(paymentUrl);

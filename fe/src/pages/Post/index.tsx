@@ -9,24 +9,33 @@ import Button from 'components/Button';
 import RewardModal from './rewardModal';
 import { useStore } from 'store';
 import { ago, isMobile } from 'utils';
+import Api from './api';
 
 import 'react-viewer/dist/index.css';
 import './index.scss';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
+  const { currentPost } = feedStore;
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
+  const [rewardAmount, setRewardAmount] = React.useState(0);
 
   React.useEffect(() => {
-    if (feedStore.currentPost) {
-      const { title } = feedStore.currentPost;
+    if (currentPost) {
+      const { title } = currentPost;
       document.title = `${title} - 飞贴`;
     }
   });
 
   React.useEffect(() => {
+    (async () => {
+      if (currentPost) {
+        const { amount } = await Api.getReward(currentPost.id);
+        setRewardAmount(amount);
+      }
+    })();
     window.scrollTo(0, 0);
     const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
@@ -52,7 +61,7 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, []);
+  }, [currentPost]);
 
   if (!feedStore.isFetched) {
     return null;
@@ -102,6 +111,7 @@ export default observer((props: any) => {
       <div className="text-center pb-10" onClick={reward}>
         <Button>打赏</Button>
       </div>
+      <div className="text-blue-400">已打赏金额：{rewardAmount}</div>
       <RewardModal open={openRewardModal} onClose={() => setOpenRewardModal(false)} />
       <Viewer
         onMaskClick={() => setShowImage(false)}

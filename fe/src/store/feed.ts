@@ -74,14 +74,14 @@ const getFeedInfo = (): FeedInfo => {
   if (host.startsWith('xue')) {
     return {
       title: 'XUE.cn 自学编程',
-      description: '学习是一种社交行为'
-    }
+      description: '学习是一种社交行为',
+    };
   }
   return {
     title: 'BOX 定投践行社群',
-    description: 'Mixin 群：7000102093'
-  }
-}
+    description: 'Mixin 群：7000102093',
+  };
+};
 
 export function createFeedStore() {
   let feed: Feed = {
@@ -93,9 +93,11 @@ export function createFeedStore() {
     link: '',
     title: '',
   };
+  const postMap: any = {};
   let prePushedPost: any;
   return {
     feed,
+    postMap,
     isFetched: false,
     rssUrl: '',
     per: 10,
@@ -121,6 +123,10 @@ export function createFeedStore() {
     setFeed(feed: Feed) {
       this.isFetched = true;
       feed.items = feed.items.map(extractFrontMatter);
+      for (const item of feed.items) {
+        const post: any = item;
+        this.postMap[post.id] = item;
+      }
       const sortedFiles = sortByPubDate(feed.items);
       feed.items = sortedFiles;
       feed.title = getFeedInfo().title || feed.title;

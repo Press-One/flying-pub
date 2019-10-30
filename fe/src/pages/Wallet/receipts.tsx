@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { assetIconMap } from './utils';
+import { assetIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
 import { useStore } from 'store';
 
@@ -9,11 +9,12 @@ const getTypeName = (type: string) => {
   const map: any = {
     RECHARGE: '充值',
     WITHDRAW: '提现',
+    REWARD: '打赏文章',
   };
   return map[type];
 };
 
-const Receipt = (receipt: any) => {
+const Receipt = (receipt: any, postMap: any = {}) => {
   return (
     <div className="flex justify-between items-center py-3 px-2 border-b border-gray-300 leading-none">
       <div className="flex items-center text-gray-700 text-sm">
@@ -25,9 +26,15 @@ const Receipt = (receipt: any) => {
           height="40"
         />
         {getTypeName(receipt.type)}
-        {receipt.type === 'AWARD' && (
-          <a href="mixin" className="text-blue-400 ml-2">
-            {receipt.post}
+        {receipt.type === 'REWARD' && (
+          <a
+            href={`${getPostsSiteDomain()}/posts/${receipt.objectRId}`}
+            className="text-blue-400 ml-2 truncate w-64"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={(postMap[receipt.objectRId] || {}).title}
+          >
+            {(postMap[receipt.objectRId] || {}).title}
           </a>
         )}
       </div>
@@ -50,12 +57,14 @@ const Receipt = (receipt: any) => {
 };
 
 export default observer(() => {
-  const { walletStore } = useStore();
+  const { walletStore, feedStore } = useStore();
 
   React.useEffect(() => {
     (async () => {
       try {
-        const receipts = await FinanceApi.getReceipts();
+        const receipts = await FinanceApi.getReceipts({
+          limit: 100,
+        });
         walletStore.setReceipts(receipts);
       } catch (err) {}
     })();
@@ -64,7 +73,7 @@ export default observer(() => {
   return (
     <div>
       {walletStore.receipts.map((receipt: any) => (
-        <div key={receipt.id}>{Receipt(receipt)}</div>
+        <div key={receipt.id}>{Receipt(receipt, feedStore.postMap)}</div>
       ))}
     </div>
   );

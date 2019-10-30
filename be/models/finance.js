@@ -6,6 +6,7 @@ const fs = require('fs');
 const config = require('../config');
 const User = require('./user');
 const Wallet = require('./wallet');
+const Reward = require('./reward');
 const Receipt = require('./sequelize/receipt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -24,7 +25,7 @@ const parseAmount = (amount) => {
     mathjs.larger(amount, 0) && amount;
 };
 
-const currencyMap = {
+const currencyMapAsset = {
   CNB: '965e5c6e-434c-3fa9-b780-c50f43cd955c',
   BTC: 'c6d0c728-2624-429b-8e0d-d9d19b6592fa',
   ETH: '43d61dcd-e413-450d-80b8-101d5e903357',
@@ -33,10 +34,10 @@ const currencyMap = {
   PRS: '3edb734c-6d6f-32ff-ab03-4eb43640c758',
   XIN: 'c94ac88f-4671-3976-b60a-09064f1811e8'
 };
-exports.currencyMap = currencyMap;
+exports.currencyMapAsset = currencyMapAsset;
 
 const transferTypes = new Set([
-  'AWARD',
+  'REWARD',
   'WITHDRAW',
   'RECHARGE'
 ]);
@@ -52,24 +53,25 @@ const mixin = new Mixin({
 });
 
 const create = async (receipt, options = {}) => {
-  attempt(receipt, {
-    fromAddress: Joi.string().required(),
-    toAddress: Joi.string().required(),
-    type: Joi.string().required(),
-    currency: Joi.string().required(),
+  receipt = attempt(receipt, {
+    fromAddress: Joi.string().trim().required(),
+    toAddress: Joi.string().trim().required(),
+    type: Joi.string().trim().required(),
+    currency: Joi.string().trim().required(),
     amount: Joi.number().required(),
-    status: Joi.string().required(),
-    provider: Joi.string().required(),
-    memo: Joi.string().optional(),
-    toProviderUserId: Joi.string().optional(),
-    fromProviderUserId: Joi.string().optional(),
-    objectType: Joi.string().optional(),
+    status: Joi.string().trim().required(),
+    provider: Joi.string().trim().required(),
+    memo: Joi.string().trim().optional(),
+    toProviderUserId: Joi.string().trim().optional(),
+    fromProviderUserId: Joi.string().trim().optional(),
+    objectType: Joi.string().trim().optional(),
+    objectRId: Joi.string().trim().optional(),
   });
   receipt.amount = parseAmount(receipt.amount);
   assert((receipt.amount), Errors.ERR_IS_INVALID('amount'));
   assert(transferTypes.has(receipt.type), Errors.ERR_IS_INVALID('type'));
   assert(!receipt.objectType || transferObjectTypes.has(receipt.objectType), Errors.ERR_IS_INVALID('objectType'));
-  assert(currencyMap[receipt.currency], Errors.ERR_IS_INVALID('currency'));
+  assert(currencyMapAsset[receipt.currency], Errors.ERR_IS_INVALID('currency'));
 
   options = options || {};
   receipt.uuid = receipt.uuid || uuidV1();
@@ -82,15 +84,15 @@ const create = async (receipt, options = {}) => {
 
 const getMixinPaymentUrl = (options = {}) => {
   const {
-    mixinAccountId,
-    currency,
+    toMixinClientId,
+    asset,
     amount,
     trace,
     memo
   } = options;
   return ('https://mixin.one/pay' +
-    '?recipient=' + encodeURIComponent(mixinAccountId) +
-    '&asset=' + encodeURIComponent(currency) +
+    '?recipient=' + encodeURIComponent(toMixinClientId) +
+    '&asset=' + encodeURIComponent(asset) +
     '&amount=' + encodeURIComponent(amount) +
     '&trace=' + encodeURIComponent(trace) +
     '&memo=' + encodeURIComponent(memo));
@@ -98,7 +100,7 @@ const getMixinPaymentUrl = (options = {}) => {
 
 exports.recharge = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || '飞贴提现';
+  data.memo = data.memo || '飞贴充值';
   const {
     userId,
     currency,
@@ -127,13 +129,12 @@ exports.recharge = async (data = {}) => {
   }, undefined);
   assertFault(receipt, Errors.ERR_RECEIPT_FAIL_TO_INIT);
   const paymentUrl = getMixinPaymentUrl({
-    mixinAccountId: wallet.mixinClientId,
-    currency: currencyMap[receipt.currency],
+    toMixinClientId: wallet.mixinClientId,
+    asset: currencyMapAsset[receipt.currency],
     amount: parseAmount(amount),
     trace: receipt.uuid,
     memo
   });
-  assertFault(paymentUrl, Errors.ERR_RECEIPT_FAIL_TO_CREATE_PAYMENT_URL);
   return paymentUrl;
 };
 
@@ -168,8 +169,8 @@ exports.withdraw = async (data = {}) => {
   const user = await User.get(userId, {
     withProfile: true
   });
-  const mixinAccountId = JSON.parse(user.raw).user_id;
-  assert(mixinAccountId, Errors.ERR_NOT_FOUND('mixinAccountId'));
+  const toMixinClientId = JSON.parse(user.raw).user_id;
+  assert(toMixinClientId, Errors.ERR_NOT_FOUND('toMixinClientId'));
   const receipt = await create({
     fromAddress: user.address,
     toAddress: user.address,
@@ -180,12 +181,12 @@ exports.withdraw = async (data = {}) => {
     provider: 'MIXIN',
     memo,
     fromProviderUserId: wallet.mixinClientId,
-    toProviderUserId: mixinAccountId
+    toProviderUserId: toMixinClientId
   });
   assertFault(receipt, Errors.ERR_WALLET_FAIL_TO_CREATE_WITHDRAW_RECEIPT);
   const tfRaw = await transfer({
     currency,
-    mixinAccountId,
+    toMixinClientId,
     amount,
     memo,
     mixinPin: wallet.mixinPin,
@@ -195,13 +196,13 @@ exports.withdraw = async (data = {}) => {
     mixinPrivateKey: wallet.mixinPrivateKey,
     traceId: receipt.uuid,
   });
-  await updateByUuid({
+  await updateReceiptByUuid(receipt.uuid, {
     status: tfRaw ? 'SUCCESS' : 'FAILED',
     raw: tfRaw || null,
     snapshotId: tfRaw.snapshot_id,
     uuid: tfRaw.trace_id,
     // viewToken: tfRaw.viewToken
-  }, receipt.uuid, null);
+  });
   const latestAsset = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -215,9 +216,21 @@ exports.withdraw = async (data = {}) => {
 
 const transfer = async (data = {}) => {
   data.amount = parseAmount(data.amount);
+  data = attempt(data, {
+    currency: Joi.string().trim().required(),
+    toMixinClientId: Joi.string().trim().required(),
+    amount: Joi.string().trim().required(),
+    memo: Joi.string().trim().required(),
+    mixinPin: Joi.string().trim().required(),
+    mixinAesKey: Joi.string().trim().required(),
+    mixinClientId: Joi.string().trim().required(),
+    mixinSessionId: Joi.string().trim().required(),
+    mixinPrivateKey: Joi.string().trim().required(),
+    traceId: Joi.string().trim().required(),
+  });
   const {
     currency,
-    mixinAccountId,
+    toMixinClientId,
     amount,
     memo,
     mixinPin,
@@ -227,19 +240,8 @@ const transfer = async (data = {}) => {
     mixinPrivateKey,
     traceId
   } = data;
-  assert((amount), Errors.ERR_IS_INVALID('amount'));
-  assert(currency, Errors.ERR_IS_REQUIRED('currency'));
-  assert(mixinAccountId, Errors.ERR_IS_REQUIRED('mixinAccountId'));
-  assert(amount, Errors.ERR_IS_REQUIRED('amount'));
-  assert(memo, Errors.ERR_IS_REQUIRED('memo'));
-  assert(mixinPin, Errors.ERR_IS_REQUIRED('mixinPin'));
-  assert(mixinAesKey, Errors.ERR_IS_REQUIRED('currency'));
-  assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
-  assert(mixinSessionId, Errors.ERR_IS_REQUIRED('mixinSessionId'));
-  assert(mixinPrivateKey, Errors.ERR_IS_REQUIRED('mixinPrivateKey'));
-  assert(traceId, Errors.ERR_IS_REQUIRED('traceId'));
   const result = await mixin.account.transfer(
-    currencyMap[currency], mixinAccountId, amount, memo, {
+    currencyMapAsset[currency], toMixinClientId, amount, memo, {
       pin: mixinPin,
       aesKey: mixinAesKey,
       client_id: mixinClientId,
@@ -253,7 +255,7 @@ const transfer = async (data = {}) => {
   return result.data;
 };
 
-exports.getBalanceByUserId = async (userId, currency) => {
+const getBalanceByUserId = async (userId, currency) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   const wallet = await Wallet.getByUserId(userId);
   const resp = await getAsset({
@@ -264,6 +266,8 @@ exports.getBalanceByUserId = async (userId, currency) => {
   });
   return Number(resp.balance);
 }
+
+exports.getBalanceByUserId = getBalanceByUserId;
 
 const getAsset = async (data = {}) => {
   const {
@@ -276,7 +280,7 @@ const getAsset = async (data = {}) => {
   assert(clientId, Errors.ERR_IS_REQUIRED('clientId'));
   assert(sessionId, Errors.ERR_IS_REQUIRED('sessionId'));
   assert(privateKey, Errors.ERR_IS_REQUIRED('privateKey'));
-  let raw = await mixin.account.readAssets(currencyMap[currency], {
+  let raw = await mixin.account.readAssets(currencyMapAsset[currency], {
     client_id: clientId,
     session_id: sessionId,
     privateKey
@@ -297,22 +301,43 @@ const getAsset = async (data = {}) => {
   };
 };
 
-const updateByUuid = async (receipt, uuid) => {
-  assert(receipt && Object.keys(receipt).length, Errors.ERR_IS_INVALID('receipt'));
-  assert(receipt.raw || receipt.toRaw, Errors.ERR_IS_INVALID('receipt raw'));
-  if (receipt.raw) {
-    receipt.raw = JSON.stringify(receipt.raw);
+const syncRewardAmount = async (fileRId) => {
+  const receipts = await getReceiptsByFileRId(fileRId);
+  let rewardAmount = 0;
+  for (const receipt of receipts) {
+    const amount = mathjs.bignumber(receipt.amount);
+    rewardAmount = mathjs.add(rewardAmount, amount);
   }
-  if (receipt.toRaw) {
-    receipt.toRaw = JSON.stringify(receipt.toRaw);
+  console.log(` ------------- rewardAmount ---------------`, rewardAmount);
+  await Reward.upsert(fileRId, {
+    amount: parseAmount(rewardAmount)
+  });
+}
+
+const updateReceiptByUuid = async (uuid, data) => {
+  assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID('data'));
+  assert(data.raw || data.toRaw, Errors.ERR_IS_INVALID('data raw'));
+  if (data.raw) {
+    data.raw = JSON.stringify(data.raw);
+  }
+  if (data.toRaw) {
+    data.toRaw = JSON.stringify(data.toRaw);
   }
   assert(uuid, Errors.ERR_IS_REQUIRED('uuid'));
-  console.log(` ------------- receipt ---------------`, receipt);
-  await Receipt.update(receipt, {
+  console.log(` ------------- receipt data ---------------`, data);
+  await Receipt.update(data, {
     where: {
       uuid
     }
   });
+  const receipt = await Receipt.findOne({
+    where: {
+      uuid
+    }
+  });
+  if (receipt.type === 'REWARD' && receipt.status === 'SUCCESS') {
+    await syncRewardAmount(receipt.objectRId);
+  }
   // try {
   //   const resp = await utility.execute(sql, values);
   //   if (options.quick) {
@@ -321,16 +346,16 @@ const updateByUuid = async (receipt, uuid) => {
   //   const objReceipt = await util.promisify(getByUuid)(receipt.uuid || uuid, options);
   //   if (
   //     objReceipt &&
-  //     objReceipt.forFileRId &&
+  //     objReceipt.fileRId &&
   //     objReceipt.type === 'AWARD' &&
   //     objReceipt.status === 'SUCCESS'
   //   ) {
   //     const {
   //       list,
   //       total
-  //     } = await exports.getTransactionsByFileRId(objReceipt.forFileRId, 'SUCCESS');
+  //     } = await exports.getTransactionsByFileRId(objReceipt.fileRId, 'SUCCESS');
   //     const rewardAmount = R.reduce(mathjs.add, 0, R.map(item => mathjs.bignumber(item.amount))(list));
-  //     const file = await updateCache(objReceipt.forFileRId, {
+  //     const file = await updateCache(objReceipt.fileRId, {
   //       rewardAmount: bigFormat(rewardAmount),
   //       rewardCount: total
   //     });
@@ -397,7 +422,7 @@ const saveSnapshot = async (snapshot, options) => {
     //   receipt.viewToken = getViewToken(snapshotId);
     // }
     try {
-      await updateByUuid(receipt, snapshot.trace_id, options);
+      await updateReceiptByUuid(snapshot.trace_id, receipt);
     } catch (e) {
       console.log(e);
     }
@@ -419,10 +444,10 @@ exports.syncMixinSnapshots = async () => {
       const json = JSON.stringify(session);
       fs.writeFileSync('session.json', json, 'utf8');
     };
-    const tasks = Object.keys(currencyMap).map(currency => {
+    const tasks = Object.keys(currencyMapAsset).map(currency => {
       return mixin.readSnapshots(
         rfc3339nano.adjustRfc3339ByNano(session.offset, 1),
-        currencyMap[currency],
+        currencyMapAsset[currency],
         '50',
         'ASC'
       )
@@ -468,4 +493,183 @@ exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
     limit
   });
   return receipts.map(receipt => receipt.toJSON());
+}
+
+const getReceiptsByFileRId = async (fileRId, options = {}) => {
+  assert(fileRId, Errors.ERR_IS_REQUIRED('fileRId'));
+  const {
+    offset = 0, limit
+  } = options;
+  const receipts = await Receipt.findAll({
+    where: {
+      objectRId: fileRId,
+      status: 'SUCCESS'
+    },
+    offset,
+    limit
+  });
+  return receipts.map(receipt => receipt.toJSON());
+}
+exports.getReceiptsByFileRId = getReceiptsByFileRId;
+
+const transferToUser = async (data = {}) => {
+  const receipt = await createRewardReceipt(data);
+  const {
+    userId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId,
+  } = data;
+  const wallet = await Wallet.getByUserId(userId);
+  const tfRaw = await transfer({
+    currency,
+    toMixinClientId,
+    amount,
+    memo,
+    mixinPin: wallet.mixinPin,
+    mixinAesKey: wallet.mixinAesKey,
+    mixinClientId: wallet.mixinClientId,
+    mixinSessionId: wallet.mixinSessionId,
+    mixinPrivateKey: wallet.mixinPrivateKey,
+    traceId: receipt.uuid,
+  });
+  await updateReceiptByUuid(receipt.uuid, {
+    status: tfRaw ? 'SUCCESS' : 'FAILED',
+    raw: tfRaw || null,
+    snapshotId: tfRaw.snapshot_id,
+    uuid: tfRaw.trace_id,
+    // viewToken: tfRaw.viewToken
+  });
+  const latestAsset = await getAsset({
+    currency,
+    clientId: wallet.mixinClientId,
+    sessionId: wallet.mixinSessionId,
+    privateKey: wallet.mixinPrivateKey,
+  });
+  assertFault(latestAsset, Errors.ERR_WALLET_FETCH_BALANCE);
+}
+
+const createRewardReceipt = async (data = {}) => {
+  data = attempt(data, {
+    userId: Joi.number().required(),
+    fromAddress: Joi.string().trim().required(),
+    toAddress: Joi.string().trim().required(),
+    type: Joi.string().trim().required(),
+    objectType: Joi.string().trim().optional(),
+    objectRId: Joi.string().trim().required(),
+    currency: Joi.string().trim().required(),
+    amount: Joi.string().trim().required(),
+    memo: Joi.string().trim().required(),
+    toMixinClientId: Joi.string().trim().required(),
+  });
+  const {
+    userId,
+    fromAddress,
+    toAddress,
+    type,
+    objectType,
+    objectRId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId,
+  } = data;
+  // @todo: 检查最大交易限额
+  const balance = await getBalanceByUserId(userId, currency);
+  assert(mathjs.larger(balance, amount) || mathjs.equal(balance, amount),
+    Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT, 402);
+  const wallet = await Wallet.getByUserId(userId);
+  const receipt = await create({
+    fromAddress: fromAddress,
+    toAddress: toAddress,
+    type,
+    objectType,
+    objectRId,
+    currency,
+    amount,
+    status: 'INITIALIZED',
+    provider: 'MIXIN',
+    memo,
+    fromProviderUserId: wallet.mixinClientId,
+    toProviderUserId: toMixinClientId
+  });
+  assertFault(receipt, Errors.ERR_WALLET_FAIL_TO_CREATE_REWARD_RECEIPT);
+  return receipt
+}
+
+const getRewardPaymentUrl = async (data = {}) => {
+  const receipt = await createRewardReceipt(data);
+  const {
+    currency,
+    amount,
+    memo,
+    toMixinClientId,
+  } = data;
+  const paymentUrl = getMixinPaymentUrl({
+    toMixinClientId,
+    asset: currencyMapAsset[currency],
+    amount: parseAmount(amount),
+    trace: receipt.uuid,
+    memo
+  });
+  return paymentUrl;
+}
+
+exports.payForFile = async (data = {}, options = {}) => {
+  const {
+    byMixin
+  } = options;
+  data.memo = data.memo || '打赏文章 - 飞贴';
+  data = attempt(data, {
+    userId: Joi.number().required(),
+    toAddress: Joi.string().trim().required(),
+    fileRId: Joi.string().trim().required(),
+    currency: Joi.string().trim().required(),
+    amount: Joi.string().trim().required(),
+    memo: Joi.string().trim().required(),
+    toMixinClientId: Joi.string().trim().required(),
+  });
+  const {
+    userId,
+    toAddress,
+    fileRId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId
+  } = data;
+  const user = await User.get(userId, {
+    withProfile: true
+  });
+  const fromAddress = user.address;
+  if (byMixin) {
+    const paymentUrl = await getRewardPaymentUrl({
+      userId,
+      fromAddress,
+      toAddress,
+      type: 'REWARD',
+      objectType: 'FILE',
+      objectRId: fileRId,
+      currency,
+      amount,
+      memo,
+      toMixinClientId
+    });
+    return paymentUrl;
+  } else {
+    await transferToUser({
+      userId,
+      fromAddress,
+      toAddress,
+      type: 'REWARD',
+      objectType: 'FILE',
+      objectRId: fileRId,
+      currency,
+      amount,
+      memo,
+      toMixinClientId
+    });
+  }
+  return true;
 }

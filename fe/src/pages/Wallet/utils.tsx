@@ -9,3 +9,7 @@ export const assetIconMap: any = {
   prs: 'https://xue-images.pek3b.qingstor.com/1024-prs.png',
   xin: 'https://xue-images.pek3b.qingstor.com/1024-xin.png',
 };
+
+export const getPostsSiteDomain = () => {
+  return '';
+};

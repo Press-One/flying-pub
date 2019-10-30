@@ -30,19 +30,19 @@ export default observer(() => {
   const [pin, setPin] = React.useState('');
   const [pin2, setPin2] = React.useState('');
   const { snackbarStore, walletStore } = useStore();
-
-  const fetchIsCustomPinExist = async () => {
-    try {
-      const isCustomPinExist = await FinanceApi.isCustomPinExist();
-      walletStore.setIsCustomPinExist(isCustomPinExist);
-    } catch (err) {
-      console.log(` ------------- err ---------------`, err);
-    }
-  };
+  const { setIsCustomPinExist } = walletStore;
 
   React.useEffect(() => {
+    const fetchIsCustomPinExist = async () => {
+      try {
+        const isCustomPinExist = await FinanceApi.isCustomPinExist();
+        setIsCustomPinExist(isCustomPinExist);
+      } catch (err) {
+        console.log(` ------------- err ---------------`, err);
+      }
+    };
     fetchIsCustomPinExist();
-  }, [fetchIsCustomPinExist]);
+  }, [setIsCustomPinExist]);
 
   const submit = async (pin: string, pin2: string, options: any = {}) => {
     const { isCustomPinExist, oldPin } = options;
