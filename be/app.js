@@ -14,6 +14,7 @@ const user = require('./routes/user');
 const auth = require('./routes/auth');
 const atom = require('./routes/atom');
 const finance = require('./routes/finance');
+const comment = require('./routes/comment');
 const logout = require('./routes/logout');
 const ping = require('./routes/ping');
 
@@ -47,6 +48,7 @@ router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethod
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
 router.use('/api/atom', ensureAuthorization(), atom.routes(), atom.allowedMethods());
 router.use('/api/finance', ensureAuthorization(), finance.routes(), finance.allowedMethods());
+router.use('/api/comments', comment.routes(), comment.allowedMethods());
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());

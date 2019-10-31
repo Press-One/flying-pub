@@ -6,7 +6,7 @@ const fs = require('fs');
 const config = require('../config');
 const User = require('./user');
 const Wallet = require('./wallet');
-const Reward = require('./reward');
+const Post = require('./post');
 const socketIo = require('./socketIo');
 const Receipt = require('./sequelize/receipt');
 const Sequelize = require('sequelize');
@@ -627,7 +627,7 @@ const syncRewardAmount = async (fileRId) => {
   for (const currency in summary) {
     summary[currency] = bigFormat(summary[currency])
   }
-  await Reward.upsert(fileRId, {
+  await Post.upsert(fileRId, {
     summary: JSON.stringify(summary)
   });
 }

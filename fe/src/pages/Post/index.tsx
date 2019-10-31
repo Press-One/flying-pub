@@ -8,6 +8,7 @@ import BackButton from 'components/BackButton';
 import Button from 'components/Button';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
+import Comment from './comment';
 import { useStore } from 'store';
 import { ago, isMobile } from 'utils';
 import Api from './api';
@@ -99,6 +100,10 @@ export default observer((props: any) => {
     setOpenRewardModal(true);
   };
 
+  const toLogin = () => {
+    console.log(` ------------- toLogin ---------------`);
+  };
+
   if (!post) {
     return <WaitingForFeed />;
   }
@@ -125,6 +130,9 @@ export default observer((props: any) => {
         <Button>打赏</Button>
       </div>
       <RewardSummary summary={rewardSummary} />
+      <div className="mt-5">
+        <Comment fileRId={post.id} toLogin={toLogin} />
+      </div>
       <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />
       <Viewer
         onMaskClick={() => setShowImage(false)}

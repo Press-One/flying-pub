@@ -1,6 +1,6 @@
 const Finance = require('../models/finance');
 const Wallet = require('../models/wallet');
-const Reward = require('../models/reward')
+const Post = require('../models/post')
 const User = require('../models/user')
 const {
   assert,
@@ -166,8 +166,8 @@ exports.getRewardSummary = async ctx => {
   const {
     fileRId
   } = ctx.params;
-  const reward = await Reward.get(fileRId);
-  const summary = reward ? JSON.parse(reward.summary) : {};
+  const post = await Post.get(fileRId);
+  const summary = post && post.summary ? JSON.parse(post.summary) : {};
   const receipts = await Finance.getReceiptsByFileRId(fileRId);
   const userAddressSet = new Set();
   for (const receipt of receipts) {

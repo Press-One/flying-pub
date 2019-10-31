@@ -7,6 +7,7 @@ import { createCacheStore } from './cache';
 import { createWalletStore } from './wallet';
 import { createSnackbarStore } from './snackbar';
 import { createSocketStore } from './socket';
+import { createCommentStore } from './comment';
 
 const storeContext = React.createContext<any>(null);
 
@@ -22,6 +23,7 @@ export const StoreProvider = ({ children }: IProps) => {
     walletStore: useLocalStore(createWalletStore),
     snackbarStore: useLocalStore(createSnackbarStore),
     socketStore: useLocalStore(createSocketStore),
+    commentStore: useLocalStore(createCommentStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };
