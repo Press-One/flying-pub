@@ -17,27 +17,34 @@ import './index.scss';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
-  const { currentPost } = feedStore;
+  const { currentPost: post } = feedStore;
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
 
   React.useEffect(() => {
-    if (currentPost) {
-      const { title } = currentPost;
+    const { postId } = props.match.params;
+    feedStore.setPostId(decodeURIComponent(postId));
+  }, [props, feedStore]);
+
+  React.useEffect(() => {
+    if (post) {
+      const { title } = post;
       document.title = `${title} - 飞贴`;
     }
   });
 
   React.useEffect(() => {
     (async () => {
-      if (currentPost) {
-        const rewardSummary = await Api.getRewardSummary(currentPost.id);
-        console.log(` ------------- rewardSummary ---------------`, rewardSummary);
+      if (post) {
+        const rewardSummary = await Api.getRewardSummary(post.id);
         setRewardSummary(rewardSummary);
       }
     })();
+  }, [post]);
+
+  React.useEffect(() => {
     window.scrollTo(0, 0);
     const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
@@ -63,7 +70,15 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, [currentPost]);
+  }, []);
+
+  const onCloseRewardModal = async (isSuccess: boolean) => {
+    setOpenRewardModal(false);
+    if (isSuccess) {
+      const rewardSummary = await Api.getRewardSummary(post.id);
+      setRewardSummary(rewardSummary);
+    }
+  };
 
   if (!feedStore.isFetched) {
     return null;
@@ -83,10 +98,6 @@ export default observer((props: any) => {
   const reward = () => {
     setOpenRewardModal(true);
   };
-
-  const { postId } = props.match.params;
-  feedStore.setPostId(decodeURIComponent(postId));
-  const { currentPost: post } = feedStore;
 
   if (!post) {
     return <WaitingForFeed />;
@@ -114,7 +125,7 @@ export default observer((props: any) => {
         <Button>打赏</Button>
       </div>
       <RewardSummary summary={rewardSummary} />
-      <RewardModal open={openRewardModal} onClose={() => setOpenRewardModal(false)} />
+      <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />
       <Viewer
         onMaskClick={() => setShowImage(false)}
         noNavbar={true}

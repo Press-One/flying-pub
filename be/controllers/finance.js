@@ -12,7 +12,7 @@ const {
 } = require('../models/cache');
 
 const assertTooManyRequests = async (lockKey) => {
-  const locked = await pTryLock(lockKey, 60 * 10);
+  const locked = await pTryLock(lockKey, 10);
   assert(!locked, 'too many request', 429);
 };
 
@@ -20,23 +20,13 @@ exports.getBalance = async ctx => {
   const {
     user
   } = ctx.verification;
-  const tasks = Object.keys(Finance.currencyMapAsset).map(async currency => {
-    const balance = await Finance.getBalanceByUserId(user.id, currency);
-    return {
-      currency,
-      balance
-    };
-  })
-  const derivedBalances = await Promise.all(tasks);
-  const balanceMap = {};
-  for (const derivedBalance of derivedBalances) {
-    balanceMap[derivedBalance.currency] = derivedBalance.balance;
-  }
+  const balanceMap = await Finance.getBalanceMap(user.id);
   ctx.ok(balanceMap);
 }
 
 exports.recharge = async ctx => {
   const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED('payload'));
   const {
     user
   } = ctx.verification;
@@ -45,8 +35,9 @@ exports.recharge = async ctx => {
     await assertTooManyRequests(key);
     const paymentUrl = await Finance.recharge({
       userId: user.id,
-      currency: data && data.currency,
-      amount: data && data.amount
+      currency: data.currency,
+      amount: data.amount,
+      memo: data.memo
     });
     ctx.ok({
       paymentUrl

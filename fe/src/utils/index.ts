@@ -6,6 +6,11 @@ export const getApiEndpoint = () => {
   return isDevelopment ? 'http://localhost:8098' : window.location.origin;
 };
 
+export const getQueueEndpoint = () => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return isDevelopment ? 'http://localhost:8093' : window.location.origin;
+};
+
 export const getQueryObject = () => {
   return parse(window.location.search);
 };

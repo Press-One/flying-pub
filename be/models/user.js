@@ -26,10 +26,16 @@ const packUser = async (user, options = {}) => {
   if (withProfile) {
     const profile = await Profile.getByUserId(user.id);
     assert(profile, Errors.ERR_NOT_FOUND('profile'));
+    const mixinAccount = JSON.parse(profile.raw);
     derivedUser = {
       ...derivedUser,
       name: profile.name,
       avatar: profile.avatar,
+      mixinAccount: {
+        user_id: mixinAccount.user_id,
+        full_name: mixinAccount.full_name,
+        identity_number: mixinAccount.identity_number
+      }
     }
   }
   if (withWallet) {

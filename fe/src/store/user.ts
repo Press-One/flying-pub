@@ -1,11 +1,13 @@
 export function createUserStore() {
   return {
     isFetched: false,
-    user: 0,
-    mixinAccount: {},
+    isLogin: false,
+    user: {
+      mixinAccount: {},
+    },
     setUser(user: any) {
       this.user = user;
-      this.mixinAccount = JSON.parse(user.raw);
+      this.isLogin = true;
     },
     setIsFetched(status: boolean) {
       this.isFetched = status;

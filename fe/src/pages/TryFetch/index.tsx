@@ -6,7 +6,7 @@ import Loading from 'components/Loading';
 import { getXmlUrl } from 'utils';
 
 export default observer((props: any) => {
-  const { userStore, feedStore } = useStore();
+  const { userStore, feedStore, socketStore } = useStore();
 
   React.useEffect(() => {
     (async () => {
@@ -28,12 +28,13 @@ export default observer((props: any) => {
       try {
         const user = await Api.fetchUser();
         userStore.setUser(user);
+        socketStore.init(user.id);
       } catch (err) {
         console.log(err);
       }
       userStore.setIsFetched(true);
     })();
-  }, [userStore, feedStore, props]);
+  }, [userStore, feedStore, socketStore, props]);
 
   if (!feedStore.isFetched) {
     return <Loading isPage={true} />;

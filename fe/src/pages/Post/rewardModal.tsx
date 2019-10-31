@@ -12,11 +12,13 @@ import Api from './api';
 import WalletApi from '../Wallet/api';
 
 export default (props: any) => {
+  const { userStore, socketStore } = useStore();
+  const { isLogin } = userStore;
   const { open, onClose } = props;
   const [step, setStep] = React.useState(1);
   const [selectedAsset, setSelectedAsset] = React.useState('cnb');
-  const [amount, setAmount] = React.useState('0.01');
-  const [memo, setMemo] = React.useState('打赏给刘娟娟');
+  const [amount, setAmount] = React.useState('');
+  const [memo, setMemo] = React.useState('');
   const [paymentMethod, setPaymentMethod] = React.useState('balance');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
@@ -24,18 +26,53 @@ export default (props: any) => {
   const [iframeLoading, setIframeLoading] = React.useState(false);
   const { snackbarStore } = useStore();
 
-  const onCloseModal = () => {
+  const toAddress = '501a3fd577eddf7d1913ff26f5eb3178809e8f97';
+  const fileRId = 'c3f36d65714d0ae6136c0eec9d7dde32a3d85753d3dc4c3a8615de58a60bd768';
+  const blockPaymentUrl = 'mixin://transfer/44931a6d-2029-4c8d-888f-cbb3afe509bb';
+  const toMixinClientId = blockPaymentUrl.split('/').pop();
+
+  React.useEffect(() => {
+    const afterRecharge = async (data: any) => {
+      const { receipt } = data;
+      console.log(` ------------- receipt ---------------`, receipt);
+      await Api.reward(fileRId, {
+        toAddress,
+        currency: receipt.currency,
+        amount: receipt.amount,
+        memo: receipt.memo,
+        toMixinClientId,
+      });
+      setStep(1);
+      setAmount('');
+      setMemo('');
+      setPin('');
+      onClose(true);
+    };
+    if (isLogin) {
+      socketStore.on('recharge', afterRecharge);
+    }
+    return () => {
+      socketStore.off('recharge', afterRecharge);
+    };
+  }, [
+    isLogin,
+    socketStore,
+    fileRId,
+    toAddress,
+    selectedAsset,
+    amount,
+    memo,
+    toMixinClientId,
+    onClose,
+  ]);
+
+  const onCloseModal = (isSuccess: boolean) => {
     setStep(1);
     setAmount('');
     setMemo('');
     setPin('');
-    onClose();
+    onClose(isSuccess);
   };
-
-  const toAddress = '501a3fd577eddf7d1913ff26f5eb3178809e8f97';
-  const blockPaymentUrl = 'mixin://transfer/44931a6d-2029-4c8d-888f-cbb3afe509bb';
-  const toMixinClientId = blockPaymentUrl.split('/').pop();
-  const fileRId = 'c3f36d65714d0ae6136c0eec9d7dde32a3d85753d3dc4c3a8615de58a60bd768';
 
   const onOtpChange = (value: string) => {
     setPin(value);
@@ -56,6 +93,8 @@ export default (props: any) => {
               memo,
               toMixinClientId,
             });
+            // 打勾
+            onCloseModal(true);
           } else {
             snackbarStore.show({
               message: '支付密码错误，请重试',
@@ -80,9 +119,11 @@ export default (props: any) => {
       //   memo,
       //   toMixinClientId,
       // });
+      console.log(` ------------- memo ---------------`, memo);
       const { paymentUrl } = await WalletApi.recharge({
         amount,
         currency: selectedAsset.toUpperCase(),
+        memo: memo || '打赏文章',
       });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
       setPaymentUrl(paymentUrl);
@@ -279,7 +320,11 @@ export default (props: any) => {
   };
 
   return (
-    <Modal open={open} onClose={onCloseModal} className="flex justify-center items-center">
+    <Modal
+      open={open}
+      onClose={() => onCloseModal(false)}
+      className="flex justify-center items-center"
+    >
       <div className="p-8 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}

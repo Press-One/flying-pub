@@ -7,6 +7,7 @@ const config = require('../config');
 const User = require('./user');
 const Wallet = require('./wallet');
 const Reward = require('./reward');
+const socketIo = require('./socketIo');
 const Receipt = require('./sequelize/receipt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -40,7 +41,6 @@ const currencyMapAsset = {
   PRS: '3edb734c-6d6f-32ff-ab03-4eb43640c758',
   XIN: 'c94ac88f-4671-3976-b60a-09064f1811e8'
 };
-exports.currencyMapAsset = currencyMapAsset;
 
 const transferTypes = new Set([
   'REWARD',
@@ -175,7 +175,7 @@ exports.withdraw = async (data = {}) => {
   const user = await User.get(userId, {
     withProfile: true
   });
-  const toMixinClientId = JSON.parse(user.raw).user_id;
+  const toMixinClientId = user.mixinAccount.user_id;
   assert(toMixinClientId, Errors.ERR_NOT_FOUND('toMixinClientId'));
   const receipt = await create({
     fromAddress: user.address,
@@ -273,8 +273,6 @@ const getBalanceByUserId = async (userId, currency) => {
   return Number(resp.balance);
 }
 
-exports.getBalanceByUserId = getBalanceByUserId;
-
 const getAsset = async (data = {}) => {
   const {
     currency,
@@ -307,6 +305,23 @@ const getAsset = async (data = {}) => {
   };
 };
 
+const getBalanceMap = async userId => {
+  const tasks = Object.keys(currencyMapAsset).map(async currency => {
+    const balance = await getBalanceByUserId(userId, currency);
+    return {
+      currency,
+      balance
+    };
+  })
+  const derivedBalances = await Promise.all(tasks);
+  const balanceMap = {};
+  for (const derivedBalance of derivedBalances) {
+    balanceMap[derivedBalance.currency] = derivedBalance.balance;
+  }
+  return balanceMap;
+}
+exports.getBalanceMap = getBalanceMap;
+
 const updateReceiptByUuid = async (uuid, data) => {
   assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID('data'));
   assert(data.raw || data.toRaw, Errors.ERR_IS_INVALID('data raw'));
@@ -323,6 +338,19 @@ const updateReceiptByUuid = async (uuid, data) => {
       uuid
     }
   });
+  const receiptDB = await Receipt.findOne({
+    where: {
+      uuid
+    }
+  });
+  const receipt = receiptDB.toJSON();
+  console.log(` ------------- receipt ---------------`, receipt);
+  if (receipt.type === 'RECHARGE') {
+    const user = await User.getByAddress(receipt.toAddress);
+    socketIo.sendToUser(user.id, 'recharge', {
+      receipt
+    });
+  }
   // try {
   //   const resp = await utility.execute(sql, values);
   //   if (options.quick) {
@@ -416,7 +444,6 @@ const saveSnapshot = async (snapshot, options) => {
 };
 
 exports.syncMixinSnapshots = async () => {
-  console.log(` ------------- syncMixinSnapshots ---------------`);
   try {
     let session = {};
     try {
@@ -433,12 +460,12 @@ exports.syncMixinSnapshots = async () => {
       return mixin.readSnapshots(
         rfc3339nano.adjustRfc3339ByNano(session.offset, 1),
         currencyMapAsset[currency],
-        '50',
+        '10',
         'ASC'
       )
     })
     const results = await Promise.all(tasks);
-    console.log(`Sync mixin snapshots start at: `, session.offset);
+    // console.log(`Sync mixin snapshots start at: `, session.offset);
     const snapshots = [];
     for (const result of results) {
       const {
@@ -586,24 +613,6 @@ const createRewardReceipt = async (data = {}) => {
   return receipt
 }
 
-const getRewardPaymentUrl = async (data = {}) => {
-  const receipt = await createRewardReceipt(data);
-  const {
-    currency,
-    amount,
-    memo,
-    toMixinClientId,
-  } = data;
-  const paymentUrl = getMixinPaymentUrl({
-    toMixinClientId,
-    asset: currencyMapAsset[currency],
-    amount: parseAmount(amount),
-    trace: receipt.uuid,
-    memo
-  });
-  return paymentUrl;
-}
-
 const syncRewardAmount = async (fileRId) => {
   const receipts = await getReceiptsByFileRId(fileRId);
   const summary = {};
@@ -624,6 +633,7 @@ const syncRewardAmount = async (fileRId) => {
 }
 
 exports.payForFile = async (data = {}) => {
+  data.amount = parseAmount(data.amount);
   data.memo = data.memo || '打赏文章 - 飞贴';
   data = attempt(data, {
     userId: Joi.number().required(),

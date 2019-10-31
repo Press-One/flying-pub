@@ -3,7 +3,7 @@ import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Button from 'components/Button';
-import FinanceApi from './api';
+import Api from './api';
 
 export default (props: any) => {
   const { open, onClose, mixinAccount, currency } = props;
@@ -12,20 +12,19 @@ export default (props: any) => {
 
   const withdraw = async (currency: string, amount: string, memo: string = '') => {
     try {
-      await FinanceApi.withdraw({
+      await Api.withdraw({
         currency,
         amount,
         memo,
       });
-      alert('提现成功');
-      onClose();
+      onClose(true);
     } catch (err) {
       console.log(` ------------- err ---------------`, err);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose} className="flex justify-center items-center">
+    <Modal open={open} onClose={() => onClose(false)} className="flex justify-center items-center">
       <div className="p-8 bg-white rounded text-center">
         <div>
           转给 <span className="font-bold">{mixinAccount.full_name}</span>

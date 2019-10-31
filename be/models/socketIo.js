@@ -64,10 +64,10 @@ exports.init = (redis, server) => {
 
 exports.sendToUser = async (userId, event, data) => {
   const userKey = getUserKey(userId);
+  console.log(` ------------- userKey ---------------`, userKey);
   const userSocket = await Cache.pGet(sessionKey, userKey);
+  console.log(` ------------- userSocket ---------------`, userSocket);
   assert(userSocket, Errors.ERR_NOT_FOUND('userSocket'));
+  console.log(` ------------- event, data ---------------`, event, data);
   io.to(userSocket).emit(event, data);
-  Log.create(userId, `收到提醒：event ${event}, file id: ${data.id}`);
 }
-
-exports.getSocketIo = () => io;

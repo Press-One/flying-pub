@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
+import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
 import { assets, assetIconMap } from './utils';
 import Api from './api';
@@ -8,17 +9,6 @@ import Api from './api';
 const Asset = (props: any) => {
   const { snackbarStore } = useStore();
   const { asset, amount } = props;
-  const recharge = async () => {
-    try {
-      const { paymentUrl } = await Api.recharge({
-        amount: 1,
-        currency: asset.toUpperCase(),
-      });
-      window.open(paymentUrl);
-    } catch (err) {
-      console.log(` ------------- err ---------------`, err);
-    }
-  };
 
   const onWithdraw = (currency: string) => {
     if (Number(amount) === 0) {
@@ -40,7 +30,10 @@ const Asset = (props: any) => {
         </div>
       </div>
       <div className="flex items-center">
-        <span className="text-blue-400 text-sm mr-2 cursor-pointer p-1" onClick={recharge}>
+        <span
+          className="text-blue-400 text-sm mr-2 cursor-pointer p-1"
+          onClick={() => props.onRecharge(asset.toUpperCase())}
+        >
           转入
         </span>
         <span
@@ -57,6 +50,7 @@ const Asset = (props: any) => {
 export default observer(() => {
   const { userStore, walletStore } = useStore();
   const [currency, setCurrency] = React.useState('');
+  const [openRechargeModal, setOpenRechargeModal] = React.useState(false);
   const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);
 
   React.useEffect(() => {
@@ -74,6 +68,32 @@ export default observer(() => {
     setOpenWithdrawModal(true);
   };
 
+  const onRecharge = (currency: string) => {
+    setCurrency(currency);
+    setOpenRechargeModal(true);
+  };
+
+  const fetchBalance = async () => {
+    try {
+      const balance = await Api.getBalance();
+      walletStore.setBalance(balance);
+    } catch (err) {}
+  };
+
+  const onCloseWithdrawModal = async (isSuccess: boolean) => {
+    setOpenWithdrawModal(false);
+    if (isSuccess) {
+      fetchBalance();
+    }
+  };
+
+  const onCloseRechargeModal = async (isSuccess: boolean) => {
+    setOpenRechargeModal(false);
+    if (isSuccess) {
+      fetchBalance();
+    }
+  };
+
   const { balance } = walletStore;
 
   return (
@@ -85,16 +105,18 @@ export default observer(() => {
               asset={asset}
               amount={balance[asset.toUpperCase()] || 0}
               onWithdraw={(currency: string) => onWithdraw(currency)}
+              onRecharge={(currency: string) => onRecharge(currency)}
             />
           </div>
         );
       })}
       <WithdrawModal
         currency={currency}
-        mixinAccount={userStore.mixinAccount}
+        mixinAccount={userStore.user.mixinAccount}
         open={openWithdrawModal}
-        onClose={() => setOpenWithdrawModal(false)}
+        onClose={onCloseWithdrawModal}
       />
+      <RechargeModal currency={currency} open={openRechargeModal} onClose={onCloseRechargeModal} />
     </div>
   );
 });
