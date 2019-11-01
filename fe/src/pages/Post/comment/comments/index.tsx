@@ -3,7 +3,7 @@ import CommentItem from './commentItem';
 
 export default class Comments extends React.Component<any, any> {
   public render() {
-    const { comments = [], user, replyTo, tryDeleteComment } = this.props;
+    const { comments = [], user, replyTo, upVote, resetVote, tryDeleteComment } = this.props;
     return (
       <div className="push-top-xs">
         {comments.map((comment: any, index: number) => {
@@ -12,6 +12,8 @@ export default class Comments extends React.Component<any, any> {
             <CommentItem
               user={user}
               replyTo={replyTo}
+              upVote={upVote}
+              resetVote={resetVote}
               tryDeleteComment={tryDeleteComment}
               comment={comment}
               key={index}

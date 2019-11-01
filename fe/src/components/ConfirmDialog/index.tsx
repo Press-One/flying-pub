@@ -22,13 +22,13 @@ export default class ConfirmDialog extends React.Component<IProps, any> {
             {ContentComponent && (
               <div className="m-auto px-12 pt-12 pb-2">{ContentComponent()}</div>
             )}
-            <div className="mt-8 flex justify-end border-solid border-t border-gray-500 py-2">
+            <div className="mt-8 flex justify-end border-solid border-t border-gray-400 py-3">
               {cancelText && cancel && (
-                <a href="#/" className="text-gray-100 mr-8" onClick={() => cancel()}>
+                <a href="#/" className="text-gray-600 mr-8" onClick={() => cancel()}>
                   {cancelText}
                 </a>
               )}
-              <a href="#/" className="default-text-color mr-5" onClick={() => ok()}>
+              <a href="#/" className="text-blue-400 mr-5" onClick={() => ok()}>
                 {okText}
               </a>
             </div>

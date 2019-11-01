@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./');
 
-const Comment = sequelize.define('comments', {
+const Vote = sequelize.define('votes', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -10,28 +10,21 @@ const Comment = sequelize.define('comments', {
   userId: {
     type: Sequelize.BIGINT,
   },
-  content: {
-    type: Sequelize.TEXT
+  objectType: {
+    type: Sequelize.STRING
   },
   objectId: {
     type: Sequelize.STRING
   },
-  objectType: {
+  type: {
     type: Sequelize.STRING
-  },
-  upVotesCount: {
-    type: Sequelize.BIGINT,
-    defaultValue: 0
-  },
-  deleted: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8',
+  collate: 'utf8_general_ci'
 });
 
-Comment.sync();
+Vote.sync();
 
-module.exports = Comment;
+module.exports = Vote;

@@ -5,6 +5,7 @@ const {
 const Comment = require('./sequelize/comment');
 const User = require('./user');
 const Post = require('./post');
+const Vote = require('./vote');
 
 const packComment = async (comment) => {
   assert(comment, Errors.ERR_NOT_FOUND('comment'));
@@ -16,6 +17,8 @@ const packComment = async (comment) => {
     withProfile: true
   });
   commentJson.user = user;
+  const voted = !!userId && await Vote.isVoted(userId, comment.id);
+  commentJson.voted = voted;
   delete commentJson.deleted;
   return commentJson;
 }
@@ -47,6 +50,17 @@ exports.create = async (userId, data) => {
     commentsCount: count,
   });
   return derivedComment;
+};
+
+exports.update = async (id, data) => {
+  assert(id, Errors.ERR_IS_REQUIRED('commentId'));
+  assert(data, Errors.ERR_IS_REQUIRED('data'));
+  await Comment.update(data, {
+    where: {
+      id
+    }
+  })
+  return true;
 };
 
 exports.delete = async id => {
@@ -90,7 +104,10 @@ exports.list = async (options) => {
       deleted: false,
     },
     offset,
-    limit
+    limit,
+    order: [
+      ['upVotesCount', 'DESC']
+    ]
   });
   const list = await Promise.all(
     comments.map((comment) => {

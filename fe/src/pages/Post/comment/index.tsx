@@ -18,12 +18,11 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, snackbarStore, userStore } = useStore();
-  const { total, comments } = commentStore;
+  const { total, comments, isFetched } = commentStore;
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
   const [drawerReplyValue, setDrawerReplyValue] = React.useState('');
-  const [isFetching, setIsFetching] = React.useState(false);
   const [isCreatingComment, setIsCreatingComment] = React.useState(false);
   const [isCreatedComment, setIsCreatedComment] = React.useState(false);
   const [isDrawerCreatingComment, setIsDrawerCreatingComment] = React.useState(false);
@@ -35,16 +34,15 @@ export default observer((props: IProps) => {
   React.useEffect(() => {
     const fetchComments = async () => {
       const { fileRId } = props;
-      setIsFetching(true);
       let res;
       const pagination = {
         offset: 0,
         limit: '1000',
       };
       res = await CommentApi.list(fileRId, pagination);
-      setIsFetching(false);
       commentStore.setTotal(res['total']);
       commentStore.setComments(res['comments']);
+      commentStore.setIsFetched(true);
     };
     fetchComments();
   }, [commentStore, props]);
@@ -90,6 +88,26 @@ export default observer((props: IProps) => {
     } finally {
       openDrawer ? setIsDrawerCreatingComment(false) : setIsCreatingComment(false);
     }
+  };
+
+  const upVote = async (commentId: number) => {
+    try {
+      const comment = await CommentApi.createVote({
+        commentId,
+        type: 'UP',
+      });
+      commentStore.updateComment(comment);
+    } catch (err) {}
+  };
+
+  const resetVote = async (commentId: number) => {
+    try {
+      const comment = await CommentApi.updateVote({
+        commentId,
+        type: 'RESET',
+      });
+      commentStore.updateComment(comment);
+    } catch (err) {}
   };
 
   const tryDeleteComment = async (commentId: number) => {
@@ -192,7 +210,7 @@ export default observer((props: IProps) => {
 
   const renderBigLoading = () => {
     return (
-      <div className="py-20 text-center default-text-color">
+      <div className="py-20 text-center">
         <CircularProgress size={40} />
       </div>
     );
@@ -203,6 +221,7 @@ export default observer((props: IProps) => {
       <ConfirmDialog
         content="确定删除这条评论？"
         open={showConfirmDialog}
+        cancelText="取消"
         cancel={() => {
           setShowConfirmDialog(false);
         }}
@@ -254,20 +273,24 @@ export default observer((props: IProps) => {
             comments={comments || []}
             tryDeleteComment={tryDeleteComment}
             replyTo={replyTo}
+            upVote={upVote}
+            resetVote={resetVote}
           />
         ) : (
           renderEmptyComment()
         )}
         {hasComments && <div className="mt-12 text-gray-500 text-center">-- 没有更多啦--</div>}
         {hasComments && comments.length > 3 && (
-          <div
-            className="mt-5 text-blue-400 cursor-pointer text-center"
-            onClick={() => {
-              setOpenDrawer(true);
-              setDrawerReplyValue('');
-            }}
-          >
-            我想发表评论
+          <div className="text-center mt-2">
+            <span
+              className="py-3 text-blue-400 cursor-pointer"
+              onClick={() => {
+                setOpenDrawer(true);
+                setDrawerReplyValue('');
+              }}
+            >
+              我想发表评论
+            </span>
           </div>
         )}
 
@@ -276,7 +299,7 @@ export default observer((props: IProps) => {
     );
   };
 
-  return isFetching ? renderBigLoading() : renderMain();
+  return isFetched ? renderMain() : renderBigLoading();
 });
 
 // bindOpenLinkInNewWindow() {

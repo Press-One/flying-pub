@@ -29,4 +29,22 @@ export default {
       method: 'DELETE',
     });
   },
+  createVote(vote: any) {
+    const path = '/api/votes';
+    return request(path, {
+      method: 'POST',
+      body: {
+        payload: vote,
+      },
+    });
+  },
+  updateVote(vote: any) {
+    const path = '/api/votes';
+    return request(path, {
+      method: 'PUT',
+      body: {
+        payload: vote,
+      },
+    });
+  },
 };
