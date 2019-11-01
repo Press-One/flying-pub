@@ -258,13 +258,15 @@ export default observer((props: IProps) => {
             setOpenDrawer(false);
           }}
         >
-          <div className="w-7/12 m-auto pt-2 pb-5">
-            {renderEditor({
-              user,
-              valueState: drawerReplyValue,
-              isDoing: isDrawerCreatingComment,
-              isCreated: isDrawerCreatedComment,
-            })}
+          <div className="container">
+            <div className="w-7/12 m-auto pt-2 pb-5">
+              {renderEditor({
+                user,
+                valueState: drawerReplyValue,
+                isDoing: isDrawerCreatingComment,
+                isCreated: isDrawerCreatedComment,
+              })}
+            </div>
           </div>
         </Drawer>
         {hasComments ? (
