@@ -22,12 +22,12 @@ export default observer((props: IProps) => {
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
-  const [replyValue, setReplyValue] = React.useState('');
+  const [drawerReplyValue, setDrawerReplyValue] = React.useState('');
   const [isFetching, setIsFetching] = React.useState(false);
   const [isCreatingComment, setIsCreatingComment] = React.useState(false);
   const [isCreatedComment, setIsCreatedComment] = React.useState(false);
-  const [isReplyingComment, setIsReplyingComment] = React.useState(false);
-  const [isRepliedComment, setIsRepliedComment] = React.useState(false);
+  const [isDrawerCreatingComment, setIsDrawerCreatingComment] = React.useState(false);
+  const [isDrawerCreatedComment, setIsDrawerCreatedComment] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [deleteCommentId, setDeleteCommentId] = React.useState(0);
   const [openDrawer, setOpenDrawer] = React.useState(false);
@@ -50,7 +50,7 @@ export default observer((props: IProps) => {
   }, [commentStore, props]);
 
   const reply = async () => {
-    const _value = ((openDrawer ? replyValue : value) || '').trim();
+    const _value = ((openDrawer ? drawerReplyValue : value) || '').trim();
     if (!_value) {
       snackbarStore.show({
         message: '请输入回复内容',
@@ -59,25 +59,27 @@ export default observer((props: IProps) => {
       return;
     }
     forceBlur();
-    openDrawer ? setIsReplyingComment(true) : setIsCreatingComment(true);
-    openDrawer ? setIsRepliedComment(false) : setIsCreatedComment(false);
+    openDrawer ? setIsDrawerCreatingComment(true) : setIsCreatingComment(true);
+    openDrawer ? setIsDrawerCreatedComment(false) : setIsCreatedComment(false);
     try {
       const comment = {
-        content: value,
+        content: _value,
         objectId: props.fileRId,
         objectType: 'post',
       };
       const newComment = await CommentApi.create(comment);
       commentStore.addComment(newComment);
-      openDrawer ? setIsRepliedComment(true) : setIsCreatedComment(true);
+      openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
-        setReplyValue('');
+        setDrawerReplyValue('');
         setOpenDrawer(false);
       } else {
         setValue('');
       }
-      snackbarStore.show({
-        message: '评论成功',
+      const scrollElement = document.scrollingElement || document.documentElement;
+      scrollElement.scrollTo({
+        top: 9999,
+        behavior: 'smooth',
       });
     } catch (e) {
       console.log(` ------------- e ---------------`, e);
@@ -86,7 +88,7 @@ export default observer((props: IProps) => {
         type: 'error',
       });
     } finally {
-      openDrawer ? setIsReplyingComment(false) : setIsCreatingComment(false);
+      openDrawer ? setIsDrawerCreatingComment(false) : setIsCreatingComment(false);
     }
   };
 
@@ -117,7 +119,7 @@ export default observer((props: IProps) => {
   };
 
   const handleEditorChange = (event: any) => {
-    openDrawer ? setReplyValue(event.target.value) : setValue(event.target.value);
+    openDrawer ? setDrawerReplyValue(event.target.value) : setValue(event.target.value);
   };
 
   const forceBlur = () => {
@@ -184,7 +186,7 @@ export default observer((props: IProps) => {
     }
     setOpenDrawer(true);
     setTimeout(() => {
-      setReplyValue(appendReplyUser(replyValue, user.name));
+      setDrawerReplyValue(appendReplyUser(drawerReplyValue, user.name));
     }, 400);
   };
 
@@ -233,16 +235,16 @@ export default observer((props: IProps) => {
           anchor="bottom"
           open={openDrawer}
           onClose={() => {
-            setReplyValue('');
+            setDrawerReplyValue('');
             setOpenDrawer(false);
           }}
         >
           <div className="w-7/12 m-auto pt-2 pb-5">
             {renderEditor({
               user,
-              valueState: replyValue,
-              isDoing: isReplyingComment,
-              isCreated: isRepliedComment,
+              valueState: drawerReplyValue,
+              isDoing: isDrawerCreatingComment,
+              isCreated: isDrawerCreatedComment,
             })}
           </div>
         </Drawer>
@@ -256,7 +258,19 @@ export default observer((props: IProps) => {
         ) : (
           renderEmptyComment()
         )}
-        {hasComments && <div className="mt-12 text-center text-gray-500">-- 没有更多啦 --</div>}
+        {hasComments && <div className="mt-12 text-gray-500 text-center">-- 没有更多啦--</div>}
+        {hasComments && comments.length > 3 && (
+          <div
+            className="mt-5 text-blue-400 cursor-pointer text-center"
+            onClick={() => {
+              setOpenDrawer(true);
+              setDrawerReplyValue('');
+            }}
+          >
+            我想发表评论
+          </div>
+        )}
+
         {renderDeleteConfirm(showConfirmDialog, deleteCommentId)}
       </div>
     );
