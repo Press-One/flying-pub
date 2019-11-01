@@ -30,7 +30,7 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
       this.setState({ isShowDone: true });
       setTimeout(() => {
         this.setState({ isShowDone: false });
-      }, 1000);
+      }, 1500);
     }
   }
 
@@ -39,13 +39,17 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     const { isShowDone } = this.state;
     if (isDoing) {
       return (
-        <span className={`button-circular-progress flex justify-center items-center ${color}`}>
-          <CircularProgress size={size} />
+        <span className={`flex justify-center items-center ${color} ml-2`}>
+          <CircularProgress size={size} color="inherit" />
         </span>
       );
     }
     if (isShowDone) {
-      return <Done className={`${color} pl-1"`} />;
+      return (
+        <span className="ml-2 font-bold">
+          <Done className={`${color}"`} />
+        </span>
+      );
     }
     return null;
   }

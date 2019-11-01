@@ -130,7 +130,7 @@ export default observer((props: any) => {
         <Button>打赏</Button>
       </div>
       <RewardSummary summary={rewardSummary} />
-      <div className="mt-5">
+      <div className="mt-5 pb-10">
         <Comment fileRId={post.id} toLogin={toLogin} />
       </div>
       <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />

@@ -10,7 +10,7 @@ export default (props: any) => {
         onClick && onClick();
       }}
     >
-      {props.children}
+      <div className="flex justify-center items-center">{props.children}</div>
     </button>
   );
 };

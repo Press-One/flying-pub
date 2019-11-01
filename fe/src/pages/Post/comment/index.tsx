@@ -6,6 +6,7 @@ import CommentIcon from '@material-ui/icons/Comment';
 import ConfirmDialog from 'components/ConfirmDialog';
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
+import Drawer from '@material-ui/core/Drawer';
 import Comments from './comments';
 import { useStore } from 'store';
 import CommentApi from './api';
@@ -21,11 +22,15 @@ export default observer((props: IProps) => {
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
+  const [replyValue, setReplyValue] = React.useState('');
   const [isFetching, setIsFetching] = React.useState(false);
   const [isCreatingComment, setIsCreatingComment] = React.useState(false);
   const [isCreatedComment, setIsCreatedComment] = React.useState(false);
+  const [isReplyingComment, setIsReplyingComment] = React.useState(false);
+  const [isRepliedComment, setIsRepliedComment] = React.useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [deleteCommentId, setDeleteCommentId] = React.useState(0);
+  const [openDrawer, setOpenDrawer] = React.useState(false);
 
   React.useEffect(() => {
     const fetchComments = async () => {
@@ -45,7 +50,7 @@ export default observer((props: IProps) => {
   }, [commentStore, props]);
 
   const reply = async () => {
-    const _value = (value || '').trim();
+    const _value = ((openDrawer ? replyValue : value) || '').trim();
     if (!_value) {
       snackbarStore.show({
         message: '请输入回复内容',
@@ -54,8 +59,8 @@ export default observer((props: IProps) => {
       return;
     }
     forceBlur();
-    setIsCreatingComment(true);
-    setIsCreatedComment(false);
+    openDrawer ? setIsReplyingComment(true) : setIsCreatingComment(true);
+    openDrawer ? setIsRepliedComment(false) : setIsCreatedComment(false);
     try {
       const comment = {
         content: value,
@@ -64,8 +69,16 @@ export default observer((props: IProps) => {
       };
       const newComment = await CommentApi.create(comment);
       commentStore.addComment(newComment);
-      setValue('');
-      setIsCreatedComment(true);
+      openDrawer ? setIsRepliedComment(true) : setIsCreatedComment(true);
+      if (openDrawer) {
+        setReplyValue('');
+        setOpenDrawer(false);
+      } else {
+        setValue('');
+      }
+      snackbarStore.show({
+        message: '评论成功',
+      });
     } catch (e) {
       console.log(` ------------- e ---------------`, e);
       snackbarStore.show({
@@ -73,7 +86,7 @@ export default observer((props: IProps) => {
         type: 'error',
       });
     } finally {
-      setIsCreatingComment(false);
+      openDrawer ? setIsReplyingComment(false) : setIsCreatingComment(false);
     }
   };
 
@@ -104,7 +117,7 @@ export default observer((props: IProps) => {
   };
 
   const handleEditorChange = (event: any) => {
-    setValue(event.target.value);
+    openDrawer ? setReplyValue(event.target.value) : setValue(event.target.value);
   };
 
   const forceBlur = () => {
@@ -114,7 +127,8 @@ export default observer((props: IProps) => {
     }, 100);
   };
 
-  const renderEditor = (user: any) => {
+  const renderEditor = (options: any = {}) => {
+    const { user, valueState, isDoing, isDone } = options;
     return (
       <div>
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
@@ -131,8 +145,9 @@ export default observer((props: IProps) => {
               placeholder="写下你的评论..."
               multiline
               fullWidth
+              autoFocus
               rows="5"
-              value={value}
+              value={valueState}
               onChange={handleEditorChange}
               margin="normal"
               variant="outlined"
@@ -141,7 +156,7 @@ export default observer((props: IProps) => {
             <div className="text-right">
               <Button onClick={() => reply()}>
                 回复
-                <ButtonProgress isDoing={isCreatingComment} isDone={isCreatedComment} />
+                <ButtonProgress isDoing={isDoing} isDone={isDone} />
               </Button>
             </div>
           </div>
@@ -167,7 +182,10 @@ export default observer((props: IProps) => {
       props.toLogin();
       return;
     }
-    setValue(appendReplyUser(value, user.name));
+    setOpenDrawer(true);
+    setTimeout(() => {
+      setReplyValue(appendReplyUser(replyValue, user.name));
+    }, 400);
   };
 
   const renderBigLoading = () => {
@@ -204,8 +222,30 @@ export default observer((props: IProps) => {
           </div>
         </div>
         <div className="mt-6" />
-        {renderEditor(user)}
+        {renderEditor({
+          user,
+          valueState: value,
+          isDoing: isCreatingComment,
+          isCreated: isCreatedComment,
+        })}
         <div className="mt-8" />
+        <Drawer
+          anchor="bottom"
+          open={openDrawer}
+          onClose={() => {
+            setReplyValue('');
+            setOpenDrawer(false);
+          }}
+        >
+          <div className="w-7/12 m-auto pt-2 pb-5">
+            {renderEditor({
+              user,
+              valueState: replyValue,
+              isDoing: isReplyingComment,
+              isCreated: isRepliedComment,
+            })}
+          </div>
+        </Drawer>
         {hasComments ? (
           <Comments
             user={user}
@@ -216,6 +256,7 @@ export default observer((props: IProps) => {
         ) : (
           renderEmptyComment()
         )}
+        {hasComments && <div className="mt-12 text-center text-gray-500">-- 没有更多啦 --</div>}
         {renderDeleteConfirm(showConfirmDialog, deleteCommentId)}
       </div>
     );
