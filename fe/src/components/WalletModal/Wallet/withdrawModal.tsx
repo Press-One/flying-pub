@@ -38,6 +38,7 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
+            autoFocus
             InputProps={{
               endAdornment: <InputAdornment position="end">CNB</InputAdornment>,
             }}

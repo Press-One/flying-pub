@@ -11,14 +11,18 @@ const {
   getRewardSummary
 } = require('../controllers/apiFinance');
 
-router.get('/balance', getBalance);
-router.post('/recharge', recharge);
-router.post('/withdraw', withdraw);
-router.get('/receipts', getReceipts);
-router.post('/pin', updateCustomPin);
-router.get('/pin/exist', isCustomPinExist);
-router.post('/pin/validate', validatePin);
-router.post('/reward/:fileRId', reward);
+const {
+  ensureAuthorization
+} = require('../models/api');
+
+router.get('/balance', ensureAuthorization(), getBalance);
+router.post('/recharge', ensureAuthorization(), recharge);
+router.post('/withdraw', ensureAuthorization(), withdraw);
+router.get('/receipts', ensureAuthorization(), getReceipts);
+router.post('/pin', ensureAuthorization(), updateCustomPin);
+router.get('/pin/exist', ensureAuthorization(), isCustomPinExist);
+router.post('/pin/validate', ensureAuthorization(), validatePin);
+router.post('/reward/:fileRId', ensureAuthorization(), reward);
 router.get('/reward/:fileRId', getRewardSummary);
 
 module.exports = router;

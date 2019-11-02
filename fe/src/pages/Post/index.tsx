@@ -18,7 +18,8 @@ import './index.scss';
 import Loading from 'components/Loading';
 
 export default observer((props: any) => {
-  const { feedStore } = useStore();
+  const { feedStore, userStore, modalStore } = useStore();
+  const { isLogin } = userStore;
   const { currentPost: post } = feedStore;
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
@@ -43,8 +44,10 @@ export default observer((props: any) => {
     (async () => {
       if (post) {
         setIsFetchingReward(true);
-        const rewardSummary = await Api.getRewardSummary(post.id);
-        setRewardSummary(rewardSummary);
+        try {
+          const rewardSummary = await Api.getRewardSummary(post.id);
+          setRewardSummary(rewardSummary);
+        } catch (err) {}
         setIsFetchingReward(false);
       }
     })();
@@ -102,11 +105,11 @@ export default observer((props: any) => {
   };
 
   const reward = () => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     setOpenRewardModal(true);
-  };
-
-  const toLogin = () => {
-    console.log(` ------------- toLogin ---------------`);
   };
 
   if (!post) {
@@ -138,7 +141,7 @@ export default observer((props: any) => {
     }
     return (
       <div className="mt-5 pb-10">
-        <Comment fileRId={post.id} toLogin={toLogin} />
+        <Comment fileRId={post.id} />
       </div>
     );
   };

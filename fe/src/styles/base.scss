@@ -187,3 +187,14 @@ a {
   margin-left: -272px;
   transform: scale(0.9);
 }
+
+/************************************** WALLET MODAL STYLES **************************************/
+.wallet-modal {
+  width: 840px;
+}
+
+.wallet-modal-content,
+.wallet-content {
+  height: 600px;
+  overflow: auto;
+}

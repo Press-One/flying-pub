@@ -3,10 +3,13 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import Api from './api';
 import Loading from 'components/Loading';
+import ConfirmDialog from 'components/ConfirmDialog';
+
 import { getXmlUrl } from 'utils';
 
 export default observer((props: any) => {
-  const { userStore, feedStore, socketStore } = useStore();
+  const { userStore, feedStore, socketStore, modalStore } = useStore();
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -24,6 +27,7 @@ export default observer((props: any) => {
         feedStore.setFeed({
           items: [],
         });
+        setShowConfirmDialog(true);
       }
       try {
         const user = await Api.fetchUser();
@@ -40,5 +44,15 @@ export default observer((props: any) => {
     return <Loading isPage={true} />;
   }
 
-  return null;
+  return (
+    <div>
+      <ConfirmDialog
+        content="阅读文章之前要先登陆一下哦"
+        open={showConfirmDialog}
+        okText="前往登陆"
+        cancel={() => {}}
+        ok={modalStore.openLogin}
+      />
+    </div>
+  );
 });

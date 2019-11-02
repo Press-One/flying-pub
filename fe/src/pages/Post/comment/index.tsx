@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import TextField from '@material-ui/core/TextField';
 import CommentIcon from '@material-ui/icons/Comment';
 import ConfirmDialog from 'components/ConfirmDialog';
@@ -14,11 +13,10 @@ import CommentApi from './api';
 
 interface IProps {
   fileRId: number;
-  toLogin: any;
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, snackbarStore, userStore } = useStore();
+  const { commentStore, snackbarStore, userStore, modalStore } = useStore();
   const { total, comments, isFetched } = commentStore;
   const { user, isLogin } = userStore;
 
@@ -49,6 +47,10 @@ export default observer((props: IProps) => {
   }, [commentStore, props]);
 
   const reply = async () => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     const _value = ((openDrawer ? drawerReplyValue : value) || '').trim();
     if (!_value) {
       snackbarStore.show({
@@ -92,6 +94,10 @@ export default observer((props: IProps) => {
   };
 
   const upVote = async (commentId: number) => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     try {
       const comment = await CommentApi.createVote({
         commentId,
@@ -102,6 +108,10 @@ export default observer((props: IProps) => {
   };
 
   const resetVote = async (commentId: number) => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     try {
       const comment = await CommentApi.updateVote({
         commentId,
@@ -155,23 +165,32 @@ export default observer((props: IProps) => {
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
           <img
             className="mr-3"
-            src={user ? user.avatar : 'https://static.press.one/pub/avatar.png'}
+            src={user && user.avatar ? user.avatar : 'https://static.press.one/pub/avatar.png'}
             width="36px"
             height="36px"
             alt="avatar"
           />
-          <div className="w-full -mt-4">
+          <div className="w-full -mt-4 relative">
             <TextField
               className="po-input po-text-14"
               placeholder="写下你的评论..."
               multiline
               fullWidth
+              disabled={!isLogin}
               rows="5"
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
               variant="outlined"
             />
+            {!isLogin && (
+              <div className="text-gray-700 absolute top-0 left-0 mt-5 ml-1 bg-white p-5">
+                参与讨论之前请先
+                <span className="text-blue-400 cursor-pointer" onClick={modalStore.openLogin}>
+                  登陆
+                </span>
+              </div>
+            )}
             <div className="mt-2"></div>
             <div className="text-right">
               <Button onClick={() => reply()}>
@@ -199,7 +218,7 @@ export default observer((props: IProps) => {
 
   const replyTo = (user: any) => {
     if (!isLogin) {
-      props.toLogin();
+      modalStore.openLogin();
       return;
     }
     setOpenDrawer(true);

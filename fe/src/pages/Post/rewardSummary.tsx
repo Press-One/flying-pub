@@ -1,5 +1,5 @@
 import React from 'react';
-import { assetIconMap } from '../Wallet/utils';
+import { assetIconMap } from '../../components/WalletModal/Wallet/utils';
 
 export default (props: any) => {
   let { amountMap = {}, users = [] } = props.summary;

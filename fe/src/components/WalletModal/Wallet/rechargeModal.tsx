@@ -2,6 +2,7 @@ import React from 'react';
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Info from '@material-ui/icons/Info';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
@@ -63,7 +64,7 @@ export default (props: any) => {
   const step1 = () => {
     return (
       <div>
-        <div className="text-lg">Mixin 扫码充值</div>
+        <div className="text-lg font-bold text-gray-700">Mixin 扫码充值</div>
         <div className="mt-2 text-gray-800">
           <TextField
             value={amount}
@@ -72,6 +73,7 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
+            autoFocus
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
             }}
@@ -131,7 +133,10 @@ export default (props: any) => {
           <br />
           支付成功后页面会自动刷新
         </div>
-        <div className="mt-2 text-gray-500 text-xs">
+        <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
+          <span className="flex items-center text-lg mr-1">
+            <Info />
+          </span>
           手机还没有安装 Mixin？
           <a
             className="text-blue-400"

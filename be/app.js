@@ -47,8 +47,8 @@ router.all('*', models.api.extendCtx);
 router.use('/', index.routes(), index.allowedMethods());
 router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
-router.use('/api/atom', ensureAuthorization(), atom.routes(), atom.allowedMethods());
-router.use('/api/finance', ensureAuthorization(), finance.routes(), finance.allowedMethods());
+router.use('/api/atom', atom.routes(), atom.allowedMethods());
+router.use('/api/finance', finance.routes(), finance.allowedMethods());
 router.use('/api/comments', comment.routes(), comment.allowedMethods());
 router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMethods());
 router.use('/api/logout', ensureAuthorization({

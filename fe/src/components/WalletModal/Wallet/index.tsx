@@ -1,10 +1,10 @@
 import React from 'react';
-import BackButton from 'components/BackButton';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import AccountBalanceWalletRounded from '@material-ui/icons/AccountBalance';
 import SettingsIcon from '@material-ui/icons/Settings';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import classNames from 'classnames';
+import { useStore } from 'store';
 import Assets from './assets';
 import Settings from './settings';
 import Receipts from './receipts';
@@ -34,13 +34,13 @@ const TabContent = (props: any) => {
 };
 
 export default () => {
-  const [tab, setTab] = React.useState('assets');
+  const { modalStore } = useStore();
+  const [tab, setTab] = React.useState(modalStore.wallet.data.tab || 'assets');
 
   return (
-    <div className="w-9/12 m-auto relative">
-      <BackButton />
+    <div className="relative">
       <div className="flex text-base">
-        <div className="w-3/12 border-r border-gray-400 min-h-screen">
+        <div className="w-3/12 wallet-modal-content">
           <div className="p-8">
             <div className="text-gray-700 font-bold flex items-center text-xl">
               <span className="text-2xl mr-2 flex items-center">
@@ -48,7 +48,7 @@ export default () => {
               </span>
               钱包
             </div>
-            <div className="ml-2 mt-3">
+            <div className="ml-2 mt-3 wallet-content">
               <Tab tab={tab} thisTab="assets" onClick={() => setTab('assets')}>
                 <span className="text-lg mr-2 flex items-center">
                   <AccountBalanceWalletRounded />
@@ -70,7 +70,7 @@ export default () => {
             </div>
           </div>
         </div>
-        <div className="w-9/12">
+        <div className="w-9/12 border-l border-gray-400 wallet-modal-content">
           {tab === 'assets' && (
             <TabContent>
               <div className="text-gray-700 font-bold flex items-center text-xl">
