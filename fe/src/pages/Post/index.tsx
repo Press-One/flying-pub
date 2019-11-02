@@ -15,6 +15,7 @@ import Api from './api';
 
 import 'react-viewer/dist/index.css';
 import './index.scss';
+import Loading from 'components/Loading';
 
 export default observer((props: any) => {
   const { feedStore } = useStore();
@@ -22,7 +23,9 @@ export default observer((props: any) => {
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
+  const [isFetchingReward, setIsFetchingReward] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
+  const noReward = rewardSummary.users.length === 0;
 
   React.useEffect(() => {
     const { postId } = props.match.params;
@@ -39,8 +42,10 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (post) {
+        setIsFetchingReward(true);
         const rewardSummary = await Api.getRewardSummary(post.id);
         setRewardSummary(rewardSummary);
+        setIsFetchingReward(false);
       }
     })();
   }, [post]);
@@ -108,6 +113,36 @@ export default observer((props: any) => {
     return <WaitingForFeed />;
   }
 
+  const RewardView = () => {
+    if (isFetchingReward) {
+      return (
+        <div className="py-24">
+          <Loading />
+        </div>
+      );
+    }
+    return (
+      <div>
+        <div className="text-center pb-10">
+          <Button onClick={reward}>赞赏</Button>
+          {noReward && <div className="mt-5 text-gray-600">还没有人赞赏，来支持一下作者吧！</div>}
+        </div>
+        <RewardSummary summary={rewardSummary} />
+      </div>
+    );
+  };
+
+  const CommentView = () => {
+    if (isFetchingReward) {
+      return null;
+    }
+    return (
+      <div className="mt-5 pb-10">
+        <Comment fileRId={post.id} toLogin={toLogin} />
+      </div>
+    );
+  };
+
   return (
     <div className="w-7/12 m-auto post po-fade-in relative">
       {!isMobile && <BackButton />}
@@ -126,13 +161,8 @@ export default observer((props: any) => {
           <ArrowUpward />
         </div>
       )}
-      <div className="text-center pb-10" onClick={reward}>
-        <Button>打赏</Button>
-      </div>
-      <RewardSummary summary={rewardSummary} />
-      <div className="mt-5 pb-10">
-        <Comment fileRId={post.id} toLogin={toLogin} />
-      </div>
+      {RewardView()}
+      {CommentView()}
       <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />
       <Viewer
         onMaskClick={() => setShowImage(false)}

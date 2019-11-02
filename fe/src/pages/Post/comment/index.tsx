@@ -6,6 +6,7 @@ import CommentIcon from '@material-ui/icons/Comment';
 import ConfirmDialog from 'components/ConfirmDialog';
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
+import Loading from 'components/Loading';
 import Drawer from '@material-ui/core/Drawer';
 import Comments from './comments';
 import { useStore } from 'store';
@@ -207,10 +208,10 @@ export default observer((props: IProps) => {
     }, 400);
   };
 
-  const renderBigLoading = () => {
+  const renderLoading = () => {
     return (
-      <div className="py-20 text-center">
-        <CircularProgress size={40} />
+      <div className="py-20">
+        <Loading />
       </div>
     );
   };
@@ -300,7 +301,7 @@ export default observer((props: IProps) => {
     );
   };
 
-  return isFetched ? renderMain() : renderBigLoading();
+  return isFetched ? renderMain() : renderLoading();
 });
 
 // bindOpenLinkInNewWindow() {
