@@ -628,7 +628,7 @@ const syncRewardAmount = async (fileRId) => {
     summary[currency] = bigFormat(summary[currency])
   }
   await Post.upsert(fileRId, {
-    summary: JSON.stringify(summary)
+    rewardSummary: JSON.stringify(summary)
   });
 }
 

@@ -165,7 +165,6 @@ export default observer((props: IProps) => {
               placeholder="写下你的评论..."
               multiline
               fullWidth
-              autoFocus
               rows="5"
               value={valueState}
               onChange={handleEditorChange}

@@ -2,7 +2,7 @@ var router = require('koa-router')();
 const {
   create,
   update
-} = require('../controllers/vote');
+} = require('../controllers/apiVote');
 
 router.post('/', create);
 router.put('/', update);

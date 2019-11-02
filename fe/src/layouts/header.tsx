@@ -5,9 +5,11 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
+import LoginModal from 'components/LoginModal';
 
 export default () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openLoginModal, setOpenLoginModal] = React.useState(false);
   const handleClose = () => setAnchorEl(null);
 
   return (
@@ -33,6 +35,10 @@ export default () => {
             </MenuItem>
           </Link>
         </Menu>
+        <span className="text-blue-400 cursor-pointer" onClick={() => setOpenLoginModal(true)}>
+          登陆
+        </span>
+        <LoginModal open={openLoginModal} onClose={() => setOpenLoginModal(false)} />
       </div>
     </div>
   );

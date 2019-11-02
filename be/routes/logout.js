@@ -1,7 +1,7 @@
 var router = require('koa-router')();
 const {
   logout
-} = require('../controllers/logout');
+} = require('../controllers/apiLogout');
 
 router.get('/', logout);
 

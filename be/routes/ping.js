@@ -1,7 +1,7 @@
 var router = require('koa-router')();
 const {
   ping
-} = require('../controllers/ping');
+} = require('../controllers/apiPing');
 
 router.get('/', ping);
 

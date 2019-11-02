@@ -3,7 +3,7 @@ const {
   list,
   create,
   remove,
-} = require('../controllers/comment');
+} = require('../controllers/apiComment');
 const {
   ensureAuthorization
 } = require('../models/api');

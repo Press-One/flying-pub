@@ -9,7 +9,7 @@ const {
   validatePin,
   reward,
   getRewardSummary
-} = require('../controllers/finance');
+} = require('../controllers/apiFinance');
 
 router.get('/balance', getBalance);
 router.post('/recharge', recharge);

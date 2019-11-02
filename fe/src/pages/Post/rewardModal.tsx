@@ -4,12 +4,14 @@ import { assets, assetIconMap } from '../Wallet/utils';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Check from '@material-ui/icons/Check';
 import Button from 'components/Button';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from '../Wallet/api';
+import { sleep } from 'utils';
 
 export default (props: any) => {
   const { userStore, socketStore } = useStore();
@@ -22,6 +24,7 @@ export default (props: any) => {
   const [paymentMethod, setPaymentMethod] = React.useState('balance');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
+  const [isPaid, setIsPaid] = React.useState(false);
   const [paymentUrl, setPaymentUrl] = React.useState('');
   const [iframeLoading, setIframeLoading] = React.useState(false);
   const { snackbarStore } = useStore();
@@ -46,6 +49,8 @@ export default (props: any) => {
       setAmount('');
       setMemo('');
       setPin('');
+      setPaying(false);
+      setIsPaid(false);
       onClose(true);
     };
     if (isLogin) {
@@ -71,6 +76,8 @@ export default (props: any) => {
     setAmount('');
     setMemo('');
     setPin('');
+    setPaying(false);
+    setIsPaid(false);
     onClose(isSuccess);
   };
 
@@ -93,8 +100,14 @@ export default (props: any) => {
               memo,
               toMixinClientId,
             });
-            // 打勾
+            setPaying(false);
+            setIsPaid(true);
+            await sleep(800);
             onCloseModal(true);
+            await sleep(200);
+            snackbarStore.show({
+              message: '打赏成功',
+            });
           } else {
             snackbarStore.show({
               message: '支付密码错误，请重试',
@@ -177,6 +190,7 @@ export default (props: any) => {
             onChange={(event: any) => setAmount(event.target.value)}
             margin="normal"
             variant="outlined"
+            autoFocus
             fullWidth
             InputProps={{
               endAdornment: (
@@ -261,7 +275,7 @@ export default (props: any) => {
           <span className="font-bold text-lg">{amount}</span> {selectedAsset.toUpperCase()}
         </div>
         <div className="mt-5 pb-2 text-gray-800">
-          {!paying && (
+          {!isPaid && !paying && (
             <OTPInput
               inputClassName="border border-gray-400 rounded opt-input"
               value={pin}
@@ -273,9 +287,14 @@ export default (props: any) => {
             />
           )}
         </div>
-        {paying && (
-          <div className="px-20 mx-2">
+        {!isPaid && paying && (
+          <div className="px-20 mx-2 pb-2">
             <Loading />
+          </div>
+        )}
+        {isPaid && (
+          <div className="-mt-4 px-20 ml-1 mr-1 text-5xl text-blue-400">
+            <Check />
           </div>
         )}
       </div>
@@ -285,7 +304,7 @@ export default (props: any) => {
   const step5 = () => {
     return (
       <div>
-        <div className="text-lg">Mixin 扫码支付</div>
+        <div className="text-lg font-bold text-gray-700">Mixin 扫码支付</div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
             <div
@@ -314,6 +333,22 @@ export default (props: any) => {
               <Loading />
             </div>
           )}
+        </div>
+        <div className="mt-3 text-gray-600">
+          请使用 Mixin 扫描二维码
+          <br />
+          支付成功后页面会自动刷新
+        </div>
+        <div className="mt-2 text-gray-500 text-xs">
+          手机还没有安装 Mixin？
+          <a
+            className="text-blue-400"
+            href="https://mixin.one/messenger"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            前往下载
+          </a>
         </div>
       </div>
     );

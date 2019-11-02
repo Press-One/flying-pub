@@ -52,3 +52,8 @@ export const getPostSelector = (postId: string) => {
 export const getXmlUrl = () => {
   return `${getApiEndpoint()}/api/atom`;
 };
+
+export const sleep = (duration: number) =>
+  new Promise((resolve: any) => {
+    setTimeout(resolve, duration);
+  });

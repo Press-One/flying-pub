@@ -1,7 +1,7 @@
 const router = require('koa-router')();
 const {
   get
-} = require('../controllers/atom');
+} = require('../controllers/apiAtom');
 
 router.get('/', get);
 

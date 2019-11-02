@@ -96,7 +96,7 @@ export default (props: any) => {
   const step2 = () => {
     return (
       <div>
-        <div className="text-lg">Mixin 扫码充值</div>
+        <div className="text-lg font-bold text-gray-700">Mixin 扫码充值</div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
             <div
@@ -125,6 +125,22 @@ export default (props: any) => {
               <Loading />
             </div>
           )}
+        </div>
+        <div className="mt-3 text-gray-600">
+          请使用 Mixin 扫描二维码
+          <br />
+          支付成功后页面会自动刷新
+        </div>
+        <div className="mt-2 text-gray-500 text-xs">
+          手机还没有安装 Mixin？
+          <a
+            className="text-blue-400"
+            href="https://mixin.one/messenger"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            前往下载
+          </a>
         </div>
       </div>
     );
