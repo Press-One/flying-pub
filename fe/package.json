@@ -30,11 +30,11 @@
     "build": "npm-run-all build:css build:react",
     "build:css": "tailwind build src/styles/index.css -o src/styles/tailwind.css",
     "watch:css": "tailwind build src/styles/index.css -o src/styles/tailwind.css -w",
-    "start:react": "PORT=4008 react-scripts start",
-    "build:react": "react-scripts build && cp ./build/index.html ./build/404.html",
-    "test": "react-scripts build && cp ./build/index.html ./build/404.html",
+    "start:react": "PORT=4008 react-app-rewired start",
+    "build:react": "react-app-rewired build && cp ./build/index.html ./build/404.html",
+    "test": "react-app-rewired build && cp ./build/index.html ./build/404.html",
     "server": "http-server ./build -p 4008",
-    "eject": "react-scripts eject"
+    "eject": "react-app-rewired eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -62,10 +62,16 @@
     "@types/react-router-dom": "^4.3.4",
     "@types/remove-markdown": "^0.1.1",
     "@types/socket.io-client": "^1.4.32",
-    "autoprefixer": "^9.6.5",
+    "@types/styled-jsx": "^2.2.8",
+    "autoprefixer": "^9.7.1",
+    "babel-plugin-import": "^1.12.2",
+    "customize-cra": "^0.8.0",
     "http-server": "^0.11.1",
     "npm-run-all": "^4.1.5",
     "postcss-cli": "^6.1.3",
+    "react-app-rewired": "^2.1.4",
+    "styled-jsx": "^3.2.3",
+    "styled-jsx-plugin-postcss": "^2.0.1",
     "tailwindcss": "^1.1.3",
     "typescript": "^3.4.5"
   }

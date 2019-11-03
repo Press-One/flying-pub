@@ -21,6 +21,6 @@
     "baseUrl": "src"
   },
   "include": [
-    "src"
+    "src", "react-app-env.d.ts"
   ]
 }

@@ -24,7 +24,7 @@ const AppRouter = () => {
       <Router>
         <div>
           <Header />
-          <div className={`container m-auto push-top-${isMobile ? 'md' : 'xl'}`}>
+          <div className={`container m-auto pt-${isMobile ? '14' : '16'}`}>
             <Route path="/" component={TryFetch} />
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />

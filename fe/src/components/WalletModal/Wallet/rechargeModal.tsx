@@ -116,10 +116,20 @@ export default (props: any) => {
                     setIframeLoading(false);
                   }, 2000);
                 }}
-                className="mixin-payment-iframe"
                 title="Mixin 扫码充值"
                 src={paymentUrl}
               ></iframe>
+              <style jsx>{`
+                iframe {
+                  height: 506px;
+                  width: 800px;
+                  position: absolute;
+                  top: -238px;
+                  left: 0;
+                  margin-left: -272px;
+                  transform: scale(0.9);
+                }
+              `}</style>
             </div>
           )}
           {iframeLoading && (

@@ -12,21 +12,14 @@ export default (props: any) => {
   return (
     <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
-      <div
-        className={`post-entry po-cp pad-top${isMobile ? '-md' : '-lg'} pad-bottom${
-          isMobile ? '-md' : '-lg'
-        }`}
-      >
-        <h2 className={`po-text-${isMobile ? '18' : '20'} dark-color push-none title po-height-15`}>
+      <div className={`border-t border-gray-300 py-${isMobile ? '8' : '3'}`}>
+        <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold pt-4`}>
           {post.title}
         </h2>
-
-        <div className={`push-top-sm gray-color${isMobile ? ' po-text-12' : ''}`}>
+        <div className={`mt-1 text-gray-500${isMobile ? ' text-sm' : ''}`}>
           {post.author} | {ago(post.pubDate)}
         </div>
-        <div className={`push-top po-text-16 gray-darker-color po-height-175 po-text-line-3`}>
-          {post.contentSnippet.slice(0, 150)}
-        </div>
+        <div className={`mt-3 text-gray-700 text-base`}>{post.contentSnippet.slice(0, 150)}</div>
       </div>
     </Link>
   );

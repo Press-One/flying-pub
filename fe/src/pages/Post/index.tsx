@@ -149,18 +149,21 @@ export default observer((props: any) => {
   return (
     <div className="w-7/12 m-auto post po-fade-in relative">
       {!isMobile && <BackButton />}
-      <h2 className={`po-text-${isMobile ? '24' : '26'} dark-color push-none title po-height-15`}>
+      <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold pt-0`}>
         {post.title}
       </h2>
-      <div className={`push-top-sm gray-color po-text-${isMobile ? '14' : '16'}`}>
+      <div className={`mt-1 text-gray-500 ${isMobile ? ' text-sm' : ''}`}>
         {post.author} | {ago(post.pubDate)}
       </div>
       <div
-        className={`push-top-lg po-text-16 black-color markdown-body pad-bottom-md`}
+        className={`mt-6 text-base text-gray-700 markdown-body pb-6`}
         dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
       />
       {!isMobile && post.content.length > 1500 && (
-        <div className="back-top-btn flex v-center gray-color po-cp po-text-22" onClick={backToTop}>
+        <div
+          className="back-top-btn flex items-center text-gray-600 cursor-pointer text-lg"
+          onClick={backToTop}
+        >
           <ArrowUpward />
         </div>
       )}

@@ -1,12 +1,4 @@
-@import './utilities/utilities.scss';
-@import './github.markdown.scss';
-
-html {
-  @include mobile {
-    overflow-x: hidden;
-    overflow-y: auto;
-  }
-}
+@import 'github.markdown.scss';
 
 /************************************** BODY STYLES **************************************/
 body {
@@ -24,106 +16,9 @@ img {
   max-width: 100%;
 }
 
-/************************************** UTILITIES STYLES **************************************/
-@include utilities();
-
-/************************************** BUTTON STYLES **************************************/
-button {
-  outline: none !important;
-}
-
-button.primary,
-.bg-button-color {
-  background-color: $button-color !important;
-
-  &:hover {
-    opacity: 0.9;
-  }
-
-  &.Mui-disabled {
-    color: #fff !important;
-    background-color: #999 !important;
-  }
-}
-
 /************************************** ANCHOR STYLES **************************************/
 a {
   outline: none;
-}
-
-/************************************** MODAL STYLES **************************************/
-.modal-content {
-  border-radius: 5px;
-  box-shadow: 2px 4px 18px 1px rgba(0, 0, 0, 0.24);
-}
-
-/************************************** FROM STYLES **************************************/
-.radio {
-  &>span {
-    padding: 12px 8px !important;
-  }
-
-  svg {
-    color: $link-color !important;
-  }
-}
-
-/************************************** GITTER STYLES **************************************/
-.gitter-chat-embed {
-  width: 435px;
-  z-index: 99;
-  top: 78px;
-  left: 65px;
-  box-shadow: none;
-  border: none;
-  border-right: 1px solid #ddd;
-
-  &.is-collapsed {
-    display: none;
-  }
-
-  .gitter-chat-embed-action-bar {
-    display: none;
-  }
-
-  &:after {
-    display: none;
-  }
-}
-
-/************************************** SNACKBAR STYLES **************************************/
-.snackBar {
-  .MuiTypography-root {
-    background: #63b3ed !important;
-  }
-}
-
-
-/************************************** PAGE STYLES **************************************/
-.page-container,
-.page-layout-wrapper {
-  min-height: 90vh;
-}
-
-.page-layout {
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
-
-  .box-bg {
-    background-color: #fff;
-    border: 1px solid #ececec;
-  }
-}
-
-/************************************** LINEAR PROGRESS STYLES **************************************/
-.po-linearProgress {
-  background: #d8d8d8 !important;
-  height: 8px !important;
-
-  div {
-    background: $link-color;
-  }
 }
 
 /************************************** SVG STYLES **************************************/
@@ -134,12 +29,12 @@ a {
 /************************************** TAB STYLES **************************************/
 .MuiTab-textColorPrimary {
   &.Mui-selected {
-    color: $link-color !important;
+    color: #96c02d !important;
   }
 }
 
 .MuiTabs-indicator {
-  background: $link-color !important;
+  background: #96c02d !important;
 }
 
 /************************************** INPUT STYLES **************************************/
@@ -170,31 +65,4 @@ a {
   .Mui-focused fieldset {
     border-color: #1bb0e6 !important;
   }
-}
-
-/************************************** OPT INPUT STYLES **************************************/
-.opt-input {
-  margin: 0 2px !important;
-}
-
-/************************************** MIXIN PAYMENT IFRAME STYLES **************************************/
-.mixin-payment-iframe {
-  height: 506px;
-  width: 800px;
-  position: absolute;
-  top: -238px;
-  left: 0;
-  margin-left: -272px;
-  transform: scale(0.9);
-}
-
-/************************************** WALLET MODAL STYLES **************************************/
-.wallet-modal {
-  width: 840px;
-}
-
-.wallet-modal-content,
-.wallet-content {
-  height: 600px;
-  overflow: auto;
 }

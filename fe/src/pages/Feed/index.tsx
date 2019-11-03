@@ -59,18 +59,16 @@ export default observer(() => {
     <div className="w-7/12 m-auto po-fade-in pad-bottom-lg feed-page">
       <div>
         <h1
-          className={`push-none text-center dark-color po-height-15 po-text-${
-            isMobile ? '28' : '34'
+          className={`p-0 font-bold text-center text-gray-700 leading-relaxed text-${
+            isMobile ? '2xl' : '3xl'
           }`}
         >
           {feedStore.feed.title}
         </h1>
-        <div className="push-top-sm po-width-10 hr po-center" />
-        <div className="gray-color text-center po-text-16 push-top">
-          {feedStore.feed.description}
-        </div>
+        <div className="mt-2 w-16 m-auto border-b border-gray-500" />
+        <div className="text-gray-600 text-center mt-3">{feedStore.feed.description}</div>
       </div>
-      <div className={`push-top-${isMobile ? 'lg' : 'xl'}`}>
+      <div className={`mt-${isMobile ? '8' : '10'}`}>
         {feedStore.pagePosts.map((post: Post) => {
           return <PostEntry post={post} key={getPostId(post)} />;
         })}
