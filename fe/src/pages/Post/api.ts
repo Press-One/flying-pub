@@ -12,12 +12,4 @@ export default {
   async getRewardSummary(fileRId: string) {
     return request(`/api/finance/reward/${fileRId}`);
   },
-  async validatePin(payload: any) {
-    return request('/api/finance/pin/validate', {
-      method: 'POST',
-      body: {
-        payload,
-      },
-    });
-  },
 };

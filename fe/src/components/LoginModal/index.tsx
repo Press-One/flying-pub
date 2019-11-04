@@ -15,8 +15,8 @@ export default observer(() => {
       onClose={modalStore.closeLogin}
       className="flex justify-center items-center"
     >
-      <div className="p-8 bg-white rounded text-center">
-        <div className="text-lg font-bold">登陆</div>
+      <div className="py-8 px-10 bg-white rounded text-center">
+        <div className="text-lg font-bold text-gray-700">登陆</div>
         <div className="mt-5 text-gray-700">
           我们使用 Mixin 作为登陆方式
           <br className="mt-2" />
@@ -25,9 +25,9 @@ export default observer(() => {
         <div className="mt-5 text-gray-500 text-xs">
           Mixin 是一个全币种数字货币钱包
           <br className="mt-2" />
-          只需手机号加 6 位数字密码即可享受免费实时转账体验。
+          只需手机号加 6 位数字密码即可享受免费实时转账体验
         </div>
-        <div className="flex items-center mt-5 text-gray-500 text-xs">
+        <div className="flex items-center justify-center mt-5 text-gray-500 text-xs">
           <span className="flex items-center text-lg mr-2">
             <Info />
           </span>

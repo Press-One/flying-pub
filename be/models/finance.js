@@ -85,7 +85,12 @@ const create = async (receipt, options = {}) => {
 
   const newReceipt = await Receipt.create(receipt);
   return newReceipt.toJSON();
-  // sendTransationAndBalanceToAddress(objReceipt);
+};
+
+const getViewToken = (snapshotId) => {
+  return mixin.getViewToken(`/network/snapshots/${snapshotId}`, {
+    timeout: 60 * 60 * 24 * 365 * 100 // 100 years
+  });
 };
 
 const getMixinPaymentUrl = (options = {}) => {
@@ -207,7 +212,7 @@ exports.withdraw = async (data = {}) => {
     raw: tfRaw || null,
     snapshotId: tfRaw.snapshot_id,
     uuid: tfRaw.trace_id,
-    // viewToken: tfRaw.viewToken
+    viewToken: tfRaw.viewToken
   });
   const latestAsset = await getAsset({
     currency,
@@ -216,7 +221,6 @@ exports.withdraw = async (data = {}) => {
     privateKey: wallet.mixinPrivateKey,
   });
   assertFault(latestAsset, Errors.ERR_WALLET_FETCH_BALANCE);
-  // socketIo.sendToAddress(userId, 'balance', asset);
   return true;
 }
 
@@ -257,7 +261,7 @@ const transfer = async (data = {}) => {
     traceId
   );
   assertFault(result && result.data, `Errors.ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET: ${JSON.stringify(result.error)}`);
-  // result.data.viewToken = getViewToken(result.data.snapshot_id);
+  result.data.viewToken = getViewToken(result.data.snapshot_id);
   return result.data;
 };
 
@@ -332,18 +336,26 @@ const updateReceiptByUuid = async (uuid, data) => {
     data.toRaw = JSON.stringify(data.toRaw);
   }
   assert(uuid, Errors.ERR_IS_REQUIRED('uuid'));
+  const prevReceiptDB = await Receipt.findOne({
+    where: {
+      uuid
+    }
+  });
+  if (prevReceiptDB.toJSON().viewToken) {
+    delete data.viewToken;
+  }
   console.log(` ------------- receipt data ---------------`, data);
   await Receipt.update(data, {
     where: {
       uuid
     }
   });
-  const receiptDB = await Receipt.findOne({
+  const afterReceiptDB = await Receipt.findOne({
     where: {
       uuid
     }
   });
-  const receipt = receiptDB.toJSON();
+  const receipt = afterReceiptDB.toJSON();
   console.log(` ------------- receipt ---------------`, receipt);
   if (receipt.type === 'RECHARGE') {
     const user = await User.getByAddress(receipt.toAddress);
@@ -351,46 +363,6 @@ const updateReceiptByUuid = async (uuid, data) => {
       receipt
     });
   }
-  // try {
-  //   const resp = await utility.execute(sql, values);
-  //   if (options.quick) {
-  //     return resp;
-  //   }
-  //   const objReceipt = await util.promisify(getByUuid)(receipt.uuid || uuid, options);
-  //   if (
-  //     objReceipt &&
-  //     objReceipt.fileRId &&
-  //     objReceipt.type === 'AWARD' &&
-  //     objReceipt.status === 'SUCCESS'
-  //   ) {
-  //     const {
-  //       list,
-  //       total
-  //     } = await exports.getTransactionsByFileRId(objReceipt.fileRId, 'SUCCESS');
-  //     const rewardAmount = R.reduce(mathjs.add, 0, R.map(item => mathjs.bignumber(item.amount))(list));
-  //     const file = await updateCache(objReceipt.fileRId, {
-  //       rewardAmount: bigFormat(rewardAmount),
-  //       rewardCount: total
-  //     });
-  //     if (options.enabledNotification) {
-  //       socketIo.sendToAddress([
-  //         objReceipt.fromAddress,
-  //         objReceipt.toAddress
-  //       ], 'file', file);
-  //       const rewarder = await User.pGetById(objReceipt.fromAddress, null);
-  //       socketIo.sendToAddress([
-  //         objReceipt.fromAddress,
-  //         objReceipt.toAddress
-  //       ], 'rewarder', rewarder);
-  //     }
-  //   }
-  //   if (objReceipt && options.enabledNotification) {
-  //     sendTransationAndBalanceToAddress(objReceipt);
-  //   }
-  //   return objReceipt;
-  // } catch (e) {
-  //   assert(null, e);
-  // }
 };
 
 const saveSnapshots = async (snapshots, options) => {
@@ -423,17 +395,8 @@ const saveSnapshot = async (snapshot, options) => {
       return snapshot;
     }
 
-    // // Added viewToken in transfer method.
-    // if (
-    //   !snapshot.data.includes('Pay for contract order') &&
-    //   !snapshot.data.includes('Pay for files on PRESS.one') &&
-    //   !snapshot.data.includes('SYSTEM task reward from') &&
-    //   !snapshot.data.includes('Manual task reward from') &&
-    //   !snapshot.data.includes('Coupon redeem')
-    // ) {
-    //   const snapshotId = snapshot.snapshot_id;
-    //   receipt.viewToken = getViewToken(snapshotId);
-    // }
+    receipt.viewToken = getViewToken(snapshot.snapshot_id);
+
     try {
       await updateReceiptByUuid(snapshot.trace_id, receipt);
     } catch (e) {
@@ -446,41 +409,43 @@ const saveSnapshot = async (snapshot, options) => {
 exports.syncMixinSnapshots = async () => {
   try {
     let session = {};
+    const currencies = Object.keys(currencyMapAsset);
     try {
       session = JSON.parse(fs.readFileSync('session.json', 'utf8'));
     } catch (err) {
       const current = new Date();
-      session = {
-        offset: current.toISOString()
-      };
+      for (const currency of currencies) {
+        session[currency] = {
+          offset: current.toISOString()
+        }
+      }
       const json = JSON.stringify(session);
       fs.writeFileSync('session.json', json, 'utf8');
     };
-    const tasks = Object.keys(currencyMapAsset).map(currency => {
-      return mixin.readSnapshots(
-        rfc3339nano.adjustRfc3339ByNano(session.offset, 1),
-        currencyMapAsset[currency],
-        '10',
-        'ASC'
-      )
-    })
-    const results = await Promise.all(tasks);
-    // console.log(`Sync mixin snapshots start at: `, session.offset);
     const snapshots = [];
-    for (const result of results) {
-      const {
-        data
-      } = result;
-      for (const i in data) {
-        session.offset = data[i].created_at;
-        if (data[i].user_id) {
-          snapshots.push(data[i]);
+    const tasks = currencies.map(async currency => {
+      try {
+        const result = await mixin.readSnapshots(
+          rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
+          currencyMapAsset[currency],
+          '10',
+          'ASC'
+        );
+        const {
+          data
+        } = result;
+        for (const i in data) {
+          session[currency].offset = data[i].created_at;
+          if (data[i].user_id) {
+            snapshots.push(data[i]);
+          }
         }
-        const json = JSON.stringify(session);
-        fs.writeFileSync('session.json', json, 'utf8');
-      }
-    }
+      } catch (err) {}
+    })
+    await Promise.all(tasks);
     await saveSnapshots(snapshots);
+    const json = JSON.stringify(session);
+    fs.writeFileSync('session.json', json, 'utf8');
     return snapshots;
   } catch (err) {
     throw err;
@@ -554,7 +519,7 @@ const transferToUser = async (data = {}) => {
     raw: tfRaw || null,
     snapshotId: tfRaw.snapshot_id,
     uuid: tfRaw.trace_id,
-    // viewToken: tfRaw.viewToken
+    viewToken: tfRaw.viewToken
   });
   const latestAsset = await getAsset({
     currency,

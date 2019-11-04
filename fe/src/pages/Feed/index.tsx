@@ -2,11 +2,11 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import debounce from 'lodash.debounce';
 import Fade from '@material-ui/core/Fade';
-import { useStore } from '../../store';
-import { getPostId, Post } from '../../store/feed';
+import { useStore } from 'store';
+import { getPostId, Post } from 'store/feed';
 import PostEntry from './PostEntry';
-import Loading from '../../components/Loading';
-import { isMobile, getPostSelector } from '../../utils';
+import Loading from 'components/Loading';
+import { isMobile, getPostSelector } from 'utils';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -56,7 +56,7 @@ export default observer(() => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="w-7/12 m-auto po-fade-in pad-bottom-lg feed-page">
+      <div className="w-7/12 m-auto pad-bottom-lg">
         <div>
           <h1
             className={`p-0 font-bold text-center text-gray-700 leading-relaxed text-${

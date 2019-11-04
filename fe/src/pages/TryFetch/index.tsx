@@ -4,8 +4,7 @@ import { useStore } from 'store';
 import Api from './api';
 import Loading from 'components/Loading';
 import ConfirmDialog from 'components/ConfirmDialog';
-
-import { getXmlUrl } from 'utils';
+import { getXmlUrl, sleep } from 'utils';
 
 export default observer((props: any) => {
   const { userStore, feedStore, socketStore, modalStore } = useStore();
@@ -29,6 +28,8 @@ export default observer((props: any) => {
         });
         setShowConfirmDialog(true);
       }
+      await sleep(800);
+      feedStore.setIsFetched(true);
       try {
         const user = await Api.fetchUser();
         userStore.setUser(user);
@@ -41,7 +42,13 @@ export default observer((props: any) => {
   }, [userStore, feedStore, socketStore, props]);
 
   if (!feedStore.isFetched) {
-    return <Loading isPage={true} />;
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-64">
+          <Loading />
+        </div>
+      </div>
+    );
   }
 
   return (

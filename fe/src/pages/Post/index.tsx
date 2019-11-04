@@ -20,13 +20,23 @@ import 'react-viewer/dist/index.css';
 export default observer((props: any) => {
   const { feedStore, userStore, modalStore } = useStore();
   const { isLogin } = userStore;
-  const { currentPost: post } = feedStore;
+  const { currentPost: post, isFetched: isFetchedFeed } = feedStore;
+  const [pending, setPending] = React.useState(true);
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
   const [isFetchingReward, setIsFetchingReward] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
+
+  React.useEffect(() => {
+    (async () => {
+      if (isFetchedFeed) {
+        await sleep(800);
+        setPending(false);
+      }
+    })();
+  }, [isFetchedFeed]);
 
   React.useEffect(() => {
     const { postId } = props.match.params;
@@ -90,8 +100,14 @@ export default observer((props: any) => {
     }
   };
 
-  if (!feedStore.isFetched) {
-    return null;
+  if (pending) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-64">
+          <Loading />
+        </div>
+      </div>
+    );
   }
 
   const backToTop = () => {
@@ -149,7 +165,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="w-7/12 m-auto post po-fade-in relative">
+      <div className="w-7/12 m-auto relative">
         {!isMobile && <BackButton />}
         <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold pt-0`}>
           {post.title}

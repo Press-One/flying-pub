@@ -7,23 +7,24 @@ import MenuItem from '@material-ui/core/MenuItem';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToApp from '@material-ui/icons/ExitToApp';
+import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import { getApiEndpoint } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const handleClose = () => setAnchorEl(null);
-  const { userStore, modalStore } = useStore();
+  const { userStore, feedStore, modalStore } = useStore();
 
-  if (!userStore.isFetched) {
+  if (!userStore.isFetched || !feedStore.isFetched) {
     return null;
   }
 
   return (
-    <div className="container m-auto">
-      <div className="relative">
-        <div>
-          <div className="absolute top-0 right-0 text-xl">
+    <Fade in={true} timeout={2000}>
+      <div className="container m-auto">
+        <div className="w-7/12 m-auto relative">
+          <div className="absolute top-0 right-0 text-xl mt-12 pt-2 -mr-20">
             <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
               <MenuIcon />
             </IconButton>
@@ -80,6 +81,6 @@ export default observer(() => {
           </div>
         </div>
       </div>
-    </div>
+    </Fade>
   );
 });

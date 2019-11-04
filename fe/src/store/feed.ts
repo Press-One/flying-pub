@@ -120,8 +120,10 @@ export function createFeedStore() {
     get hasMore() {
       return this.page * this.per < this.feed.items.length;
     },
+    setIsFetched(status: boolean) {
+      this.isFetched = status;
+    },
     setFeed(feed: Feed) {
-      this.isFetched = true;
       feed.items = feed.items.map(extractFrontMatter);
       for (const item of feed.items) {
         const post: any = item;

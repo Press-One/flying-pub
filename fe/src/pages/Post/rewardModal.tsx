@@ -37,6 +37,9 @@ export default observer((props: any) => {
   const toMixinClientId = blockPaymentUrl.split('/').pop();
 
   React.useEffect(() => {
+    if (step !== 5) {
+      return;
+    }
     const afterRecharge = async (data: any) => {
       const { receipt } = data;
       await Api.reward(fileRId, {
@@ -53,6 +56,10 @@ export default observer((props: any) => {
       setPaying(false);
       setIsPaid(false);
       onClose(true);
+      await sleep(300);
+      snackbarStore.show({
+        message: '打赏成功',
+      });
     };
     if (isLogin) {
       socketStore.on('recharge', afterRecharge);
@@ -61,6 +68,7 @@ export default observer((props: any) => {
       socketStore.off('recharge', afterRecharge);
     };
   }, [
+    step,
     isLogin,
     socketStore,
     fileRId,
@@ -109,7 +117,7 @@ export default observer((props: any) => {
       setPin('');
       setTimeout(async () => {
         try {
-          const isValid = await Api.validatePin({
+          const isValid = await WalletApi.validatePin({
             pinCode: value,
           });
           if (isValid) {
@@ -159,7 +167,7 @@ export default observer((props: any) => {
 
   const step1 = () => {
     return (
-      <div>
+      <div className="px-2">
         <div className="text-lg font-bold text-gray-700">选择币种</div>
         <div className="flex flex-wrap justify-between mt-4 w-64">
           {assets.map((asset: any) => {
@@ -204,6 +212,7 @@ export default observer((props: any) => {
             variant="outlined"
             autoFocus
             fullWidth
+            onKeyPress={(e: any) => e.key === 'Enter' && setStep(3)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{selectedAsset}</InputAdornment>,
             }}
@@ -216,6 +225,7 @@ export default observer((props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
+            onKeyPress={(e: any) => e.key === 'Enter' && setStep(3)}
           />
         </div>
         <div className="text-center mt-6">
@@ -342,26 +352,31 @@ export default observer((props: any) => {
         <div className="mt-5 text-xs">
           打赏给 <span className="font-bold">刘娟娟</span>
         </div>
-        <div className="mt-2 text-xs pb-1">
-          <span className="font-bold text-lg">{amount}</span> {selectedAsset}
+        <div className="mt-3 text-xs pb-1">
+          <span className="font-bold text-xl">{amount}</span> {selectedAsset}
         </div>
-        <div className="mt-5 pb-2 text-gray-800">
+        <div className="mt-5 text-gray-800">
           {!isPaid && !paying && (
             <div>
-              <OTPInput
-                inputClassName="border border-gray-400 rounded opt-input"
-                value={pin}
-                onChange={onOtpChange}
-                autoFocus
-                OTPLength={6}
-                otpType="number"
-                secure
-              />
-              <style jsx global>{`
-                .opt-input {
-                  margin: 0 2px !important;
-                }
-              `}</style>
+              <div>
+                <OTPInput
+                  inputClassName="border border-gray-400 rounded opt-input"
+                  value={pin}
+                  onChange={onOtpChange}
+                  autoFocus
+                  OTPLength={6}
+                  otpType="number"
+                  secure
+                />
+                <style jsx global>{`
+                  .opt-input {
+                    margin: 0 2px !important;
+                  }
+                `}</style>
+              </div>
+              <div className="mt-4 text-xs text-blue-400 cursor-pointer" onClick={() => setStep(3)}>
+                返回
+              </div>
             </div>
           )}
         </div>
@@ -381,7 +396,7 @@ export default observer((props: any) => {
 
   const step5 = () => {
     return (
-      <div>
+      <div className="px-10">
         <div className="text-lg font-bold text-gray-700">Mixin 扫码支付</div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
@@ -395,7 +410,6 @@ export default observer((props: any) => {
             >
               <iframe
                 onLoad={() => {
-                  console.log(` ------------- onLoad ---------------`);
                   setTimeout(() => {
                     setIframeLoading(false);
                   }, 2000);
@@ -451,7 +465,7 @@ export default observer((props: any) => {
       onClose={() => onCloseModal(false)}
       className="flex justify-center items-center"
     >
-      <div className="p-8 bg-white rounded text-center">
+      <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}

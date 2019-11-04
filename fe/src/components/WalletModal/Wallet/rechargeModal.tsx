@@ -20,8 +20,6 @@ export default (props: any) => {
   const [submitting, setSubmitting] = React.useState(false);
   const [iframeLoading, setIframeLoading] = React.useState(false);
 
-  console.log(` ------------- submitting ---------------`, submitting);
-
   React.useEffect(() => {
     const rechargeCallback = () => {
       setStep(1);
@@ -45,6 +43,9 @@ export default (props: any) => {
   };
 
   const recharge = async (currency: string, amount: string, memo: string = '') => {
+    if (submitting) {
+      return;
+    }
     setSubmitting(true);
     try {
       const { paymentUrl } = await Api.recharge({
@@ -74,6 +75,7 @@ export default (props: any) => {
             variant="outlined"
             fullWidth
             autoFocus
+            onKeyPress={(e: any) => e.key === 'Enter' && recharge(currency, amount, memo)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
             }}
@@ -86,6 +88,7 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
+            onKeyPress={(e: any) => e.key === 'Enter' && recharge(currency, amount, memo)}
           />
         </div>
         <div className="mt-5" onClick={() => recharge(currency, amount, memo)}>
@@ -97,7 +100,7 @@ export default (props: any) => {
 
   const step2 = () => {
     return (
-      <div>
+      <div className="px-10">
         <div className="text-lg font-bold text-gray-700">Mixin 扫码充值</div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
@@ -163,7 +166,7 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={onCloseModal} className="flex justify-center items-center">
-      <div className="p-8 bg-white rounded text-center">
+      <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
       </div>
