@@ -26,8 +26,20 @@ export default observer((props: any) => {
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
   const [isFetchingReward, setIsFetchingReward] = React.useState(false);
+  const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
+
+  React.useEffect(() => {
+    (async () => {
+      if (post) {
+        const blocks = await Api.getBlocks(post.id);
+        const block = blocks[0];
+        const { mixinClientId } = JSON.parse(block.meta);
+        setAuthorMixinClientId(mixinClientId || '');
+      }
+    })();
+  }, [post]);
 
   React.useEffect(() => {
     (async () => {
@@ -143,11 +155,14 @@ export default observer((props: any) => {
     }
     return (
       <div>
-        <div className="text-center pb-8">
+        <div className="text-center pb-6">
           <Button onClick={reward}>赞赏</Button>
-          {noReward && <div className="mt-5 text-gray-600">还没有人赞赏，来支持一下作者吧！</div>}
+          {noReward && (
+            <div className="mt-5 text-gray-600 pb-5">还没有人赞赏，来支持一下作者吧！</div>
+          )}
         </div>
-        <RewardSummary summary={rewardSummary} />
+        {!noReward && <RewardSummary summary={rewardSummary} />}
+        {!noReward && <div className="pb-10" />}
       </div>
     );
   };
@@ -157,7 +172,7 @@ export default observer((props: any) => {
       return null;
     }
     return (
-      <div className="mt-16 pb-10">
+      <div className="pb-10">
         <Comment fileRId={post.id} />
       </div>
     );
@@ -185,7 +200,7 @@ export default observer((props: any) => {
             <ArrowUpward />
           </div>
         )}
-        {RewardView()}
+        {authorMixinClientId && RewardView()}
         {CommentView()}
         <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />
         <Viewer

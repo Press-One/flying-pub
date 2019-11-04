@@ -23,6 +23,10 @@ const User = sequelize.define('users', {
   publicKey: {
     type: Sequelize.TEXT
   },
+  mixinAccountRaw: {
+    type: Sequelize.TEXT,
+    allowNull: true
+  }
 }, {
   timestamps: true,
   charset: 'utf8',

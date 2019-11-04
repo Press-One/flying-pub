@@ -6,6 +6,7 @@ import Feed from './pages/Feed';
 import Post from './pages/Post';
 import Wallet from './components/WalletModal/Wallet';
 import TryFetch from './pages/TryFetch';
+import PermissionDeny from './pages/PermissionDeny';
 
 import LoginModal from 'components/LoginModal';
 import WalletModal from 'components/WalletModal';
@@ -29,6 +30,7 @@ const AppRouter = () => {
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />
             <Route path="/wallet" exact component={Wallet} />
+            <Route path="/permissionDeny" exact component={PermissionDeny} />
           </div>
           <LoginModal />
           <WalletModal />

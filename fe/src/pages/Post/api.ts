@@ -12,4 +12,10 @@ export default {
   async getRewardSummary(fileRId: string) {
     return request(`/api/finance/reward/${fileRId}`);
   },
+  async getBlocks(rId: string) {
+    const { REACT_APP_PRESS_ONE_API_END_POINT } = process.env;
+    return request(`/api/v2/blocks/${rId}`, {
+      base: REACT_APP_PRESS_ONE_API_END_POINT,
+    });
+  },
 };

@@ -4,7 +4,9 @@ export default async (url: any, options: any = {}) => {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(options.body);
   }
-  options.credentials = 'include';
+  if (!options.base) {
+    options.credentials = 'include';
+  }
   const res = await fetch(new Request((options.base || BASE) + url), options);
   let resData;
   if (options.isTextResponse) {

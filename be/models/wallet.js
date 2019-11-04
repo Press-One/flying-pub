@@ -86,15 +86,20 @@ const generateWallet = async user => {
   return aesCryptoWallet(wallet);
 };
 
-exports.tryCreateWallet = async (userId) => {
-  assert(userId, Errors.ERR_IS_INVALID('userId'));
-
-  let user = await User.get(userId, {
-    withProfile: true,
+const getByUserId = async userId => {
+  const wallet = await Wallet.findOne({
+    where: {
+      userId
+    }
   });
-  assert(user, Errors.ERR_NOT_FOUND('user'));
+  return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
+}
+exports.getByUserId = getByUserId;
 
-  if (user.mixinClientId) {
+exports.tryCreateWallet = async (userId) => {
+  const existedWallet = await getByUserId(userId);
+
+  if (existedWallet) {
     console.log(`${userId}： 钱包已存在，无需初始化`);
     return user;
   }
@@ -107,16 +112,6 @@ exports.tryCreateWallet = async (userId) => {
 
   return wallet;
 };
-
-const getByUserId = async userId => {
-  const wallet = await Wallet.findOne({
-    where: {
-      userId
-    }
-  });
-  return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
-}
-exports.getByUserId = getByUserId;
 
 exports.updateCustomPin = async (userId, pinCode, options = {}) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))

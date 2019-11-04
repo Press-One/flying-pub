@@ -27,6 +27,7 @@ export default observer((props: any) => {
           items: [],
         });
         setShowConfirmDialog(true);
+        // #TODO: 检查权限
       }
       await sleep(800);
       feedStore.setIsFetched(true);

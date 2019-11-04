@@ -78,6 +78,7 @@ export default observer((props: any) => {
     memo,
     toMixinClientId,
     onClose,
+    snackbarStore,
   ]);
 
   React.useEffect(() => {

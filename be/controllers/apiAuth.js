@@ -164,10 +164,14 @@ const tryCreateUser = async (ctx, user, provider) => {
   });
   let insertedProfile = {};
   if (isNewUser) {
-    const user = await User.create({
+    const userData = {
       providerId: profile.id,
       provider
-    });
+    };
+    if (provider === 'mixin') {
+      userData.mixinAccountRaw = provider.raw;
+    }
+    const user = await User.create(userData);
     insertedProfile = await Profile.createProfile({
       userId: user.id,
       profile,
@@ -178,6 +182,15 @@ const tryCreateUser = async (ctx, user, provider) => {
   } else {
     insertedProfile = await Profile.get(profile.id);
     Log.create(insertedProfile.userId, `登陆成功`);
+    const {
+      userId
+    } = insertedProfile;
+    const wallet = await Wallet.getByUserId(userId);
+    if (!wallet) {
+      Wallet.tryCreateWallet(userId);
+    } else {
+      console.log(`${userId}： 钱包已存在，无需初始化`);
+    }
   }
 
   const token = await Token.create({
