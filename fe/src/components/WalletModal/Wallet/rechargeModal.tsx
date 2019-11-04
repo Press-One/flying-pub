@@ -134,7 +134,7 @@ export default (props: any) => {
           )}
           {iframeLoading && (
             <div className="mt-24 pt-4">
-              <Loading />
+              <Loading size={40} />
             </div>
           )}
         </div>

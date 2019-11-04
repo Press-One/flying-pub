@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ago, isMobile, getPostSelector } from '../../../utils';
 import { getPostId } from '../../../store/feed';
-import './index.scss';
 
 export default (props: any) => {
   const { post } = props;

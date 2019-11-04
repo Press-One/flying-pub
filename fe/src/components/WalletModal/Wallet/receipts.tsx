@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
+import Fade from '@material-ui/core/Fade';
 import { assetIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
 import { useStore } from 'store';
@@ -20,7 +21,7 @@ const Receipt = (receipt: any, postMap: any = {}) => {
       <div className="flex items-center text-gray-700 text-sm">
         <img
           className="mr-4"
-          src={assetIconMap[receipt.currency.toLowerCase()]}
+          src={assetIconMap[receipt.currency]}
           alt={receipt.currency}
           width="40"
           height="40"
@@ -71,10 +72,12 @@ export default observer(() => {
   }, [walletStore]);
 
   return (
-    <div>
-      {walletStore.receipts.map((receipt: any) => (
-        <div key={receipt.id}>{Receipt(receipt, feedStore.postMap)}</div>
-      ))}
-    </div>
+    <Fade in={true} timeout={500}>
+      <div>
+        {walletStore.receipts.map((receipt: any) => (
+          <div key={receipt.id}>{Receipt(receipt, feedStore.postMap)}</div>
+        ))}
+      </div>
+    </Fade>
   );
 });

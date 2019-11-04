@@ -10,7 +10,7 @@ export default (props: any) => {
           return (
             <div className="flex items-center justify-between py-2 px-5 leading-none" key={asset}>
               <div className="flex items-center">
-                <img className="w-10 h-10" src={assetIconMap[asset.toLowerCase()]} alt={asset} />
+                <img className="w-10 h-10" src={assetIconMap[asset]} alt={asset} />
                 <span className="ml-3">{asset}</span>
               </div>
               <span className="text-gray-600 ml-2 flex items-center leading-none">

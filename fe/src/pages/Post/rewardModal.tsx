@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import Modal from '@material-ui/core/Modal';
 import { assets, assetIconMap } from '../../components/WalletModal/Wallet/utils';
 import classNames from 'classnames';
@@ -11,18 +12,18 @@ import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
 import Api from './api';
-import WalletApi from '../../components/WalletModal/Wallet/api';
+import WalletApi from 'components/WalletModal/Wallet/api';
 import { sleep } from 'utils';
 
-export default (props: any) => {
-  const { userStore, socketStore } = useStore();
+export default observer((props: any) => {
+  const { userStore, socketStore, walletStore, modalStore } = useStore();
   const { isLogin } = userStore;
   const { open, onClose } = props;
   const [step, setStep] = React.useState(1);
-  const [selectedAsset, setSelectedAsset] = React.useState('cnb');
+  const [selectedAsset, setSelectedAsset] = React.useState('CNB');
   const [amount, setAmount] = React.useState('');
   const [memo, setMemo] = React.useState('');
-  const [paymentMethod, setPaymentMethod] = React.useState('balance');
+  const [paymentMethod, setPaymentMethod] = React.useState('');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
@@ -38,7 +39,6 @@ export default (props: any) => {
   React.useEffect(() => {
     const afterRecharge = async (data: any) => {
       const { receipt } = data;
-      console.log(` ------------- receipt ---------------`, receipt);
       await Api.reward(fileRId, {
         toAddress,
         currency: receipt.currency,
@@ -72,6 +72,25 @@ export default (props: any) => {
     onClose,
   ]);
 
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const balance = await WalletApi.getBalance();
+        walletStore.setBalance(balance);
+      } catch (err) {}
+      walletStore.setIsFetchedBalance(true);
+    })();
+  }, [walletStore]);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const isCustomPinExist = await WalletApi.isCustomPinExist();
+        walletStore.setIsCustomPinExist(isCustomPinExist);
+      } catch (err) {}
+    })();
+  }, [walletStore]);
+
   const onCloseModal = (isSuccess: boolean) => {
     setStep(1);
     setAmount('');
@@ -96,7 +115,7 @@ export default (props: any) => {
           if (isValid) {
             await Api.reward(fileRId, {
               toAddress,
-              currency: selectedAsset.toUpperCase(),
+              currency: selectedAsset,
               amount,
               memo,
               toMixinClientId,
@@ -105,7 +124,7 @@ export default (props: any) => {
             setIsPaid(true);
             await sleep(800);
             onCloseModal(true);
-            await sleep(200);
+            await sleep(300);
             snackbarStore.show({
               message: '打赏成功',
             });
@@ -126,17 +145,9 @@ export default (props: any) => {
   const getRechargePaymentUrl = async () => {
     setIframeLoading(true);
     try {
-      // const { paymentUrl } = await WalletApi.recharge(fileRId, {
-      //   toAddress,
-      //   currency: ,
-      //   amount,
-      //   memo,
-      //   toMixinClientId,
-      // });
-      console.log(` ------------- memo ---------------`, memo);
       const { paymentUrl } = await WalletApi.recharge({
         amount,
-        currency: selectedAsset.toUpperCase(),
+        currency: selectedAsset,
         memo: memo || '打赏文章',
       });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
@@ -153,7 +164,7 @@ export default (props: any) => {
         <div className="flex flex-wrap justify-between mt-4 w-64">
           {assets.map((asset: any) => {
             return (
-              <div key={asset} className="p-2" title={asset.toUpperCase()}>
+              <div key={asset} className="p-2" title={asset}>
                 <div
                   className={classNames(
                     {
@@ -165,7 +176,7 @@ export default (props: any) => {
                   onClick={() => setSelectedAsset(asset)}
                 >
                   <img src={assetIconMap[asset]} alt={asset} width="30" />
-                  <div className="mt-2 leading-none text-xs">{asset.toUpperCase()}</div>
+                  <div className="mt-2 leading-none text-xs">{asset}</div>
                 </div>
               </div>
             );
@@ -194,9 +205,7 @@ export default (props: any) => {
             autoFocus
             fullWidth
             InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">{selectedAsset.toUpperCase()}</InputAdornment>
-              ),
+              endAdornment: <InputAdornment position="end">{selectedAsset}</InputAdornment>,
             }}
           />
           <div className="-mt-2" />
@@ -217,33 +226,94 @@ export default (props: any) => {
   };
 
   const step3 = () => {
-    const types: any = [
+    const { balance, isCustomPinExist } = walletStore;
+    const assetBalance = balance[selectedAsset];
+    const payments: any = [
       {
-        method: 'balance',
-        name: '余额支付',
-      },
-      {
+        enabled: true,
         method: 'mixin',
         name: 'Mixin 扫码支付',
       },
     ];
+    if (Number(assetBalance) >= Number(amount)) {
+      if (isCustomPinExist) {
+        payments.unshift({
+          enabled: true,
+          method: 'balance',
+          name: '余额支付',
+        });
+      } else {
+        payments.push({
+          enabled: false,
+          disabledReason: 'PIN_NOT_EXIST',
+          method: 'balance',
+          name: '余额支付',
+        });
+      }
+    } else {
+      payments.push({
+        enabled: false,
+        disabledReason: 'NO_ENOUGH_BALANCE',
+        method: 'balance',
+        name: '余额支付',
+      });
+    }
     return (
       <div>
         <div className="text-base font-bold text-gray-700">选择支付方式</div>
         <div className="mt-6 mx-10">
-          {types.map((type: any) => (
-            <div
-              key={type.method}
-              className={classNames(
-                {
-                  'border-blue-400 text-blue-400 font-bold': type.method === paymentMethod,
-                  'border-gray-300 text-gray-600': type.method !== paymentMethod,
-                },
-                'text-center border rounded p-2 px-4 cursor-pointer mt-3',
+          {payments.map((payment: any) => (
+            <div key={payment.method}>
+              <div
+                className={classNames(
+                  {
+                    'border-blue-400 text-blue-400 font-bold cursor-pointer':
+                      payment.enabled && payment.method === (paymentMethod || payments[0].method),
+                    'border-gray-300 text-gray-600 cursor-pointer':
+                      payment.enabled && payment.method !== (paymentMethod || payments[0].method),
+                    'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
+                  },
+                  'text-center border rounded p-2 px-4 mt-3',
+                )}
+                onClick={() => payment.enabled && setPaymentMethod(payment.method)}
+              >
+                {payment.name}
+              </div>
+              {!payment.enabled && (
+                <div>
+                  {payment.disabledReason === 'NO_ENOUGH_BALANCE' && (
+                    <div className="mt-1 text-xs text-gray-500">
+                      {selectedAsset} 余额不足，去
+                      <span
+                        className="text-blue-400 cursor-pointer"
+                        onClick={modalStore.openWallet}
+                      >
+                        充值
+                      </span>
+                    </div>
+                  )}
+                  {payment.disabledReason === 'PIN_NOT_EXIST' && (
+                    <div className="mt-1 text-xs text-gray-500">
+                      尚未设置支付密码，去
+                      <span
+                        className="text-blue-400 cursor-pointer"
+                        onClick={() =>
+                          modalStore.openWallet({
+                            tab: 'settings',
+                            returnInfo: {
+                              requiredAsset: selectedAsset,
+                              requiredAmount: amount,
+                              text: '返回继续打赏',
+                            },
+                          })
+                        }
+                      >
+                        设置
+                      </span>
+                    </div>
+                  )}
+                </div>
               )}
-              onClick={() => setPaymentMethod(type.method)}
-            >
-              {type.name}
             </div>
           ))}
         </div>
@@ -258,7 +328,7 @@ export default (props: any) => {
               }
             }}
           >
-            确认支付
+            确认
           </Button>
         </div>
       </div>
@@ -273,7 +343,7 @@ export default (props: any) => {
           打赏给 <span className="font-bold">刘娟娟</span>
         </div>
         <div className="mt-2 text-xs pb-1">
-          <span className="font-bold text-lg">{amount}</span> {selectedAsset.toUpperCase()}
+          <span className="font-bold text-lg">{amount}</span> {selectedAsset}
         </div>
         <div className="mt-5 pb-2 text-gray-800">
           {!isPaid && !paying && (
@@ -287,7 +357,7 @@ export default (props: any) => {
                 otpType="number"
                 secure
               />
-              <style jsx>{`
+              <style jsx global>{`
                 .opt-input {
                   margin: 0 2px !important;
                 }
@@ -297,7 +367,7 @@ export default (props: any) => {
         </div>
         {!isPaid && paying && (
           <div className="px-20 mx-2 pb-2">
-            <Loading />
+            <Loading size={40} />
           </div>
         )}
         {isPaid && (
@@ -348,7 +418,7 @@ export default (props: any) => {
           )}
           {iframeLoading && (
             <div className="mt-24 pt-4">
-              <Loading />
+              <Loading size={40} />
             </div>
           )}
         </div>
@@ -390,4 +460,4 @@ export default (props: any) => {
       </div>
     </Modal>
   );
-};
+});

@@ -2,8 +2,6 @@ import React from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Done from '@material-ui/icons/Done';
 
-import './index.scss';
-
 interface IProps {
   size?: number;
   color?: string;

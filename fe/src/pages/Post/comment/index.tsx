@@ -252,7 +252,7 @@ export default observer((props: IProps) => {
   const renderMain = () => {
     const hasComments = comments.length > 0;
     return (
-      <div className="mt-10">
+      <div>
         <div className="text-lg font-bold flex text-gray-700">
           <div className="flex items-center">
             <span className="text-xl mr-2">

@@ -16,7 +16,7 @@ export default class ConfirmDialog extends React.Component<IProps, any> {
     const { open, content, ContentComponent, cancel, ok, cancelText, okText = '确定' } = this.props;
     return (
       <Modal open={open} onClose={() => cancel()} className="flex items-center justify-center">
-        <div className="modal-content bg-white rounded">
+        <div className="bg-white rounded">
           <div className="text-gray-700">
             {content && <div className="m-auto px-12 pt-12 pb-2">{content}</div>}
             {ContentComponent && (

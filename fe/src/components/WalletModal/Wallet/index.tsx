@@ -1,13 +1,16 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import AccountBalanceWalletRounded from '@material-ui/icons/AccountBalance';
 import SettingsIcon from '@material-ui/icons/Settings';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import classNames from 'classnames';
+import Badge from '@material-ui/core/Badge';
 import { useStore } from 'store';
 import Assets from './assets';
 import Settings from './settings';
 import Receipts from './receipts';
+import Api from './api';
 
 const Tab = (props: any) => {
   const { tab, thisTab, onClick } = props;
@@ -33,22 +36,32 @@ const TabContent = (props: any) => {
   return <div className="p-8">{props.children}</div>;
 };
 
-export default () => {
-  const { modalStore } = useStore();
+export default observer(() => {
+  const { modalStore, walletStore } = useStore();
   const [tab, setTab] = React.useState(modalStore.wallet.data.tab || 'assets');
 
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const isCustomPinExist = await Api.isCustomPinExist();
+        walletStore.setIsCustomPinExist(isCustomPinExist);
+      } catch (err) {}
+      walletStore.setIsFetchedIsCustomPinExist(true);
+    })();
+  }, [walletStore]);
+
   return (
-    <div className="relative">
+    <div className="relative text-gray-700">
       <div className="flex text-base">
-        <div className="w-3/12 wallet-modal-content">
+        <div className="w-3/12">
           <div className="p-8">
-            <div className="text-gray-700 font-bold flex items-center text-xl">
+            <div className="font-bold flex items-center text-xl">
               <span className="text-2xl mr-2 flex items-center">
                 <AccountBalanceWallet />
               </span>
               钱包
             </div>
-            <div className="ml-2 mt-3 wallet-content">
+            <div className="ml-2 mt-3">
               <Tab tab={tab} thisTab="assets" onClick={() => setTab('assets')}>
                 <span className="text-lg mr-2 flex items-center">
                   <AccountBalanceWalletRounded />
@@ -56,10 +69,20 @@ export default () => {
                 资产
               </Tab>
               <Tab tab={tab} thisTab="settings" onClick={() => setTab('settings')}>
-                <span className="text-lg mr-2 flex items-center">
-                  <SettingsIcon />
-                </span>
-                设置
+                <Badge
+                  badgeContent={1}
+                  className="pr-1"
+                  color="error"
+                  variant="dot"
+                  invisible={!walletStore.isFetchedIsCustomPinExist || walletStore.isCustomPinExist}
+                >
+                  <div className="flex items-center">
+                    <span className="text-lg mr-2 flex items-center">
+                      <SettingsIcon />
+                    </span>
+                    设置
+                  </div>
+                </Badge>
               </Tab>
               <Tab tab={tab} thisTab="receipts" onClick={() => setTab('receipts')}>
                 <span className="text-lg mr-2 flex items-center">
@@ -70,23 +93,23 @@ export default () => {
             </div>
           </div>
         </div>
-        <div className="w-9/12 border-l border-gray-400 wallet-modal-content">
+        <div className="w-9/12 border-l border-gray-400 wallet-content">
           {tab === 'assets' && (
             <TabContent>
-              <div className="text-gray-700 font-bold flex items-center text-xl">
+              <div className="font-bold flex items-center text-xl">
                 <span className="text-2xl mr-2 flex items-center">
                   <AccountBalanceWalletRounded />
                 </span>
                 资产
               </div>
               <div className="mt-4">
-                <Assets />
+                <Assets setTab={setTab} />
               </div>
             </TabContent>
           )}
           {tab === 'settings' && (
             <TabContent>
-              <div className="text-gray-700 font-bold flex items-center text-xl">
+              <div className="font-bold flex items-center text-xl">
                 <span className="text-2xl mr-2 flex items-center">
                   <SettingsIcon />
                 </span>
@@ -99,7 +122,7 @@ export default () => {
           )}
           {tab === 'receipts' && (
             <TabContent>
-              <div className="text-gray-700 font-bold flex items-center text-xl">
+              <div className="font-bold flex items-center text-xl">
                 <span className="text-2xl mr-2 flex items-center">
                   <ReceiptIcon />
                 </span>
@@ -114,4 +137,4 @@ export default () => {
       </div>
     </div>
   );
-};
+});
