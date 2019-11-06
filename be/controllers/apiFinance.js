@@ -43,7 +43,6 @@ exports.recharge = async ctx => {
       paymentUrl
     });
   } catch (err) {
-    console.log(` ------------- err ---------------`, err);
     ctx.er(err);
   } finally {
     pUnLock(key);

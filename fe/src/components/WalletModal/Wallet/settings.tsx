@@ -5,6 +5,7 @@ import Info from '@material-ui/icons/Info';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
+import ButtonProgress from 'components/ButtonProgress';
 import Fade from '@material-ui/core/Fade';
 import NumberFormat from 'react-number-format';
 import { sleep } from 'utils';
@@ -34,6 +35,7 @@ export default observer(() => {
   const [oldPin, setOldPin] = React.useState('');
   const [pin, setPin] = React.useState('');
   const [pin2, setPin2] = React.useState('');
+  const [pending, setPending] = React.useState(false);
   const { snackbarStore, walletStore } = useStore();
 
   React.useEffect(() => {
@@ -79,6 +81,7 @@ export default observer(() => {
       });
       return;
     }
+    setPending(true);
     try {
       const payload: any = {
         pinCode: pin,
@@ -88,16 +91,25 @@ export default observer(() => {
       }
       await Api.updatePin(payload);
       const latestIsCustomPinExist = await Api.isCustomPinExist();
+      await sleep(1000);
       walletStore.setIsCustomPinExist(latestIsCustomPinExist);
+      setOldPin('');
       setPin('');
       setPin2('');
+      await sleep(200);
+      snackbarStore.show({
+        message: '密码设置成功',
+        type: 'error',
+      });
     } catch (err) {
+      await sleep(500);
       snackbarStore.show({
         message: '旧密码输入错误',
         type: 'error',
       });
       setOldPin('');
     }
+    setPending(false);
   };
 
   const { isFetchedIsCustomPinExist, isCustomPinExist } = walletStore;
@@ -186,7 +198,9 @@ export default observer(() => {
             <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
           </div>
           <div className="mt-4">
-            <Button onClick={() => submit(pin, pin2, { oldPin, isCustomPinExist })}>保存</Button>
+            <Button onClick={() => submit(pin, pin2, { oldPin, isCustomPinExist })}>
+              保存 <ButtonProgress isDoing={pending} />
+            </Button>
           </div>
         </div>
       </div>

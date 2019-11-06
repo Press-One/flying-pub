@@ -38,14 +38,19 @@ const packUser = async (user, options = {}) => {
       }
     }
   }
+
+  const wallet = await Wallet.getByUserId(user.id);
   if (withWallet) {
-    const wallet = await Wallet.getByUserId(user.id);
     assert(wallet, Errors.ERR_NOT_FOUND('wallet'));
     derivedUser = {
       ...derivedUser,
       ...wallet
     }
   }
+  if (wallet) {
+    derivedUser.mixinWalletClientId = wallet.mixinClientId;
+  }
+
   if (withKeys) {
     derivedUser.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.aesKey256);
   } else {
@@ -74,7 +79,8 @@ const generateKey = () => {
 exports.create = async (data) => {
   const {
     provider,
-    providerId
+    providerId,
+    mixinAccountRaw = null
   } = data;
   const {
     aesEncryptedHexOfPrivateKey,
@@ -92,6 +98,7 @@ exports.create = async (data) => {
   const user = await User.create({
     providerId,
     provider,
+    mixinAccountRaw,
     aesEncryptedHexOfPrivateKey,
     publicKey,
     address,

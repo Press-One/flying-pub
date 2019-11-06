@@ -113,7 +113,7 @@ exports.oauthCallback = async (ctx, next) => {
     return false;
   }
 
-  await tryCreateUser(ctx, user, provider);
+  await login(ctx, user, provider);
 
   ctx.redirect(ctx.session.auth.redirect);
 }
@@ -157,7 +157,7 @@ const handleOauthCallback = async (ctx, next, provider) => {
   return user;
 }
 
-const tryCreateUser = async (ctx, user, provider) => {
+const login = async (ctx, user, provider) => {
   const profile = providerGetter[provider](user);
   const isNewUser = !await Profile.isExist(profile.id, {
     provider,
@@ -169,7 +169,7 @@ const tryCreateUser = async (ctx, user, provider) => {
       provider
     };
     if (provider === 'mixin') {
-      userData.mixinAccountRaw = provider.raw;
+      userData.mixinAccountRaw = profile.raw;
     }
     const user = await User.create(userData);
     insertedProfile = await Profile.createProfile({

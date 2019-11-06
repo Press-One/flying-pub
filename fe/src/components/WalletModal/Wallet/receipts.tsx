@@ -2,8 +2,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
 import Fade from '@material-ui/core/Fade';
+import Loading from 'components/Loading';
 import { assetIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
+import { sleep } from 'utils';
 import { useStore } from 'store';
 
 const getTypeName = (type: string) => {
@@ -15,9 +17,9 @@ const getTypeName = (type: string) => {
   return map[type];
 };
 
-const Receipt = (receipt: any, postMap: any = {}) => {
+const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) => {
   return (
-    <div className="flex justify-between items-center py-3 px-2 border-b border-gray-300 leading-none">
+    <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none">
       <div className="flex items-center text-gray-700 text-sm">
         <img
           className="mr-4"
@@ -43,22 +45,26 @@ const Receipt = (receipt: any, postMap: any = {}) => {
         <span
           className={classNames(
             {
-              'text-green-400': receipt.amount > 0,
-              'text-red-400': receipt.amount < 0,
+              'text-green-400': mixinWalletClientId === receipt.toProviderUserId,
+              'text-red-400': mixinWalletClientId === receipt.fromProviderUserId,
             },
             'font-bold text-lg mr-1',
           )}
         >
+          {mixinWalletClientId === receipt.toProviderUserId && '+'}
+          {mixinWalletClientId === receipt.fromProviderUserId && '-'}
           {receipt.amount}
         </span>
-        <span className="text-xs">{receipt.currency}</span>
+        <span className="text-xs font-bold">{receipt.currency}</span>
       </div>
     </div>
   );
 };
 
 export default observer(() => {
-  const { walletStore, feedStore } = useStore();
+  const { userStore, walletStore, feedStore } = useStore();
+  const { mixinWalletClientId } = userStore.user;
+  const { isFetchedReceipts, receipts } = walletStore;
 
   React.useEffect(() => {
     (async () => {
@@ -66,16 +72,26 @@ export default observer(() => {
         const receipts = await FinanceApi.getReceipts({
           limit: 100,
         });
+        await sleep(800);
         walletStore.setReceipts(receipts);
+        walletStore.setIsFetchedReceipts(true);
       } catch (err) {}
     })();
   }, [walletStore]);
 
+  if (!isFetchedReceipts) {
+    return (
+      <div className="mt-32">
+        <Loading />
+      </div>
+    );
+  }
+
   return (
     <Fade in={true} timeout={500}>
       <div>
-        {walletStore.receipts.map((receipt: any) => (
-          <div key={receipt.id}>{Receipt(receipt, feedStore.postMap)}</div>
+        {receipts.map((receipt: any) => (
+          <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
         ))}
       </div>
     </Fade>

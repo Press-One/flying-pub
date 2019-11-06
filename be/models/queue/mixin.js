@@ -2,25 +2,25 @@ const {
   createQueue
 } = require('./utils');
 const Finance = require('../finance');
+const config = require('../../config');
 
 exports.create = () => {
-  const queue = createQueue('SYNC_MIXIN_SNAPSHOTS', {
+  const queue = createQueue(`${config.serviceName.toUpperCase()}_SYNC_MIXIN_SNAPSHOTS`, {
     limiter: {
       max: 1,
-      duration: 5 * 1000 * 1
+      duration: 1 * 1000 * 1,
+      bounceBack: true
     }
   });
 
-  queue.add('SYNC', {}, {
+  queue.add(`${config.serviceName.toUpperCase()}_SYNC`, {}, {
     priority: 1,
     repeat: {
-      every: 5 * 1000 * 1
+      every: 1 * 1000 * 1
     },
-    removeOnComplete: true,
-    removeOnFail: true
   });
 
-  queue.process('SYNC', Finance.syncMixinSnapshots);
+  queue.process(`${config.serviceName.toUpperCase()}_SYNC`, Finance.syncMixinSnapshots);
 
   return queue;
 }

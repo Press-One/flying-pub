@@ -26,6 +26,7 @@ export default observer((props: any) => {
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
   const [isFetchingReward, setIsFetchingReward] = React.useState(false);
+  const [toAddress, setToAddress] = React.useState('');
   const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
@@ -33,10 +34,15 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (post) {
-        const blocks = await Api.getBlocks(post.id);
-        const block = blocks[0];
-        const { mixinClientId } = JSON.parse(block.meta);
-        setAuthorMixinClientId(mixinClientId || '');
+        // const blocks = await Api.getBlocks(post.id);
+        // const block = blocks[0];
+        // const toAddress = block.user_address;
+        // const { payment_url } = JSON.parse(block.meta);
+        // const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
+        const toAddress = 'b663b2310313fe3b0c3d3084f49f10ec088820ef';
+        const mixinClientId = '983a4f11-b2f3-3370-a09c-d66b52840688';
+        setToAddress(toAddress);
+        setAuthorMixinClientId(mixinClientId);
       }
     })();
   }, [post]);
@@ -106,7 +112,7 @@ export default observer((props: any) => {
   const onCloseRewardModal = async (isSuccess: boolean) => {
     setOpenRewardModal(false);
     if (isSuccess) {
-      await sleep(300);
+      await sleep(800);
       const rewardSummary = await Api.getRewardSummary(post.id);
       setRewardSummary(rewardSummary);
     }
@@ -202,7 +208,14 @@ export default observer((props: any) => {
         )}
         {authorMixinClientId && RewardView()}
         {CommentView()}
-        <RewardModal open={openRewardModal} onClose={onCloseRewardModal} />
+        <RewardModal
+          open={openRewardModal}
+          onClose={onCloseRewardModal}
+          toAddress={toAddress}
+          toAuthor={post.author}
+          fileRId={post.id}
+          toMixinClientId={authorMixinClientId}
+        />
         <Viewer
           onMaskClick={() => setShowImage(false)}
           noNavbar={true}

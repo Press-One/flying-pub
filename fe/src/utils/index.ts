@@ -8,7 +8,7 @@ export const getApiEndpoint = () => {
 
 export const getQueueEndpoint = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  return isDevelopment ? 'http://localhost:8093' : window.location.origin;
+  return isDevelopment ? 'http://localhost:8094' : window.location.origin;
 };
 
 export const getQueryObject = () => {

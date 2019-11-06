@@ -21,7 +21,7 @@ export default observer(() => {
   }
 
   return (
-    <Fade in={true} timeout={2000}>
+    <Fade in={true} timeout={1500}>
       <div className="container m-auto">
         <div className="w-7/12 m-auto relative">
           <div className="absolute top-0 right-0 text-xl mt-12 pt-2 -mr-20">

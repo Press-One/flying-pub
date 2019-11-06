@@ -5,11 +5,12 @@ import { assets, assetIconMap } from '../../components/WalletModal/Wallet/utils'
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import Check from '@material-ui/icons/Check';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import Info from '@material-ui/icons/Info';
 import Button from 'components/Button';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
+import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
@@ -18,7 +19,7 @@ import { sleep } from 'utils';
 export default observer((props: any) => {
   const { userStore, socketStore, walletStore, modalStore } = useStore();
   const { isLogin } = userStore;
-  const { open, onClose } = props;
+  const { open, onClose, fileRId, toAuthor, toAddress, toMixinClientId } = props;
   const [step, setStep] = React.useState(1);
   const [selectedAsset, setSelectedAsset] = React.useState('CNB');
   const [amount, setAmount] = React.useState('');
@@ -31,16 +32,13 @@ export default observer((props: any) => {
   const [iframeLoading, setIframeLoading] = React.useState(false);
   const { snackbarStore } = useStore();
 
-  const toAddress = '501a3fd577eddf7d1913ff26f5eb3178809e8f97';
-  const fileRId = 'c3f36d65714d0ae6136c0eec9d7dde32a3d85753d3dc4c3a8615de58a60bd768';
-  const blockPaymentUrl = 'mixin://transfer/44931a6d-2029-4c8d-888f-cbb3afe509bb';
-  const toMixinClientId = blockPaymentUrl.split('/').pop();
-
   React.useEffect(() => {
     if (step !== 5) {
       return;
     }
     const afterRecharge = async (data: any) => {
+      console.log(` ------------- afterRecharge ---------------`);
+      setIframeLoading(true);
       const { receipt } = data;
       await Api.reward(fileRId, {
         toAddress,
@@ -49,14 +47,16 @@ export default observer((props: any) => {
         memo: receipt.memo,
         toMixinClientId,
       });
+      setIframeLoading(false);
       setStep(1);
       setAmount('');
       setMemo('');
       setPin('');
+      setPaymentMethod('');
       setPaying(false);
       setIsPaid(false);
       onClose(true);
-      await sleep(300);
+      await sleep(1500);
       snackbarStore.show({
         message: '打赏成功',
       });
@@ -131,20 +131,25 @@ export default observer((props: any) => {
             });
             setPaying(false);
             setIsPaid(true);
-            await sleep(800);
+            setPaymentMethod('');
+            await sleep(1000);
             onCloseModal(true);
-            await sleep(300);
+            await sleep(1500);
             snackbarStore.show({
               message: '打赏成功',
             });
           } else {
             snackbarStore.show({
-              message: '支付密码错误，请重试',
+              message: '支付密码错误，请重试一下',
               type: 'error',
             });
           }
         } catch (err) {
           console.log(` ------------- err ---------------`, err);
+          snackbarStore.show({
+            message: '打赏失败了，请重试一下',
+            type: 'error',
+          });
         }
         setPaying(false);
       }, 500);
@@ -184,7 +189,9 @@ export default observer((props: any) => {
                   )}
                   onClick={() => setSelectedAsset(asset)}
                 >
-                  <img src={assetIconMap[asset]} alt={asset} width="30" />
+                  <div className="w-8 h-8">
+                    <img className="w-8 h-8" src={assetIconMap[asset]} alt={asset} />
+                  </div>
                   <div className="mt-2 leading-none text-xs">{asset}</div>
                 </div>
               </div>
@@ -202,7 +209,7 @@ export default observer((props: any) => {
     return (
       <div>
         <div className="text-base text-gray-700">
-          打赏给 <span className="font-bold">刘娟娟</span>
+          打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
         <div className="mt-3 text-gray-800">
           <TextField
@@ -237,7 +244,14 @@ export default observer((props: any) => {
   };
 
   const step3 = () => {
-    const { balance, isCustomPinExist } = walletStore;
+    const { isFetchedBalance, balance, isCustomPinExist } = walletStore;
+    if (!isFetchedBalance) {
+      return (
+        <div className="px-20 mx-2 py-20">
+          <Loading />
+        </div>
+      );
+    }
     const assetBalance = balance[selectedAsset];
     const payments: any = [
       {
@@ -269,6 +283,9 @@ export default observer((props: any) => {
         name: '余额支付',
       });
     }
+    if (!paymentMethod) {
+      setPaymentMethod(payments[0].method);
+    }
     return (
       <div>
         <div className="text-base font-bold text-gray-700">选择支付方式</div>
@@ -279,9 +296,9 @@ export default observer((props: any) => {
                 className={classNames(
                   {
                     'border-blue-400 text-blue-400 font-bold cursor-pointer':
-                      payment.enabled && payment.method === (paymentMethod || payments[0].method),
+                      payment.enabled && payment.method === paymentMethod,
                     'border-gray-300 text-gray-600 cursor-pointer':
-                      payment.enabled && payment.method !== (paymentMethod || payments[0].method),
+                      payment.enabled && payment.method !== paymentMethod,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
                   },
                   'text-center border rounded p-2 px-4 mt-3',
@@ -351,7 +368,7 @@ export default observer((props: any) => {
       <div>
         <div className="text-lg font-bold text-gray-700">请输入支付密码</div>
         <div className="mt-5 text-xs">
-          打赏给 <span className="font-bold">刘娟娟</span>
+          打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
         <div className="mt-3 text-xs pb-1">
           <span className="font-bold text-xl">{amount}</span> {selectedAsset}
@@ -382,13 +399,15 @@ export default observer((props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="px-20 mx-2 pb-2">
-            <Loading size={40} />
+          <div className="px-20 mx-2 pt-1 pb-3">
+            <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-4 px-20 ml-1 mr-1 text-5xl text-blue-400">
-            <Check />
+          <div className="-mt-5 px-20 ml-1 mr-1 pb-2 text-5xl text-blue-400">
+            <Fade in={true} timeout={500}>
+              <CheckCircleOutline />
+            </Fade>
           </div>
         )}
       </div>

@@ -8,6 +8,7 @@ const User = require('./user');
 const Wallet = require('./wallet');
 const Post = require('./post');
 const socketIo = require('./socketIo');
+const Cache = require('./cache');
 const Receipt = require('./sequelize/receipt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -50,6 +51,8 @@ const transferTypes = new Set([
 
 const transferObjectTypes = new Set(['FILE']);
 
+const balanceCacheKey = `${config.serviceName.toUpperCase}_BALANCE_CACHE_KEY`;
+
 const mixin = new Mixin({
   client_id: config.mixin.clientId,
   aeskey: config.mixin.aesKey,
@@ -59,6 +62,7 @@ const mixin = new Mixin({
 });
 
 const create = async (receipt, options = {}) => {
+  console.log(` ------------- create receipt ---------------`, receipt);
   receipt = attempt(receipt, {
     fromAddress: Joi.string().trim().required(),
     toAddress: Joi.string().trim().required(),
@@ -80,7 +84,9 @@ const create = async (receipt, options = {}) => {
   assert(currencyMapAsset[receipt.currency], Errors.ERR_IS_INVALID('currency'));
 
   options = options || {};
+  console.log(` ------------- receipt.uuid ---------------`, receipt.uuid);
   receipt.uuid = receipt.uuid || uuidV1();
+  console.log(` ------------- 生成 uuid ---------------`, receipt.uuid);
   receipt.objectType = receipt.objectType || '';
 
   const newReceipt = await Receipt.create(receipt);
@@ -137,7 +143,7 @@ exports.recharge = async (data = {}) => {
     provider: 'MIXIN',
     memo,
     toProviderUserId: wallet.mixinClientId
-  }, undefined);
+  });
   assertFault(receipt, Errors.ERR_RECEIPT_FAIL_TO_INIT);
   const paymentUrl = getMixinPaymentUrl({
     toMixinClientId: wallet.mixinClientId,
@@ -214,13 +220,6 @@ exports.withdraw = async (data = {}) => {
     uuid: tfRaw.trace_id,
     viewToken: tfRaw.viewToken
   });
-  const latestAsset = await getAsset({
-    currency,
-    clientId: wallet.mixinClientId,
-    sessionId: wallet.mixinSessionId,
-    privateKey: wallet.mixinPrivateKey,
-  });
-  assertFault(latestAsset, Errors.ERR_WALLET_FETCH_BALANCE);
   return true;
 }
 
@@ -250,6 +249,7 @@ const transfer = async (data = {}) => {
     mixinPrivateKey,
     traceId
   } = data;
+  console.log(` ------------- transfer traceId ---------------`, traceId);
   const result = await mixin.account.transfer(
     currencyMapAsset[currency], toMixinClientId, amount, memo, {
       pin: mixinPin,
@@ -324,7 +324,25 @@ const getBalanceMap = async userId => {
   }
   return balanceMap;
 }
-exports.getBalanceMap = getBalanceMap;
+
+const clearCachedBalance = async (userId) => {
+  await Cache.pSet(balanceCacheKey, userId, null);
+}
+
+const refreshCachedBalance = async userId => {
+  const balanceMap = await getBalanceMap(userId);
+  await Cache.pSet(balanceCacheKey, userId, balanceMap);
+  return balanceMap;
+}
+
+exports.getBalanceMap = async userId => {
+  const cachedBalance = await Cache.pGet(balanceCacheKey, userId);
+  if (cachedBalance) {
+    return cachedBalance;
+  }
+  const balanceMap = await refreshCachedBalance(userId);
+  return balanceMap;
+}
 
 const updateReceiptByUuid = async (uuid, data) => {
   assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID('data'));
@@ -357,12 +375,14 @@ const updateReceiptByUuid = async (uuid, data) => {
   });
   const receipt = afterReceiptDB.toJSON();
   console.log(` ------------- receipt ---------------`, receipt);
+  const user = await User.getByAddress(receipt.fromAddress);
   if (receipt.type === 'RECHARGE') {
-    const user = await User.getByAddress(receipt.toAddress);
     socketIo.sendToUser(user.id, 'recharge', {
       receipt
     });
   }
+  await clearCachedBalance(user.id);
+  refreshCachedBalance(user.id);
 };
 
 const saveSnapshots = async (snapshots, options) => {
@@ -406,51 +426,90 @@ const saveSnapshot = async (snapshot, options) => {
   return snapshot;
 };
 
-exports.syncMixinSnapshots = async () => {
-  try {
-    let session = {};
-    const currencies = Object.keys(currencyMapAsset);
-    try {
-      session = JSON.parse(fs.readFileSync('session.json', 'utf8'));
-    } catch (err) {
-      const current = new Date();
-      for (const currency of currencies) {
-        session[currency] = {
-          offset: current.toISOString()
-        }
+exports.syncMixinSnapshots = () => {
+  const syncKey = `${config.serviceName.toUpperCase()}_SYNC_MIXIN_SNAPSHOTS`;
+  return new Promise((resolve) => {
+    (async () => {
+      console.log(` ------------- syncKey ---------------`, syncKey);
+      const isLock = await Cache.pTryLock(syncKey, 5) // 15s
+      if (isLock) {
+        console.log(` ------------- 锁住了，请返回 ---------------`);
+        resolve();
+        return;
       }
-      const json = JSON.stringify(session);
-      fs.writeFileSync('session.json', json, 'utf8');
-    };
-    const snapshots = [];
-    const tasks = currencies.map(async currency => {
-      try {
-        const result = await mixin.readSnapshots(
-          rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
-          currencyMapAsset[currency],
-          '10',
-          'ASC'
-        );
-        const {
-          data
-        } = result;
-        for (const i in data) {
-          session[currency].offset = data[i].created_at;
-          if (data[i].user_id) {
-            snapshots.push(data[i]);
-          }
+      console.log(` ------------- syncMixinSnapshots ---------------`, new Date().toString());
+      const timerId = setTimeout(() => {
+        try {
+          Cache.pUnLock(syncKey);
+        } catch (err) {
+          console.log(` ------------- pUnLock err ---------------`, err);
         }
-      } catch (err) {}
-    })
-    await Promise.all(tasks);
-    await saveSnapshots(snapshots);
-    const json = JSON.stringify(session);
-    fs.writeFileSync('session.json', json, 'utf8');
-    return snapshots;
-  } catch (err) {
-    throw err;
-  }
-};
+        console.log(` ------------- 超时，不再等待，准备开始下一次 ---------------`);
+        resolve();
+        stop = true;
+      }, 10 * 1000)
+      let stop = false;
+      try {
+        let session = {};
+        const currencies = Object.keys(currencyMapAsset);
+        try {
+          session = JSON.parse(fs.readFileSync('session.json', 'utf8'));
+        } catch (err) {
+          const current = new Date();
+          for (const currency of currencies) {
+            session[currency] = {
+              offset: current.toISOString()
+            }
+          }
+          const json = JSON.stringify(session);
+          fs.writeFileSync('session.json', json, 'utf8');
+        };
+        const snapshots = [];
+        const tasks = currencies.map(async currency => {
+          try {
+            const result = await mixin.readSnapshots(
+              rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
+              currencyMapAsset[currency],
+              '50',
+              'ASC'
+            );
+            const {
+              data
+            } = result;
+            for (const i in data) {
+              session[currency].offset = data[i].created_at;
+              if (data[i].user_id) {
+                snapshots.push(data[i]);
+              }
+            }
+          } catch (err) {
+            console.log(` ------------- ERROR: 失败，准备开始下一次 ---------------`);
+          }
+        })
+        console.log(` ------ step1: 开始发请求 --------`);
+        await Promise.all(tasks);
+        clearTimeout(timerId);
+        if (stop) {
+          return;
+        }
+        console.log(` ------ step2: 请求结束 --------`);
+        await saveSnapshots(snapshots);
+        console.log(` ------ step3: 更新数据库 --------`);
+        const json = JSON.stringify(session);
+        fs.writeFileSync('session.json', json, 'utf8');
+      } catch (err) {
+        console.log(` ------------- ERROR: 失败，准备开始下一次 ---------------`);
+      }
+      console.log(` ------ step4: 完成，准备开始下一次 --------`);
+      try {
+        Cache.pUnLock(syncKey);
+      } catch (err) {
+        console.log(` ------------- pUnLock err ---------------`, err);
+      }
+      resolve();
+    })();
+  });
+}
 
 exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
@@ -521,13 +580,6 @@ const transferToUser = async (data = {}) => {
     uuid: tfRaw.trace_id,
     viewToken: tfRaw.viewToken
   });
-  const latestAsset = await getAsset({
-    currency,
-    clientId: wallet.mixinClientId,
-    sessionId: wallet.mixinSessionId,
-    privateKey: wallet.mixinPrivateKey,
-  });
-  assertFault(latestAsset, Errors.ERR_WALLET_FETCH_BALANCE);
 }
 
 const createRewardReceipt = async (data = {}) => {

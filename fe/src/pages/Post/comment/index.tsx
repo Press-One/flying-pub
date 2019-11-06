@@ -141,7 +141,7 @@ export default observer((props: IProps) => {
 
   const renderEmptyComment = () => {
     return (
-      <div className="my-10 text-center">
+      <div className="my-20 text-center">
         <div className="text-gray-700 mb-3">还没有人发表评论</div>
       </div>
     );

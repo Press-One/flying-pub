@@ -1,8 +1,8 @@
 const Mixin = require('mixin-node');
 const util = require('../utils');
 const config = require('../config');
-const User = require('./user');
 const Wallet = require('./sequelize/wallet');
+const User = require('./user');
 const {
   aesCrypto,
   aesDecrypt
@@ -42,9 +42,13 @@ const aesDecryptWallet = data => {
   return data;
 };
 
-const generateWallet = async user => {
-  assertFault(user, Errors.ERR_IS_REQUIRED(user));
-  assertFault(user.name, Errors.ERR_IS_REQUIRED('user.name'))
+const generateWallet = async userId => {
+  assertFault(userId, Errors.ERR_IS_REQUIRED(userId));
+  const user = await User.get(userId, {
+    withProfile: true
+  });
+  assertFault(user, Errors.ERR_NOT_FOUND(user));
+  assertFault(user.name, Errors.ERR_NOT_FOUND('user.name'))
   let mxRaw = await mixin.account.createUser(user.name);
   assertFault(
     mxRaw && mxRaw.data && mxRaw.publickey && mxRaw.privatekey,
@@ -104,7 +108,7 @@ exports.tryCreateWallet = async (userId) => {
     return user;
   }
 
-  const walletData = await generateWallet(user);
+  const walletData = await generateWallet(userId);
   const wallet = await Wallet.create({
     userId,
     ...walletData

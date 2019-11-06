@@ -30,7 +30,7 @@ const Asset = (props: any) => {
         <img src={assetIconMap[asset]} alt={asset} width="40" height="40" />
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">{amount}</span>
-          <span className="text-xs">{asset}</span>
+          <span className="text-xs font-bold">{asset}</span>
         </div>
       </div>
       <div className="flex items-center">
@@ -52,7 +52,7 @@ const Asset = (props: any) => {
 };
 
 export default observer((props: any) => {
-  const { userStore, walletStore } = useStore();
+  const { userStore, walletStore, snackbarStore } = useStore();
   const [currency, setCurrency] = React.useState('');
   const [openRechargeModal, setOpenRechargeModal] = React.useState(false);
   const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);
@@ -80,22 +80,33 @@ export default observer((props: any) => {
 
   const fetchBalance = async () => {
     try {
+      walletStore.setIsFetchedBalance(false);
       const balance = await Api.getBalance();
       walletStore.setBalance(balance);
+      walletStore.setIsFetchedBalance(true);
     } catch (err) {}
   };
 
-  const onCloseWithdrawModal = async (isSuccess: boolean) => {
+  const onCloseWithdrawModal = async (isSuccess: boolean, message?: string) => {
     setOpenWithdrawModal(false);
     if (isSuccess) {
-      fetchBalance();
+      await fetchBalance();
+      await sleep(500);
+      snackbarStore.show({
+        message: message || '转出成功',
+        duration: 8000,
+      });
     }
   };
 
-  const onCloseRechargeModal = async (isSuccess: boolean) => {
+  const onCloseRechargeModal = async (isSuccess: boolean, message?: string) => {
     setOpenRechargeModal(false);
     if (isSuccess) {
-      fetchBalance();
+      await fetchBalance();
+      await sleep(500);
+      snackbarStore.show({
+        message: message || '转入成功',
+      });
     }
   };
 

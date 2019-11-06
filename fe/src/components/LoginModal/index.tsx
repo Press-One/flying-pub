@@ -42,7 +42,7 @@ export default observer(() => {
           </a>
         </div>
         <div className="mt-5">
-          <a href={`${getApiEndpoint()}/api/auth/mixin/login?redirect=http://localhost:4008/`}>
+          <a href={`${getApiEndpoint()}/api/auth/mixin/login?redirect=${window.location.href}`}>
             <Button>我已安装 Mixin，前往 Mixin 登陆页扫码登陆</Button>
           </a>
         </div>

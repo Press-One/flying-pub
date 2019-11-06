@@ -2,12 +2,13 @@ import React from 'react';
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import Check from '@material-ui/icons/Check';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import Help from '@material-ui/icons/Help';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
+import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import { sleep } from 'utils';
 import Api from './api';
@@ -22,14 +23,14 @@ export default (props: any) => {
   const [isPaid, setIsPaid] = React.useState(false);
   const { snackbarStore } = useStore();
 
-  const onCloseModal = (isSuccess: boolean) => {
+  const onCloseModal = (isSuccess: boolean, message?: string) => {
     setStep(1);
     setAmount('');
     setMemo('');
     setPin('');
     setPaying(false);
     setIsPaid(false);
-    onClose(isSuccess);
+    onClose(isSuccess, message);
   };
 
   const step1 = () => {
@@ -97,12 +98,11 @@ export default (props: any) => {
             });
             setPaying(false);
             setIsPaid(true);
-            await sleep(800);
-            onCloseModal(true);
-            await sleep(300);
-            snackbarStore.show({
-              message: '转出成功',
-            });
+            await sleep(1000);
+            onCloseModal(
+              true,
+              `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}`,
+            );
           } else {
             snackbarStore.show({
               message: '支付密码错误，请重试',
@@ -128,34 +128,41 @@ export default (props: any) => {
         <div className="mt-3 text-xs pb-1">
           <span className="font-bold text-xl">{amount}</span> {currency}
         </div>
-        <div className="mt-5 pb-2 text-gray-800">
+        <div className="mt-5 text-gray-800">
           {!isPaid && !paying && (
             <div>
-              <OTPInput
-                inputClassName="border border-gray-400 rounded opt-input"
-                value={pin}
-                onChange={onOtpChange}
-                autoFocus
-                OTPLength={6}
-                otpType="number"
-                secure
-              />
-              <style jsx global>{`
-                .opt-input {
-                  margin: 0 2px !important;
-                }
-              `}</style>
+              <div>
+                <OTPInput
+                  inputClassName="border border-gray-400 rounded opt-input"
+                  value={pin}
+                  onChange={onOtpChange}
+                  autoFocus
+                  OTPLength={6}
+                  otpType="number"
+                  secure
+                />
+                <style jsx global>{`
+                  .opt-input {
+                    margin: 0 2px !important;
+                  }
+                `}</style>
+              </div>
+              <div className="mt-4 text-xs text-blue-400 cursor-pointer" onClick={() => setStep(1)}>
+                返回
+              </div>
             </div>
           )}
         </div>
         {!isPaid && paying && (
-          <div className="px-20 mx-2 pb-2">
-            <Loading size={40} />
+          <div className="px-20 mx-2 pt-1 pb-3">
+            <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-4 px-20 ml-1 mr-1 text-5xl text-blue-400">
-            <Check />
+          <div className="-mt-4 px-20 ml-1 mr-1 pb-1 text-5xl text-blue-400">
+            <Fade in={true} timeout={500}>
+              <CheckCircleOutline />
+            </Fade>
           </div>
         )}
       </div>

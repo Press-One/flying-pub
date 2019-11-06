@@ -18,7 +18,9 @@ export default (props: any) => {
         <div className={`mt-1 text-gray-500${isMobile ? ' text-sm' : ''}`}>
           {post.author} | {ago(post.pubDate)}
         </div>
-        <div className={`mt-3 text-gray-700 text-base`}>{post.contentSnippet.slice(0, 150)}</div>
+        <div className={`mt-3 text-gray-700 text-base leading-relaxed`}>
+          {post.contentSnippet.slice(0, 150)}
+        </div>
       </div>
     </Link>
   );
