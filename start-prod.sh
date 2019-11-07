@@ -1,1 +1,1 @@
-cd fe && yarn server
+cd be && yarn start-prod & cd be && yarn start-queue-prod & cd be && yarn fe-server

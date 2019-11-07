@@ -9,7 +9,8 @@
     "start-prod": "./node_modules/.bin/pm2 start bin/run --watch",
     "start-queue-prod": "./node_modules/.bin/pm2 start ./queue.js",
     "test": "node ./test",
-    "test-watch": "./node_modules/.bin/nodemon ./test"
+    "test-watch": "./node_modules/.bin/nodemon ./test",
+    "fe-server": "http-server ./build -p 4070"
   },
   "nodemonConfig": {
     "ignore": [
@@ -65,6 +66,7 @@
     "mocha": "^6.2.0",
     "nodemon": "^1.8.1",
     "should": "^13.2.3",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "http-server": "^0.11.1"
   }
 }
