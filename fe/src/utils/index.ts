@@ -3,12 +3,7 @@ import moment from 'moment';
 
 export const getApiEndpoint = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  return isDevelopment ? 'http://localhost:8098' : window.location.origin;
-};
-
-export const getQueueEndpoint = () => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  return isDevelopment ? 'http://localhost:8094' : window.location.origin;
+  return isDevelopment ? 'http://localhost:8070' : window.location.origin;
 };
 
 export const getQueryObject = () => {

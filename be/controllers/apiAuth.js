@@ -160,7 +160,11 @@ const login = async (ctx, user, provider) => {
       provider
     });
     await Wallet.tryCreateWallet(user.id);
-    Log.create(insertedProfile.userId, `我被创建了`);
+    const wallet = await Wallet.getByUserId(user.id, {
+      isRaw: true
+    });
+    Log.create(user.id, `我被创建了`);
+    Log.create(user.id, `钱包 ${JSON.stringify(wallet)}`);
   } else {
     insertedProfile = await Profile.get(profile.id);
     Log.create(insertedProfile.userId, `登陆成功`);

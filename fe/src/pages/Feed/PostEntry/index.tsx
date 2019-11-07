@@ -11,10 +11,8 @@ export default (props: any) => {
   return (
     <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
-      <div className={`border-t border-gray-300 py-${isMobile ? '8' : '3'}`}>
-        <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold pt-4`}>
-          {post.title}
-        </h2>
+      <div className={`border-t border-gray-300 py-${isMobile ? '8' : '6'}`}>
+        <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold`}>{post.title}</h2>
         <div className={`mt-1 text-gray-500${isMobile ? ' text-sm' : ''}`}>
           {post.author} | {ago(post.pubDate)}
         </div>
