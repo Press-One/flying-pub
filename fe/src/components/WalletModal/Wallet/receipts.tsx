@@ -93,6 +93,9 @@ export default observer(() => {
         {receipts.map((receipt: any) => (
           <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
         ))}
+        {receipts.length === 0 && (
+          <div className="text-gray-500 mt-32 text-center text-sm">暂时没有交易记录</div>
+        )}
       </div>
     </Fade>
   );
