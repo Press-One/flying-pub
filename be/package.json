@@ -45,7 +45,6 @@
     "mathjs": "^6.2.3",
     "mixin-node": "^1.0.25",
     "mysql2": "^1.7.0",
-    "passport-github2": "^0.1.11",
     "passport-mixin": "^0.1.24",
     "pg": "^7.0.0",
     "pg-hstore": "^2.3.3",

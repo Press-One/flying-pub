@@ -1,22 +1,10 @@
 'use strict';
 
 const passport = require('koa-passport');
-const GithubStrategy = require('passport-github2').Strategy;
 const MixinStrategy = require('passport-mixin').Strategy;
 const config = require('../config');
 
 const buildPassport = () => {
-  passport.use(new GithubStrategy({
-    clientID: config.github.clientID,
-    clientSecret: config.github.clientSecret,
-    callbackURL: config.github.callbackUrl
-  }, (accessToken, refreshToken, profile, callback) => {
-    profile.auth = {
-      accessToken: accessToken,
-      refreshToken: refreshToken
-    };
-    callback(null, profile);
-  }));
 
   passport.use(new MixinStrategy({
     clientID: config.mixin.clientId,
@@ -42,11 +30,6 @@ const buildPassport = () => {
 };
 
 const authenticate = {
-  github: passport.authenticate('github', {
-    failureRedirect: config.github.loginUrl,
-    scope: ['read:user']
-  }),
-
   mixin: passport.authenticate('mixin', {
     failureRedirect: config.mixin.loginUrl,
     scope: 'PROFILE:READ'

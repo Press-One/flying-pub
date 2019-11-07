@@ -37,13 +37,6 @@ const config = {
     renew: false
   },
 
-  github: {
-    clientID: "a269deced07c748a3526",
-    clientSecret: "8cf2b9c75e540588be69ecbd498fee808abbeadd",
-    loginUrl: "/api/auth/github/login",
-    callbackUrl: `${serviceRoot}/api/auth/github/callback`
-  },
-
   mixin: {
     clientId: "73542b48-ebaa-48da-9587-302cc4095c37",
     clientSecret: "daf786d6738c2b44a3f884f23fcf68db99103128241bcbc0345d1660155c8d5b",
@@ -114,13 +107,10 @@ Xr2NSYgymfIZVuVBSKrC0nc1yD4/4Krl1WzPoa5sKNo=
 
   sync: false,
 
-  sentryDsn: "https://d2fcc4193e3548b28f191e97c97c4ff8@sentry.xue.cn/9",
-
   permissionDenyUrl: "http://localhost:4201/permissionDeny",
 
   whitelist: {
-    mixin: [1095057],
-    github: []
+    mixin: [1095057]
   },
 };
 
