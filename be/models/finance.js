@@ -486,7 +486,8 @@ exports.syncMixinSnapshots = () => {
               }
             }
           } catch (err) {
-            console.log(` ------------- ERROR: 失败，准备开始下一次 ---------------`);
+            console.log(` ------------- err ---------------`, err);
+            console.log(` ------------- ERROR: readSnapshots 失败，准备开始下一次 ---------------`);
           }
         })
         console.log(` ------ step1: 开始发请求 --------`);

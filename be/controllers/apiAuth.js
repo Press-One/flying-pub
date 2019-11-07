@@ -171,7 +171,7 @@ const login = async (ctx, user, provider) => {
       isRaw: true
     });
     if (!wallet) {
-      Wallet.tryCreateWallet(userId);
+      await Wallet.tryCreateWallet(userId);
     } else {
       console.log(`${userId}： 钱包已存在，无需初始化`);
       Log.create(userId, `钱包 ${JSON.stringify(wallet)}`);
