@@ -7,7 +7,7 @@ const {
   assert,
   Errors
 } = require('../models/validator');
-const User = require('../models/User');
+const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require('../models/wallet');
 const Token = require('../models/token');

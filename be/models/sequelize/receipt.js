@@ -23,7 +23,7 @@ const Receipt = sequelize.define('receipts', {
     type: Sequelize.STRING
   },
   amount: {
-    type: Sequelize.DECIMAL(65, 16)
+    type: Sequelize.DECIMAL(24, 16)
   },
   status: {
     type: Sequelize.STRING
