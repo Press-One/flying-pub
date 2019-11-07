@@ -1,4 +1,5 @@
-const BASE = 'http://localhost:8098';
+import { getApiEndpoint } from 'utils';
+const BASE = getApiEndpoint();
 export default async (url: any, options: any = {}) => {
   if (options.method === 'POST' || options.method === 'PUT') {
     options.headers = { 'Content-Type': 'application/json' };
