@@ -13,3 +13,41 @@ export const assetIconMap: any = {
 export const getPostsSiteDomain = () => {
   return '';
 };
+
+const maxAmount: any = {
+  CNB: 1000000,
+  BTC: 0.1,
+  ETH: 1,
+  EOS: 1,
+  BOX: 100,
+  PRS: 100,
+  XIN: 10,
+};
+
+export const checkAmount = (amount: string, currency: string, balance?: any) => {
+  if (!amount) {
+    return {
+      message: `请输入金额`,
+      type: 'error'
+    };
+  }
+  if (balance) {
+    const isGtBalance = Number(amount) > balance[currency];
+    if (isGtBalance) {
+      return {
+        message: `你的 ${currency} 余额只有 ${balance[currency]} 个`,
+        type: 'error'
+      };
+    }
+  }
+  const isGtMax = Number(amount) > maxAmount[currency];
+  if (isGtMax) {
+    return {
+      message: `${currency} 单次最大交易金额不能超过 ${maxAmount[currency]} 个`,
+      type: 'error'
+    };
+  }
+  return {
+    ok: true
+  };
+};

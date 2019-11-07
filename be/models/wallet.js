@@ -121,18 +121,15 @@ exports.updateCustomPin = async (userId, pinCode, options = {}) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
   const wallet = await getByUserId(userId);
-  console.log(` ------------- wallet.customPin ---------------`, wallet.customPin);
   if (wallet.customPin) {
     const {
       oldPinCode
     } = options;
     assert(oldPinCode, Errors.ERR_IS_REQUIRED('oldPinCode'))
     const cryptoOldPin = aesCrypto(oldPinCode, config.aesKey256);
-    console.log(` ------------- cryptoOldPin ---------------`, cryptoOldPin);
     assert(wallet.customPin === cryptoOldPin, Errors.ERR_WALLET_MISMATCH_PIN);
   }
   const cryptoPin = aesCrypto(pinCode, config.aesKey256);
-  console.log(` ------------- cryptoPin ---------------`, cryptoPin);
   await Wallet.update({
     customPin: cryptoPin,
   }, {

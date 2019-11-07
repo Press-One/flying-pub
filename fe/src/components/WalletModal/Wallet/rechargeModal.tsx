@@ -7,10 +7,11 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import { useStore } from 'store';
+import { checkAmount } from './utils';
 import Api from './api';
 
 export default (props: any) => {
-  const { userStore, socketStore } = useStore();
+  const { userStore, socketStore, snackbarStore } = useStore();
   const { isLogin } = userStore;
   const { open, onClose, currency } = props;
   const [step, setStep] = React.useState(1);
@@ -62,6 +63,15 @@ export default (props: any) => {
     setSubmitting(false);
   };
 
+  const tryRecharge = (currency: string, amount: string, memo: string = '') => {
+    const result = checkAmount(amount, currency);
+    if (result.ok) {
+      recharge(currency, amount, memo)
+    } else {
+      snackbarStore.show(result);
+    }
+  };
+
   const step1 = () => {
     return (
       <div>
@@ -75,9 +85,10 @@ export default (props: any) => {
             variant="outlined"
             fullWidth
             autoFocus
-            onKeyPress={(e: any) => e.key === 'Enter' && recharge(currency, amount, memo)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
+              inputProps: { maxLength: 8 },
             }}
           />
           <div className="-mt-2" />
@@ -88,10 +99,11 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && recharge(currency, amount, memo)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
+            inputProps={{ maxLength: 20 }}
           />
         </div>
-        <div className="mt-5" onClick={() => recharge(currency, amount, memo)}>
+        <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
           <Button>继续</Button>
         </div>
       </div>

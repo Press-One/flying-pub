@@ -1,6 +1,6 @@
 const Post = require('./sequelize/post');
-const Joi = require('joi');
 const {
+  Joi,
   assert,
   Errors,
   attempt

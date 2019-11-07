@@ -51,43 +51,25 @@ const providerPermissionChecker = {
     // const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
     // return IsInMixinBoxGroup;
   },
-  github: async profile => {
+  github: async () => {
     return true;
-    // const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
-    // return isPaidUserOfXue;
   },
 };
 
-const checkIsInMixinBoxGroup = async mixinUuid => {
-  try {
-    await request({
-      uri: `https://xiaolai-ri-openapi.groups.xue.cn/v1/users/${mixinUuid}`,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${config.boxGroupToken}`
-      },
-    }).promise();
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-const checkIsPaidUserOfXue = async githubNickName => {
-  try {
-    const user = await request({
-      uri: `${config.xueUserExtraApi}/${githubNickName}`,
-      json: true,
-      headers: {
-        'x-po-auth-token': config.xueAdminToken
-      },
-    }).promise();
-    const isPaidUser = user.balance > 0;
-    return isPaidUser;
-  } catch (err) {
-    return false;
-  }
-}
+// const checkIsInMixinBoxGroup = async mixinUuid => {
+//   try {
+//     await request({
+//       uri: `https://xiaolai-ri-openapi.groups.xue.cn/v1/users/${mixinUuid}`,
+//       json: true,
+//       headers: {
+//         Authorization: `Bearer ${config.boxGroupToken}`
+//       },
+//     }).promise();
+//     return true;
+//   } catch (err) {
+//     return false;
+//   }
+// }
 
 exports.oauthCallback = async (ctx, next) => {
   const {

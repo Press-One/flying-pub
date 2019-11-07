@@ -31,7 +31,7 @@ export default (props: any) => {
         </div>
       </div>
       <div className="w-5/12 mt-3 mx-auto pb-5">
-        <div className="border border-gray-300 rounded">
+        <div className="border border-gray-300 bg-gray-100 rounded">
           {currencies.map((asset: any, index: number) => {
             return (
               <div

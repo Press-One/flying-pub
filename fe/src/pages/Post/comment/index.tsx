@@ -9,6 +9,7 @@ import Loading from 'components/Loading';
 import Drawer from '@material-ui/core/Drawer';
 import Comments from './comments';
 import { useStore } from 'store';
+import { sleep } from 'utils';
 import CommentApi from './api';
 
 interface IProps {
@@ -69,6 +70,7 @@ export default observer((props: IProps) => {
         objectType: 'post',
       };
       const newComment = await CommentApi.create(comment);
+      await sleep(500);
       commentStore.addComment(newComment);
       openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
@@ -83,7 +85,6 @@ export default observer((props: IProps) => {
         behavior: 'smooth',
       });
     } catch (e) {
-      console.log(` ------------- e ---------------`, e);
       snackbarStore.show({
         message: '回复失败，请稍后重试',
         type: 'error',
@@ -142,7 +143,7 @@ export default observer((props: IProps) => {
   const renderEmptyComment = () => {
     return (
       <div className="my-20 text-center">
-        <div className="text-gray-700 mb-3">还没有人发表评论</div>
+        <div className="text-gray-500 mb-3">还没有人发表评论</div>
       </div>
     );
   };
@@ -277,7 +278,7 @@ export default observer((props: IProps) => {
             setOpenDrawer(false);
           }}
         >
-          <div className="container">
+          <div className="container m-auto">
             <div className="w-7/12 m-auto pt-2 pb-5">
               {renderEditor({
                 user,
@@ -300,7 +301,7 @@ export default observer((props: IProps) => {
         ) : (
           renderEmptyComment()
         )}
-        {hasComments && <div className="mt-12 text-gray-500 text-center">-- 没有更多啦--</div>}
+        {hasComments && <div className="mt-12 text-gray-500 text-center">-- 没有更多啦 --</div>}
         {hasComments && comments.length > 3 && (
           <div className="text-center mt-2">
             <span

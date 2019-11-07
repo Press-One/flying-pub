@@ -1,6 +1,6 @@
 const Profile = require('./sequelize/profile');
-const Joi = require('joi');
 const {
+  Joi,
   attempt,
   assert,
   Errors

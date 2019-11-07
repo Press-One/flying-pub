@@ -5,7 +5,7 @@
   "scripts": {
     "start": "./node_modules/.bin/nodemon bin/run",
     "koa": "./node_modules/.bin/runkoa bin/www",
-    "start-queue": "./node_modules/.bin/nodemon ./queue.js",
+    "start-queue": "node ./queue.js",
     "start-prod": "./node_modules/.bin/pm2 start bin/run --watch",
     "start-queue-prod": "./node_modules/.bin/pm2 start ./queue.js",
     "test": "node ./test",

@@ -11,6 +11,7 @@ import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import { sleep } from 'utils';
+import { checkAmount } from './utils';
 import Api from './api';
 
 export default (props: any) => {
@@ -21,7 +22,8 @@ export default (props: any) => {
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
-  const { snackbarStore } = useStore();
+  const { snackbarStore, walletStore } = useStore();
+  const { balance } = walletStore;
 
   const onCloseModal = (isSuccess: boolean, message?: string) => {
     setStep(1);
@@ -31,6 +33,15 @@ export default (props: any) => {
     setPaying(false);
     setIsPaid(false);
     onClose(isSuccess, message);
+  };
+
+  const tryGoStep2 = (amount: string, currency: string, balance: any) => {
+    const result = checkAmount(amount, currency, balance);
+    if (result.ok) {
+      setStep(2);
+    } else {
+      snackbarStore.show(result);
+    }
   };
 
   const step1 = () => {
@@ -54,9 +65,10 @@ export default (props: any) => {
             variant="outlined"
             fullWidth
             autoFocus
-            onKeyPress={(e: any) => e.key === 'Enter' && setStep(2)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep2(amount, currency, balance)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
+              inputProps: { maxLength: 8 },
             }}
           />
           <div className="-mt-2" />
@@ -67,10 +79,11 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && setStep(2)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep2(amount, currency, balance)}
+            inputProps={{ maxLength: 20 }}
           />
         </div>
-        <div className="mt-5" onClick={() => setStep(2)}>
+        <div className="mt-5" onClick={() => tryGoStep2(amount, currency, balance)}>
           <Button>
             <div className="flex items-center">继续</div>
           </Button>
@@ -154,12 +167,12 @@ export default (props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="px-20 mx-2 pt-1 pb-3">
+          <div className="pt-2 mx-2 px-20 pb-2">
             <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-4 px-20 ml-1 mr-1 pb-1 text-5xl text-blue-400">
+          <div className="-mt-3 px-20 ml-1 mr-1 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <CheckCircleOutline />
             </Fade>

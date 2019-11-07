@@ -63,6 +63,7 @@ const mixin = new Mixin({
 
 const create = async (receipt, options = {}) => {
   console.log(` ------------- create receipt ---------------`, receipt);
+  console.log(` ------------- receipt.amount ---------------`, receipt.amount);
   receipt = attempt(receipt, {
     fromAddress: Joi.string().trim().required(),
     toAddress: Joi.string().trim().required(),
@@ -77,6 +78,7 @@ const create = async (receipt, options = {}) => {
     objectType: Joi.string().trim().optional(),
     objectRId: Joi.string().trim().optional(),
   });
+  console.log(` ------------- here ---------------`);
   receipt.amount = parseAmount(receipt.amount);
   assert((receipt.amount), Errors.ERR_IS_INVALID('amount'));
   assert(transferTypes.has(receipt.type), Errors.ERR_IS_INVALID('type'));
@@ -430,14 +432,13 @@ exports.syncMixinSnapshots = () => {
   const syncKey = `${config.serviceName.toUpperCase()}_SYNC_MIXIN_SNAPSHOTS`;
   return new Promise((resolve) => {
     (async () => {
-      console.log(` ------------- syncKey ---------------`, syncKey);
       const isLock = await Cache.pTryLock(syncKey, 5) // 15s
       if (isLock) {
         console.log(` ------------- 锁住了，请返回 ---------------`);
         resolve();
         return;
       }
-      console.log(` ------------- syncMixinSnapshots ---------------`, new Date().toString());
+      console.log(new Date().toString());
       const timerId = setTimeout(() => {
         try {
           Cache.pUnLock(syncKey);
@@ -470,7 +471,7 @@ exports.syncMixinSnapshots = () => {
             const result = await mixin.readSnapshots(
               rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
               currencyMapAsset[currency],
-              '50',
+              '100',
               'ASC'
             );
             const {
@@ -488,10 +489,6 @@ exports.syncMixinSnapshots = () => {
         })
         console.log(` ------ step1: 开始发请求 --------`);
         await Promise.all(tasks);
-        clearTimeout(timerId);
-        if (stop) {
-          return;
-        }
         console.log(` ------ step2: 请求结束 --------`);
         await saveSnapshots(snapshots);
         console.log(` ------ step3: 更新数据库 --------`);
@@ -501,6 +498,10 @@ exports.syncMixinSnapshots = () => {
         console.log(` ------------- ERROR: 失败，准备开始下一次 ---------------`);
       }
       console.log(` ------ step4: 完成，准备开始下一次 --------`);
+      clearTimeout(timerId);
+      if (stop) {
+        return;
+      }
       try {
         Cache.pUnLock(syncKey);
       } catch (err) {

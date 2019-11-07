@@ -20,6 +20,14 @@ import './styles/tailwind.css';
 import './styles/base.scss';
 
 const AppRouter = () => {
+  if (isMobile) {
+    return <div className="h-screen flex justify-center items-center">
+    <div className="text-red-400">
+      飞贴 v2 手机端正在适配，请移步到电脑端体验
+    </div>
+  </div>
+  }
+
   return (
     <StoreProvider>
       <Router>

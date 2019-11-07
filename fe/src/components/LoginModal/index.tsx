@@ -28,7 +28,7 @@ export default observer(() => {
           只需手机号加 6 位数字密码即可享受免费实时转账体验
         </div>
         <div className="flex items-center justify-center mt-5 text-gray-500 text-xs">
-          <span className="flex items-center text-lg mr-2">
+          <span className="flex items-center text-lg mr-1">
             <Info />
           </span>
           手机还没有安装 Mixin？

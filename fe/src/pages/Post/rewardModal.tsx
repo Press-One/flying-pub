@@ -15,22 +15,24 @@ import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
 import { sleep } from 'utils';
+import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
-  const { userStore, socketStore, walletStore, modalStore } = useStore();
+  const { userStore, socketStore, walletStore, modalStore, snackbarStore } = useStore();
+  const { balance } = walletStore;
   const { isLogin } = userStore;
   const { open, onClose, fileRId, toAuthor, toAddress, toMixinClientId } = props;
   const [step, setStep] = React.useState(1);
   const [selectedAsset, setSelectedAsset] = React.useState('CNB');
   const [amount, setAmount] = React.useState('');
   const [memo, setMemo] = React.useState('');
+  const [defaultPaymentMethod, setDefaultPaymentMethod] = React.useState('');
   const [paymentMethod, setPaymentMethod] = React.useState('');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
   const [paymentUrl, setPaymentUrl] = React.useState('');
   const [iframeLoading, setIframeLoading] = React.useState(false);
-  const { snackbarStore } = useStore();
 
   React.useEffect(() => {
     if (step !== 5) {
@@ -52,6 +54,7 @@ export default observer((props: any) => {
       setAmount('');
       setMemo('');
       setPin('');
+      setDefaultPaymentMethod('');
       setPaymentMethod('');
       setPaying(false);
       setIsPaid(false);
@@ -131,6 +134,7 @@ export default observer((props: any) => {
             });
             setPaying(false);
             setIsPaid(true);
+            setDefaultPaymentMethod('');
             setPaymentMethod('');
             await sleep(1000);
             onCloseModal(true);
@@ -138,6 +142,10 @@ export default observer((props: any) => {
             snackbarStore.show({
               message: '打赏成功',
             });
+            try {
+              const balance = await WalletApi.getBalance();
+              walletStore.setBalance(balance);
+            } catch (err) {}
           } else {
             snackbarStore.show({
               message: '支付密码错误，请重试一下',
@@ -205,6 +213,15 @@ export default observer((props: any) => {
     );
   };
 
+  const tryGoStep3 = (amount: string, currency: string) => {
+    const result = checkAmount(amount, currency);
+    if (result.ok) {
+      setStep(3);
+    } else {
+      snackbarStore.show(result);
+    }
+  };
+
   const step2 = () => {
     return (
       <div>
@@ -220,9 +237,10 @@ export default observer((props: any) => {
             variant="outlined"
             autoFocus
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && setStep(3)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep3(amount, selectedAsset)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{selectedAsset}</InputAdornment>,
+              inputProps: { maxLength: 8 },
             }}
           />
           <div className="-mt-2" />
@@ -233,11 +251,12 @@ export default observer((props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && setStep(3)}
+            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep3(amount, selectedAsset)}
+            inputProps={{ maxLength: 20 }}
           />
         </div>
         <div className="text-center mt-6">
-          <Button onClick={() => setStep(3)}>下一步</Button>
+          <Button onClick={() => tryGoStep3(amount, selectedAsset)}>下一步</Button>
         </div>
       </div>
     );
@@ -283,7 +302,8 @@ export default observer((props: any) => {
         name: '余额支付',
       });
     }
-    if (!paymentMethod) {
+    if (!defaultPaymentMethod || defaultPaymentMethod !== payments[0].method) {
+      setDefaultPaymentMethod(payments[0].method);
       setPaymentMethod(payments[0].method);
     }
     return (
@@ -301,7 +321,7 @@ export default observer((props: any) => {
                       payment.enabled && payment.method !== paymentMethod,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
                   },
-                  'text-center border rounded p-2 px-4 mt-3',
+                  'text-center border rounded p-3 px-8 mt-3 leading-none',
                 )}
                 onClick={() => payment.enabled && setPaymentMethod(payment.method)}
               >
@@ -314,7 +334,16 @@ export default observer((props: any) => {
                       {selectedAsset} 余额不足，去
                       <span
                         className="text-blue-400 cursor-pointer"
-                        onClick={modalStore.openWallet}
+                        onClick={() =>
+                          modalStore.openWallet({
+                            tab: 'assets',
+                            returnInfo: {
+                              requiredAsset: selectedAsset,
+                              requiredAmount: amount,
+                              text: '返回继续打赏',
+                            },
+                          })
+                        }
                       >
                         充值
                       </span>
@@ -399,12 +428,12 @@ export default observer((props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="px-20 mx-2 pt-1 pb-3">
+          <div className="pt-2 mx-2 px-20 pb-2">
             <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-5 px-20 ml-1 mr-1 pb-2 text-5xl text-blue-400">
+          <div className="-mt-3 px-20 ml-1 mr-1 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <CheckCircleOutline />
             </Fade>

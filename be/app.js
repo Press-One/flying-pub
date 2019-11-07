@@ -8,6 +8,7 @@ const logger = require('koa-logger');
 const cors = require('@koa/cors');
 const config = require('./config');
 const session = require('koa-session');
+const fs = require('fs');
 
 const index = require('./routes/index');
 const user = require('./routes/user');
@@ -55,6 +56,11 @@ router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());
 router.use('/api/ping', ping.routes(), ping.allowedMethods());
+
+router.get('/api/session.json', async ctx => {
+  const session = fs.readFileSync('session.json', 'utf8')
+  ctx.ok(session);
+});
 
 app.use(router.routes(), router.allowedMethods());
 

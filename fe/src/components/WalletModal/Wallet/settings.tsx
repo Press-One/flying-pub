@@ -148,16 +148,16 @@ export default observer(() => {
                 value={oldPin}
                 placeholder="旧的支付密码"
                 onChange={(event: any) => {
-                  if (event.target.value.length <= 6) {
-                    setOldPin(event.target.value);
-                  }
+                  setOldPin(event.target.value);
                 }}
                 margin="normal"
                 variant="outlined"
                 type="password"
                 InputProps={{
                   inputComponent: NumberFormatCustom,
+                  inputProps: { maxLength: 6 }
                 }}
+                onKeyPress={(e: any) => e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })}
               />
               <div className="-mt-2" />
             </div>
@@ -166,32 +166,32 @@ export default observer(() => {
             value={pin}
             placeholder={`6位支付密码（纯数字）`}
             onChange={(event: any) => {
-              if (event.target.value.length <= 6) {
-                setPin(event.target.value);
-              }
+              setPin(event.target.value);
             }}
             margin="normal"
             variant="outlined"
             type="password"
             InputProps={{
               inputComponent: NumberFormatCustom,
+              inputProps: { maxLength: 6 }
             }}
+            onKeyPress={(e: any) => e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })}
           />
           <div className="-mt-2" />
           <TextField
             value={pin2}
             placeholder="再输入一次6位密码"
             onChange={(event: any) => {
-              if (event.target.value.length <= 6) {
-                setPin2(event.target.value);
-              }
+              setPin2(event.target.value);
             }}
             margin="normal"
             variant="outlined"
             type="password"
             InputProps={{
               inputComponent: NumberFormatCustom,
+              inputProps: { maxLength: 6 }
             }}
+            onKeyPress={(e: any) => e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })}
           />
           <div className="flex items-center text-gray-500 mt-1">
             <Info />
