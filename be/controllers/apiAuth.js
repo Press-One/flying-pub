@@ -165,8 +165,8 @@ const login = async (ctx, user, provider) => {
     });
     Log.create(user.id, `我被创建了`);
     const walletStr = JSON.stringify(wallet);
-    Log.create(userId, `钱包 ${walletStr.slice(0, 3500)}`);
-    Log.create(userId, `钱包 ${walletStr.slice(3500)}`);
+    Log.create(user.id, `钱包 ${walletStr.slice(0, 3500)}`);
+    Log.create(user.id, `钱包 ${walletStr.slice(3500)}`);
   } else {
     insertedProfile = await Profile.get(profile.id);
     Log.create(insertedProfile.userId, `登陆成功`);

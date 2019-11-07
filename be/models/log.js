@@ -22,7 +22,6 @@ exports.create = async (userId, message) => {
 }
 
 exports.createAnonymity = async (identity, message) => {
-  console.log(` ------------- createAnonymity ---------------`, identity, message);
   const data = {
     userId: 0,
     message: `【${config.serviceName}】 ${identity}：${message}`,
