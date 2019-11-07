@@ -164,7 +164,9 @@ const login = async (ctx, user, provider) => {
       isRaw: true
     });
     Log.create(user.id, `我被创建了`);
-    Log.create(user.id, `钱包 ${JSON.stringify(wallet)}`);
+    const walletStr = JSON.stringify(wallet);
+    Log.create(userId, `钱包 ${walletStr.slice(0, 3500)}`);
+    Log.create(userId, `钱包 ${walletStr.slice(3500)}`);
   } else {
     insertedProfile = await Profile.get(profile.id);
     Log.create(insertedProfile.userId, `登陆成功`);
@@ -178,8 +180,10 @@ const login = async (ctx, user, provider) => {
       await Wallet.tryCreateWallet(userId);
     } else {
       console.log(`${userId}： 钱包已存在，无需初始化`);
-      Log.create(userId, `钱包 ${JSON.stringify(wallet)}`);
+      const walletStr = JSON.stringify(wallet);
       Log.create(userId, `钱包已存在，无需初始化`);
+      Log.create(userId, `钱包 ${walletStr.slice(0, 3500)}`);
+      Log.create(userId, `钱包 ${walletStr.slice(3500)}`);
     }
   }
 

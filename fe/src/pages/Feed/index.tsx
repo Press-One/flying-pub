@@ -66,7 +66,9 @@ export default observer(() => {
             {feedStore.feed.title}
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
-          <div className="text-gray-600 text-center mt-3">{feedStore.feed.description}</div>
+          <div className="text-gray-600 text-center mt-3 text-base">
+            {feedStore.feed.description}
+          </div>
         </div>
         <div className={`mt-${isMobile ? '8' : '10'}`}>
           {feedStore.pagePosts.map((post: Post) => {
