@@ -167,11 +167,15 @@ const login = async (ctx, user, provider) => {
     const {
       userId
     } = insertedProfile;
-    const wallet = await Wallet.getByUserId(userId);
+    const wallet = await Wallet.getByUserId(userId, {
+      isRaw: true
+    });
     if (!wallet) {
       Wallet.tryCreateWallet(userId);
     } else {
       console.log(`${userId}： 钱包已存在，无需初始化`);
+      Log.create(userId, `钱包 ${JSON.stringify(wallet)}`);
+      Log.create(userId, `钱包已存在，无需初始化`);
     }
   }
 

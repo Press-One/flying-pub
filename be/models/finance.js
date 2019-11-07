@@ -9,6 +9,7 @@ const Wallet = require('./wallet');
 const Post = require('./post');
 const socketIo = require('./socketIo');
 const Cache = require('./cache');
+const Log = require('./log');
 const Receipt = require('./sequelize/receipt');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -51,7 +52,7 @@ const transferTypes = new Set([
 
 const transferObjectTypes = new Set(['FILE']);
 
-const balanceCacheKey = `${config.serviceName.toUpperCase}_BALANCE_CACHE_KEY`;
+const balanceCacheKey = `${config.serviceName}_BALANCE_CACHE_KEY`;
 
 const mixin = new Mixin({
   client_id: config.mixin.clientId,
@@ -349,6 +350,7 @@ exports.getBalanceMap = async userId => {
 const updateReceiptByUuid = async (uuid, data) => {
   assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID('data'));
   assert(data.raw || data.toRaw, Errors.ERR_IS_INVALID('data raw'));
+  Log.createAnonymity('updateReceiptByUuid', `${uuid} ${JSON.stringify(data.raw || data.toRaw)}`);
   if (data.raw) {
     data.raw = JSON.stringify(data.raw);
   }
@@ -429,7 +431,7 @@ const saveSnapshot = async (snapshot, options) => {
 };
 
 exports.syncMixinSnapshots = () => {
-  const syncKey = `${config.serviceName.toUpperCase()}_SYNC_MIXIN_SNAPSHOTS`;
+  const syncKey = `${config.serviceName}_SYNC_MIXIN_SNAPSHOTS`;
   return new Promise((resolve) => {
     (async () => {
       const isLock = await Cache.pTryLock(syncKey, 5) // 15s

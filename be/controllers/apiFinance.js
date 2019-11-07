@@ -2,6 +2,7 @@ const Finance = require('../models/finance');
 const Wallet = require('../models/wallet');
 const Post = require('../models/post')
 const User = require('../models/user')
+const Log = require('../models/log')
 const {
   assert,
   Errors
@@ -39,6 +40,8 @@ exports.recharge = async ctx => {
       amount: data.amount,
       memo: data.memo
     });
+    Log.create(user.id, `打算充值 ${data.amount} ${data.currency} ${data.memo || ''}`);
+    Log.create(user.id, '获得充值二维码 url');
     ctx.ok({
       paymentUrl
     });
@@ -64,6 +67,7 @@ exports.withdraw = async ctx => {
       amount: data.amount,
       memo: data.memo,
     });
+    Log.create(user.id, `提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
     ctx.ok({
       success: true
     });
@@ -103,6 +107,7 @@ exports.updateCustomPin = async ctx => {
   await Wallet.updateCustomPin(user.id, pinCode, {
     oldPinCode
   });
+  Log.create(user.id, '更新 pin 成功');
   ctx.ok({
     success: true
   });
@@ -126,6 +131,7 @@ exports.validatePin = async ctx => {
     pinCode
   } = data;
   const isValid = await Wallet.validatePin(user.id, pinCode);
+  Log.create(user.id, `验证 pin ${isValid ? '成功' : '失败'}`);
   ctx.ok(isValid);
 }
 
@@ -150,6 +156,7 @@ exports.reward = async ctx => {
       memo: data.memo,
       toMixinClientId: data.toMixinClientId,
     });
+    Log.create(user.id, `打赏 ${data.amount} ${data.currency} ${data.memo || ''}`);
     ctx.ok({
       success: true
     });

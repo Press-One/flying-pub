@@ -23,6 +23,7 @@ export default (props: any) => {
 
   React.useEffect(() => {
     const rechargeCallback = () => {
+      console.log(` ------------- rechargeCallback ---------------`);
       setStep(1);
       setAmount('');
       setMemo('');
@@ -32,7 +33,7 @@ export default (props: any) => {
       socketStore.on('recharge', rechargeCallback);
     }
     return () => {
-      socketStore.off('recharge', rechargeCallback);
+      socketStore.off('recharge');
     };
   }, [isLogin, socketStore, onClose]);
 
@@ -66,7 +67,7 @@ export default (props: any) => {
   const tryRecharge = (currency: string, amount: string, memo: string = '') => {
     const result = checkAmount(amount, currency);
     if (result.ok) {
-      recharge(currency, amount, memo)
+      recharge(currency, amount, memo);
     } else {
       snackbarStore.show(result);
     }

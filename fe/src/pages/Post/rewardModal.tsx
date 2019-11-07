@@ -19,7 +19,6 @@ import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
   const { userStore, socketStore, walletStore, modalStore, snackbarStore } = useStore();
-  const { balance } = walletStore;
   const { isLogin } = userStore;
   const { open, onClose, fileRId, toAuthor, toAddress, toMixinClientId } = props;
   const [step, setStep] = React.useState(1);
@@ -68,7 +67,7 @@ export default observer((props: any) => {
       socketStore.on('recharge', afterRecharge);
     }
     return () => {
-      socketStore.off('recharge', afterRecharge);
+      socketStore.off('recharge');
     };
   }, [
     step,

@@ -90,12 +90,18 @@ const generateWallet = async userId => {
   return aesCryptoWallet(wallet);
 };
 
-const getByUserId = async userId => {
+const getByUserId = async (userId, options = {}) => {
+  const {
+    isRaw
+  } = options;
   const wallet = await Wallet.findOne({
     where: {
       userId
     }
   });
+  if (isRaw) {
+    return wallet ? wallet.toJSON() : null;
+  }
   return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
 }
 exports.getByUserId = getByUserId;

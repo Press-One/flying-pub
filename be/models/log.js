@@ -9,7 +9,7 @@ exports.create = async (userId, message) => {
   });
   const data = {
     userId,
-    message: `${user.name}：${message}`,
+    message: `【${config.serviceName}】${user.name}：${message}`,
   };
   await Log.create(data);
   if (config.botEnabled) {
@@ -22,9 +22,10 @@ exports.create = async (userId, message) => {
 }
 
 exports.createAnonymity = async (identity, message) => {
+  console.log(` ------------- createAnonymity ---------------`, identity, message);
   const data = {
     userId: 0,
-    message: `${identity}：${message}`,
+    message: `【${config.serviceName}】 ${identity}：${message}`,
   };
   await Log.create(data);
   if (config.botEnabled) {

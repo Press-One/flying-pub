@@ -30,6 +30,7 @@ export default observer((props: IProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [deleteCommentId, setDeleteCommentId] = React.useState(0);
   const [openDrawer, setOpenDrawer] = React.useState(false);
+  const [isVoting, setIsVoting] = React.useState(false);
 
   React.useEffect(() => {
     const fetchComments = async () => {
@@ -48,6 +49,9 @@ export default observer((props: IProps) => {
   }, [commentStore, props]);
 
   const reply = async () => {
+    if (isCreatingComment || isDrawerCreatingComment) {
+      return;
+    }
     if (!isLogin) {
       modalStore.openLogin();
       return;
@@ -95,10 +99,14 @@ export default observer((props: IProps) => {
   };
 
   const upVote = async (commentId: number) => {
+    if (isVoting) {
+      return;
+    }
     if (!isLogin) {
       modalStore.openLogin();
       return;
     }
+    setIsVoting(true);
     try {
       const comment = await CommentApi.createVote({
         commentId,
@@ -106,13 +114,18 @@ export default observer((props: IProps) => {
       });
       commentStore.updateComment(comment);
     } catch (err) {}
+    setIsVoting(false);
   };
 
   const resetVote = async (commentId: number) => {
+    if (isVoting) {
+      return;
+    }
     if (!isLogin) {
       modalStore.openLogin();
       return;
     }
+    setIsVoting(true);
     try {
       const comment = await CommentApi.updateVote({
         commentId,
@@ -120,6 +133,7 @@ export default observer((props: IProps) => {
       });
       commentStore.updateComment(comment);
     } catch (err) {}
+    setIsVoting(false);
   };
 
   const tryDeleteComment = async (commentId: number) => {

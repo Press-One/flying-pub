@@ -32,7 +32,7 @@ export function createSocketStore() {
       this.socket = socket;
     },
     on(event: string, callback: any) {
-      if (this.socket && !this.socket.hasListeners(event)) {
+      if (this.socket) {
         console.log(` ------------- socket on ---------------`, event);
         this.socket.on(event, (data: any) => {
           log(event, data);
@@ -40,8 +40,9 @@ export function createSocketStore() {
         });
       }
     },
-    off(event: string, callback?: any) {
-      this.socket && this.socket.off(event, callback);
+    off(event: string) {
+      console.log(` ------------- socket off ---------------`, event);
+      this.socket && this.socket.removeListener(event);
     },
   };
 }

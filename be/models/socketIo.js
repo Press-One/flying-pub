@@ -9,7 +9,7 @@ const {
 } = require('./validator');
 
 let io;
-const sessionKey = `${config.serviceName.toUpperCase()}_SOCKET_SESSION`;
+const sessionKey = `${config.serviceName}_SOCKET_SESSION`;
 
 exports.EVENTS = {
   FILE_PUBLISHED: 'file_published'
