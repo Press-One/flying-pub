@@ -70,16 +70,9 @@ interface FeedInfo {
 }
 
 const getFeedInfo = (): FeedInfo => {
-  const { host } = window.location;
-  if (host.startsWith('xue')) {
-    return {
-      title: 'XUE.cn 自学编程',
-      description: '学习是一种社交行为',
-    };
-  }
   return {
-    title: 'BOX 定投践行社群',
-    description: 'Mixin 群：7000102093',
+    title: 'XUE.cn 自学编程',
+    description: '学习是一种社交行为',
   };
 };
 

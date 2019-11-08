@@ -16,11 +16,12 @@ export default (props: any) => {
         <div className={`mt-1 text-gray-500${isMobile ? ' text-sm' : ''}`}>
           {post.author} | {ago(post.pubDate)}
         </div>
-        <div className={`mt-3 text-gray-700 text-base leading-relaxed description`}>
+        <div className={`mt-3 text-base leading-relaxed description`}>
           {post.contentSnippet.slice(0, 160)}
         </div>
         <style jsx>{`
           .description {
+            color: #737373;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;

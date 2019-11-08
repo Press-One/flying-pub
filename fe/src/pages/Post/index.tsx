@@ -7,6 +7,7 @@ import WaitingForFeed from 'components/WaitingForFeed';
 import BackButton from 'components/BackButton';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
+import ButtonOutlined from 'components/ButtonOutlined';
 import Fade from '@material-ui/core/Fade';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
@@ -34,13 +35,13 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (post) {
-        const blocks = await Api.getBlocks(post.id);
-        const block = blocks[0];
-        const toAddress = block.user_address;
-        const { payment_url } = JSON.parse(block.meta);
-        const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-        // const toAddress = 'b663b2310313fe3b0c3d3084f49f10ec088820ef';
-        // const mixinClientId = '983a4f11-b2f3-3370-a09c-d66b52840688';
+        // const blocks = await Api.getBlocks(post.id);
+        // const block = blocks[0];
+        // const toAddress = block.user_address;
+        // const { payment_url } = JSON.parse(block.meta);
+        // const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
+        const toAddress = 'b663b2310313fe3b0c3d3084f49f10ec088820ef';
+        const mixinClientId = '983a4f11-b2f3-3370-a09c-d66b52840688';
         setToAddress(toAddress);
         setAuthorMixinClientId(mixinClientId);
       }
@@ -199,11 +200,12 @@ export default observer((props: any) => {
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
         {!isMobile && post.content.length > 1500 && (
-          <div
-            className="back-top-btn flex items-center text-gray-600 cursor-pointer text-lg"
-            onClick={backToTop}
-          >
-            <ArrowUpward />
+          <div className="fixed bottom-0 right-0 mr-10 mb-10 cursor-pointer" onClick={backToTop}>
+            <ButtonOutlined>
+              <div className="text-lg">
+                <ArrowUpward />
+              </div>
+            </ButtonOutlined>
           </div>
         )}
         {authorMixinClientId && RewardView()}
