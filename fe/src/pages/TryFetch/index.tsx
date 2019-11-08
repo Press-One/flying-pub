@@ -22,12 +22,12 @@ export default observer((props: any) => {
         const feed = await Api.fetchFeed(decodedRssUrl);
         feedStore.setFeed(feed);
       } catch (err) {
-        console.log(err);
         feedStore.setFeed({
           items: [],
         });
-        setShowConfirmDialog(true);
-        // #TODO: 检查权限
+        if (err.status === 401) {
+          setShowConfirmDialog(true);
+        }
       }
       await sleep(800);
       feedStore.setIsFetched(true);
