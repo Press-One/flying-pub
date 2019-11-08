@@ -188,7 +188,7 @@ export default observer((props: any) => {
     <Fade in={true} timeout={500}>
       <div className="w-7/12 m-auto relative">
         {!isMobile && <BackButton />}
-        <h2 className={`text-${isMobile ? 'lg' : 'xl'} text-gray-700 font-bold pt-0`}>
+        <h2 className={`text-${isMobile ? 'lg' : '2xl'} text-gray-700 font-bold pt-0 pb-0`}>
           {post.title}
         </h2>
         <div className={`mt-1 text-gray-500 ${isMobile ? ' text-sm' : ''}`}>
