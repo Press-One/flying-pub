@@ -513,7 +513,7 @@ export default observer((props: any) => {
       onClose={() => onCloseModal(false)}
       className="flex justify-center items-center"
     >
-      <div className="py-8 px-10 bg-white rounded text-center">
+      <div className="pt-6 pb-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}

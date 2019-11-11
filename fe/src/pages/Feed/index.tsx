@@ -56,7 +56,7 @@ export default observer(() => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="w-7/12 m-auto pad-bottom-lg">
+      <div className="md:w-7/12 m-auto pb-20 pt-3">
         <div>
           <h1
             className={`p-0 font-bold text-center text-gray-700 leading-relaxed text-${
@@ -75,7 +75,11 @@ export default observer(() => {
             return <PostEntry post={post} key={getPostId(post)} />;
           })}
         </div>
-        {feedStore.hasMore && <Loading size={24} spaceSize={'small'} />}
+        {feedStore.hasMore && (
+          <div className="my-10">
+            <Loading size={24} />
+          </div>
+        )}
       </div>
     </Fade>
   );

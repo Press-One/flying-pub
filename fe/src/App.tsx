@@ -12,7 +12,7 @@ import LoginModal from 'components/LoginModal';
 import WalletModal from 'components/WalletModal';
 import SnackBar from 'components/SnackBar';
 
-import { isMobile } from './utils';
+// import { isMobile } from './utils';
 
 import { StoreProvider } from './store';
 
@@ -20,20 +20,20 @@ import './styles/tailwind.css';
 import './styles/base.scss';
 
 const AppRouter = () => {
-  if (isMobile) {
-    return <div className="h-screen flex justify-center items-center">
-    <div className="text-red-400">
-      飞贴 v2 手机端正在适配，请移步到电脑端体验
-    </div>
-  </div>
-  }
+  // if (isMobile) {
+  //   return <div className="h-screen flex justify-center items-center">
+  //   <div className="text-red-400">
+  //     飞贴 v2 手机端正在适配，请移步到电脑端体验
+  //   </div>
+  // </div>
+  // }
 
   return (
     <StoreProvider>
       <Router>
         <div>
           <Header />
-          <div className={`container m-auto pt-${isMobile ? '14' : '16'}`}>
+          <div className={`container m-auto pt-5 md:pt-16`}>
             <Route path="/" component={TryFetch} />
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />

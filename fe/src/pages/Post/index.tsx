@@ -194,27 +194,35 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="w-7/12 m-auto relative">
-        {!isMobile && <BackButton />}
-        <h2 className={`text-${isMobile ? 'lg' : '2xl'} text-gray-700 font-bold pt-0 pb-0`}>
-          {post.title}
-        </h2>
-        <div className={`mt-1 text-gray-500 ${isMobile ? ' text-sm' : ''}`}>
-          {post.author} | {ago(post.pubDate)}
+      <div className="px-3 md:px-0 md:w-7/12 m-auto relative">
+        <div className="hidden md:block">
+          <BackButton />
         </div>
+        <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
+        <div className={`flex item-center info mt-2 md:mt-1 info ${isMobile ? ' text-sm' : ''}`}>
+          <span className="mr-3">{post.author}</span>
+          <span>{ago(post.pubDate)}</span>
+        </div>
+        <style jsx>{`
+          .info {
+            color: #999;
+          }
+        `}</style>
         <div
-          className={`mt-6 text-lg text-black markdown-body pb-6`}
+          className={`mt-6 text-base md:text-lg text-black markdown-body pb-6`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
-        {!isMobile && post.content.length > 1500 && (
-          <div className="fixed bottom-0 right-0 mr-10 mb-10 cursor-pointer" onClick={backToTop}>
-            <ButtonOutlined>
-              <div className="text-lg">
-                <ArrowUpward />
-              </div>
-            </ButtonOutlined>
-          </div>
-        )}
+        <div className="hidden md:block">
+          {post.content.length > 1500 && (
+            <div className="fixed bottom-0 right-0 mr-10 mb-10 cursor-pointer" onClick={backToTop}>
+              <ButtonOutlined>
+                <div className="text-lg">
+                  <ArrowUpward />
+                </div>
+              </ButtonOutlined>
+            </div>
+          )}
+        </div>
         {authorMixinClientId && RewardView()}
         {CommentView()}
         <RewardModal

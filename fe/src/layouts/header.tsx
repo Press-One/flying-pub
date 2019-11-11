@@ -8,22 +8,97 @@ import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import Fade from '@material-ui/core/Fade';
+import Drawer from '@material-ui/core/Drawer';
+import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint } from 'utils';
+import { getApiEndpoint, isMobile, sleep, getLoginUrl, setQuery, isWeChat } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openDrawer, setOpenDrawer] = React.useState(false);
   const handleClose = () => setAnchorEl(null);
   const { userStore, feedStore, modalStore } = useStore();
 
   if (!userStore.isFetched || !feedStore.isFetched) {
-    return null;
+    return <div className="h-12" />;
   }
 
   return (
-    <Fade in={true} timeout={1500}>
+    <Fade in={true} timeout={isMobile ? 0 : 1500}>
       <div className="container m-auto">
-        <div className="w-7/12 m-auto relative">
+        <div className="md:hidden">
+          <div className="flex justify-between items-center py-1 px-3 border-b border-gray-300 h-12">
+            <Link to="/">
+              <div className="flex items-center">
+                <img
+                  src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                  alt="logo"
+                  width="36"
+                  height="36"
+                />
+                <span className="text-lg font-bold text-gray-700 ml-2">飞贴</span>
+              </div>
+            </Link>
+            <div
+              className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
+              onClick={() => setOpenDrawer(true)}
+            >
+              <MenuIcon />
+            </div>
+          </div>
+          <Drawer
+            anchor="bottom"
+            open={openDrawer}
+            onClose={() => {
+              setOpenDrawer(false);
+            }}
+          >
+            <div>
+              <div
+                className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base"
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  if (isWeChat) {
+                    const loginUrl = getLoginUrl();
+                    setQuery({
+                      loginUrl,
+                    });
+                  }
+                  await sleep(500);
+                  modalStore.openLogin();
+                }}
+              >
+                登陆
+              </div>
+              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
+                我的资产
+              </div>
+              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
+                设置钱包
+              </div>
+              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
+                所有交易记录
+              </div>
+              <div
+                className="mt-1 py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base"
+                onClick={() => {
+                  setOpenDrawer(false);
+                }}
+              >
+                取消
+              </div>
+            </div>
+          </Drawer>
+          <style jsx global>{`
+            .MuiPaper-root {
+              background: none;
+               {
+                /* border-radius: 16px 16px 0 0; */
+              }
+            }
+          `}</style>
+        </div>
+        <div className="hidden md:block w-7/12 m-auto relative">
           <div className="absolute top-0 right-0 text-xl mt-12 pt-2 -mr-20">
             <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
               <MenuIcon />
