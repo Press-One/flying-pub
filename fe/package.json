@@ -7,6 +7,7 @@
     "@material-ui/icons": "^4.2.1",
     "classnames": "^2.2.6",
     "front-matter": "^3.0.2",
+    "highlight.js": "^9.16.2",
     "lodash.debounce": "^4.0.8",
     "marked": "^0.7.0",
     "mobx": "^5.13.0",

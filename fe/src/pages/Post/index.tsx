@@ -17,6 +17,13 @@ import { ago, isMobile, sleep } from 'utils';
 import Api from './api';
 
 import 'react-viewer/dist/index.css';
+import './github.css';
+
+marked.setOptions({
+  highlight: (code: string) => {
+    return require('highlight.js').highlightAuto(code).value;
+  },
+});
 
 export default observer((props: any) => {
   const { feedStore, userStore, modalStore } = useStore();
@@ -196,7 +203,7 @@ export default observer((props: any) => {
           {post.author} | {ago(post.pubDate)}
         </div>
         <div
-          className={`mt-6 text-base text-gray-700 markdown-body pb-6`}
+          className={`mt-6 text-lg text-black markdown-body pb-6`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
         {!isMobile && post.content.length > 1500 && (
