@@ -20,7 +20,7 @@ export default observer(() => {
   const { userStore, feedStore, modalStore } = useStore();
 
   if (!userStore.isFetched || !feedStore.isFetched) {
-    return <div className="h-12" />;
+    return isMobile ? <div className="h-12" /> : null;
   }
 
   return (
@@ -101,7 +101,7 @@ export default observer(() => {
           )}
         </div>
         <div className="hidden md:block w-7/12 m-auto relative">
-          <div className="absolute top-0 right-0 text-xl mt-12 pt-2 -mr-20">
+          <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">
             <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
               <MenuIcon />
             </IconButton>

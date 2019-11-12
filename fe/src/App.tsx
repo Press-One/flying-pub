@@ -33,7 +33,7 @@ const AppRouter = () => {
       <Router>
         <div>
           <Header />
-          <div className={`container m-auto pt-5 md:pt-16`}>
+          <div className={`container m-auto pt-5 md:pt-8`}>
             <Route path="/" component={TryFetch} />
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />
