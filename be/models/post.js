@@ -41,15 +41,8 @@ exports.upsert = async (fileRId, data) => {
   return true;
 }
 
-exports.list = async (options) => {
-  const {
-    offset,
-    limit,
-  } = options;
-  const posts = await Post.findAll({
-    offset,
-    limit
-  });
+exports.list = async () => {
+  const posts = await Post.findAll();
   const list = posts.map((post) => {
     return post.toJSON();
   });
