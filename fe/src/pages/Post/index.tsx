@@ -42,13 +42,11 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (post) {
-        // const blocks = await Api.getBlocks(post.id);
-        // const block = blocks[0];
-        // const toAddress = block.user_address;
-        // const { payment_url } = JSON.parse(block.meta);
-        // const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-        const toAddress = 'b663b2310313fe3b0c3d3084f49f10ec088820ef';
-        const mixinClientId = '983a4f11-b2f3-3370-a09c-d66b52840688';
+        const blocks = await Api.getBlocks(post.id);
+        const block = blocks[0];
+        const toAddress = block.user_address;
+        const { payment_url } = JSON.parse(block.meta);
+        const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
         setToAddress(toAddress);
         setAuthorMixinClientId(mixinClientId);
       }

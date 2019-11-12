@@ -118,12 +118,14 @@ export default observer(() => {
                     modalStore.openLogin();
                   }}
                 >
-                  <MenuItem className="text-gray-700 flex">
-                    <span className="flex items-center text-xl mr-2">
-                      <AccountCircle />
-                    </span>{' '}
-                    登陆
-                    <span className="pr-2" />
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <AccountCircle />
+                      </span>{' '}
+                      登陆
+                      <span className="pr-2" />
+                    </div>
                   </MenuItem>
                 </div>
               )}
@@ -134,21 +136,26 @@ export default observer(() => {
                     modalStore.openWallet();
                   }}
                 >
-                  <MenuItem className="text-gray-700 flex">
-                    <span className="flex items-center text-xl mr-2">
-                      <AccountBalanceWallet />
-                    </span>{' '}
-                    我的钱包
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <AccountBalanceWallet />
+                      </span>{' '}
+                      我的钱包
+                    </div>
                   </MenuItem>
                 </div>
               )}
               {userStore.isLogin && (
                 <a href={`${getApiEndpoint()}/api/logout?from=${window.location.origin}`}>
-                  <MenuItem className="text-gray-700 flex">
-                    <span className="flex items-center text-xl mr-2">
-                      <ExitToApp />
-                    </span>{' '}
-                    登出
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <ExitToApp />
+                      </span>{' '}
+                      登出
+                      <span className="pr-2" />
+                    </div>
                   </MenuItem>
                 </a>
               )}

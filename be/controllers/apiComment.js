@@ -2,7 +2,7 @@ const Comment = require('../models/comment');
 const {
   assert,
   Errors
-} = require('../models/validator')
+} = require('../models/validator');
 
 exports.create = async ctx => {
   const userId = ctx.verification.user.id;

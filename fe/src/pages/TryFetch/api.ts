@@ -9,7 +9,6 @@ export default {
     const res = await fetch(rssUrl, {
       credentials: 'include',
     });
-    console.log(` ------------- res.status ---------------`, res.status);
     if (res.status !== 200) {
       throw Object.assign(new Error(), {
         status: res.status,
@@ -19,5 +18,8 @@ export default {
     const parser = new Parser();
     const result = await parser.parseString(text);
     return result;
+  },
+  async fetchPosts() {
+    return request('/api/posts');
   },
 };

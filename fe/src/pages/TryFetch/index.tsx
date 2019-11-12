@@ -39,6 +39,12 @@ export default observer((props: any) => {
         console.log(err);
       }
       userStore.setIsFetched(true);
+      try {
+        const { posts } = await Api.fetchPosts();
+        feedStore.setPostExtraMap(posts);
+      } catch (err) {
+        console.log(err);
+      }
     })();
   }, [userStore, feedStore, socketStore, props]);
 

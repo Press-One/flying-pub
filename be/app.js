@@ -15,6 +15,7 @@ const user = require('./routes/user');
 const auth = require('./routes/auth');
 const atom = require('./routes/atom');
 const finance = require('./routes/finance');
+const post = require('./routes/post');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const logout = require('./routes/logout');
@@ -50,6 +51,7 @@ router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethod
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
 router.use('/api/atom', atom.routes(), atom.allowedMethods());
 router.use('/api/finance', finance.routes(), finance.allowedMethods());
+router.use('/api/posts', post.routes(), post.allowedMethods());
 router.use('/api/comments', comment.routes(), comment.allowedMethods());
 router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMethods());
 router.use('/api/logout', ensureAuthorization({

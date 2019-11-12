@@ -315,7 +315,13 @@ export default observer((props: IProps) => {
         ) : (
           renderEmptyComment()
         )}
-        {hasComments && <div className="mt-12 text-gray-500 text-center">-- 没有更多啦 --</div>}
+        {hasComments && (
+          <div className="mt-16 text-gray-500 flex items-center justify-center">
+            <span className="h-px bg-gray-500 w-8 mr-1"></span>
+            没有更多啦
+            <span className="h-px bg-gray-500 w-8 ml-1"></span>
+          </div>
+        )}
         {hasComments && comments.length > 3 && (
           <div className="text-center mt-2">
             <span

@@ -88,6 +88,7 @@ export function createFeedStore() {
   };
   const postMap: any = {};
   let prePushedPost: any;
+  const postExtraMap: any = {};
   return {
     feed,
     postMap,
@@ -97,6 +98,7 @@ export function createFeedStore() {
     page: 1,
     postId: '',
     prePushedPost,
+    postExtraMap,
     get pagePosts(): Post[] {
       const posts = getPagePosts(this.feed.items, this.page * this.per);
       if (this.prePushedPost) {
@@ -148,6 +150,11 @@ export function createFeedStore() {
         this.prePushedPost = this.feed.items.find(findByPostId(this.postId));
       }
       return;
+    },
+    setPostExtraMap(posts: any) {
+      for (const post of posts) {
+        this.postExtraMap[post.fileRId] = post;
+      }
     },
   };
 }

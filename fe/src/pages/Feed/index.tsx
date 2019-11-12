@@ -7,6 +7,7 @@ import { getPostId, Post } from 'store/feed';
 import PostEntry from './PostEntry';
 import Loading from 'components/Loading';
 import { isMobile, getPostSelector } from 'utils';
+import PostApi from '../TryFetch/api';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -17,6 +18,20 @@ export default observer(() => {
       document.title = `${title} - 飞贴`;
     }
   });
+
+  React.useEffect(() => {
+    if (feedStore.isFetched) {
+      (async () => {
+        console.log(` ------------- feed page ---------------`);
+        try {
+          const { posts } = await PostApi.fetchPosts();
+          feedStore.setPostExtraMap(posts);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }
+  }, [feedStore, PostApi]);
 
   const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
     if (feedScrollTop === 0 && postId) {
@@ -54,6 +69,8 @@ export default observer(() => {
     return null;
   }
 
+  const { feed, hasMore, pagePosts, postExtraMap } = feedStore;
+
   return (
     <Fade in={true} timeout={500}>
       <div className="md:w-7/12 m-auto pb-20 pt-3">
@@ -63,19 +80,24 @@ export default observer(() => {
               isMobile ? '2xl' : '3xl'
             }`}
           >
-            {feedStore.feed.title}
+            {feed.title}
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
-          <div className="text-gray-600 text-center mt-3 text-base">
-            {feedStore.feed.description}
-          </div>
+          <div className="text-gray-600 text-center mt-3 text-base">{feed.description}</div>
         </div>
         <div className={`mt-${isMobile ? '8' : '10'}`}>
-          {feedStore.pagePosts.map((post: Post) => {
-            return <PostEntry post={post} key={getPostId(post)} />;
+          {pagePosts.map((post: Post) => {
+            const extra = postExtraMap[getPostId(post)];
+            return (
+              <PostEntry
+                post={post}
+                key={getPostId(post)}
+                commentsCount={extra ? extra.commentsCount : 0}
+              />
+            );
           })}
         </div>
-        {feedStore.hasMore && (
+        {hasMore && (
           <div className="my-10">
             <Loading size={24} />
           </div>

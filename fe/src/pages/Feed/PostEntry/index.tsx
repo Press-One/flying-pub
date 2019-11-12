@@ -5,7 +5,7 @@ import { ago, getPostSelector } from '../../../utils';
 import { getPostId } from '../../../store/feed';
 
 export default (props: any) => {
-  const { post } = props;
+  const { post, commentsCount = 0 } = props;
   if (!post) {
     return null;
   }
@@ -20,14 +20,11 @@ export default (props: any) => {
           <div className="flex truncate mt-2 info text-sm items-center">
             <span className="mr-5">{post.author}</span>
             <span className="mr-5">{ago(post.pubDate)}</span>
-            <div className="flex items-center font-bold">
-              <Comment /> <span className="text-sm ml-1">12</span>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <div className="mt-3 text-base leading-relaxed description">
-              {post.contentSnippet.slice(0, 160)}
-            </div>
+            {commentsCount > 0 && (
+              <div className="flex items-center font-bold text-base">
+                <Comment /> <span className="text-sm ml-1">{commentsCount}</span>
+              </div>
+            )}
           </div>
         </div>
         <style jsx>{`
@@ -45,15 +42,6 @@ export default (props: any) => {
           .info,
           .comment {
             color: #999;
-          }
-          .description {
-            color: #737373;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: none;
           }
         `}</style>
       </div>
