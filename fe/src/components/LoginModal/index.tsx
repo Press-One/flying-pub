@@ -17,8 +17,8 @@ export default observer(() => {
   const renderMain = () => {
     return (
       <div>
-        <div className="pt-6 pb-8 px-10 bg-white md:rounded text-center main">
-          <div className="text-lg font-bold text-gray-700">登陆</div>
+        <div className="py-8 px-10 bg-white md:rounded text-center main">
+          <div className="text-lg font-bold text-gray-700 leading-none">登陆</div>
           <div className="mt-4 text-gray-700">
             您需要使用 Mixin App 登陆
             <br className="mt-2" />
@@ -60,16 +60,16 @@ export default observer(() => {
             )}
           </div>
           {isWeChat && (
-            <div className="mt-5">
+            <div className="mt-4">
               <a href="https://mixin.one/messenger">
                 <Button>下载 Mixin App</Button>
               </a>
             </div>
           )}
           {isPc && (
-            <div className="mt-5">
+            <div className="mt-4">
               <a href={getLoginUrl()}>
-                <Button>我已安装 Mixin，前往 Mixin 登陆页扫码登陆</Button>
+                <Button>使用 Mixin 扫码登陆</Button>
               </a>
             </div>
           )}

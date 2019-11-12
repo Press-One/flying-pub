@@ -199,7 +199,7 @@ export default observer((props: any) => {
                   <div className="w-8 h-8">
                     <img className="w-8 h-8" src={assetIconMap[asset]} alt={asset} />
                   </div>
-                  <div className="mt-2 leading-none text-xs">{asset}</div>
+                  <div className="mt-2 leading-none text-xs currency tracking-wide">{asset}</div>
                 </div>
               </div>
             );
@@ -208,6 +208,13 @@ export default observer((props: any) => {
         <div className="text-center mt-6">
           <Button onClick={() => setStep(2)}>下一步</Button>
         </div>
+        <style jsx>{`
+          .currency {
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
+              Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+              Noto Color Emoji;
+          }
+        `}</style>
       </div>
     );
   };
@@ -513,7 +520,7 @@ export default observer((props: any) => {
       onClose={() => onCloseModal(false)}
       className="flex justify-center items-center"
     >
-      <div className="pt-6 pb-8 px-10 bg-white rounded text-center">
+      <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}

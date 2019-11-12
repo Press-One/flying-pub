@@ -89,14 +89,16 @@ export default observer(() => {
               </div>
             </div>
           </Drawer>
-          <style jsx global>{`
-            .MuiPaper-root {
-              background: none;
-               {
-                /* border-radius: 16px 16px 0 0; */
+          {isMobile && (
+            <style jsx global>{`
+              .MuiPaper-root {
+                background: none;
+                 {
+                  /* border-radius: 16px 16px 0 0; */
+                }
               }
-            }
-          `}</style>
+            `}</style>
+          )}
         </div>
         <div className="hidden md:block w-7/12 m-auto relative">
           <div className="absolute top-0 right-0 text-xl mt-12 pt-2 -mr-20">
