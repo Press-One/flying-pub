@@ -35,8 +35,7 @@ const Wallet = sequelize.define('wallets', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8',
-  collate: 'utf8_general_ci'
+  charset: 'utf8mb4'
 });
 
 Wallet.sync();

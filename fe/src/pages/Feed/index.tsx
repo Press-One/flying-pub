@@ -22,7 +22,6 @@ export default observer(() => {
   React.useEffect(() => {
     if (feedStore.isFetched) {
       (async () => {
-        console.log(` ------------- feed page ---------------`);
         try {
           const { posts } = await PostApi.fetchPosts();
           feedStore.setPostExtraMap(posts);
