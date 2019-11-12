@@ -8,7 +8,9 @@ export default () => {
     <div className="absolute top-0 left-0 -ml-32">
       <Link to={`/`}>
         <ButtonOutlined>
-          <ArrowBackIos /> 返回
+          <div className="p-1 flex justify-center items-center">
+            <ArrowBackIos /> 返回
+          </div>
         </ButtonOutlined>
       </Link>
     </div>

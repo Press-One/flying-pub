@@ -6,7 +6,7 @@ export default (props: any) => {
   return (
     <button
       className={
-        'py-3 px-4 rounded-lg text-sm outline-none text-gray-500 border border-gray-500 flex items-center justify-center leading-none'
+        'py-2 px-3 rounded-lg text-sm outline-none text-gray-500 border border-gray-500 flex items-center justify-center leading-none'
       }
       onClick={() => {
         onClick && onClick();

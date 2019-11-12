@@ -21,7 +21,7 @@ export default () => {
         <Link to={`/`}>
           <div className="mr-8">
             <ButtonOutlined>
-              <div className="flex items-center justify-center">
+              <div className="p-1 flex items-center justify-center">
                 <span className="flex items-center text-xl mr-1">
                   <Home />
                 </span>
@@ -35,7 +35,7 @@ export default () => {
             window.location.reload();
           }}
         >
-          <div className="flex items-center justify-center">
+          <div className="p-1 flex items-center justify-center">
             <span className="flex items-center text-xl mr-1">
               <Refresh />
             </span>

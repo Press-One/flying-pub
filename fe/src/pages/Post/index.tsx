@@ -33,7 +33,7 @@ export default observer((props: any) => {
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
-  const [isFetchingReward, setIsFetchingReward] = React.useState(false);
+  const [isFetchedReward, setIsFetchedReward] = React.useState(false);
   const [toAddress, setToAddress] = React.useState('');
   const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
@@ -76,13 +76,12 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     (async () => {
-      if (post) {
-        setIsFetchingReward(true);
+      if (post && post.id === props.match.params.postId) {
         try {
           const rewardSummary = await Api.getRewardSummary(post.id);
           setRewardSummary(rewardSummary);
         } catch (err) {}
-        setIsFetchingReward(false);
+        setIsFetchedReward(true);
       }
     })();
   }, [post]);
@@ -158,7 +157,7 @@ export default observer((props: any) => {
   }
 
   const RewardView = () => {
-    if (isFetchingReward) {
+    if (!isFetchedReward) {
       return (
         <div className="py-24">
           <Loading />
@@ -180,7 +179,7 @@ export default observer((props: any) => {
   };
 
   const CommentView = () => {
-    if (isFetchingReward) {
+    if (!isFetchedReward) {
       return null;
     }
     return (
@@ -211,15 +210,15 @@ export default observer((props: any) => {
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
         <div className="hidden md:block">
-          {post.content.length > 1500 && (
+          {
             <div className="fixed bottom-0 right-0 mr-10 mb-10 cursor-pointer" onClick={backToTop}>
               <ButtonOutlined>
-                <div className="text-lg">
+                <div className="text-xl">
                   <ArrowUpward />
                 </div>
               </ButtonOutlined>
             </div>
-          )}
+          }
         </div>
         {authorMixinClientId && RewardView()}
         {CommentView()}
