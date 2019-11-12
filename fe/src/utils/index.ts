@@ -43,7 +43,7 @@ export const removeQuery = (name: string) => {
 
 export const getApiEndpoint = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
-  return isDevelopment ? 'http://localhost:8070' : window.location.origin;
+  return isDevelopment ? `http://${window.location.hostname}:8070` : window.location.origin;
 };
 
 export const ago = (timestamp: string) => {

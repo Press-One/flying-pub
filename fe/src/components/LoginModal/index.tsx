@@ -3,11 +3,10 @@ import { observer } from 'mobx-react-lite';
 import Modal from '@material-ui/core/Modal';
 import Info from '@material-ui/icons/Info';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
-import Clear from '@material-ui/icons/Clear';
 import Button from 'components/Button';
+import DrawerModal from 'components/DrawerModal';
 import { getLoginUrl, isMobile } from 'utils';
 import { useStore } from 'store';
-import Drawer from '@material-ui/core/Drawer';
 
 export default observer(() => {
   const { modalStore } = useStore();
@@ -38,10 +37,12 @@ export default observer(() => {
               </div>
             )}
           </div>
-          <div className="mt-5 text-gray-500 text-xs">
+          <div className="mt-5 text-gray-500 text-xs md:px-10">
             Mixin 是一个全币种数字货币钱包
             <br className="mt-2" />
-            只需手机号加 6 位数字密码{isMobile && <br className="mt-2" />}即可享受免费实时转账体验
+            只需手机号加 6 位数字密码
+            <br className="mt-2" />
+            即可享受免费实时转账体验
           </div>
           <div className="flex items-center justify-center mt-5 text-gray-500 text-xs">
             <span className="flex items-center text-lg mr-1">
@@ -66,7 +67,7 @@ export default observer(() => {
               </a>
             </div>
           )}
-          {isPc && (
+          {(isPc || isMobile) && (
             <div className="mt-4">
               <a href={getLoginUrl()}>
                 <Button>使用 Mixin 扫码登陆</Button>
@@ -74,27 +75,15 @@ export default observer(() => {
             </div>
           )}
         </div>
-        {isMobile && (
-          <style jsx>{`
-            .main {
-              border-radius: 16px 16px 0 0;
-            }
-          `}</style>
-        )}
       </div>
     );
   };
 
   if (isMobile) {
     return (
-      <Drawer anchor="bottom" open={modalStore.login.open} onClose={modalStore.closeLogin}>
-        <div className="relative">
-          {renderMain()}
-          <div className="flex justify-center items-center w-6 h-6 absolute top-0 right-0 m-4 rounded-full bg-gray-300 text-white text-xl">
-            <Clear onClick={modalStore.closeLogin} />
-          </div>
-        </div>
-      </Drawer>
+      <DrawerModal open={modalStore.login.open} onClose={modalStore.closeLogin}>
+        {renderMain()}
+      </DrawerModal>
     );
   }
 

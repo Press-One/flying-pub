@@ -11,7 +11,7 @@ import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, isMobile, sleep, getLoginUrl, setQuery, isWeChat } from 'utils';
+import { getApiEndpoint, isMobile, sleep } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -53,34 +53,61 @@ export default observer(() => {
               setOpenDrawer(false);
             }}
           >
-            <div>
+            <div className="bg-gray-300 leading-none">
+              {!userStore.isLogin && (
+                <div
+                  className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                  onClick={async () => {
+                    setOpenDrawer(false);
+                    await sleep(200);
+                    modalStore.openLogin();
+                  }}
+                >
+                  登陆
+                </div>
+              )}
+              {userStore.isLogin && (
+                <div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      await sleep(200);
+                      modalStore.openWallet({
+                        tab: 'assets',
+                      });
+                    }}
+                  >
+                    我的资产
+                  </div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      await sleep(200);
+                      modalStore.openWallet({
+                        tab: 'settings',
+                      });
+                    }}
+                  >
+                    设置钱包
+                  </div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      await sleep(200);
+                      modalStore.openWallet({
+                        tab: 'receipts',
+                      });
+                    }}
+                  >
+                    所有交易记录
+                  </div>
+                </div>
+              )}
               <div
-                className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base"
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  if (isWeChat) {
-                    const loginUrl = getLoginUrl();
-                    setQuery({
-                      loginUrl,
-                    });
-                  }
-                  await sleep(500);
-                  modalStore.openLogin();
-                }}
-              >
-                登陆
-              </div>
-              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
-                我的资产
-              </div>
-              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
-                设置钱包
-              </div>
-              <div className="py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base">
-                所有交易记录
-              </div>
-              <div
-                className="mt-1 py-3 text-gray-700 text-center border-b border-gray-300 bg-white text-base"
+                className="mt-1 py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                 onClick={() => {
                   setOpenDrawer(false);
                 }}
@@ -89,16 +116,6 @@ export default observer(() => {
               </div>
             </div>
           </Drawer>
-          {isMobile && (
-            <style jsx global>{`
-              .MuiPaper-root {
-                background: none;
-                 {
-                  /* border-radius: 16px 16px 0 0; */
-                }
-              }
-            `}</style>
-          )}
         </div>
         <div className="hidden md:block w-7/12 m-auto relative">
           <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">

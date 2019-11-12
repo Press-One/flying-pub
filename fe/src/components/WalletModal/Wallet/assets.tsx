@@ -112,8 +112,15 @@ export default observer((props: any) => {
 
   if (!walletStore.isFetchedBalance) {
     return (
-      <div className="mt-32">
-        <Loading />
+      <div className="root">
+        <div className="py-32">
+          <Loading />
+        </div>
+        <style jsx>{`
+          .root {
+            height: 390px;
+          }
+        `}</style>
       </div>
     );
   }
@@ -122,7 +129,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div>
+      <div className="root">
         {hasBalance && !isCustomPinExist && (
           <div className="flex justify-between p-3 border border-blue-400 text-blue-400 bg-blue-100 flex items-center rounded mb-2 text-sm">
             <div className="flex items-center">
@@ -162,6 +169,11 @@ export default observer((props: any) => {
           open={openRechargeModal}
           onClose={onCloseRechargeModal}
         />
+        <style jsx>{`
+          .root {
+            height: 390px;
+          }
+        `}</style>
       </div>
     </Fade>
   );

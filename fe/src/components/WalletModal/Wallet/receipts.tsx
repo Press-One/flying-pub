@@ -7,6 +7,7 @@ import { assetIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
 import { sleep } from 'utils';
 import { useStore } from 'store';
+import css from 'styled-jsx/css';
 
 const getTypeName = (type: string) => {
   const map: any = {
@@ -32,7 +33,7 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
         {receipt.type === 'REWARD' && (
           <a
             href={`${getPostsSiteDomain()}/posts/${receipt.objectRId}`}
-            className="text-blue-400 ml-2 truncate w-64"
+            className="text-blue-400 ml-2 truncate w-64 hidden md:block"
             target="_blank"
             rel="noopener noreferrer"
             title={(postMap[receipt.objectRId] || {}).title}
@@ -81,21 +82,33 @@ export default observer(() => {
 
   if (!isFetchedReceipts) {
     return (
-      <div className="mt-32">
-        <Loading />
+      <div className="root">
+        <div className="py-32">
+          <Loading />
+        </div>
+        <style jsx>{`
+          .root {
+            height: 65vh;
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
     <Fade in={true} timeout={500}>
-      <div>
+      <div className="root">
         {receipts.map((receipt: any) => (
           <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
         ))}
         {receipts.length === 0 && (
           <div className="text-gray-500 mt-32 text-center text-sm">暂时没有交易记录</div>
         )}
+        <style jsx>{`
+          .root {
+            height: 65vh;
+          }
+        `}</style>
       </div>
     </Fade>
   );

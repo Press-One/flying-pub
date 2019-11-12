@@ -3,18 +3,20 @@ import { observer } from 'mobx-react-lite';
 import Modal from '@material-ui/core/Modal';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
+import DrawerModal from 'components/DrawerModal';
 import Fade from '@material-ui/core/Fade';
 import Wallet from './Wallet';
 import { useStore } from 'store';
+import { isMobile } from 'utils';
 import css from 'styled-jsx/css';
 
-const style = css`
+const styles = css`
   .wallet-modal {
-    width: 840px;
+    width: ${isMobile ? 'auto' : '840px'};
   }
   .wallet-modal-content,
   :global(.wallet-content) {
-    height: 600px;
+    height: ${isMobile ? 'auto' : '600px'};
     overflow: auto;
   }
 `;
@@ -25,21 +27,13 @@ export default observer(() => {
   let isBalanceEnough = false;
   if (returnInfo) {
     const { requiredAsset, requiredAmount } = returnInfo;
-    console.log(` ------------- requiredAsset ---------------`, requiredAsset);
-    console.log(` ------------- requiredAmount ---------------`, requiredAmount);
-    console.log(` ------------- returnInfo.text ---------------`, returnInfo.text);
     isBalanceEnough = Number(walletStore.balance[requiredAsset]) >= Number(requiredAmount);
-    console.log(` ------------- isBalanceEnough ---------------`, isBalanceEnough);
   }
 
-  return (
-    <Modal
-      open={modalStore.wallet.open}
-      onClose={modalStore.closeWallet}
-      className="flex justify-center items-center"
-    >
+  const renderMain = () => {
+    return (
       <div className="wallet-modal max-h-screen overflow-auto">
-        <div className="bg-white rounded wallet-modal-content relative">
+        <div className="wallet-modal-content relative">
           <Wallet />
           {returnInfo && isBalanceEnough && walletStore.isCustomPinExist && (
             <Fade in={true} timeout={500}>
@@ -54,8 +48,27 @@ export default observer(() => {
             </Fade>
           )}
         </div>
-        <style jsx>{style}</style>
+
+        <style jsx>{styles}</style>
       </div>
+    );
+  };
+
+  if (isMobile) {
+    return (
+      <DrawerModal open={modalStore.wallet.open} onClose={modalStore.closeWallet}>
+        {renderMain()}
+      </DrawerModal>
+    );
+  }
+
+  return (
+    <Modal
+      open={modalStore.wallet.open}
+      onClose={modalStore.closeWallet}
+      className="flex justify-center items-center bg-white"
+    >
+      {renderMain()}
     </Modal>
   );
 });

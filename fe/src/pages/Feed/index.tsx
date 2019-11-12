@@ -72,7 +72,7 @@ export default observer(() => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="md:w-7/12 m-auto pb-20 pt-3">
+      <div className="md:w-7/12 m-auto pb-10 pt-3">
         <div>
           <h1
             className={`p-0 font-bold text-center text-gray-700 leading-relaxed text-${
@@ -97,7 +97,7 @@ export default observer(() => {
           })}
         </div>
         {hasMore && (
-          <div className="my-10">
+          <div className="mt-10">
             <Loading size={24} />
           </div>
         )}

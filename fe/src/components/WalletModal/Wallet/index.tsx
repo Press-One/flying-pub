@@ -53,7 +53,7 @@ export default observer(() => {
   return (
     <div className="relative text-gray-700">
       <div className="flex text-base">
-        <div className="w-3/12">
+        <div className="w-3/12 hidden md:block">
           <div className="p-8">
             <div className="font-bold flex items-center text-xl">
               <span className="text-2xl mr-2 flex items-center">
@@ -93,14 +93,14 @@ export default observer(() => {
             </div>
           </div>
         </div>
-        <div className="w-9/12 border-l border-gray-400 wallet-content">
+        <div className="w-full md:w-9/12 md:border-l md:border-gray-400 wallet-content">
           {tab === 'assets' && (
             <TabContent>
-              <div className="font-bold flex items-center text-xl">
-                <span className="text-2xl mr-2 flex items-center">
+              <div className="font-bold items-center text-xl flex justify-center md:justify-start">
+                <span className="text-2xl mr-2 items-center hidden md:flex">
                   <AccountBalanceWalletRounded />
                 </span>
-                资产
+                <span className="md:hidden">我的</span>资产
               </div>
               <div className="mt-4">
                 <Assets setTab={setTab} />
@@ -109,11 +109,11 @@ export default observer(() => {
           )}
           {tab === 'settings' && (
             <TabContent>
-              <div className="font-bold flex items-center text-xl">
-                <span className="text-2xl mr-2 flex items-center">
+              <div className="font-bold items-center text-xl flex justify-center md:justify-start">
+                <span className="text-2xl mr-2 items-center hidden md:flex">
                   <SettingsIcon />
                 </span>
-                设置
+                设置<span className="md:hidden">钱包</span>
               </div>
               <div className="mt-4">
                 <Settings />
@@ -122,8 +122,8 @@ export default observer(() => {
           )}
           {tab === 'receipts' && (
             <TabContent>
-              <div className="font-bold flex items-center text-xl">
-                <span className="text-2xl mr-2 flex items-center">
+              <div className="font-bold items-center text-xl flex justify-center md:justify-start">
+                <span className="text-2xl mr-2 items-center hidden md:flex">
                   <ReceiptIcon />
                 </span>
                 交易记录
