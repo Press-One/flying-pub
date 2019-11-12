@@ -473,7 +473,7 @@ exports.syncMixinSnapshots = () => {
             const result = await mixin.readSnapshots(
               rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
               currencyMapAsset[currency],
-              '50',
+              '100',
               'ASC'
             );
             const {
