@@ -7,13 +7,13 @@ const User = require('./user');
 const Post = require('./post');
 const Vote = require('./vote');
 
-const packComment = async (comment) => {
-  assert(comment, Errors.ERR_NOT_FOUND('comment'));
-  const commentJson = comment.toJSON();
+const packComment = async (comment, options = {}) => {
   const {
     userId
-  } = commentJson;
-  const user = await User.get(userId, {
+  } = options;
+  assert(comment, Errors.ERR_NOT_FOUND('comment'));
+  const commentJson = comment.toJSON();
+  const user = await User.get(commentJson.userId, {
     withProfile: true
   });
   commentJson.user = user;
@@ -23,7 +23,10 @@ const packComment = async (comment) => {
   return commentJson;
 }
 
-exports.get = async id => {
+exports.get = async (id, options = {}) => {
+  const {
+    userId
+  } = options;
   assert(id, Errors.ERR_IS_REQUIRED('id'));
   const comment = await Comment.findOne({
     where: {
@@ -31,7 +34,9 @@ exports.get = async id => {
       deleted: false
     }
   });
-  const derivedComment = await packComment(comment);
+  const derivedComment = await packComment(comment, {
+    userId
+  });
   return derivedComment;
 };
 
@@ -43,7 +48,9 @@ exports.create = async (userId, data) => {
     userId,
   };
   const comment = await Comment.create(payload);
-  const derivedComment = await packComment(comment);
+  const derivedComment = await packComment(comment, {
+    userId
+  });
   const fileRId = derivedComment.objectId;
   const count = await exports.count(fileRId);
   await Post.upsert(fileRId, {
@@ -94,6 +101,7 @@ exports.count = async (objectId) => {
 
 exports.list = async (options) => {
   const {
+    userId,
     objectId,
     offset,
     limit,
@@ -111,7 +119,9 @@ exports.list = async (options) => {
   });
   const list = await Promise.all(
     comments.map((comment) => {
-      return packComment(comment);
+      return packComment(comment, {
+        userId
+      });
     })
   )
   return list;

@@ -15,7 +15,9 @@ exports.create = async ctx => {
 exports.remove = async ctx => {
   const userId = ctx.verification.user.id;
   const id = ~~ctx.params.id;
-  const comment = await Comment.get(id);
+  const comment = await Comment.get(id, {
+    userId
+  });
   assert(comment.userId === userId, Errors.ERR_NO_PERMISSION);
   const deletedComment = await Comment.delete(id);
   ctx.body = deletedComment;
@@ -26,9 +28,11 @@ exports.list = async ctx => {
     fileRId
   } = ctx.query;
   assert(fileRId, Errors.ERR_IS_REQUIRED('fileRId'));
+  const userId = ctx.verification && ctx.verification.user.id;
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
   const result = await Comment.list({
+    userId,
     objectId: fileRId,
     offset,
     limit

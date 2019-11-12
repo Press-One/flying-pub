@@ -8,7 +8,9 @@ const {
   ensureAuthorization
 } = require('../models/api');
 
-router.get('/', list);
+router.get('/', ensureAuthorization({
+  strict: false
+}), list);
 router.post('/', ensureAuthorization(), create);
 router.del('/:id', ensureAuthorization(), remove);
 
