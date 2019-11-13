@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Modal from '@material-ui/core/Modal';
 import { assets, assetIconMap } from '../../components/WalletModal/Wallet/utils';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
@@ -10,11 +9,12 @@ import Info from '@material-ui/icons/Info';
 import Button from 'components/Button';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
+import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
-import { sleep } from 'utils';
+import { sleep, isPc } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
@@ -241,12 +241,12 @@ export default observer((props: any) => {
             onChange={(event: any) => setAmount(event.target.value)}
             margin="normal"
             variant="outlined"
-            autoFocus
+            autoFocus={isPc}
             fullWidth
             onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep3(amount, selectedAsset)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{selectedAsset}</InputAdornment>,
-              inputProps: { maxLength: 8 },
+              inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
             }}
           />
           <div className="-mt-2" />
@@ -282,7 +282,7 @@ export default observer((props: any) => {
       {
         enabled: true,
         method: 'mixin',
-        name: 'Mixin 扫码支付',
+        name: `Mixin ${isPc ? '扫码' : ''}支付`,
       },
     ];
     if (Number(assetBalance) >= Number(amount)) {
@@ -452,7 +452,9 @@ export default observer((props: any) => {
   const step5 = () => {
     return (
       <div className="px-10">
-        <div className="text-lg font-bold text-gray-700">Mixin 扫码支付</div>
+        <div className="text-lg font-bold text-gray-700">
+          Mixin <span className="hidden md:inline-block">扫码</span>支付
+        </div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
             <div
@@ -469,7 +471,7 @@ export default observer((props: any) => {
                     setIframeLoading(false);
                   }, 2000);
                 }}
-                title="Mixin 扫码支付"
+                title="Mixin"
                 src={paymentUrl}
               ></iframe>
               <style jsx>{`
@@ -515,11 +517,7 @@ export default observer((props: any) => {
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={() => onCloseModal(false)}
-      className="flex justify-center items-center"
-    >
+    <Modal open={open} onClose={() => onCloseModal(false)}>
       <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}

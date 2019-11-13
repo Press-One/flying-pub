@@ -1,14 +1,15 @@
 import React from 'react';
-import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Info from '@material-ui/icons/Info';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
+import Modal from 'components/Modal';
 import { useStore } from 'store';
 import { checkAmount } from './utils';
 import Api from './api';
+import { isMixin, isPc } from 'utils';
 
 export default (props: any) => {
   const { userStore, socketStore, snackbarStore } = useStore();
@@ -55,9 +56,13 @@ export default (props: any) => {
         amount,
         memo,
       });
-      setPaymentUrl(paymentUrl);
-      setIframeLoading(true);
-      setStep(2);
+      if (isMixin) {
+        window.location.href = paymentUrl;
+      } else {
+        setPaymentUrl(paymentUrl);
+        setIframeLoading(true);
+        setStep(2);
+      }
     } catch (err) {
       console.log(` ------------- err ---------------`, err);
     }
@@ -76,7 +81,9 @@ export default (props: any) => {
   const step1 = () => {
     return (
       <div>
-        <div className="text-lg font-bold text-gray-700">Mixin 扫码充值</div>
+        <div className="text-lg font-bold text-gray-700">
+          Mixin <span className="hidden md:inline-block">扫码</span>充值
+        </div>
         <div className="mt-2 text-gray-800">
           <TextField
             value={amount}
@@ -85,11 +92,11 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            autoFocus
+            autoFocus={isPc}
             onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
-              inputProps: { maxLength: 8 },
+              inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
             }}
           />
           <div className="-mt-2" />
@@ -114,7 +121,9 @@ export default (props: any) => {
   const step2 = () => {
     return (
       <div className="px-10">
-        <div className="text-lg font-bold text-gray-700">Mixin 扫码充值</div>
+        <div className="text-lg font-bold text-gray-700">
+          Mixin <span className="hidden md:inline-block">扫码</span>充值
+        </div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
             <div
@@ -132,7 +141,7 @@ export default (props: any) => {
                     setIframeLoading(false);
                   }, 2000);
                 }}
-                title="Mixin 扫码充值"
+                title={`Mixin ${isPc ? '扫码' : ''}充值`}
                 src={paymentUrl}
               ></iframe>
               <style jsx>{`
@@ -178,7 +187,7 @@ export default (props: any) => {
   };
 
   return (
-    <Modal open={open} onClose={onCloseModal} className="flex justify-center items-center">
+    <Modal open={open} onClose={onCloseModal}>
       <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}

@@ -11,7 +11,7 @@ import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, isMobile, sleep } from 'utils';
+import { getApiEndpoint, getLoginUrl, isMobile, isMixin, sleep } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -22,6 +22,8 @@ export default observer(() => {
   if (!userStore.isFetched || !feedStore.isFetched) {
     return isMobile ? <div className="h-12" /> : null;
   }
+
+  const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 1500}>
@@ -60,7 +62,11 @@ export default observer(() => {
                   onClick={async () => {
                     setOpenDrawer(false);
                     await sleep(200);
-                    modalStore.openLogin();
+                    if (isMixin) {
+                      window.location.href = getLoginUrl();
+                    } else {
+                      modalStore.openLogin();
+                    }
                   }}
                 >
                   登陆
@@ -103,6 +109,14 @@ export default observer(() => {
                     }}
                   >
                     所有交易记录
+                  </div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    onClick={async () => {
+                      window.location.href = logoutUrl;
+                    }}
+                  >
+                    退出账号
                   </div>
                 </div>
               )}
@@ -166,13 +180,13 @@ export default observer(() => {
                 </div>
               )}
               {userStore.isLogin && (
-                <a href={`${getApiEndpoint()}/api/logout?from=${window.location.origin}`}>
+                <a href={logoutUrl}>
                   <MenuItem className="text-gray-700">
                     <div className="py-1 flex items-center">
                       <span className="flex items-center text-xl mr-2">
                         <ExitToApp />
                       </span>{' '}
-                      登出
+                      退出账号
                       <span className="pr-2" />
                     </div>
                   </MenuItem>

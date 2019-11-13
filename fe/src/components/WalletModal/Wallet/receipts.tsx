@@ -7,7 +7,6 @@ import { assetIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
 import { sleep } from 'utils';
 import { useStore } from 'store';
-import css from 'styled-jsx/css';
 
 const getTypeName = (type: string) => {
   const map: any = {

@@ -7,7 +7,7 @@ import Info from '@material-ui/icons/Info';
 import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
 import { assets, assetIconMap } from './utils';
-import { sleep } from 'utils';
+import { sleep, isMobile } from 'utils';
 import Api from './api';
 
 const Asset = (props: any) => {
@@ -94,7 +94,7 @@ export default observer((props: any) => {
       await sleep(500);
       snackbarStore.show({
         message: message || '转出成功',
-        duration: 8000,
+        duration: isMobile ? 2000 : 8000,
       });
     }
   };

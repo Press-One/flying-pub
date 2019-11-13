@@ -1,9 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Modal from '@material-ui/core/Modal';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
+import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import Wallet from './Wallet';
 import { useStore } from 'store';
@@ -63,12 +63,8 @@ export default observer(() => {
   }
 
   return (
-    <Modal
-      open={modalStore.wallet.open}
-      onClose={modalStore.closeWallet}
-      className="flex justify-center items-center bg-white"
-    >
-      {renderMain()}
+    <Modal open={modalStore.wallet.open} onClose={modalStore.closeWallet}>
+      <div className="bg-white rounded">{renderMain()}</div>
     </Modal>
   );
 });

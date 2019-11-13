@@ -1,16 +1,16 @@
 import React from 'react';
-import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import Help from '@material-ui/icons/Help';
-import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
+import Button from 'components/Button';
+import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { sleep } from 'utils';
+import { sleep, isMobile, isPc } from 'utils';
 import { checkAmount } from './utils';
 import Api from './api';
 
@@ -64,11 +64,11 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            autoFocus
+            autoFocus={isPc}
             onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep2(amount, currency, balance)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
-              inputProps: { maxLength: 8 },
+              inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
             }}
           />
           <div className="-mt-2" />
@@ -114,7 +114,7 @@ export default (props: any) => {
             await sleep(1000);
             onCloseModal(
               true,
-              `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}`,
+              isPc ? `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}` : '',
             );
           } else {
             snackbarStore.show({
@@ -134,11 +134,11 @@ export default (props: any) => {
     return (
       <div>
         <div className="text-lg font-bold text-gray-700">请输入支付密码</div>
-        <div className="mt-5">
+        <div className="hidden md:block mt-5">
           转给 <span className="font-bold">{mixinAccount.full_name}</span>
           <div className="text-gray-500 text-xs">{mixinAccount.identity_number}</div>
         </div>
-        <div className="mt-3 text-xs pb-1">
+        <div className="mt-4 md:mt-3 text-xs pb-1">
           <span className="font-bold text-xl">{amount}</span> {currency}
         </div>
         <div className="mt-5 text-gray-800">
@@ -152,11 +152,34 @@ export default (props: any) => {
                   autoFocus
                   OTPLength={6}
                   otpType="number"
-                  secure
+                  secure={isPc}
                 />
+                <div className="md:hidden flex justify-center">
+                  {'......'.split('').map((value, index) => (
+                    <div className="fake-input flex justify-center" key={index}>
+                      {pin.length > index && (
+                        <i className="dot w-2 h-2 rounded-full bg-gray-700"></i>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <style jsx>{`
+                  .fake-input {
+                    width: 32px;
+                    height: 0;
+                    margin: 0 2px;
+                  }
+                  .fake-input .dot {
+                    margin-top: -20px;
+                  }
+                `}</style>
                 <style jsx global>{`
                   .opt-input {
                     margin: 0 2px !important;
+                    color: ${isMobile ? '#fff' : 'inherit'};
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
                   }
                 `}</style>
               </div>
@@ -183,11 +206,7 @@ export default (props: any) => {
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={() => onCloseModal(false)}
-      className="flex justify-center items-center"
-    >
+    <Modal open={open} onClose={() => onCloseModal(false)}>
       <div className="py-8 px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}

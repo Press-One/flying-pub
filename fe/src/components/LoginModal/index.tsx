@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Modal from '@material-ui/core/Modal';
 import Info from '@material-ui/icons/Info';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
+import Modal from 'components/Modal';
 import { getLoginUrl, isMobile } from 'utils';
 import { useStore } from 'store';
 
@@ -70,7 +70,9 @@ export default observer(() => {
           {(isPc || isMobile) && (
             <div className="mt-4">
               <a href={getLoginUrl()}>
-                <Button>使用 Mixin 扫码登陆</Button>
+                <Button>
+                  使用 Mixin <span className="hidden md:inline-block">扫码</span>登陆
+                </Button>
               </a>
             </div>
           )}
@@ -88,11 +90,7 @@ export default observer(() => {
   }
 
   return (
-    <Modal
-      open={modalStore.login.open}
-      onClose={modalStore.closeLogin}
-      className="flex justify-center items-center"
-    >
+    <Modal open={modalStore.login.open} onClose={modalStore.closeLogin}>
       {renderMain()}
     </Modal>
   );

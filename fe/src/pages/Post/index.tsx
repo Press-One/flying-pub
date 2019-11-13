@@ -84,7 +84,7 @@ export default observer((props: any) => {
         setIsFetchedReward(true);
       }
     })();
-  }, [post]);
+  }, [post, props]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);

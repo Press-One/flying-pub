@@ -1,5 +1,5 @@
 import React from 'react';
-import Modal from '@material-ui/core/Modal';
+import Modal from 'components/Modal';
 
 interface IProps {
   open: boolean;
@@ -15,7 +15,7 @@ export default class ConfirmDialog extends React.Component<IProps, any> {
   render() {
     const { open, content, ContentComponent, cancel, ok, cancelText, okText = '确定' } = this.props;
     return (
-      <Modal open={open} onClose={() => cancel()} className="flex items-center justify-center">
+      <Modal open={open} onClose={() => cancel()}>
         <div className="bg-white rounded">
           <div className="text-gray-700">
             {content && <div className="m-auto px-12 pt-12 pb-2">{content}</div>}

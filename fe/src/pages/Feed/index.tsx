@@ -30,7 +30,7 @@ export default observer(() => {
         }
       })();
     }
-  }, [feedStore, PostApi]);
+  }, [feedStore]);
 
   const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
     if (feedScrollTop === 0 && postId) {
@@ -71,7 +71,7 @@ export default observer(() => {
   const { feed, hasMore, pagePosts, postExtraMap } = feedStore;
 
   return (
-    <Fade in={true} timeout={500}>
+    <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="md:w-7/12 m-auto pb-10 pt-3">
         <div>
           <h1

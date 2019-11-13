@@ -78,7 +78,13 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
   navigator.userAgent,
 );
 
+export const isPc = !isMobile;
+
 export const isWeChat = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+  navigator.userAgent,
+);
+
+export const isMixin = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
   navigator.userAgent,
 );
 
