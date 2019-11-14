@@ -26,8 +26,8 @@ export default observer(() => {
   const { returnInfo } = modalStore.wallet.data;
   let isBalanceEnough = false;
   if (returnInfo) {
-    const { requiredAsset, requiredAmount } = returnInfo;
-    isBalanceEnough = Number(walletStore.balance[requiredAsset]) >= Number(requiredAmount);
+    const { requiredCurrency, requiredAmount } = returnInfo;
+    isBalanceEnough = Number(walletStore.balance[requiredCurrency]) >= Number(requiredAmount);
   }
 
   const renderMain = () => {

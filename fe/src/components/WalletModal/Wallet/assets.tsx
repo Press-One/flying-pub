@@ -6,7 +6,7 @@ import Fade from '@material-ui/core/Fade';
 import Info from '@material-ui/icons/Info';
 import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
-import { assets, assetIconMap } from './utils';
+import { currencies, currencyIconMap } from './utils';
 import { sleep, isMobile } from 'utils';
 import Api from './api';
 
@@ -27,7 +27,7 @@ const Asset = (props: any) => {
   return (
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-300 leading-none">
       <div className="flex items-center">
-        <img src={assetIconMap[asset]} alt={asset} width="40" height="40" />
+        <img src={currencyIconMap[asset]} alt={asset} width="40" height="40" />
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">{amount}</span>
           <span className="text-xs font-bold">{asset}</span>
@@ -146,7 +146,7 @@ export default observer((props: any) => {
             </span>
           </div>
         )}
-        {assets.map((asset: any) => {
+        {currencies.map((asset: any) => {
           return (
             <div key={asset}>
               <Asset

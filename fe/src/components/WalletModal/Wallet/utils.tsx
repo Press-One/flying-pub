@@ -1,6 +1,6 @@
-export const assets = ['CNB', 'BTC', 'ETH', 'EOS', 'BOX', 'PRS'];
+export const currencies = ['CNB', 'BTC', 'ETH', 'EOS', 'BOX', 'PRS'];
 
-export const assetIconMap: any = {
+export const currencyIconMap: any = {
   CNB: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
   BTC: 'https://xue-images.pek3b.qingstor.com/1024-btc.png',
   ETH: 'https://xue-images.pek3b.qingstor.com/1024-eth.png',
@@ -28,7 +28,7 @@ export const checkAmount = (amount: string, currency: string, balance?: any) => 
   if (!amount) {
     return {
       message: `请输入金额`,
-      type: 'error'
+      type: 'error',
     };
   }
   if (balance) {
@@ -36,7 +36,7 @@ export const checkAmount = (amount: string, currency: string, balance?: any) => 
     if (isGtBalance) {
       return {
         message: `你的 ${currency} 余额只有 ${balance[currency]} 个`,
-        type: 'error'
+        type: 'error',
       };
     }
   }
@@ -44,10 +44,10 @@ export const checkAmount = (amount: string, currency: string, balance?: any) => 
   if (isGtMax) {
     return {
       message: `${currency} 单次最大交易金额不能超过 ${maxAmount[currency]} 个`,
-      type: 'error'
+      type: 'error',
     };
   }
   return {
-    ok: true
+    ok: true,
   };
 };

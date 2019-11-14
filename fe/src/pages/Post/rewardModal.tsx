@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { assets, assetIconMap } from '../../components/WalletModal/Wallet/utils';
+import { currencies, currencyIconMap } from '../../components/WalletModal/Wallet/utils';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -18,15 +18,15 @@ import { sleep, isPc } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
+  const cachedCurrency = localStorage.getItem('REWARD_CURRENCY');
+  const cachedMethod = localStorage.getItem('REWARD_METHOD');
   const { userStore, socketStore, walletStore, modalStore, snackbarStore } = useStore();
   const { isLogin } = userStore;
   const { open, onClose, fileRId, toAuthor, toAddress, toMixinClientId } = props;
-  const [step, setStep] = React.useState(1);
-  const [selectedAsset, setSelectedAsset] = React.useState('CNB');
+  const [step, setStep] = React.useState(cachedCurrency ? 2 : 1);
+  const [selectedCurrency, setSelectedCurrency] = React.useState(cachedCurrency || '');
   const [amount, setAmount] = React.useState('');
   const [memo, setMemo] = React.useState('');
-  const [defaultPaymentMethod, setDefaultPaymentMethod] = React.useState('');
-  const [paymentMethod, setPaymentMethod] = React.useState('');
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
@@ -49,12 +49,10 @@ export default observer((props: any) => {
         toMixinClientId,
       });
       setIframeLoading(false);
-      setStep(1);
+      setStep(step > 1 ? 2 : 1);
       setAmount('');
       setMemo('');
       setPin('');
-      setDefaultPaymentMethod('');
-      setPaymentMethod('');
       setPaying(false);
       setIsPaid(false);
       onClose(true);
@@ -75,7 +73,7 @@ export default observer((props: any) => {
     socketStore,
     fileRId,
     toAddress,
-    selectedAsset,
+    selectedCurrency,
     amount,
     memo,
     toMixinClientId,
@@ -103,7 +101,7 @@ export default observer((props: any) => {
   }, [walletStore]);
 
   const onCloseModal = (isSuccess: boolean) => {
-    setStep(1);
+    setStep(step > 1 ? 2 : 1);
     setAmount('');
     setMemo('');
     setPin('');
@@ -126,15 +124,13 @@ export default observer((props: any) => {
           if (isValid) {
             await Api.reward(fileRId, {
               toAddress,
-              currency: selectedAsset,
+              currency: selectedCurrency,
               amount,
               memo,
               toMixinClientId,
             });
             setPaying(false);
             setIsPaid(true);
-            setDefaultPaymentMethod('');
-            setPaymentMethod('');
             await sleep(1000);
             onCloseModal(true);
             await sleep(1500);
@@ -168,7 +164,7 @@ export default observer((props: any) => {
     try {
       const { paymentUrl } = await WalletApi.recharge({
         amount,
-        currency: selectedAsset,
+        currency: selectedCurrency,
         memo: memo || '打赏文章',
       });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
@@ -182,31 +178,26 @@ export default observer((props: any) => {
     return (
       <div className="px-2">
         <div className="text-lg font-bold text-gray-700">选择币种</div>
-        <div className="flex flex-wrap justify-between mt-4 w-64">
-          {assets.map((asset: any) => {
+        <div className="flex flex-wrap justify-between mt-4 w-64 pb-5">
+          {currencies.map((currency: any) => {
             return (
-              <div key={asset} className="p-2" title={asset}>
+              <div key={currency} className="p-2" title={currency}>
                 <div
-                  className={classNames(
-                    {
-                      'border-blue-400 text-blue-400 font-bold': selectedAsset === asset,
-                      'border-gray-300 text-gray-600': selectedAsset !== asset,
-                    },
-                    'text-center border rounded p-2 px-4 cursor-pointer',
-                  )}
-                  onClick={() => setSelectedAsset(asset)}
+                  className="text-center border rounded p-2 px-4 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
+                  onClick={() => {
+                    localStorage.setItem('REWARD_CURRENCY', currency);
+                    setSelectedCurrency(currency);
+                    setStep(2);
+                  }}
                 >
                   <div className="w-8 h-8">
-                    <img className="w-8 h-8" src={assetIconMap[asset]} alt={asset} />
+                    <img className="w-8 h-8" src={currencyIconMap[currency]} alt={currency} />
                   </div>
-                  <div className="mt-2 leading-none text-xs currency tracking-wide">{asset}</div>
+                  <div className="mt-2 leading-none text-xs currency tracking-wide">{currency}</div>
                 </div>
               </div>
             );
           })}
-        </div>
-        <div className="text-center mt-6">
-          <Button onClick={() => setStep(2)}>下一步</Button>
         </div>
         <style jsx>{`
           .currency {
@@ -219,16 +210,27 @@ export default observer((props: any) => {
     );
   };
 
-  const tryGoStep3 = (amount: string, currency: string) => {
-    const result = checkAmount(amount, currency);
-    if (result.ok) {
-      setStep(3);
-    } else {
-      snackbarStore.show(result);
-    }
-  };
-
   const step2 = () => {
+    const next = (amount: string, currency: string) => {
+      const { isFetchedBalance, balance, isCustomPinExist } = walletStore;
+      const assetBalance = balance[currency];
+      const result = checkAmount(amount, currency);
+      if (result.ok) {
+        const balanceMethodAutoSelected =
+          isFetchedBalance &&
+          isCustomPinExist &&
+          Number(assetBalance) >= Number(amount) &&
+          cachedMethod === 'balance';
+        if (balanceMethodAutoSelected) {
+          setStep(4);
+        } else {
+          setStep(3);
+        }
+      } else {
+        snackbarStore.show(result);
+      }
+    };
+
     return (
       <div>
         <div className="text-base text-gray-700">
@@ -243,9 +245,9 @@ export default observer((props: any) => {
             variant="outlined"
             autoFocus={isPc}
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep3(amount, selectedAsset)}
+            onKeyPress={(e: any) => e.key === 'Enter' && next(amount, selectedCurrency)}
             InputProps={{
-              endAdornment: <InputAdornment position="end">{selectedAsset}</InputAdornment>,
+              endAdornment: <InputAdornment position="end">{selectedCurrency}</InputAdornment>,
               inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
             }}
           />
@@ -257,12 +259,21 @@ export default observer((props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep3(amount, selectedAsset)}
+            onKeyPress={(e: any) => e.key === 'Enter' && next(amount, selectedCurrency)}
             inputProps={{ maxLength: 20 }}
           />
         </div>
         <div className="text-center mt-6">
-          <Button onClick={() => tryGoStep3(amount, selectedAsset)}>下一步</Button>
+          <Button onClick={() => next(amount, selectedCurrency)}>下一步</Button>
+        </div>
+        <div
+          className="mt-3 text-xs text-blue-400 cursor-pointer"
+          onClick={() => {
+            setSelectedCurrency('');
+            setStep(1);
+          }}
+        >
+          选择其他币种
         </div>
       </div>
     );
@@ -277,7 +288,7 @@ export default observer((props: any) => {
         </div>
       );
     }
-    const assetBalance = balance[selectedAsset];
+    const assetBalance = balance[selectedCurrency];
     const payments: any = [
       {
         enabled: true,
@@ -308,28 +319,32 @@ export default observer((props: any) => {
         name: '余额支付',
       });
     }
-    if (!defaultPaymentMethod || defaultPaymentMethod !== payments[0].method) {
-      setDefaultPaymentMethod(payments[0].method);
-      setPaymentMethod(payments[0].method);
-    }
+
     return (
       <div>
         <div className="text-base font-bold text-gray-700">选择支付方式</div>
-        <div className="mt-6 mx-10">
+        <div className="mt-6 mx-4">
           {payments.map((payment: any) => (
             <div key={payment.method}>
               <div
                 className={classNames(
                   {
-                    'border-blue-400 text-blue-400 font-bold cursor-pointer':
-                      payment.enabled && payment.method === paymentMethod,
-                    'border-gray-300 text-gray-600 cursor-pointer':
-                      payment.enabled && payment.method !== paymentMethod,
+                    'hover:border-blue-400 hover:text-blue-400': payment.enabled,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
                   },
-                  'text-center border rounded p-3 px-8 mt-3 leading-none',
+                  'text-center border rounded p-3 px-8 mt-3 leading-none border-gray-300 text-gray-600 cursor-pointer',
                 )}
-                onClick={() => payment.enabled && setPaymentMethod(payment.method)}
+                onClick={() => {
+                  if (payment.enabled) {
+                    localStorage.setItem('REWARD_METHOD', payment.method);
+                    if (payment.method === 'mixin') {
+                      getRechargePaymentUrl();
+                      setStep(5);
+                    } else {
+                      setStep(4);
+                    }
+                  }
+                }}
               >
                 {payment.name}
               </div>
@@ -337,14 +352,14 @@ export default observer((props: any) => {
                 <div>
                   {payment.disabledReason === 'NO_ENOUGH_BALANCE' && (
                     <div className="mt-1 text-xs text-gray-500">
-                      {selectedAsset} 余额不足，去
+                      {selectedCurrency} 余额不足，去
                       <span
                         className="text-blue-400 cursor-pointer"
                         onClick={() =>
                           modalStore.openWallet({
                             tab: 'assets',
                             returnInfo: {
-                              requiredAsset: selectedAsset,
+                              requiredCurrency: selectedCurrency,
                               requiredAmount: amount,
                               text: '返回继续打赏',
                             },
@@ -364,7 +379,7 @@ export default observer((props: any) => {
                           modalStore.openWallet({
                             tab: 'settings',
                             returnInfo: {
-                              requiredAsset: selectedAsset,
+                              requiredCurrency: selectedCurrency,
                               requiredAmount: amount,
                               text: '返回继续打赏',
                             },
@@ -380,19 +395,10 @@ export default observer((props: any) => {
             </div>
           ))}
         </div>
-        <div className="text-center mt-6 pt-1">
-          <Button
-            onClick={() => {
-              if (paymentMethod === 'mixin') {
-                getRechargePaymentUrl();
-                setStep(5);
-              } else {
-                setStep(4);
-              }
-            }}
-          >
-            确认
-          </Button>
+        <div className="flex justify-center mt-5 text-xs text-blue-400">
+          <div className="cursor-pointer" onClick={() => setStep(2)}>
+            返回
+          </div>
         </div>
       </div>
     );
@@ -406,7 +412,7 @@ export default observer((props: any) => {
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
         <div className="mt-3 text-xs pb-1">
-          <span className="font-bold text-xl">{amount}</span> {selectedAsset}
+          <span className="font-bold text-xl">{amount}</span> {selectedCurrency}
         </div>
         <div className="mt-5 text-gray-800">
           {!isPaid && !paying && (
@@ -427,8 +433,10 @@ export default observer((props: any) => {
                   }
                 `}</style>
               </div>
-              <div className="mt-4 text-xs text-blue-400 cursor-pointer" onClick={() => setStep(3)}>
-                返回
+              <div className="flex justify-center mt-4 text-xs text-blue-400">
+                <div className="cursor-pointer" onClick={() => setStep(3)}>
+                  选择其他支付方式
+                </div>
               </div>
             </div>
           )}

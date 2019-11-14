@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { assetIconMap } from 'components/WalletModal/Wallet/utils';
+import { currencyIconMap } from 'components/WalletModal/Wallet/utils';
 
 export default (props: any) => {
   let { amountMap = {}, users = [] } = props.summary;
@@ -44,7 +44,7 @@ export default (props: any) => {
                 key={asset}
               >
                 <div className="flex items-center">
-                  <img className="w-10 h-10" src={assetIconMap[asset]} alt={asset} />
+                  <img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} />
                   <span className="ml-3 font-bold text-gray-700">{asset}</span>
                 </div>
                 <span className="text-gray-600 ml-2 flex items-center leading-none">
