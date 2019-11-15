@@ -67,7 +67,7 @@ export default observer(() => {
               </a>
             </div>
           )}
-          {(isPc || isMobile) && (
+          {isPc && (
             <div className="mt-4">
               <a href={getLoginUrl()}>
                 <Button>

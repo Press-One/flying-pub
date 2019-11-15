@@ -1,7 +1,25 @@
 import Parser from 'rss-parser';
-import request from '../../request';
+import request from './request';
 
 export default {
+  async setAutoLoginUrl(url: string) {
+    return request(`/api/auto_login`, {
+      method: 'POST',
+      body: {
+        payload: {
+          url,
+        },
+      },
+    });
+  },
+  async getAutoLoginUrl() {
+    return request(`/api/auto_login`);
+  },
+  async deleteAutoLoginUrl() {
+    return request(`/api/auto_login`, {
+      method: 'DELETE',
+    });
+  },
   async fetchUser() {
     return request('/api/user');
   },

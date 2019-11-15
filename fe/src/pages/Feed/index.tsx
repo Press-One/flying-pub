@@ -7,7 +7,7 @@ import { getPostId, Post } from 'store/feed';
 import PostEntry from './PostEntry';
 import Loading from 'components/Loading';
 import { isMobile, getPostSelector } from 'utils';
-import PostApi from '../TryFetch/api';
+import PostApi from 'api';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();

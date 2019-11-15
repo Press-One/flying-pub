@@ -19,6 +19,7 @@ const post = require('./routes/post');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const logout = require('./routes/logout');
+const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
 
 const models = require('./models');
@@ -57,6 +58,7 @@ router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMetho
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());
+router.use('/api/auto_login', autoLogin.routes(), autoLogin.allowedMethods());
 router.use('/api/ping', ping.routes(), ping.allowedMethods());
 
 router.get('/api/session.json', async ctx => {

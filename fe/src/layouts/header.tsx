@@ -12,7 +12,7 @@ import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, getLoginUrl, isMobile, isMixin, sleep, stopBodyScroll } from 'utils';
+import { getApiEndpoint, getLoginUrl, isMobile, isWeChat, sleep, stopBodyScroll } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -68,10 +68,10 @@ export default observer(() => {
                     setOpenDrawer(false);
                     stopBodyScroll(false);
                     await sleep(200);
-                    if (isMixin) {
-                      window.location.href = getLoginUrl();
-                    } else {
+                    if (isWeChat) {
                       modalStore.openLogin();
+                    } else {
+                      window.location.href = getLoginUrl();
                     }
                   }}
                 >

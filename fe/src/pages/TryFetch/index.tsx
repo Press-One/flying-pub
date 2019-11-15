@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
-import Api from './api';
 import Loading from 'components/Loading';
 import ConfirmDialog from 'components/ConfirmDialog';
 import { getXmlUrl, sleep } from 'utils';
+import Api from 'api';
 
 export default observer((props: any) => {
   const { userStore, feedStore, socketStore, modalStore } = useStore();
@@ -36,6 +36,11 @@ export default observer((props: any) => {
         userStore.setUser(user);
         socketStore.init(user.id);
       } catch (err) {
+        const { url } = await Api.getAutoLoginUrl();
+        if (url) {
+          Api.deleteAutoLoginUrl();
+          window.location.href = url;
+        }
         console.log(err);
       }
       userStore.setIsFetched(true);
@@ -51,7 +56,7 @@ export default observer((props: any) => {
   if (!feedStore.isFetched) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-32 md:-mt-30">
           <Loading />
         </div>
       </div>

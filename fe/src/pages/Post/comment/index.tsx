@@ -174,14 +174,6 @@ export default observer((props: IProps) => {
     }
   };
 
-  const renderEmptyComment = () => {
-    return (
-      <div className="my-20 text-center">
-        <div className="text-gray-500 mb-3">还没有人发表评论</div>
-      </div>
-    );
-  };
-
   const handleEditorChange = (event: any) => {
     openDrawer ? setDrawerReplyValue(event.target.value) : setValue(event.target.value);
   };
@@ -225,7 +217,7 @@ export default observer((props: IProps) => {
               }
             `}</style>
             {!isLogin && (
-              <div className="text-gray-700 absolute top-0 left-0 mt-5 ml-1 bg-white p-5">
+              <div className="text-gray-700 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
                 参与讨论之前请先
                 <span className="text-blue-400 cursor-pointer" onClick={modalStore.openLogin}>
                   登陆
@@ -294,10 +286,10 @@ export default observer((props: IProps) => {
     return (
       <Fade in={true} timeout={200}>
         <div
-          className="fixed bottom-0 left-0 w-full py-2 px-3 border-t border-gray-200 bg-white"
+          className="fixed bottom-0 left-0 w-full py-2 px-3 border-t border-gray-300 bg-white"
           onClick={() => setOpenDrawer(true)}
         >
-          <div className="rounded-lg bg-gray-200 text-gray-500 py-2 px-3">说点什么...</div>
+          <div className="rounded-lg bg-gray-200 text-gray-600 py-2 px-3">说点什么...</div>
         </div>
       </Fade>
     );
@@ -307,15 +299,19 @@ export default observer((props: IProps) => {
     const hasComments = comments.length > 0;
     return (
       <div className="pb-8 md:pb-0 comment">
-        <div className="text-lg font-bold flex text-gray-700">
-          <div className="flex items-center">
-            <span className="text-xl mr-2">
-              <CommentIcon />
-            </span>{' '}
-            全部评论（{total}）
+        {hasComments && (
+          <div>
+            <div className="text-lg font-bold flex text-gray-700">
+              <div className="flex items-center">
+                <span className="text-xl mr-2">
+                  <CommentIcon />
+                </span>{' '}
+                全部评论（{total}）
+              </div>
+            </div>
+            <div className="mt-6" />
           </div>
-        </div>
-        <div className="mt-6" />
+        )}
         {isPc &&
           renderEditor({
             user,
@@ -323,7 +319,7 @@ export default observer((props: IProps) => {
             isDoing: isCreatingComment,
             isCreated: isCreatedComment,
           })}
-        <div className="mt-8" />
+        {hasComments && <div className="mt-8" />}
         <DrawerModal
           hideCloseButton
           open={openDrawer}
@@ -344,7 +340,7 @@ export default observer((props: IProps) => {
             </div>
           </div>
         </DrawerModal>
-        {hasComments ? (
+        {hasComments && (
           <Comments
             user={user}
             comments={comments || []}
@@ -353,8 +349,6 @@ export default observer((props: IProps) => {
             upVote={upVote}
             resetVote={resetVote}
           />
-        ) : (
-          renderEmptyComment()
         )}
         {hasComments && (
           <div className="mt-5 md:mt-10 text-gray-500 flex items-center justify-center">

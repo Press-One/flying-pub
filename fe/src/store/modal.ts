@@ -1,4 +1,5 @@
-import { stopBodyScroll } from 'utils';
+import { stopBodyScroll, isWeChat, getLoginUrl } from 'utils';
+import Api from 'api';
 
 export function createModalStore() {
   return {
@@ -14,6 +15,9 @@ export function createModalStore() {
       this.login.open = true;
       this.login.data = data;
       stopBodyScroll(true);
+      if (isWeChat) {
+        Api.setAutoLoginUrl(getLoginUrl());
+      }
     },
     closeLogin() {
       this.login.open = false;
