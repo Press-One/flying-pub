@@ -6,10 +6,12 @@ import ConfirmDialog from 'components/ConfirmDialog';
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 import Loading from 'components/Loading';
-import Drawer from '@material-ui/core/Drawer';
+import DrawerModal from 'components/DrawerModal';
+import Fade from '@material-ui/core/Fade';
+import debounce from 'lodash.debounce';
 import Comments from './comments';
 import { useStore } from 'store';
-import { sleep, stopBodyScroll } from 'utils';
+import { sleep, stopBodyScroll, isMobile, isPc } from 'utils';
 import CommentApi from './api';
 
 interface IProps {
@@ -30,11 +32,24 @@ export default observer((props: IProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
   const [deleteCommentId, setDeleteCommentId] = React.useState(0);
   const [openDrawer, setOpenDrawer] = React.useState(false);
+  const [openCommentEntry, setOpenCommentEntry] = React.useState(false);
   const [isVoting, setIsVoting] = React.useState(false);
 
   React.useEffect(() => {
-    stopBodyScroll(openDrawer);
-  }, [openDrawer]);
+    const scrollCallBack = debounce(() => {
+      const commentDom: any = document.querySelector('.comment');
+      if (!commentDom) {
+        return;
+      }
+      const commentOffsetTop = commentDom.offsetTop;
+      const isShowCommentEntry = window.scrollY + window.innerHeight > commentOffsetTop + 50;
+      setOpenCommentEntry(isShowCommentEntry);
+    }, 300);
+    window.addEventListener('scroll', scrollCallBack);
+    return () => {
+      window.removeEventListener('scroll', scrollCallBack);
+    };
+  }, []);
 
   React.useEffect(() => {
     const fetchComments = async () => {
@@ -63,7 +78,7 @@ export default observer((props: IProps) => {
     const _value = ((openDrawer ? drawerReplyValue : value) || '').trim();
     if (!_value) {
       snackbarStore.show({
-        message: '请输入回复内容',
+        message: '请输入发布内容',
         type: 'error',
       });
       return;
@@ -84,6 +99,7 @@ export default observer((props: IProps) => {
       if (openDrawer) {
         setDrawerReplyValue('');
         setOpenDrawer(false);
+        stopBodyScroll(false);
       } else {
         setValue('');
       }
@@ -94,7 +110,7 @@ export default observer((props: IProps) => {
       });
     } catch (e) {
       snackbarStore.show({
-        message: '回复失败，请稍后重试',
+        message: '发布失败，请稍后重试',
         type: 'error',
       });
     } finally {
@@ -183,7 +199,7 @@ export default observer((props: IProps) => {
       <div>
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
           <img
-            className="mr-3"
+            className="hidden md:block mr-3"
             src={user && user.avatar ? user.avatar : 'https://static.press.one/pub/avatar.png'}
             width="36px"
             height="36px"
@@ -191,17 +207,23 @@ export default observer((props: IProps) => {
           />
           <div className="w-full -mt-4 relative">
             <TextField
-              className="po-input po-text-14"
-              placeholder="写下你的评论..."
+              className="po-input po-text-14 textarea"
+              placeholder="说点什么..."
               multiline
               fullWidth
+              autoFocus={isMobile}
               disabled={!isLogin}
-              rows="5"
+              rows={isPc ? 5 : 3}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
               variant="outlined"
             />
+            <style jsx global>{`
+              .textarea .MuiOutlinedInput-input {
+                padding: 0 !important;
+              }
+            `}</style>
             {!isLogin && (
               <div className="text-gray-700 absolute top-0 left-0 mt-5 ml-1 bg-white p-5">
                 参与讨论之前请先
@@ -210,10 +232,10 @@ export default observer((props: IProps) => {
                 </span>
               </div>
             )}
-            <div className="mt-2"></div>
+            <div className="mt-1 md:mt-2"></div>
             <div className="text-right">
-              <Button onClick={() => reply()}>
-                回复
+              <Button onClick={() => reply()} small={isMobile}>
+                发布
                 <ButtonProgress isDoing={isDoing} isDone={isDone} />
               </Button>
             </div>
@@ -268,10 +290,23 @@ export default observer((props: IProps) => {
     );
   };
 
+  const renderFixedCommentEntry = () => {
+    return (
+      <Fade in={true} timeout={200}>
+        <div
+          className="fixed bottom-0 left-0 w-full py-2 px-3 border-t border-gray-200 bg-white"
+          onClick={() => setOpenDrawer(true)}
+        >
+          <div className="rounded-lg bg-gray-200 text-gray-500 py-2 px-3">说点什么...</div>
+        </div>
+      </Fade>
+    );
+  };
+
   const renderMain = () => {
     const hasComments = comments.length > 0;
     return (
-      <div>
+      <div className="pb-8 md:pb-0 comment">
         <div className="text-lg font-bold flex text-gray-700">
           <div className="flex items-center">
             <span className="text-xl mr-2">
@@ -281,23 +316,25 @@ export default observer((props: IProps) => {
           </div>
         </div>
         <div className="mt-6" />
-        {renderEditor({
-          user,
-          valueState: value,
-          isDoing: isCreatingComment,
-          isCreated: isCreatedComment,
-        })}
+        {isPc &&
+          renderEditor({
+            user,
+            valueState: value,
+            isDoing: isCreatingComment,
+            isCreated: isCreatedComment,
+          })}
         <div className="mt-8" />
-        <Drawer
-          anchor="bottom"
+        <DrawerModal
+          hideCloseButton
           open={openDrawer}
           onClose={() => {
             setDrawerReplyValue('');
             setOpenDrawer(false);
+            stopBodyScroll(false);
           }}
         >
           <div className="container m-auto">
-            <div className="w-7/12 m-auto pt-2 pb-5">
+            <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-5">
               {renderEditor({
                 user,
                 valueState: drawerReplyValue,
@@ -306,7 +343,7 @@ export default observer((props: IProps) => {
               })}
             </div>
           </div>
-        </Drawer>
+        </DrawerModal>
         {hasComments ? (
           <Comments
             user={user}
@@ -320,18 +357,19 @@ export default observer((props: IProps) => {
           renderEmptyComment()
         )}
         {hasComments && (
-          <div className="mt-16 text-gray-500 flex items-center justify-center">
-            <span className="h-px bg-gray-500 w-8 mr-1"></span>
-            没有更多啦
-            <span className="h-px bg-gray-500 w-8 ml-1"></span>
+          <div className="mt-5 md:mt-10 text-gray-500 flex items-center justify-center">
+            <span className="h-px bg-gray-300 w-16 mr-2"></span>
+            <span className="text-gray-300 text-lg">·</span>
+            <span className="h-px bg-gray-300 w-16 ml-2"></span>
           </div>
         )}
-        {hasComments && comments.length > 3 && (
+        {isPc && hasComments && comments.length > 3 && (
           <div className="text-center mt-2">
             <span
               className="py-3 text-blue-400 cursor-pointer"
               onClick={() => {
                 setOpenDrawer(true);
+                stopBodyScroll(true);
                 setDrawerReplyValue('');
               }}
             >
@@ -340,6 +378,8 @@ export default observer((props: IProps) => {
           </div>
         )}
 
+        {isMobile && openCommentEntry && renderFixedCommentEntry()}
+
         {renderDeleteConfirm(showConfirmDialog, deleteCommentId)}
       </div>
     );
@@ -347,15 +387,3 @@ export default observer((props: IProps) => {
 
   return isFetched ? renderMain() : renderLoading();
 });
-
-// bindOpenLinkInNewWindow() {
-//   ref.current.addEventListener('click', (e: any) => {
-//     if (e.target.tagName === 'A') {
-//       const href = e.target.getAttribute('href');
-//       if (href) {
-//         window.open(href);
-//         e.preventDefault();
-//       }
-//     }
-//   });
-// }

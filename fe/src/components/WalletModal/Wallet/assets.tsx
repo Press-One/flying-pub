@@ -33,7 +33,7 @@ const Asset = (props: any) => {
           <span className="text-xs font-bold">{asset}</span>
         </div>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center font-bold md:font-normal">
         <span
           className="text-blue-400 text-sm mr-2 cursor-pointer p-1"
           onClick={() => props.onRecharge(asset)}

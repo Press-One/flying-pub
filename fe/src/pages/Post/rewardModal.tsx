@@ -10,6 +10,7 @@ import Button from 'components/Button';
 import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
 import Modal from 'components/Modal';
+import ButtonProgress from 'components/ButtonProgress';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
@@ -32,6 +33,7 @@ export default observer((props: any) => {
   const [isPaid, setIsPaid] = React.useState(false);
   const [paymentUrl, setPaymentUrl] = React.useState('');
   const [iframeLoading, setIframeLoading] = React.useState(false);
+  const [openingMixinSchema, setOpeningMixinSchema] = React.useState(false);
 
   React.useEffect(() => {
     if (step !== 5) {
@@ -55,6 +57,7 @@ export default observer((props: any) => {
       setPin('');
       setPaying(false);
       setIsPaid(false);
+      setOpeningMixinSchema(false);
       onClose(true);
       await sleep(1500);
       snackbarStore.show({
@@ -105,6 +108,7 @@ export default observer((props: any) => {
     setAmount('');
     setMemo('');
     setPin('');
+    setOpeningMixinSchema(false);
     setPaying(false);
     setIsPaid(false);
     onClose(isSuccess);
@@ -180,9 +184,12 @@ export default observer((props: any) => {
   };
 
   const openRechargePaymentUrl = async () => {
+    setOpeningMixinSchema(true);
     const paymentUrl = await getRechargePaymentUrl();
     const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
     window.location.href = paymentActionSchema;
+    await sleep(3000);
+    setStep(6);
   };
 
   const step1 = () => {
@@ -350,8 +357,10 @@ export default observer((props: any) => {
                   {
                     'bg-blue-400 border-blue-400 text-white': payment.enabled,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
+                    'px-20': !openingMixinSchema,
+                    'px-16': openingMixinSchema,
                   },
-                  'text-center border rounded p-3 px-20 md:px-8 mt-3 leading-none cursor-pointer',
+                  'flex justify-center items-center text-center border rounded md:px-8 p-3 mt-3 leading-none cursor-pointer',
                 )}
                 onClick={() => {
                   if (payment.enabled) {
@@ -372,7 +381,16 @@ export default observer((props: any) => {
                   }
                 }}
               >
-                {payment.name}
+                <span
+                  className={classNames({
+                    'px-2': openingMixinSchema,
+                  })}
+                >
+                  {payment.name}
+                </span>
+                {payment.method === 'mixin' && openingMixinSchema && (
+                  <ButtonProgress isDoing={true} />
+                )}
               </div>
               {!payment.enabled && (
                 <div>
@@ -448,7 +466,7 @@ export default observer((props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus
+                  autoFocus={isPc}
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}
@@ -554,6 +572,8 @@ export default observer((props: any) => {
           请使用 Mixin 扫描二维码
           <br />
           支付成功后页面会自动刷新
+          <br />
+          <span className="text-xs text-gray-500">（如果有延时，请耐心等待一会）</span>
         </div>
         <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
           <span className="flex items-center text-lg mr-1">
@@ -573,14 +593,42 @@ export default observer((props: any) => {
     );
   };
 
+  const step6 = () => {
+    return (
+      <div>
+        <div className="text-lg font-bold text-gray-700">Mixin 支付</div>
+        {isMobile && (
+          <div className="pt-10 text-center">
+            <Loading />
+            <div className="mt-5 text-sm text-gray-600">已支付？请稍后，正在核对中...</div>
+            <div className="mt-8 text-xs text-gray-500">
+              您取消了支付？请
+              <span
+                className="font-bold text-blue-400"
+                onClick={() => {
+                  setOpeningMixinSchema(false);
+                  setStep(3);
+                }}
+              >
+                返回
+              </span>
+              上一步
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="px-8 py-6 md:py-8 md:px-10 bg-white rounded text-center">
+      <div className="px-8 py-8 md:py-8 md:px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}
         {step === 4 && step4()}
         {step === 5 && step5()}
+        {step === 6 && step6()}
       </div>
     </Modal>
   );

@@ -152,7 +152,7 @@ export default (props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus
+                  autoFocus={isPc}
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}

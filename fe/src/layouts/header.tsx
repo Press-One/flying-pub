@@ -19,10 +19,6 @@ export default observer(() => {
   const handleClose = () => setAnchorEl(null);
   const { userStore, feedStore, modalStore } = useStore();
 
-  React.useEffect(() => {
-    stopBodyScroll(openDrawer);
-  }, [openDrawer]);
-
   if (!userStore.isFetched || !feedStore.isFetched) {
     return isMobile ? <div className="h-12" /> : null;
   }
@@ -47,7 +43,10 @@ export default observer(() => {
             </Link>
             <div
               className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
-              onClick={() => setOpenDrawer(true)}
+              onClick={() => {
+                setOpenDrawer(true);
+                stopBodyScroll(true);
+              }}
             >
               <MenuIcon />
             </div>
@@ -57,6 +56,7 @@ export default observer(() => {
             open={openDrawer}
             onClose={() => {
               setOpenDrawer(false);
+              stopBodyScroll(false);
             }}
           >
             <div className="bg-gray-300 leading-none">
@@ -65,6 +65,7 @@ export default observer(() => {
                   className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                   onClick={async () => {
                     setOpenDrawer(false);
+                    stopBodyScroll(false);
                     await sleep(200);
                     if (isMixin) {
                       window.location.href = getLoginUrl();
@@ -82,6 +83,7 @@ export default observer(() => {
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                     onClick={async () => {
                       setOpenDrawer(false);
+                      stopBodyScroll(false);
                       await sleep(200);
                       modalStore.openWallet({
                         tab: 'assets',
@@ -94,6 +96,7 @@ export default observer(() => {
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                     onClick={async () => {
                       setOpenDrawer(false);
+                      stopBodyScroll(false);
                       await sleep(200);
                       modalStore.openWallet({
                         tab: 'settings',
@@ -106,6 +109,7 @@ export default observer(() => {
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                     onClick={async () => {
                       setOpenDrawer(false);
+                      stopBodyScroll(false);
                       await sleep(200);
                       modalStore.openWallet({
                         tab: 'receipts',
@@ -128,6 +132,7 @@ export default observer(() => {
                 className="mt-1 py-4 text-black text-center border-b border-gray-300 bg-white text-base"
                 onClick={() => {
                   setOpenDrawer(false);
+                  stopBodyScroll(false);
                 }}
               >
                 取消

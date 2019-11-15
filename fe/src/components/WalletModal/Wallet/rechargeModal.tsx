@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import Modal from 'components/Modal';
+import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import { checkAmount } from './utils';
 import Api from './api';
@@ -21,6 +22,7 @@ export default (props: any) => {
   const [paymentUrl, setPaymentUrl] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [waitingPayment, setWaitingPayment] = React.useState(false);
+  const [openingMixinSchema, setOpeningMixinSchema] = React.useState(false);
   const [iframeLoading, setIframeLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -28,6 +30,7 @@ export default (props: any) => {
       setStep(1);
       setAmount('');
       setMemo('');
+      setOpeningMixinSchema(false);
       setWaitingPayment(false);
       onClose(true);
     };
@@ -43,41 +46,44 @@ export default (props: any) => {
     setStep(1);
     setAmount('');
     setMemo('');
+    setOpeningMixinSchema(false);
     setWaitingPayment(false);
     onClose();
   };
 
-  const recharge = async (currency: string, amount: string, memo: string = '') => {
-    if (submitting) {
-      return;
-    }
-    setSubmitting(true);
+  const getRechargePaymentUrl = async (currency: string, amount: string, memo: string = '') => {
     try {
       const { paymentUrl } = await Api.recharge({
         currency,
         amount,
         memo,
       });
-      if (isMobile) {
-        const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
-        window.location.href = paymentActionSchema;
-      } else {
-        setPaymentUrl(paymentUrl);
-        setIframeLoading(true);
-        setStep(2);
-      }
+      return paymentUrl;
     } catch (err) {
       console.log(` ------------- err ---------------`, err);
     }
-    setSubmitting(false);
   };
 
   const tryRecharge = async (currency: string, amount: string, memo: string = '') => {
     const result = checkAmount(amount, currency);
     if (result.ok) {
-      await recharge(currency, amount, memo);
-      await sleep(2000);
-      setWaitingPayment(true);
+      if (submitting) {
+        return;
+      }
+      setSubmitting(true);
+      const paymentUrl = await getRechargePaymentUrl(currency, amount, memo);
+      if (isMobile) {
+        setOpeningMixinSchema(true);
+        const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
+        window.location.href = paymentActionSchema;
+        await sleep(3000);
+        setWaitingPayment(true);
+      } else {
+        setPaymentUrl(paymentUrl);
+        setIframeLoading(true);
+        setStep(2);
+      }
+      setSubmitting(false);
     } else {
       snackbarStore.show(result);
     }
@@ -89,38 +95,60 @@ export default (props: any) => {
         <div className="text-lg font-bold text-gray-700">
           Mixin <span className="hidden md:inline-block">扫码</span>充值
         </div>
-        <div className="mt-2 text-gray-800">
-          <TextField
-            value={amount}
-            placeholder="数量"
-            onChange={(event: any) => setAmount(event.target.value)}
-            margin="normal"
-            variant="outlined"
-            fullWidth
-            autoFocus={isPc}
-            onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
-            InputProps={{
-              endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
-              inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
-            }}
-          />
-          <div className="-mt-2" />
-          <TextField
-            value={memo}
-            placeholder="备注（可选）"
-            onChange={(event: any) => setMemo(event.target.value)}
-            margin="normal"
-            variant="outlined"
-            fullWidth
-            onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
-            inputProps={{ maxLength: 20 }}
-          />
-        </div>
-        <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
-          <Button>确定</Button>
-        </div>
+        {isMobile && !waitingPayment && (
+          <div>
+            <div className="mt-2 text-gray-800">
+              <TextField
+                value={amount}
+                placeholder="数量"
+                onChange={(event: any) => setAmount(event.target.value)}
+                margin="normal"
+                variant="outlined"
+                fullWidth
+                autoFocus={isPc}
+                onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
+                  inputProps: { maxLength: 8, type: isPc ? 'text' : 'number' },
+                }}
+              />
+              <div className="-mt-2" />
+              <TextField
+                value={memo}
+                placeholder="备注（可选）"
+                onChange={(event: any) => setMemo(event.target.value)}
+                margin="normal"
+                variant="outlined"
+                fullWidth
+                onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
+                inputProps={{ maxLength: 20 }}
+              />
+            </div>
+            <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
+              <Button>
+                确定 <ButtonProgress isDoing={openingMixinSchema} />
+              </Button>
+            </div>
+          </div>
+        )}
         {isMobile && waitingPayment && (
-          <div className="mt-2 text-xs text-gray-500 text-center">等待充值...</div>
+          <div className="pt-10 text-center">
+            <Loading />
+            <div className="mt-5 text-sm text-gray-600">已充值？请稍后，正在核对中...</div>
+            <div className="mt-8 text-xs text-gray-500">
+              您取消了充值？请
+              <span
+                className="font-bold text-blue-400"
+                onClick={() => {
+                  setOpeningMixinSchema(false);
+                  setWaitingPayment(false);
+                }}
+              >
+                返回
+              </span>
+              上一步
+            </div>
+          </div>
         )}
       </div>
     );
@@ -175,6 +203,8 @@ export default (props: any) => {
           请使用 Mixin 扫描二维码
           <br />
           支付成功后页面会自动刷新
+          <br />
+          <span className="text-xs text-gray-500">（如果有延时，请耐心等待一会）</span>
         </div>
         <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
           <span className="flex items-center text-lg mr-1">

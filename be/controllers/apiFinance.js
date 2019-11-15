@@ -156,7 +156,7 @@ exports.reward = async ctx => {
       memo: data.memo,
       toMixinClientId: data.toMixinClientId,
     });
-    Log.create(user.id, `打赏 ${data.amount} ${data.currency} ${data.memo || ''}`);
+    Log.create(user.id, `打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
     ctx.ok({
       success: true
     });

@@ -51,7 +51,7 @@ export default observer((props: any) => {
   if (!feedStore.isFetched) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-20">
+        <div className="-mt-40 md:-mt-30">
           <Loading />
         </div>
       </div>

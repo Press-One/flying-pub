@@ -22,7 +22,7 @@ export default class CommentItem extends React.Component<any, any> {
             </div>
             <div className="flex items-center text-gray-600 opacity-75 leading-none">
               <span
-                className="flex items-center cursor-pointer text-xs mr-8"
+                className="flex items-center cursor-pointer text-xs mr-6 md:mr-8"
                 onClick={() => (isOwner ? tryDeleteComment(comment.id) : replyTo(comment.user))}
               >
                 <span className="flex items-center text-lg mr-1">

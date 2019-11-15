@@ -2,15 +2,17 @@ import React from 'react';
 import classNames from 'classnames';
 
 export default (props: any) => {
-  const { onClick, fullWidth = false } = props;
+  const { onClick, fullWidth = false, small = false } = props;
 
   return (
     <button
       className={classNames(
         {
           'w-full': fullWidth,
+          'text-xs py-1 px-3': small,
+          'text-sm py-2 px-4': !small,
         },
-        'text-white py-2 px-4 rounded font-bold text-sm outline-none bg-blue-400',
+        'text-white rounded font-bold outline-none bg-blue-400',
       )}
       onClick={() => {
         onClick && onClick();

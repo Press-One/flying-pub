@@ -13,7 +13,7 @@ import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
 import { useStore } from 'store';
-import { ago, isMobile, sleep } from 'utils';
+import { ago, isMobile, sleep, stopBodyScroll } from 'utils';
 import Api from './api';
 
 import 'react-viewer/dist/index.css';
@@ -116,6 +116,7 @@ export default observer((props: any) => {
 
   const onCloseRewardModal = async (isSuccess: boolean) => {
     setOpenRewardModal(false);
+    stopBodyScroll(false);
     if (isSuccess) {
       await sleep(800);
       const rewardSummary = await Api.getRewardSummary(post.id);
@@ -123,10 +124,14 @@ export default observer((props: any) => {
     }
   };
 
+  if (!feedStore.isFetched) {
+    return null;
+  }
+
   if (pending) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-64">
+        <div className="-mt-40 md:-mt-30">
           <Loading />
         </div>
       </div>
@@ -150,6 +155,7 @@ export default observer((props: any) => {
       return;
     }
     setOpenRewardModal(true);
+    stopBodyScroll(true);
   };
 
   if (!post) {
