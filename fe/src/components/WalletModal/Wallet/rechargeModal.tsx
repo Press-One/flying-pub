@@ -9,7 +9,7 @@ import Modal from 'components/Modal';
 import { useStore } from 'store';
 import { checkAmount } from './utils';
 import Api from './api';
-import { isMixin, isPc } from 'utils';
+import { isMobile, isPc, sleep } from 'utils';
 
 export default (props: any) => {
   const { userStore, socketStore, snackbarStore } = useStore();
@@ -20,14 +20,15 @@ export default (props: any) => {
   const [memo, setMemo] = React.useState('');
   const [paymentUrl, setPaymentUrl] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
+  const [waitingPayment, setWaitingPayment] = React.useState(false);
   const [iframeLoading, setIframeLoading] = React.useState(false);
 
   React.useEffect(() => {
     const rechargeCallback = () => {
-      console.log(` ------------- rechargeCallback ---------------`);
       setStep(1);
       setAmount('');
       setMemo('');
+      setWaitingPayment(false);
       onClose(true);
     };
     if (isLogin) {
@@ -42,6 +43,7 @@ export default (props: any) => {
     setStep(1);
     setAmount('');
     setMemo('');
+    setWaitingPayment(false);
     onClose();
   };
 
@@ -56,8 +58,9 @@ export default (props: any) => {
         amount,
         memo,
       });
-      if (isMixin) {
-        window.location.href = paymentUrl;
+      if (isMobile) {
+        const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
+        window.location.href = paymentActionSchema;
       } else {
         setPaymentUrl(paymentUrl);
         setIframeLoading(true);
@@ -69,10 +72,12 @@ export default (props: any) => {
     setSubmitting(false);
   };
 
-  const tryRecharge = (currency: string, amount: string, memo: string = '') => {
+  const tryRecharge = async (currency: string, amount: string, memo: string = '') => {
     const result = checkAmount(amount, currency);
     if (result.ok) {
-      recharge(currency, amount, memo);
+      await recharge(currency, amount, memo);
+      await sleep(2000);
+      setWaitingPayment(true);
     } else {
       snackbarStore.show(result);
     }
@@ -112,8 +117,11 @@ export default (props: any) => {
           />
         </div>
         <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
-          <Button>继续</Button>
+          <Button>确定</Button>
         </div>
+        {isMobile && waitingPayment && (
+          <div className="mt-2 text-xs text-gray-500 text-center">等待充值...</div>
+        )}
       </div>
     );
   };

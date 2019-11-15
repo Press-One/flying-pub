@@ -9,7 +9,7 @@ import Loading from 'components/Loading';
 import Drawer from '@material-ui/core/Drawer';
 import Comments from './comments';
 import { useStore } from 'store';
-import { sleep } from 'utils';
+import { sleep, stopBodyScroll } from 'utils';
 import CommentApi from './api';
 
 interface IProps {
@@ -31,6 +31,10 @@ export default observer((props: IProps) => {
   const [deleteCommentId, setDeleteCommentId] = React.useState(0);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [isVoting, setIsVoting] = React.useState(false);
+
+  React.useEffect(() => {
+    stopBodyScroll(openDrawer);
+  }, [openDrawer]);
 
   React.useEffect(() => {
     const fetchComments = async () => {

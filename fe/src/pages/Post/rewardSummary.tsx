@@ -7,7 +7,7 @@ export default (props: any) => {
   const currencies = Object.keys(amountMap);
   return (
     <div>
-      <div className="w-5/12 mx-auto py-2 -mt-2">
+      <div className="w-10/12 md:w-5/12 mx-auto py-2 -mt-2">
         <div className="flex items-center justify-center text-gray-500">
           <span className="border-b border-gray-500 w-5" />
           <span className="mx-2">
@@ -15,7 +15,15 @@ export default (props: any) => {
           </span>
           <span className="border-b border-gray-500 w-5" />
         </div>
-        <div className="mt-4 px-5 flex flex-wrap justify-center">
+        <div
+          className={classNames(
+            {
+              'justify-start fixed-width m-auto': users.length > 5,
+              'justify-center': users.length <= 5,
+            },
+            'mt-4 px-5 flex flex-wrap',
+          )}
+        >
           {users.map((user: any) => {
             return (
               <div className="px-1 mb-2" key={user.id}>
@@ -29,8 +37,13 @@ export default (props: any) => {
             );
           })}
         </div>
+        <style jsx>{`
+          .fixed-width {
+            width: 280px;
+          }
+        `}</style>
       </div>
-      <div className="w-5/12 mt-3 mx-auto pb-5">
+      <div className="w-10/12 md:w-5/12 mt-3 mx-auto pb-5">
         <div className="border border-gray-300 bg-gray-100 rounded">
           {currencies.map((asset: any, index: number) => {
             return (

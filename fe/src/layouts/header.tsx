@@ -11,13 +11,17 @@ import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, getLoginUrl, isMobile, isMixin, sleep } from 'utils';
+import { getApiEndpoint, getLoginUrl, isMobile, isMixin, sleep, stopBodyScroll } from 'utils';
 
 export default observer(() => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const handleClose = () => setAnchorEl(null);
   const { userStore, feedStore, modalStore } = useStore();
+
+  React.useEffect(() => {
+    stopBodyScroll(openDrawer);
+  }, [openDrawer]);
 
   if (!userStore.isFetched || !feedStore.isFetched) {
     return isMobile ? <div className="h-12" /> : null;

@@ -80,13 +80,9 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 export const isPc = !isMobile;
 
-export const isWeChat = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-  navigator.userAgent,
-);
+export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
 
-export const isMixin = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-  navigator.userAgent,
-);
+export const isMixin = isMobile;
 
 export const getPostSelector = (postId: string) => {
   return 'post-' + postId.replace(/[^\w]/g, '');
@@ -103,3 +99,31 @@ export const sleep = (duration: number) =>
 
 export const getLoginUrl = () =>
   `${getApiEndpoint()}/api/auth/mixin/login?redirect=${window.location.href}`;
+
+let stoppedBodyScroll = false;
+let scrollTop = 0;
+export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
+  const { disabled } = options;
+  const bodyEl = document.body;
+  if (disabled) {
+    bodyEl.style.position = 'static';
+    window.scrollTo(0, scrollTop);
+    return;
+  }
+  if (isFixed) {
+    if (stoppedBodyScroll) {
+      return;
+    }
+    scrollTop = window.scrollY;
+
+    bodyEl.style.position = 'fixed';
+    if (scrollTop > 0) {
+      bodyEl.style.top = -scrollTop + 'px';
+    }
+  } else {
+    bodyEl.style.position = 'static';
+    bodyEl.style.top = '';
+    window.scrollTo(0, scrollTop);
+  }
+  stoppedBodyScroll = isFixed;
+};

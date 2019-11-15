@@ -14,7 +14,7 @@ import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
-import { sleep, isPc } from 'utils';
+import { sleep, isPc, isMixin, stopBodyScroll, isMobile } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
@@ -160,7 +160,6 @@ export default observer((props: any) => {
   };
 
   const getRechargePaymentUrl = async () => {
-    setIframeLoading(true);
     try {
       const { paymentUrl } = await WalletApi.recharge({
         amount,
@@ -168,22 +167,34 @@ export default observer((props: any) => {
         memo: memo || '打赏文章',
       });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
-      setPaymentUrl(paymentUrl);
+      return paymentUrl;
     } catch (err) {
       console.log(` ------------- err ---------------`, err);
     }
   };
 
+  const loadRechargePaymentUrl = async () => {
+    setIframeLoading(true);
+    const paymentUrl = await getRechargePaymentUrl();
+    setPaymentUrl(paymentUrl);
+  };
+
+  const openRechargePaymentUrl = async () => {
+    const paymentUrl = await getRechargePaymentUrl();
+    const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
+    window.location.href = paymentActionSchema;
+  };
+
   const step1 = () => {
     return (
-      <div className="px-2">
+      <div className="md:px-2">
         <div className="text-lg font-bold text-gray-700">选择币种</div>
         <div className="flex flex-wrap justify-between mt-4 w-64 pb-5">
           {currencies.map((currency: any) => {
             return (
-              <div key={currency} className="p-2" title={currency}>
+              <div key={currency} className="p-1 md:p-2" title={currency}>
                 <div
-                  className="text-center border rounded p-2 px-4 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
+                  className="text-center border rounded p-3 px-5 md:p-2 md:px-4 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
                   onClick={() => {
                     localStorage.setItem('REWARD_CURRENCY', currency);
                     setSelectedCurrency(currency);
@@ -222,6 +233,9 @@ export default observer((props: any) => {
           Number(assetBalance) >= Number(amount) &&
           cachedMethod === 'balance';
         if (balanceMethodAutoSelected) {
+          stopBodyScroll(false, {
+            disabled: true,
+          });
           setStep(4);
         } else {
           setStep(3);
@@ -232,7 +246,7 @@ export default observer((props: any) => {
     };
 
     return (
-      <div>
+      <div className="root w-auto">
         <div className="text-base text-gray-700">
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
@@ -267,7 +281,7 @@ export default observer((props: any) => {
           <Button onClick={() => next(amount, selectedCurrency)}>下一步</Button>
         </div>
         <div
-          className="mt-3 text-xs text-blue-400 cursor-pointer"
+          className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
           onClick={() => {
             setSelectedCurrency('');
             setStep(1);
@@ -275,6 +289,11 @@ export default observer((props: any) => {
         >
           选择其他币种
         </div>
+        <style jsx>{`
+          .root {
+            width: ${isMobile ? '60vw' : 'auto'};
+          }
+        `}</style>
       </div>
     );
   };
@@ -323,24 +342,31 @@ export default observer((props: any) => {
     return (
       <div>
         <div className="text-base font-bold text-gray-700">选择支付方式</div>
-        <div className="mt-6 mx-4">
+        <div className="mt-6 mx-2 md:mx-4">
           {payments.map((payment: any) => (
             <div key={payment.method}>
               <div
                 className={classNames(
                   {
-                    'hover:border-blue-400 hover:text-blue-400': payment.enabled,
+                    'bg-blue-400 border-blue-400 text-white': payment.enabled,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
                   },
-                  'text-center border rounded p-3 px-8 mt-3 leading-none border-gray-300 text-gray-600 cursor-pointer',
+                  'text-center border rounded p-3 px-20 md:px-8 mt-3 leading-none cursor-pointer',
                 )}
                 onClick={() => {
                   if (payment.enabled) {
                     localStorage.setItem('REWARD_METHOD', payment.method);
                     if (payment.method === 'mixin') {
-                      getRechargePaymentUrl();
-                      setStep(5);
+                      if (isMixin) {
+                        openRechargePaymentUrl();
+                      } else {
+                        loadRechargePaymentUrl();
+                        setStep(5);
+                      }
                     } else {
+                      stopBodyScroll(false, {
+                        disabled: true,
+                      });
                       setStep(4);
                     }
                   }
@@ -395,7 +421,7 @@ export default observer((props: any) => {
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-5 text-xs text-blue-400">
+        <div className="flex justify-center mt-5 text-sm text-blue-400">
           <div className="cursor-pointer" onClick={() => setStep(2)}>
             返回
           </div>
@@ -408,7 +434,7 @@ export default observer((props: any) => {
     return (
       <div>
         <div className="text-lg font-bold text-gray-700">请输入支付密码</div>
-        <div className="mt-5 text-xs">
+        <div className="hidden md:block mt-5 mt-5 text-xs">
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
         <div className="mt-3 text-xs pb-1">
@@ -425,15 +451,38 @@ export default observer((props: any) => {
                   autoFocus
                   OTPLength={6}
                   otpType="number"
-                  secure
+                  secure={isPc}
                 />
+                <div className="md:hidden flex justify-center">
+                  {'......'.split('').map((value, index) => (
+                    <div className="fake-input flex justify-center" key={index}>
+                      {pin.length > index && (
+                        <i className="dot w-2 h-2 rounded-full bg-gray-700"></i>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <style jsx>{`
+                  .fake-input {
+                    width: 32px;
+                    height: 0;
+                    margin: 0 2px;
+                  }
+                  .fake-input .dot {
+                    margin-top: -20px;
+                  }
+                `}</style>
                 <style jsx global>{`
                   .opt-input {
                     margin: 0 2px !important;
+                    color: ${isMobile ? '#fff' : 'inherit'};
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
                   }
                 `}</style>
               </div>
-              <div className="flex justify-center mt-4 text-xs text-blue-400">
+              <div className="flex justify-center mt-6 text-sm text-blue-400">
                 <div className="cursor-pointer" onClick={() => setStep(3)}>
                   选择其他支付方式
                 </div>
@@ -526,7 +575,7 @@ export default observer((props: any) => {
 
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="py-8 px-10 bg-white rounded text-center">
+      <div className="px-8 py-6 md:py-8 md:px-10 bg-white rounded text-center">
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}

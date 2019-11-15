@@ -10,7 +10,7 @@ import Button from 'components/Button';
 import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { sleep, isMobile, isPc } from 'utils';
+import { sleep, isMobile, isPc, stopBodyScroll } from 'utils';
 import { checkAmount } from './utils';
 import Api from './api';
 
@@ -38,6 +38,9 @@ export default (props: any) => {
   const tryGoStep2 = (amount: string, currency: string, balance: any) => {
     const result = checkAmount(amount, currency, balance);
     if (result.ok) {
+      stopBodyScroll(false, {
+        disabled: true,
+      });
       setStep(2);
     } else {
       snackbarStore.show(result);
@@ -183,7 +186,10 @@ export default (props: any) => {
                   }
                 `}</style>
               </div>
-              <div className="mt-4 text-xs text-blue-400 cursor-pointer" onClick={() => setStep(1)}>
+              <div
+                className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
+                onClick={() => setStep(1)}
+              >
                 返回
               </div>
             </div>

@@ -1,9 +1,11 @@
 import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import Clear from '@material-ui/icons/Clear';
+import { stopBodyScroll } from 'utils';
 
 export default (props: any) => {
   const { open, onClose } = props;
+  stopBodyScroll(open);
   return (
     <Drawer anchor="bottom" open={open} onClose={onClose}>
       <div className="content relative overflow-hidden bg-white">
