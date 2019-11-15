@@ -117,7 +117,9 @@ export default (props: any) => {
             await sleep(1000);
             onCloseModal(
               true,
-              isPc ? `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}` : '',
+              isPc
+                ? `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}`
+                : '转出成功',
             );
           } else {
             snackbarStore.show({

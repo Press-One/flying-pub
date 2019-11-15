@@ -5,6 +5,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
+import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import Fade from '@material-ui/core/Fade';
@@ -184,6 +185,23 @@ export default observer(() => {
                         <AccountBalanceWallet />
                       </span>{' '}
                       我的钱包
+                    </div>
+                  </MenuItem>
+                </div>
+              )}
+              {userStore.isLogin && (
+                <div
+                  onClick={() => {
+                    handleClose();
+                    window.open(process.env.REACT_APP_PUB_URL);
+                  }}
+                >
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <Edit />
+                      </span>{' '}
+                      写文章
                     </div>
                   </MenuItem>
                 </div>

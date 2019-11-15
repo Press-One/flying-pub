@@ -43,7 +43,7 @@ export const checkAmount = (amount: string, currency: string, balance?: any) => 
   const isGtMax = Number(amount) > maxAmount[currency];
   if (isGtMax) {
     return {
-      message: `${currency} 单次最大交易金额不能超过 ${maxAmount[currency]} 个`,
+      message: `${currency} 单次交易金额不能超过 ${maxAmount[currency]} 个`,
       type: 'error',
     };
   }
