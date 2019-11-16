@@ -61,13 +61,14 @@ exports.withdraw = async ctx => {
   const key = `WITHDRAW_${user.id}`;
   try {
     await assertTooManyRequests(key);
+    Log.create(user.id, `开始提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
     await Finance.withdraw({
       userId: user.id,
       currency: data.currency,
       amount: data.amount,
       memo: data.memo,
     });
-    Log.create(user.id, `提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
+    Log.create(user.id, `完成提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
     ctx.ok({
       success: true
     });
@@ -147,6 +148,7 @@ exports.reward = async ctx => {
   const key = `REWARD_${user.id}`;
   try {
     await assertTooManyRequests(key);
+    Log.create(user.id, `开始打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
     await Finance.payForFile({
       userId: user.id,
       toAddress: data.toAddress,
@@ -156,7 +158,7 @@ exports.reward = async ctx => {
       memo: data.memo,
       toMixinClientId: data.toMixinClientId,
     });
-    Log.create(user.id, `打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
+    Log.create(user.id, `完成打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
     ctx.ok({
       success: true
     });

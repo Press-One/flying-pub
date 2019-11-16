@@ -199,9 +199,9 @@ export default observer((props: any) => {
         <div className="flex flex-wrap justify-between mt-4 w-64 pb-5">
           {currencies.map((currency: any) => {
             return (
-              <div key={currency} className="p-1 md:p-2" title={currency}>
+              <div key={currency} className="p-1" title={currency}>
                 <div
-                  className="text-center border rounded p-3 px-5 md:p-2 md:px-4 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
+                  className="text-center border rounded p-3 px-5 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
                   onClick={() => {
                     localStorage.setItem('REWARD_CURRENCY', currency);
                     setSelectedCurrency(currency);
