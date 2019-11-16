@@ -103,6 +103,9 @@ export const getLoginUrl = () =>
 let stoppedBodyScroll = false;
 let scrollTop = 0;
 export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
+  if (isPc) {
+    return;
+  }
   console.log(` ------------- stoppedBodyScroll ---------------`, stoppedBodyScroll);
   console.log(` ------------- isFixed ---------------`, isFixed);
   if (isFixed === stoppedBodyScroll) {

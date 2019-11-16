@@ -18,11 +18,10 @@ exports.create = async (userId, data) => {
   return true;
 };
 
-exports.update = async (userId, objectType, objectId, data) => {
+exports.delete = async (userId, objectType, objectId) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
-  assert(data, Errors.ERR_IS_REQUIRED('data'));
-  await Vote.update(data, {
+  await Vote.destroy({
     where: {
       userId,
       objectId,

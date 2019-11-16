@@ -1,10 +1,7 @@
 const Post = require('../models/post');
 
 exports.list = async ctx => {
-  const {
-    user
-  } = ctx.verification;
-  const userId = user.id;
+  const userId = ctx.verification && ctx.verification.user.id;
   const result = await Post.list({
     userId
   });

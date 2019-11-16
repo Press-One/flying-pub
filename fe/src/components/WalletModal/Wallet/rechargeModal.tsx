@@ -95,7 +95,7 @@ export default (props: any) => {
         <div className="text-lg font-bold text-gray-700">
           Mixin <span className="hidden md:inline-block">扫码</span>充值
         </div>
-        {isMobile && !waitingPayment && (
+        {(isPc || (isMobile && !waitingPayment)) && (
           <div>
             <div className="mt-2 text-gray-800">
               <TextField

@@ -1,6 +1,7 @@
 const Comment = require('../models/comment');
 const Post = require('../models/post');
 const Vote = require('../models/vote');
+const Log = require('../models/log');
 const {
   assert,
   Errors
@@ -62,26 +63,24 @@ exports.create = async ctx => {
     objectId,
     type: data.type
   });
-  const comment = await syncVote(objectType, objectId, userId);
-  ctx.body = comment;
+  const object = await syncVote(objectType, objectId, userId);
+  Log.create(userId, `点赞 ${objectType} ${objectId}`);
+  ctx.body = object;
 }
 
-exports.update = async ctx => {
+exports.delete = async ctx => {
   const {
     user
   } = ctx.verification;
+  const userId = user.id;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  assert(data.objectType, Errors.ERR_IS_REQUIRED('data.objectType'));
-  assert(data.objectId, Errors.ERR_IS_REQUIRED('data.objectId'));
-  const userId = user.id;
   const {
     objectType,
     objectId
   } = data;
-  await Vote.update(userId, objectType, objectId, {
-    type: data.type
-  });
-  const comment = await syncVote(objectType, objectId, userId);
-  ctx.body = comment;
+  await Vote.delete(userId, objectType, objectId);
+  const object = await syncVote(objectType, objectId, userId);
+  Log.create(userId, `取消点赞 ${objectType} ${objectId}`);
+  ctx.body = object;
 }

@@ -149,10 +149,9 @@ export default observer((props: IProps) => {
     }
     setIsVoting(true);
     try {
-      const comment = await Api.updateVote({
+      const comment = await Api.deleteVote({
         objectType: 'comments',
         objectId: commentId,
-        type: 'RESET',
       });
       commentStore.updateComment(comment);
     } catch (err) {}
@@ -221,8 +220,8 @@ export default observer((props: IProps) => {
               }
             `}</style>
             {!isLogin && (
-              <div className="text-gray-700 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
-                参与讨论之前请先
+              <div className="text-gray-600 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
+                评论之前请先
                 <span className="text-blue-400 cursor-pointer" onClick={modalStore.openLogin}>
                   登陆
                 </span>
@@ -371,7 +370,7 @@ export default observer((props: IProps) => {
                 setDrawerReplyValue('');
               }}
             >
-              我想发表评论
+              说点什么
             </span>
           </div>
         )}

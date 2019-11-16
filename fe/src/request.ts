@@ -1,7 +1,7 @@
 import { getApiEndpoint } from 'utils';
 const BASE = getApiEndpoint();
 export default async (url: any, options: any = {}) => {
-  if (options.method === 'POST' || options.method === 'PUT') {
+  if (options.method === 'POST' || options.method === 'DELETE' || options.method === 'PUT') {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(options.body);
   }

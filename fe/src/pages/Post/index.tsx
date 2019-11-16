@@ -201,6 +201,10 @@ export default observer((props: any) => {
   };
 
   const createVote = async (postId: string) => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     const post = await Api.createVote({
       objectType: 'posts',
       objectId: postId,
@@ -210,10 +214,13 @@ export default observer((props: any) => {
   };
 
   const resetVote = async (postId: string) => {
-    const post = await Api.updateVote({
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
+    const post = await Api.deleteVote({
       objectType: 'posts',
       objectId: postId,
-      type: 'RESET',
     });
     feedStore.updatePostExtraMap(post.fileRId, post);
   };
@@ -273,6 +280,7 @@ export default observer((props: any) => {
           :global(.like-badge .MuiBadge-badge) {
             top: -8px;
             right: -8px;
+            color: #fff;
             background: #66758b;
           }
           :global(.like-badge.active .MuiBadge-badge) {

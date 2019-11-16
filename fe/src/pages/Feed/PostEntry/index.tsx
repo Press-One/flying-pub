@@ -13,12 +13,12 @@ export default (props: any) => {
   return (
     <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
-      <div className="border-t border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-6 leading-none post cursor-pointer">
+      <div className="border-t border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
         <div className="px-3">
           <h2 className="tracking-wide md:tracking-normal text-base font-semibold md:text-xl md:font-bold title leading-snug md:leading-normal">
             {post.title}
           </h2>
-          <div className="flex truncate mt-2 info text-xs md:text-sm items-center">
+          <div className="flex truncate mt-2 info text-xs md:text-sm items-center h-5">
             <span className="mr-5">{post.author}</span>
             <span className="mr-5">{ago(post.pubDate)}</span>
             {upVotesCount > 0 && (

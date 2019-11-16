@@ -297,6 +297,7 @@ export default observer((props: any) => {
           className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
           onClick={() => {
             setSelectedCurrency('');
+            setAmount('');
             setStep(1);
           }}
         >
@@ -366,7 +367,7 @@ export default observer((props: any) => {
                     'px-20': !openingMixinSchema,
                     'px-16': openingMixinSchema,
                   },
-                  'flex justify-center items-center text-center border rounded md:px-8 p-3 mt-3 leading-none cursor-pointer',
+                  'flex justify-center items-center text-center border rounded md:px-12 p-3 mt-3 leading-none cursor-pointer',
                 )}
                 onClick={() => {
                   if (payment.enabled) {
@@ -445,7 +446,7 @@ export default observer((props: any) => {
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-5 text-sm text-blue-400">
+        <div className="flex justify-center mt-5 text-sm md:text-xs text-blue-400">
           <div className="cursor-pointer" onClick={() => setStep(2)}>
             返回
           </div>
@@ -506,7 +507,7 @@ export default observer((props: any) => {
                   }
                 `}</style>
               </div>
-              <div className="flex justify-center mt-6 text-sm text-blue-400">
+              <div className="flex justify-center mt-6 text-sm md:text-xs text-blue-400">
                 <div className="cursor-pointer" onClick={() => setStep(3)}>
                   选择其他支付方式
                 </div>

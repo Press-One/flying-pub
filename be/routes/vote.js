@@ -1,10 +1,10 @@
 var router = require('koa-router')();
 const {
   create,
-  update
+  delete: del
 } = require('../controllers/apiVote');
 
 router.post('/', create);
-router.put('/', update);
+router.delete('/', del);
 
 module.exports = router;

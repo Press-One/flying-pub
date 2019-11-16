@@ -1,5 +1,6 @@
 import Parser from 'rss-parser';
 import request from './request';
+import qs from 'query-string';
 
 export default {
   setAutoLoginUrl(url: string) {
@@ -49,10 +50,10 @@ export default {
       },
     });
   },
-  updateVote(vote: any) {
-    const path = '/api/votes';
+  deleteVote(vote: any) {
+    const path = `/api/votes`;
     return request(path, {
-      method: 'PUT',
+      method: 'DELETE',
       body: {
         payload: vote,
       },
