@@ -20,7 +20,7 @@ exports.create = async (ctx) => {
     url
   } = ctx.request.body.payload;
   assert(url, Errors.ERR_IS_REQUIRED('url'));
-  await Cache.pSetWithExpired(type, key, url, 20, true);
+  await Cache.pSetWithExpired(type, key, url, 30, true);
   ctx.body = true;
 }
 

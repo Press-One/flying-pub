@@ -15,7 +15,7 @@ export default () => {
         />
       </div>
       <div className="px-10 text-base md:text-xl text-center pt-16">
-        聚合站正在拼命抓取这篇文章，大概还需要几分钟时间，请稍等一下...
+        飞帖正在拼命抓取这篇文章，大概还需要几分钟时间，请稍等一下...
       </div>
       <div className="flex items-center justify-center pt-20">
         <Link to={`/`}>

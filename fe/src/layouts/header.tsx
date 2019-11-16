@@ -63,7 +63,7 @@ export default observer(() => {
             <div className="bg-gray-300 leading-none">
               {!userStore.isLogin && (
                 <div
-                  className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                  className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                   onClick={async () => {
                     setOpenDrawer(false);
                     stopBodyScroll(false);
@@ -81,7 +81,7 @@ export default observer(() => {
               {userStore.isLogin && (
                 <div>
                   <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                     onClick={async () => {
                       setOpenDrawer(false);
                       stopBodyScroll(false);
@@ -94,7 +94,7 @@ export default observer(() => {
                     我的资产
                   </div>
                   <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                     onClick={async () => {
                       setOpenDrawer(false);
                       stopBodyScroll(false);
@@ -107,7 +107,7 @@ export default observer(() => {
                     设置钱包
                   </div>
                   <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                     onClick={async () => {
                       setOpenDrawer(false);
                       stopBodyScroll(false);
@@ -120,7 +120,7 @@ export default observer(() => {
                     所有交易记录
                   </div>
                   <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                     onClick={async () => {
                       window.location.href = logoutUrl;
                     }}
@@ -130,7 +130,7 @@ export default observer(() => {
                 </div>
               )}
               <div
-                className="mt-1 py-4 text-black text-center border-b border-gray-300 bg-white text-base"
+                className="mt-1 py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                 onClick={() => {
                   setOpenDrawer(false);
                   stopBodyScroll(false);

@@ -8,7 +8,7 @@ import Loading from 'components/Loading';
 import ButtonProgress from 'components/ButtonProgress';
 import Fade from '@material-ui/core/Fade';
 import NumberFormat from 'react-number-format';
-import { sleep, isMobile } from 'utils';
+import { sleep, isMobile, isPc } from 'utils';
 import { useStore } from 'store';
 import Api from './api';
 
@@ -166,7 +166,7 @@ export default observer(() => {
                   fullWidth={isMobile}
                   InputProps={{
                     inputComponent: NumberFormatCustom,
-                    inputProps: { maxLength: 6 },
+                    inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
                   }}
                   onKeyPress={(e: any) =>
                     e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
@@ -187,7 +187,7 @@ export default observer(() => {
               fullWidth={isMobile}
               InputProps={{
                 inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6 },
+                inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
               }}
               onKeyPress={(e: any) =>
                 e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
@@ -206,7 +206,7 @@ export default observer(() => {
               fullWidth={isMobile}
               InputProps={{
                 inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6 },
+                inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
               }}
               onKeyPress={(e: any) =>
                 e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
