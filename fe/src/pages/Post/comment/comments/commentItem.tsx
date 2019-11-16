@@ -1,9 +1,9 @@
 import React from 'react';
 import classNames from 'classnames';
 import { ago } from 'utils';
-import ThumbUp from '@material-ui/icons/ThumbUpAlt';
-import Delete from '@material-ui/icons/Clear';
-import ChatBubble from '@material-ui/icons/ModeComment';
+import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
+import ClearOutlined from '@material-ui/icons/ClearOutlined';
+import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
 
 export default class CommentItem extends React.Component<any, any> {
   render() {
@@ -18,7 +18,9 @@ export default class CommentItem extends React.Component<any, any> {
           <div className="flex justify-between items-center">
             <div className="flex items-center leading-none">
               <span className="mr-3 font-bold text-sm">{comment.user.name}</span>
-              <span className="text-gray-600 text-xs">{ago(comment.createdAt)}</span>
+              <span className="hidden md:block text-gray-500 text-xs">
+                {ago(comment.createdAt)}
+              </span>
             </div>
             <div className="flex items-center text-gray-600 opacity-75 leading-none">
               <span
@@ -26,9 +28,9 @@ export default class CommentItem extends React.Component<any, any> {
                 onClick={() => (isOwner ? tryDeleteComment(comment.id) : replyTo(comment.user))}
               >
                 <span className="flex items-center text-lg mr-1">
-                  {isOwner ? <Delete /> : <ChatBubble />}
+                  {isOwner ? <ClearOutlined /> : <ModeCommentOutlined />}
                 </span>
-                {isOwner ? '删除' : '回复'}
+                <span className="hidden md:block">{isOwner ? '删除' : '回复'}</span>
               </span>
               <div
                 className={classNames(
@@ -40,15 +42,16 @@ export default class CommentItem extends React.Component<any, any> {
                 onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
               >
                 <span className="flex items-center text-lg mr-1">
-                  <ThumbUp />
+                  <ThumbUpAltOutlined />
                 </span>
                 <span className="font-bold">{comment.upVotesCount || ''}</span>
               </div>
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-2">
             <div className="text-gray-800">{comment.content}</div>
-            {!hideDivider && <div className="border-b border-gray-300 my-6" />}
+            <div className="mt-3 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
+            {!hideDivider && <div className="border-b border-gray-300 my-4 md:my-6" />}
           </div>
         </div>
       </div>

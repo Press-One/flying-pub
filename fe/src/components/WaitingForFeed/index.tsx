@@ -7,14 +7,14 @@ import ButtonOutlined from 'components/ButtonOutlined';
 export default () => {
   return (
     <div className="text-gray-600">
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-10 md:mt-24">
         <img
-          className="w-48"
+          className="w-48 h-48"
           src="https://xue-images.pek3b.qingstor.com/920-loading.gif"
           alt="loading"
         />
       </div>
-      <div className="text-xl text-center pt-16">
+      <div className="px-10 text-base md:text-xl text-center pt-16">
         聚合站正在拼命抓取这篇文章，大概还需要几分钟时间，请稍等一下...
       </div>
       <div className="flex items-center justify-center pt-20">
