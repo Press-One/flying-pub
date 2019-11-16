@@ -13,6 +13,7 @@ import Comments from './comments';
 import { useStore } from 'store';
 import { sleep, stopBodyScroll, isMobile, isPc } from 'utils';
 import CommentApi from './api';
+import Api from 'api';
 
 interface IProps {
   fileRId: number;
@@ -128,8 +129,9 @@ export default observer((props: IProps) => {
     }
     setIsVoting(true);
     try {
-      const comment = await CommentApi.createVote({
-        commentId,
+      const comment = await Api.createVote({
+        objectType: 'comments',
+        objectId: commentId,
         type: 'UP',
       });
       commentStore.updateComment(comment);
@@ -147,8 +149,9 @@ export default observer((props: IProps) => {
     }
     setIsVoting(true);
     try {
-      const comment = await CommentApi.updateVote({
-        commentId,
+      const comment = await Api.updateVote({
+        objectType: 'comments',
+        objectId: commentId,
         type: 'RESET',
       });
       commentStore.updateComment(comment);

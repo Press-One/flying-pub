@@ -4,23 +4,21 @@ const {
 } = require('./validator');
 const Vote = require('./sequelize/vote');
 
-const OBJECT_TYPE = 'comments';
-
 exports.create = async (userId, data) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(data, Errors.ERR_IS_REQUIRED('data'));
+  assert(data.objectType, Errors.ERR_IS_REQUIRED('data.objectType'));
   assert(data.objectId, Errors.ERR_IS_REQUIRED('data.objectId'));
   assert(data.type, Errors.ERR_IS_REQUIRED('data.type'));
   const payload = {
     ...data,
-    userId,
-    objectType: OBJECT_TYPE
+    userId
   };
   await Vote.create(payload);
   return true;
 };
 
-exports.update = async (userId, objectId, data) => {
+exports.update = async (userId, objectType, objectId, data) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
   assert(data, Errors.ERR_IS_REQUIRED('data'));
@@ -28,41 +26,48 @@ exports.update = async (userId, objectId, data) => {
     where: {
       userId,
       objectId,
-      objectType: OBJECT_TYPE
+      objectType
     }
   });
   return true;
 };
 
-exports.count = async (objectId, options = {}) => {
+exports.count = async (objectType, objectId, options = {}) => {
   assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
+  assert(objectType, Errors.ERR_IS_REQUIRED('objectType'));
   const count = await Vote.count({
     where: {
       objectId,
-      objectType: OBJECT_TYPE,
+      objectType,
       ...options
     }
   });
   return count;
 }
 
-exports.get = async (userId, objectId) => {
+exports.get = async (userId, objectType, objectId) => {
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
+  assert(objectType, Errors.ERR_IS_REQUIRED('objectType'));
   const vote = await Vote.findOne({
     where: {
       userId,
       objectId,
-      objectType: OBJECT_TYPE
+      objectType
     }
   });
   return vote && vote.toJSON();
 }
 
-exports.isVoted = async (userId, objectId) => {
+exports.isVoted = async (userId, objectType, objectId) => {
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
+  assert(objectType, Errors.ERR_IS_REQUIRED('objectType'));
   const vote = await Vote.findOne({
     where: {
       userId,
       objectId,
-      objectType: OBJECT_TYPE,
+      objectType,
       type: 'UP'
     }
   });

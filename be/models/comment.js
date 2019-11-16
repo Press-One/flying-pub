@@ -17,7 +17,7 @@ const packComment = async (comment, options = {}) => {
     withProfile: true
   });
   commentJson.user = user;
-  const voted = !!userId && await Vote.isVoted(userId, comment.id);
+  const voted = !!userId && await Vote.isVoted(userId, 'comments', comment.id);
   commentJson.voted = voted;
   delete commentJson.deleted;
   return commentJson;

@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Viewer from 'react-viewer';
 import marked from 'marked';
 import WaitingForFeed from 'components/WaitingForFeed';
@@ -9,12 +8,18 @@ import Button from 'components/Button';
 import Loading from 'components/Loading';
 import ButtonOutlined from 'components/ButtonOutlined';
 import Fade from '@material-ui/core/Fade';
+import ArrowUpward from '@material-ui/icons/ArrowUpward';
+import ThumbUp from '@material-ui/icons/ThumbUp';
+import Badge from '@material-ui/core/Badge';
+import classNames from 'classnames';
+import { getPostId } from 'store/feed';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
 import { useStore } from 'store';
-import { ago, isMobile, sleep, stopBodyScroll } from 'utils';
-import Api from './api';
+import { ago, isPc, isMobile, sleep, stopBodyScroll } from 'utils';
+import FeedApi from './api';
+import Api from 'api';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -42,7 +47,7 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       if (post) {
-        const blocks = await Api.getBlocks(post.id);
+        const blocks = await FeedApi.getBlocks(post.id);
         const block = blocks[0];
         const toAddress = block.user_address;
         const { payment_url } = JSON.parse(block.meta);
@@ -78,7 +83,7 @@ export default observer((props: any) => {
     (async () => {
       if (post && post.id === props.match.params.postId) {
         try {
-          const rewardSummary = await Api.getRewardSummary(post.id);
+          const rewardSummary = await FeedApi.getRewardSummary(post.id);
           setRewardSummary(rewardSummary);
         } catch (err) {}
         setIsFetchedReward(true);
@@ -119,7 +124,7 @@ export default observer((props: any) => {
     stopBodyScroll(false);
     if (isSuccess) {
       await sleep(800);
-      const rewardSummary = await Api.getRewardSummary(post.id);
+      const rewardSummary = await FeedApi.getRewardSummary(post.id);
       setRewardSummary(rewardSummary);
     }
   };
@@ -195,12 +200,67 @@ export default observer((props: any) => {
     );
   };
 
+  const createVote = async (postId: string) => {
+    const post = await Api.createVote({
+      objectType: 'posts',
+      objectId: postId,
+      type: 'UP',
+    });
+    feedStore.updatePostExtraMap(post.fileRId, post);
+  };
+
+  const resetVote = async (postId: string) => {
+    const post = await Api.updateVote({
+      objectType: 'posts',
+      objectId: postId,
+      type: 'RESET',
+    });
+    feedStore.updatePostExtraMap(post.fileRId, post);
+  };
+
+  const VoteView = (postId: string, extra: any = {}) => {
+    return (
+      <div
+        className={classNames(
+          {
+            'border-blue-400 active': extra.voted,
+            'border-gray-400': !extra.voted,
+          },
+          'w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer',
+        )}
+        onClick={() => {
+          extra.voted ? resetVote(postId) : createVote(postId);
+        }}
+      >
+        <Badge badgeContent={extra.upVotesCount || 0} invisible={!extra.upVotesCount}>
+          <div
+            className={classNames(
+              {
+                'text-blue-400': extra.voted,
+                'text-gray-600': !extra.voted,
+              },
+              'flex items-center text-xl',
+            )}
+          >
+            <ThumbUp />
+          </div>
+        </Badge>
+      </div>
+    );
+  };
+
+  const { postExtraMap } = feedStore;
+  const extra: any = postExtraMap[getPostId(post)] || {};
+
   return (
     <Fade in={true} timeout={500}>
       <div className="px-3 md:px-0 md:w-7/12 m-auto relative">
         <div className="hidden md:block">
           <BackButton />
         </div>
+        {isPc && (
+          <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post.id, extra)}</div>
+        )}
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className={`flex item-center info mt-2 md:mt-1 info ${isMobile ? ' text-sm' : ''}`}>
           <span className="mr-3">{post.author}</span>
@@ -209,6 +269,15 @@ export default observer((props: any) => {
         <style jsx>{`
           .info {
             color: #999;
+          }
+          :global(.like-badge .MuiBadge-badge) {
+            top: -8px;
+            right: -8px;
+            background: #66758b;
+          }
+          :global(.like-badge.active .MuiBadge-badge) {
+            color: #fff;
+            background: #63b3ed;
           }
         `}</style>
         <div
@@ -226,6 +295,9 @@ export default observer((props: any) => {
             </div>
           }
         </div>
+        {isMobile && (
+          <div className="flex justify-center pt-2 pb-10">{VoteView(post.id, extra)}</div>
+        )}
         {authorMixinClientId && RewardView()}
         {CommentView()}
         <RewardModal

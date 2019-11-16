@@ -2,7 +2,7 @@ import Parser from 'rss-parser';
 import request from './request';
 
 export default {
-  async setAutoLoginUrl(url: string) {
+  setAutoLoginUrl(url: string) {
     return request(`/api/auto_login`, {
       method: 'POST',
       body: {
@@ -12,15 +12,15 @@ export default {
       },
     });
   },
-  async getAutoLoginUrl() {
+  getAutoLoginUrl() {
     return request(`/api/auto_login`);
   },
-  async deleteAutoLoginUrl() {
+  deleteAutoLoginUrl() {
     return request(`/api/auto_login`, {
       method: 'DELETE',
     });
   },
-  async fetchUser() {
+  fetchUser() {
     return request('/api/user');
   },
   async fetchFeed(rssUrl: string) {
@@ -37,7 +37,25 @@ export default {
     const result = await parser.parseString(text);
     return result;
   },
-  async fetchPosts() {
+  fetchPosts() {
     return request('/api/posts');
+  },
+  createVote(vote: any) {
+    const path = '/api/votes';
+    return request(path, {
+      method: 'POST',
+      body: {
+        payload: vote,
+      },
+    });
+  },
+  updateVote(vote: any) {
+    const path = '/api/votes';
+    return request(path, {
+      method: 'PUT',
+      body: {
+        payload: vote,
+      },
+    });
   },
 };

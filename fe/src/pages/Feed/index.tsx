@@ -91,6 +91,7 @@ export default observer(() => {
               <PostEntry
                 post={post}
                 key={getPostId(post)}
+                upVotesCount={extra ? extra.upVotesCount : 0}
                 commentsCount={extra ? extra.commentsCount : 0}
               />
             );

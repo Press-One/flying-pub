@@ -3,6 +3,12 @@ const {
   list
 } = require('../controllers/apiPost');
 
-router.get('/', list);
+const {
+  ensureAuthorization
+} = require('../models/api');
+
+router.get('/', ensureAuthorization({
+  strict: false
+}), list);
 
 module.exports = router;

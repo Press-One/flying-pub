@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Favorite from '@material-ui/icons/Favorite';
 import Comment from '@material-ui/icons/Comment';
 import { ago, getPostSelector } from '../../../utils';
 import { getPostId } from '../../../store/feed';
 
 export default (props: any) => {
-  const { post, commentsCount = 0 } = props;
+  const { post, upVotesCount = 0, commentsCount = 0 } = props;
   if (!post) {
     return null;
   }
@@ -20,6 +21,11 @@ export default (props: any) => {
           <div className="flex truncate mt-2 info text-xs md:text-sm items-center">
             <span className="mr-5">{post.author}</span>
             <span className="mr-5">{ago(post.pubDate)}</span>
+            {upVotesCount > 0 && (
+              <div className="flex items-center font-bold text-sm md:text-base mr-5">
+                <Favorite /> <span className="text-xs md:text-sm ml-1">{upVotesCount}</span>
+              </div>
+            )}
             {commentsCount > 0 && (
               <div className="flex items-center font-bold text-sm md:text-base">
                 <Comment /> <span className="text-xs md:text-sm ml-1">{commentsCount}</span>

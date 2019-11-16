@@ -156,5 +156,8 @@ export function createFeedStore() {
         this.postExtraMap[post.fileRId] = post;
       }
     },
+    updatePostExtraMap(fileRId: string, post: any) {
+      this.postExtraMap[fileRId] = post;
+    },
   };
 }
