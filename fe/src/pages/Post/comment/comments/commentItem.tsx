@@ -4,6 +4,13 @@ import { ago } from 'utils';
 import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
 import ClearOutlined from '@material-ui/icons/ClearOutlined';
 import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
+import marked from 'marked';
+
+marked.setOptions({
+  highlight: (code: string) => {
+    return require('highlight.js').highlightAuto(code).value;
+  },
+});
 
 export default class CommentItem extends React.Component<any, any> {
   render() {
@@ -49,7 +56,23 @@ export default class CommentItem extends React.Component<any, any> {
             </div>
           </div>
           <div className="mt-2">
-            <div className="text-gray-800">{comment.content}</div>
+            <div
+              className="text-gray-800 markdown-body comment"
+              dangerouslySetInnerHTML={{ __html: marked.parse(comment.content) }}
+            />
+            <style jsx>{`
+              .markdown-body :global(img) {
+                max-width: 80%;
+              }
+              .markdown-body :global(h1),
+              .markdown-body :global(h2),
+              .markdown-body :global(h3),
+              .markdown-body :global(h4),
+              .markdown-body :global(h5),
+              .markdown-body :global(h6) {
+                border: none;
+              }
+            `}</style>
             <div className="mt-3 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
             {!hideDivider && <div className="border-b border-gray-300 my-4 md:my-6" />}
           </div>

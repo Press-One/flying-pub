@@ -120,7 +120,7 @@ const getMixinPaymentUrl = (options = {}) => {
 
 exports.recharge = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || '飞贴充值';
+  data.memo = data.memo || '飞帖充值';
   const {
     userId,
     currency,
@@ -160,12 +160,12 @@ exports.recharge = async (data = {}) => {
 
 exports.withdraw = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || '飞贴提现';
+  data.memo = data.memo || '飞帖提现';
   const {
     userId,
     currency,
     amount,
-    memo = '飞贴提现'
+    memo = '飞帖提现'
   } = data;
   assert(amount, Errors.ERR_IS_INVALID('amount'));
   const wallet = await Wallet.getByUserId(userId);
@@ -655,7 +655,7 @@ const syncRewardAmount = async (fileRId) => {
 
 exports.payForFile = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || '打赏文章 - 飞贴';
+  data.memo = data.memo || '打赏文章 - 飞帖';
   data = attempt(data, {
     userId: Joi.number().required(),
     toAddress: Joi.string().trim().required(),

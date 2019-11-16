@@ -261,7 +261,13 @@ export default observer((props: any) => {
           <TextField
             value={amount}
             placeholder="数量"
-            onChange={(event: any) => setAmount(event.target.value)}
+            onChange={(event: any) => {
+              const re = /^[0-9]+[.]?[0-9]*$/;
+              const { value } = event.target;
+              if (value === '' || re.test(value)) {
+                setAmount(value);
+              }
+            }}
             margin="normal"
             variant="outlined"
             autoFocus={isPc}

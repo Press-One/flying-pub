@@ -39,7 +39,7 @@ export default observer(() => {
                   width="36"
                   height="36"
                 />
-                <span className="text-lg font-bold text-gray-700 ml-2">飞贴</span>
+                <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
               </div>
             </Link>
             <div

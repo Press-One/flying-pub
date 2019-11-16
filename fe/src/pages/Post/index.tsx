@@ -70,7 +70,7 @@ export default observer((props: any) => {
   React.useEffect(() => {
     if (post) {
       const { title } = post;
-      document.title = `${title} - 飞贴`;
+      document.title = `${title} - 飞帖`;
     }
   });
 

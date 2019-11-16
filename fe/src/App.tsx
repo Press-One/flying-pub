@@ -23,7 +23,7 @@ const AppRouter = () => {
   if (isMobile && process.env.NODE_ENV === 'production') {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="text-red-400">飞贴 v2 手机端正在适配，请移步到电脑端体验</div>
+        <div className="text-red-400">飞帖 v2 手机端正在适配，请移步到电脑端体验</div>
       </div>
     );
   }

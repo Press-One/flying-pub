@@ -210,6 +210,7 @@ export default observer((props: IProps) => {
               onChange={handleEditorChange}
               margin="normal"
               variant="outlined"
+              inputProps={{ maxLength: 1500 }}
             />
             <style jsx global>{`
               .textarea .MuiOutlinedInput-input {
