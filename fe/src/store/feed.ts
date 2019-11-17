@@ -72,7 +72,7 @@ interface FeedInfo {
 const getFeedInfo = (): FeedInfo => {
   return {
     title: 'XUE.cn 自学编程',
-    description: '学习是一种社交行为',
+    description: '学习是一种社交活动',
   };
 };
 
