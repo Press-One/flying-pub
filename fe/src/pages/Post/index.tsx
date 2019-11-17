@@ -272,13 +272,16 @@ export default observer((props: any) => {
           <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post.id, extra)}</div>
         )}
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
-        <div className={`flex item-center info mt-2 md:mt-1 info ${isMobile ? ' text-sm' : ''}`}>
-          <span className="mr-3">{post.author}</span>
-          <span>{ago(post.pubDate)}</span>
+        <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
+          <div className="flex items-center w-6 h-6 mr-2">
+            <img className="w-6 h-6 rounded-full" src={post.attributes.avatar} alt={post.author} />
+          </div>
+          <span className="mr-5">{post.author}</span>
+          <span className="mr-5">{ago(post.pubDate)}</span>
         </div>
         <style jsx>{`
-          .info {
-            color: #999;
+          .gray {
+            color: #aea9ae;
           }
           :global(.like-badge .MuiBadge-badge) {
             top: -8px;

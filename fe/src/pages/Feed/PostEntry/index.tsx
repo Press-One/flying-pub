@@ -14,18 +14,27 @@ export default (props: any) => {
     <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
       <div className="border-t border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
-        <div className="px-3">
-          <h2 className="tracking-wide md:tracking-normal text-base font-semibold md:text-xl md:font-bold title leading-snug md:leading-normal">
-            {post.title}
-          </h2>
-          <div className="flex truncate mt-2 info text-xs md:text-sm items-center h-5">
+        <div className="px-3 gray">
+          <div className="flex items-center">
+            <div className="flex items-center w-6 h-6 mr-2">
+              <img
+                className="w-6 h-6 rounded-full"
+                src={post.attributes.avatar}
+                alt={post.author}
+              />
+            </div>
             <span className="mr-5">{post.author}</span>
             <span className="mr-5">{ago(post.pubDate)}</span>
-            {upVotesCount > 0 && (
+          </div>
+          <h2 className="mt-2 tracking-wide md:tracking-normal text-base font-semibold md:text-lg md:font-bold title leading-snug md:leading-normal">
+            {post.title}
+          </h2>
+          <div className="flex truncate mt-2 gray text-xs md:text-sm items-center h-5">
+            {
               <div className="flex items-center font-bold text-sm md:text-base mr-5">
-                <Favorite /> <span className="text-xs md:text-sm ml-1">{upVotesCount}</span>
+                <Favorite /> <span className="text-xs md:text-sm ml-1">{upVotesCount || ''}</span>
               </div>
-            )}
+            }
             {commentsCount > 0 && (
               <div className="flex items-center font-bold text-sm md:text-base">
                 <Comment /> <span className="text-xs md:text-sm ml-1">{commentsCount}</span>
@@ -45,9 +54,8 @@ export default (props: any) => {
             overflow: hidden;
             text-overflow: ellipsis;
           }
-          .info,
-          .comment {
-            color: #999;
+          .gray {
+            color: #aea9ae;
           }
         `}</style>
       </div>

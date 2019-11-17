@@ -197,7 +197,7 @@ export default observer((props: IProps) => {
       <div>
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
           <img
-            className="hidden md:block mr-3"
+            className="hidden md:block mr-3 rounded"
             src={user && user.avatar ? user.avatar : 'https://static.press.one/pub/avatar.png'}
             width="36px"
             height="36px"

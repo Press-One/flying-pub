@@ -8,6 +8,7 @@ import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToApp from '@material-ui/icons/ExitToApp';
+import Chat from '@material-ui/icons/Chat';
 import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
@@ -209,7 +210,7 @@ export default observer(() => {
                     <MenuItem className="text-gray-700">
                       <div className="py-1 flex items-center">
                         <span className="flex items-center text-xl mr-2">
-                          <AccountCircle />
+                          <Chat />
                         </span>{' '}
                         反馈/建议
                         <span className="pr-2" />
@@ -259,7 +260,7 @@ export default observer(() => {
                     <MenuItem className="text-gray-700">
                       <div className="py-1 flex items-center">
                         <span className="flex items-center text-xl mr-2">
-                          <AccountCircle />
+                          <Chat />
                         </span>{' '}
                         反馈/建议
                         <span className="pr-2" />
