@@ -27,8 +27,7 @@ export default observer(() => {
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
 
   const openIntercom = () => {
-    const iframe: any = document.querySelector('.intercom-launcher-frame');
-    iframe.contentDocument.querySelector('.intercom-launcher').click();
+    (window as any).Intercom('show');
   };
 
   return (
@@ -184,69 +183,101 @@ export default observer(() => {
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
               {!userStore.isLogin && (
-                <div
-                  onClick={() => {
-                    handleClose();
-                    modalStore.openLogin();
-                  }}
-                >
-                  <MenuItem className="text-gray-700">
-                    <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
-                        <AccountCircle />
-                      </span>{' '}
-                      登陆
-                      <span className="pr-2" />
-                    </div>
-                  </MenuItem>
+                <div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      modalStore.openLogin();
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <AccountCircle />
+                        </span>{' '}
+                        登陆
+                        <span className="pr-2" />
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      openIntercom();
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <AccountCircle />
+                        </span>{' '}
+                        反馈/建议
+                        <span className="pr-2" />
+                      </div>
+                    </MenuItem>
+                  </div>
                 </div>
               )}
               {userStore.isLogin && (
-                <div
-                  onClick={() => {
-                    handleClose();
-                    modalStore.openWallet();
-                  }}
-                >
-                  <MenuItem className="text-gray-700">
-                    <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
-                        <AccountBalanceWallet />
-                      </span>{' '}
-                      我的钱包
-                    </div>
-                  </MenuItem>
+                <div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      modalStore.openWallet();
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <AccountBalanceWallet />
+                        </span>{' '}
+                        我的钱包
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      window.open(process.env.REACT_APP_PUB_URL);
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <Edit />
+                        </span>{' '}
+                        写文章
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      openIntercom();
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <AccountCircle />
+                        </span>{' '}
+                        反馈/建议
+                        <span className="pr-2" />
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <a href={logoutUrl}>
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <ExitToApp />
+                        </span>{' '}
+                        退出账号
+                        <span className="pr-2" />
+                      </div>
+                    </MenuItem>
+                  </a>
                 </div>
-              )}
-              {userStore.isLogin && (
-                <div
-                  onClick={() => {
-                    handleClose();
-                    window.open(process.env.REACT_APP_PUB_URL);
-                  }}
-                >
-                  <MenuItem className="text-gray-700">
-                    <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
-                        <Edit />
-                      </span>{' '}
-                      写文章
-                    </div>
-                  </MenuItem>
-                </div>
-              )}
-              {userStore.isLogin && (
-                <a href={logoutUrl}>
-                  <MenuItem className="text-gray-700">
-                    <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
-                        <ExitToApp />
-                      </span>{' '}
-                      退出账号
-                      <span className="pr-2" />
-                    </div>
-                  </MenuItem>
-                </a>
               )}
             </Menu>
           </div>
