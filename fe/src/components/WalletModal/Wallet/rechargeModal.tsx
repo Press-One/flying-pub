@@ -234,7 +234,7 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={onCloseModal}>
-      <div className="py-8 px-10 bg-white rounded text-center">
+      <div className="py-8 px-10 bg-white rounded text-center mx-5">
         {step === 1 && step1()}
         {step === 2 && step2()}
       </div>

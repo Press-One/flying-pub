@@ -29,29 +29,31 @@ export default class CommentItem extends React.Component<any, any> {
                 {ago(comment.createdAt)}
               </span>
             </div>
-            <div className="flex items-center text-gray-600 opacity-75 leading-none">
-              <span
-                className="flex items-center cursor-pointer text-xs mr-6 md:mr-8"
-                onClick={() => (isOwner ? tryDeleteComment(comment.id) : replyTo(comment.user))}
-              >
-                <span className="flex items-center text-lg mr-1">
-                  {isOwner ? <ClearOutlined /> : <ModeCommentOutlined />}
+            <div className="relative">
+              <div className="flex items-center text-gray-600 opacity-75 leading-none absolute top-0 right-0 -mt-3">
+                <span
+                  className="flex items-center cursor-pointer text-xs mr-5 p-1 md:w-16"
+                  onClick={() => (isOwner ? tryDeleteComment(comment.id) : replyTo(comment.user))}
+                >
+                  <span className="flex items-center text-lg mr-1">
+                    {isOwner ? <ClearOutlined /> : <ModeCommentOutlined />}
+                  </span>
+                  <span className="hidden md:block">{isOwner ? '删除' : '回复'}</span>
                 </span>
-                <span className="hidden md:block">{isOwner ? '删除' : '回复'}</span>
-              </span>
-              <div
-                className={classNames(
-                  {
-                    'text-blue-600': comment.voted,
-                  },
-                  'flex items-center cursor-pointer',
-                )}
-                onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
-              >
-                <span className="flex items-center text-lg mr-1">
-                  <ThumbUpAltOutlined />
-                </span>
-                <span className="font-bold">{comment.upVotesCount || ''}</span>
+                <div
+                  className={classNames(
+                    {
+                      'text-blue-600': comment.voted,
+                    },
+                    'flex items-center cursor-pointer p-1',
+                  )}
+                  onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
+                >
+                  <span className="flex items-center text-lg mr-1">
+                    <ThumbUpAltOutlined />
+                  </span>
+                  <span className="font-bold">{comment.upVotesCount || ''}</span>
+                </div>
               </div>
             </div>
           </div>

@@ -10,7 +10,7 @@ import Button from 'components/Button';
 import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { sleep, isMobile, isPc, stopBodyScroll } from 'utils';
+import { sleep, isMobile, isPc, isAndroid, stopBodyScroll } from 'utils';
 import { checkAmount } from './utils';
 import Api from './api';
 
@@ -160,7 +160,7 @@ export default (props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus={isPc}
+                  autoFocus={isPc || isAndroid}
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}
@@ -221,7 +221,7 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="py-8 px-10 bg-white rounded text-center">
+      <div className="py-8 px-10 bg-white rounded text-center mx-5">
         {step === 1 && step1()}
         {step === 2 && step2()}
       </div>

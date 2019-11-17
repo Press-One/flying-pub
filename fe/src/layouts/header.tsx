@@ -20,7 +20,7 @@ export default observer(() => {
   const handleClose = () => setAnchorEl(null);
   const { userStore, feedStore, modalStore } = useStore();
 
-  if (!userStore.isFetched || !feedStore.isFetched) {
+  if (!feedStore.isFetched) {
     return isMobile ? <div className="h-12" /> : null;
   }
 
@@ -30,7 +30,7 @@ export default observer(() => {
     <Fade in={true} timeout={isMobile ? 0 : 1500}>
       <div className="container m-auto">
         <div className="md:hidden">
-          <div className="flex justify-between items-center py-1 px-3 border-b border-gray-300 h-12">
+          <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
             <Link to="/">
               <div className="flex items-center">
                 <img

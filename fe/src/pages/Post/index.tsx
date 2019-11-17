@@ -99,6 +99,9 @@ export default observer((props: any) => {
         window.open(href);
         e.preventDefault();
       } else if (e.target.tagName === 'IMG') {
+        if (isMobile) {
+          return;
+        }
         setImgSrc(e.target.src);
         setShowImage(true);
       }

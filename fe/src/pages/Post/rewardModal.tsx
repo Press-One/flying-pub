@@ -15,7 +15,7 @@ import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
-import { sleep, isPc, isMixin, stopBodyScroll, isMobile } from 'utils';
+import { sleep, isPc, isMixin, stopBodyScroll, isMobile, isAndroid } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
@@ -473,7 +473,7 @@ export default observer((props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus={isPc}
+                  autoFocus={isPc || isAndroid}
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}

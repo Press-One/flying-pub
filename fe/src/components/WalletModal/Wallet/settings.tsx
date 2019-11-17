@@ -134,7 +134,7 @@ export default observer(() => {
       <div className="text-sm mt-5 root flex flex-col justify-between md:justify-start">
         <div>
           {isCustomPinExist && (
-            <div className="mb-4 text-green-500 flex items-center text-lg justify-center md:justify-start">
+            <div className="mb-4 text-green-500 flex items-center text-lg justify-center md:justify-start mt-2 md:mt-0">
               <CheckCircle />
               <span className="text-sm ml-1">支付密码已设置</span>
             </div>
@@ -147,7 +147,7 @@ export default observer(() => {
               尚未设置支付密码
             </div>
           )}
-          <div className="font-bold text-center md:text-left mt-5 md:mt-0">
+          <div className="font-bold text-center md:text-left mt-5 md:mt-0 text-base">
             {isCustomPinExist ? '修改' : '设置'}支付密码
           </div>
           <div className="text-gray-800 w-3/5 m-auto md:ml-0 md:mr-0 md:w-full">
@@ -230,7 +230,7 @@ export default observer(() => {
             <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
           </div>
         </div>
-        <div className="mt-4 text-center md:text-left">
+        <div className="mt-4 text-center md:text-left pb-5 md:pb-0">
           <Button
             onClick={() => submit(pin, pin2, { oldPin, isCustomPinExist })}
             fullWidth={isMobile}

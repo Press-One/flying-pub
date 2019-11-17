@@ -138,7 +138,10 @@ export default observer((props: any) => {
               <span className="flex items-center mr-1 text-lg">
                 <Info />
               </span>
-              再去设置一下支付密码，你就可以使用余额支付和提现啦
+              <span className="hidden md:block">
+                再去设置一下支付密码，你就可以使用余额支付和提现啦
+              </span>
+              <span className="md:hidden">尚未设置支付密码</span>
             </div>
             <span
               className="text-blue-400 cursor-pointer font-bold pr-2"

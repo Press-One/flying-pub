@@ -78,6 +78,10 @@ export const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
   navigator.userAgent,
 );
 
+export const isAndroid = /Android/i.test(navigator.userAgent);
+
+export const isIPhone = isMobile && !isAndroid;
+
 export const isPc = !isMobile;
 
 export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);

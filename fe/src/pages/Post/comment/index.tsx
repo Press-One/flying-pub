@@ -105,10 +105,14 @@ export default observer((props: IProps) => {
         setValue('');
       }
       const scrollElement = document.scrollingElement || document.documentElement;
-      scrollElement.scrollTo({
-        top: 9999,
-        behavior: 'smooth',
-      });
+      try {
+        scrollElement.scrollTo({
+          top: 9999,
+          behavior: 'smooth',
+        });
+      } catch (err) {
+        scrollElement.scrollTop = 9999;
+      }
     } catch (e) {
       snackbarStore.show({
         message: '发布失败，请稍后重试',

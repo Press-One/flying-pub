@@ -9,10 +9,10 @@ export default (props: any) => {
       className={classNames(
         {
           'w-full': fullWidth,
-          'text-xs py-1 px-3': small,
-          'text-sm py-2 px-4': !small,
+          'text-xs py-2 px-3': small,
+          'text-sm py-3 px-5': !small,
         },
-        'text-white rounded font-bold outline-none bg-blue-400',
+        'text-white rounded font-bold outline-none bg-blue-400 leading-none',
       )}
       onClick={() => {
         onClick && onClick();
