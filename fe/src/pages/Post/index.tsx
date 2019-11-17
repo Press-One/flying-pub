@@ -184,7 +184,7 @@ export default observer((props: any) => {
           )}
         </div>
         {!noReward && <RewardSummary summary={rewardSummary} />}
-        {!noReward && <div className="pb-6 md:pb-10" />}
+        {!noReward && <div className="mt-8 pb-4 md:pb-10 border-t border-gray-300" />}
       </div>
     );
   };

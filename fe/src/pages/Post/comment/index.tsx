@@ -322,7 +322,7 @@ export default observer((props: IProps) => {
             isDoing: isCreatingComment,
             isCreated: isCreatedComment,
           })}
-        {hasComments && <div className="mt-8" />}
+        {hasComments && isPc && <div className="mt-8" />}
         <DrawerModal
           hideCloseButton
           open={openDrawer}
