@@ -36,7 +36,7 @@ export default observer((props: any) => {
   const [openingMixinSchema, setOpeningMixinSchema] = React.useState(false);
 
   React.useEffect(() => {
-    if (step !== 5) {
+    if (step !== 5 && step !== 6) {
       return;
     }
     const afterRecharge = async (data: any) => {
@@ -59,7 +59,7 @@ export default observer((props: any) => {
       setIsPaid(false);
       setOpeningMixinSchema(false);
       onClose(true);
-      await sleep(1500);
+      await sleep(1000);
       snackbarStore.show({
         message: '打赏成功',
       });
@@ -137,7 +137,7 @@ export default observer((props: any) => {
             setIsPaid(true);
             await sleep(1000);
             onCloseModal(true);
-            await sleep(1500);
+            await sleep(1000);
             snackbarStore.show({
               message: '打赏成功',
             });
@@ -607,7 +607,7 @@ export default observer((props: any) => {
         {isMobile && (
           <div className="pt-10 text-center">
             <Loading />
-            <div className="mt-5 text-sm text-gray-600">已支付？请稍后，正在核对中...</div>
+            <div className="mt-5 text-sm text-gray-600">已支付？请稍候，正在确认中...</div>
             <div className="mt-8 text-xs text-gray-500">
               您取消了支付？请
               <span

@@ -10,6 +10,7 @@ exports.create = async (userId, data) => {
   assert(data.objectType, Errors.ERR_IS_REQUIRED('data.objectType'));
   assert(data.objectId, Errors.ERR_IS_REQUIRED('data.objectId'));
   assert(data.type, Errors.ERR_IS_REQUIRED('data.type'));
+  data.objectId = String(data.objectId)
   const payload = {
     ...data,
     userId
@@ -24,7 +25,7 @@ exports.delete = async (userId, objectType, objectId) => {
   await Vote.destroy({
     where: {
       userId,
-      objectId,
+      objectId: String(objectId),
       objectType
     }
   });
@@ -36,7 +37,7 @@ exports.count = async (objectType, objectId, options = {}) => {
   assert(objectType, Errors.ERR_IS_REQUIRED('objectType'));
   const count = await Vote.count({
     where: {
-      objectId,
+      objectId: String(objectId),
       objectType,
       ...options
     }
@@ -51,7 +52,7 @@ exports.get = async (userId, objectType, objectId) => {
   const vote = await Vote.findOne({
     where: {
       userId,
-      objectId,
+      objectId: String(objectId),
       objectType
     }
   });
@@ -65,7 +66,7 @@ exports.isVoted = async (userId, objectType, objectId) => {
   const vote = await Vote.findOne({
     where: {
       userId,
-      objectId,
+      objectId: String(objectId),
       objectType,
       type: 'UP'
     }

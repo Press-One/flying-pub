@@ -1,4 +1,4 @@
-import { stopBodyScroll, isWeChat, getLoginUrl } from 'utils';
+import { stopBodyScroll, isWeChat, getLoginUrl, isMobile } from 'utils';
 import Api from 'api';
 
 export function createModalStore() {
@@ -12,6 +12,10 @@ export function createModalStore() {
       data: {},
     },
     openLogin(data: any = {}) {
+      if (isMobile && !isWeChat) {
+        window.location.href = getLoginUrl();
+        return;
+      }
       this.login.open = true;
       this.login.data = data;
       stopBodyScroll(true);

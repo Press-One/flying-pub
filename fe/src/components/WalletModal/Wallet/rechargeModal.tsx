@@ -140,7 +140,7 @@ export default (props: any) => {
         {isMobile && waitingPayment && (
           <div className="pt-10 text-center">
             <Loading />
-            <div className="mt-5 text-sm text-gray-600">已充值？请稍后，正在核对中...</div>
+            <div className="mt-5 text-sm text-gray-600">已充值？请稍候，正在确认中...</div>
             <div className="mt-8 text-xs text-gray-500">
               您取消了充值？请
               <span
