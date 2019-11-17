@@ -115,7 +115,7 @@ export default observer((props: IProps) => {
       }
     } catch (e) {
       snackbarStore.show({
-        message: e.message ? e.message : '发布失败，请稍后重试',
+        message: e.message || '发布失败，请稍后重试',
         type: 'error',
       });
     } finally {

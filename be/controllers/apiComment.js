@@ -1,8 +1,8 @@
 const Comment = require('../models/comment');
 const {
   assert,
-  Errors,
-  throws
+  throws,
+  Errors
 } = require('../models/validator');
 const SensitiveWordsDetector = require('../utils/sensitiveWordsDetector');
 
