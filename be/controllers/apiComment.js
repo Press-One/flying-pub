@@ -1,13 +1,22 @@
 const Comment = require('../models/comment');
 const {
   assert,
-  Errors
+  Errors,
+  throws
 } = require('../models/validator');
+const SensitiveWordsDetector = require('../utils/sensitiveWordsDetector');
 
 exports.create = async ctx => {
   const userId = ctx.verification.user.id;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
+  const invalidWords = SensitiveWordsDetector.check(data.content);
+  if (invalidWords.length > 0) {
+    throws({
+      code: 400,
+      message: `包含敏感词: ${invalidWords.join(',')}`
+    })
+  }
   const comment = await Comment.create(userId, data);
   ctx.body = comment;
 }
