@@ -93,7 +93,7 @@ export default (props: any) => {
 
   const step1 = () => {
     return (
-      <div>
+      <div className="px-2">
         <div className="text-lg font-bold text-gray-700">
           Mixin <span className="hidden md:inline-block">扫码</span>充值
         </div>
@@ -234,7 +234,7 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={onCloseModal}>
-      <div className="py-8 px-10 bg-white rounded text-center mx-5">
+      <div className="p-8 bg-white rounded text-center mx-5">
         {step === 1 && step1()}
         {step === 2 && step2()}
       </div>

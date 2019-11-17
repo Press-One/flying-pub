@@ -16,7 +16,7 @@ export default observer(() => {
   const renderMain = () => {
     return (
       <div>
-        <div className="py-8 px-10 bg-white md:rounded text-center main">
+        <div className="p-8 bg-white md:rounded text-center main">
           <div className="text-lg font-bold text-gray-700 leading-none">登陆</div>
           <div className="mt-4 text-gray-700">
             您需要使用 Mixin App 登陆

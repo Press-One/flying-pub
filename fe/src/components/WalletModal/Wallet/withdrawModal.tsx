@@ -204,12 +204,12 @@ export default (props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="pt-2 mx-2 px-20 pb-2">
+          <div className="pt-2 mx-2 px-16 pb-2">
             <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-3 px-20 ml-1 mr-1 text-5xl text-blue-400">
+          <div className="-mt-3 ml-1 mr-1 px-16 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <CheckCircleOutline />
             </Fade>
@@ -221,7 +221,7 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="py-8 px-10 bg-white rounded text-center mx-5">
+      <div className="p-8 bg-white rounded text-center mx-5">
         {step === 1 && step1()}
         {step === 2 && step2()}
       </div>
