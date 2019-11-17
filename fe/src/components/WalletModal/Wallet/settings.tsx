@@ -8,7 +8,7 @@ import Loading from 'components/Loading';
 import ButtonProgress from 'components/ButtonProgress';
 import Fade from '@material-ui/core/Fade';
 import NumberFormat from 'react-number-format';
-import { sleep, isMobile, isPc } from 'utils';
+import { sleep, isMobile } from 'utils';
 import { useStore } from 'store';
 import Api from './api';
 

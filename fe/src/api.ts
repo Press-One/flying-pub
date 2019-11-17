@@ -1,6 +1,5 @@
 import Parser from 'rss-parser';
 import request from './request';
-import qs from 'query-string';
 
 export default {
   setAutoLoginUrl(url: string) {

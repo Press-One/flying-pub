@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
@@ -10,7 +11,7 @@ import Button from 'components/Button';
 import Modal from 'components/Modal';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { sleep, isMobile, isPc, isAndroid, stopBodyScroll } from 'utils';
+import { sleep, isMobile, isPc, stopBodyScroll, isIPhone } from 'utils';
 import { checkAmount } from './utils';
 import Api from './api';
 
@@ -49,7 +50,7 @@ export default (props: any) => {
 
   const step1 = () => {
     return (
-      <div>
+      <div className="mx-2">
         <div className="flex items-center justify-center text-base">
           <div className="text-sm">
             转给 <span className="font-bold mr-1">{mixinAccount.full_name}</span>
@@ -73,7 +74,7 @@ export default (props: any) => {
             margin="normal"
             variant="outlined"
             fullWidth
-            autoFocus={isPc}
+            autoFocus
             onKeyPress={(e: any) => e.key === 'Enter' && tryGoStep2(amount, currency, balance)}
             InputProps={{
               endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
@@ -149,7 +150,7 @@ export default (props: any) => {
           转给 <span className="font-bold">{mixinAccount.full_name}</span>
           <div className="text-gray-500 text-xs">{mixinAccount.identity_number}</div>
         </div>
-        <div className="mt-4 md:mt-3 text-xs pb-1">
+        <div className="mt-6 md:mt-3 text-xs pb-1">
           <span className="font-bold text-xl">{amount}</span> {currency}
         </div>
         <div className="mt-5 text-gray-800">
@@ -160,7 +161,7 @@ export default (props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus={isPc || isAndroid}
+                  autoFocus
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}
@@ -174,29 +175,13 @@ export default (props: any) => {
                     </div>
                   ))}
                 </div>
-                <style jsx>{`
-                  .fake-input {
-                    width: 32px;
-                    height: 0;
-                    margin: 0 2px;
-                  }
-                  .fake-input .dot {
-                    margin-top: -20px;
-                  }
-                `}</style>
-                <style jsx global>{`
-                  .opt-input {
-                    margin: 0 2px !important;
-                    color: ${isMobile ? '#fff' : 'inherit'};
-                    -webkit-appearance: none;
-                    -moz-appearance: none;
-                    appearance: none;
-                  }
-                `}</style>
               </div>
               <div
                 className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setPin('');
+                  setStep(1);
+                }}
               >
                 返回
               </div>
@@ -204,26 +189,61 @@ export default (props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="pt-2 mx-2 px-16 pb-2">
+          <div className="fixed-width text-center md:px-6 pt-2 pb-2">
             <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-3 ml-1 mr-1 px-16 text-5xl text-blue-400">
+          <div className="fixed-width text-center md:px-6 -mt-3 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <CheckCircleOutline />
             </Fade>
           </div>
         )}
+        <style jsx>{`
+          .fixed-width {
+            width: 168px;
+            box-sizing: content-box;
+          }
+          .fake-input {
+            width: 32px;
+            height: 0;
+            margin: 0 2px;
+          }
+          .fake-input .dot {
+            margin-top: -20px;
+          }
+        `}</style>
+        <style jsx global>{`
+          .opt-input {
+            margin: 0 2px !important;
+            color: ${isMobile ? '#fff' : 'inherit'};
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+          }
+        `}</style>
       </div>
     );
   };
 
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="p-8 bg-white rounded text-center mx-5">
+      <div
+        className={classNames(
+          {
+            'fixed-scroll': isIPhone && !paying && !isPaid,
+          },
+          'p-8 bg-white rounded text-center mx-5',
+        )}
+      >
         {step === 1 && step1()}
         {step === 2 && step2()}
+        <style jsx>{`
+          .fixed-scroll {
+            margin-top: -42vh;
+          }
+        `}</style>
       </div>
     </Modal>
   );

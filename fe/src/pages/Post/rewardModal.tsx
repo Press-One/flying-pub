@@ -15,7 +15,7 @@ import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
-import { sleep, isPc, isMixin, stopBodyScroll, isMobile, isAndroid } from 'utils';
+import { sleep, isPc, isMixin, stopBodyScroll, isMobile, isIPhone } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 
 export default observer((props: any) => {
@@ -253,7 +253,7 @@ export default observer((props: any) => {
     };
 
     return (
-      <div className="root w-auto">
+      <div className="root w-auto mx-2">
         <div className="text-base text-gray-700">
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
@@ -270,7 +270,7 @@ export default observer((props: any) => {
             }}
             margin="normal"
             variant="outlined"
-            autoFocus={isPc}
+            autoFocus
             fullWidth
             onKeyPress={(e: any) => e.key === 'Enter' && next(amount, selectedCurrency)}
             InputProps={{
@@ -459,10 +459,10 @@ export default observer((props: any) => {
     return (
       <div>
         <div className="text-lg font-bold text-gray-700">请输入支付密码</div>
-        <div className="hidden md:block mt-5 mt-5 text-xs">
+        <div className="hidden md:block mt-5 text-xs">
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
-        <div className="mt-3 text-xs pb-1">
+        <div className="mt-5 md:mt-3 text-xs pb-1">
           <span className="font-bold text-xl">{amount}</span> {selectedCurrency}
         </div>
         <div className="mt-5 text-gray-800">
@@ -473,7 +473,7 @@ export default observer((props: any) => {
                   inputClassName="border border-gray-400 rounded opt-input"
                   value={pin}
                   onChange={onOtpChange}
-                  autoFocus={isPc || isAndroid}
+                  autoFocus
                   OTPLength={6}
                   otpType="number"
                   secure={isPc}
@@ -487,25 +487,6 @@ export default observer((props: any) => {
                     </div>
                   ))}
                 </div>
-                <style jsx>{`
-                  .fake-input {
-                    width: 32px;
-                    height: 0;
-                    margin: 0 2px;
-                  }
-                  .fake-input .dot {
-                    margin-top: -20px;
-                  }
-                `}</style>
-                <style jsx global>{`
-                  .opt-input {
-                    margin: 0 2px !important;
-                    color: ${isMobile ? '#fff' : 'inherit'};
-                    -webkit-appearance: none;
-                    -moz-appearance: none;
-                    appearance: none;
-                  }
-                `}</style>
               </div>
               <div className="flex justify-center mt-6 text-sm md:text-xs text-blue-400">
                 <div className="cursor-pointer" onClick={() => setStep(3)}>
@@ -516,17 +497,40 @@ export default observer((props: any) => {
           )}
         </div>
         {!isPaid && paying && (
-          <div className="pt-2 mx-2 px-20 pb-2">
+          <div className="fixed-width text-center md:px-6 pt-2 pb-2">
             <Loading size={38} />
           </div>
         )}
         {isPaid && (
-          <div className="-mt-3 px-20 ml-1 mr-1 text-5xl text-blue-400">
+          <div className="fixed-width text-center md:px-6 -mt-3 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <CheckCircleOutline />
             </Fade>
           </div>
         )}
+        <style jsx>{`
+          .fixed-width {
+            width: 168px;
+            box-sizing: content-box;
+          }
+          .fake-input {
+            width: 32px;
+            height: 0;
+            margin: 0 2px;
+          }
+          .fake-input .dot {
+            margin-top: -20px;
+          }
+        `}</style>
+        <style jsx global>{`
+          .opt-input {
+            margin: 0 2px !important;
+            color: ${isMobile ? '#fff' : 'inherit'};
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+          }
+        `}</style>
       </div>
     );
   };
@@ -629,13 +633,25 @@ export default observer((props: any) => {
 
   return (
     <Modal open={open} onClose={() => onCloseModal(false)}>
-      <div className="px-8 py-8 md:py-8 md:px-10 bg-white rounded text-center">
+      <div
+        className={classNames(
+          {
+            'fixed-scroll': isIPhone && !paying && !isPaid,
+          },
+          'p-8 bg-white rounded text-center mx-5',
+        )}
+      >
         {step === 1 && step1()}
         {step === 2 && step2()}
         {step === 3 && step3()}
         {step === 4 && step4()}
         {step === 5 && step5()}
         {step === 6 && step6()}
+        <style jsx>{`
+          .fixed-scroll {
+            margin-top: -42vh;
+          }
+        `}</style>
       </div>
     </Modal>
   );
