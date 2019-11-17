@@ -26,8 +26,13 @@ export default observer(() => {
 
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
 
+  const openIntercom = () => {
+    const iframe: any = document.querySelector('.intercom-launcher-frame');
+    iframe.contentDocument.querySelector('.intercom-launcher').click();
+  };
+
   return (
-    <Fade in={true} timeout={isMobile ? 0 : 1500}>
+    <Fade in={true} timeout={isMobile ? 500 : 1500}>
       <div className="container m-auto">
         <div className="md:hidden">
           <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
@@ -62,20 +67,33 @@ export default observer(() => {
           >
             <div className="bg-gray-300 leading-none">
               {!userStore.isLogin && (
-                <div
-                  className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                  onClick={async () => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    if (isWeChat) {
-                      modalStore.openLogin();
-                    } else {
-                      window.location.href = getLoginUrl();
-                    }
-                  }}
-                >
-                  登陆
+                <div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      stopBodyScroll(false);
+                      await sleep(200);
+                      if (isWeChat) {
+                        modalStore.openLogin();
+                      } else {
+                        window.location.href = getLoginUrl();
+                      }
+                    }}
+                  >
+                    登陆
+                  </div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      stopBodyScroll(false);
+                      await sleep(200);
+                      openIntercom();
+                    }}
+                  >
+                    反馈/建议
+                  </div>
                 </div>
               )}
               {userStore.isLogin && (
@@ -118,6 +136,17 @@ export default observer(() => {
                     }}
                   >
                     所有交易记录
+                  </div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      stopBodyScroll(false);
+                      await sleep(200);
+                      openIntercom();
+                    }}
+                  >
+                    反馈/建议
                   </div>
                   <div
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
