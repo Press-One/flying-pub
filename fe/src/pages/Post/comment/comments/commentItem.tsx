@@ -24,13 +24,11 @@ export default class CommentItem extends React.Component<any, any> {
         <div className="w-full">
           <div className="flex justify-between items-center">
             <div className="flex items-center leading-none">
-              <span className="mr-3 font-bold text-sm">{comment.user.name}</span>
-              <span className="hidden md:block text-gray-500 text-xs">
-                {ago(comment.createdAt)}
-              </span>
+              <span className="mr-3 text-sm gray">{comment.user.name}</span>
+              <span className="hidden md:block gray text-xs">{ago(comment.createdAt)}</span>
             </div>
             <div className="relative">
-              <div className="flex items-center text-gray-600 opacity-75 leading-none absolute top-0 right-0 -mt-3">
+              <div className="flex items-center gray leading-none absolute top-0 right-0 -mt-3">
                 <span
                   className="flex items-center cursor-pointer text-xs mr-5 p-1 md:w-16"
                   onClick={() => (isOwner ? tryDeleteComment(comment.id) : replyTo(comment.user))}
@@ -59,25 +57,31 @@ export default class CommentItem extends React.Component<any, any> {
           </div>
           <div className="mt-2">
             <div
-              className="text-gray-800 markdown-body comment"
+              className="markdown-body comment dark text-base"
               dangerouslySetInnerHTML={{ __html: marked.parse(comment.content) }}
             />
-            <style jsx>{`
-              .markdown-body :global(img) {
-                max-width: 80%;
-              }
-              .markdown-body :global(h1),
-              .markdown-body :global(h2),
-              .markdown-body :global(h3),
-              .markdown-body :global(h4),
-              .markdown-body :global(h5),
-              .markdown-body :global(h6) {
-                border: none;
-              }
-            `}</style>
             <div className="mt-3 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
             {!hideDivider && <div className="border-b border-gray-300 my-4 md:my-6" />}
           </div>
+          <style jsx>{`
+            .markdown-body :global(img) {
+              max-width: 80%;
+            }
+            .markdown-body :global(h1),
+            .markdown-body :global(h2),
+            .markdown-body :global(h3),
+            .markdown-body :global(h4),
+            .markdown-body :global(h5),
+            .markdown-body :global(h6) {
+              border: none;
+            }
+            .gray {
+              color: #8b8b8b;
+            }
+            .dark {
+              color: #404040;
+            }
+          `}</style>
         </div>
       </div>
     );
