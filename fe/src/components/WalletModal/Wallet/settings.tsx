@@ -158,7 +158,11 @@ export default observer(() => {
                   value={oldPin}
                   placeholder="旧的支付密码"
                   onChange={(event: any) => {
-                    setOldPin(event.target.value);
+                    const re = /^[0-9]+[.]?[0-9]*$/;
+                    const { value } = event.target;
+                    if (value === '' || re.test(value)) {
+                      setOldPin(value);
+                    }
                   }}
                   margin="normal"
                   variant="outlined"
@@ -166,7 +170,7 @@ export default observer(() => {
                   fullWidth={isMobile}
                   InputProps={{
                     inputComponent: NumberFormatCustom,
-                    inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
+                    inputProps: { maxLength: 6 },
                   }}
                   onKeyPress={(e: any) =>
                     e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
@@ -179,7 +183,11 @@ export default observer(() => {
               value={pin}
               placeholder={`6位支付密码（纯数字）`}
               onChange={(event: any) => {
-                setPin(event.target.value);
+                const re = /^[0-9]+[.]?[0-9]*$/;
+                const { value } = event.target;
+                if (value === '' || re.test(value)) {
+                  setPin(value);
+                }
               }}
               margin="normal"
               variant="outlined"
@@ -187,7 +195,7 @@ export default observer(() => {
               fullWidth={isMobile}
               InputProps={{
                 inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
+                inputProps: { maxLength: 6 },
               }}
               onKeyPress={(e: any) =>
                 e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
@@ -198,7 +206,11 @@ export default observer(() => {
               value={pin2}
               placeholder="再输入一次6位密码"
               onChange={(event: any) => {
-                setPin2(event.target.value);
+                const re = /^[0-9]+[.]?[0-9]*$/;
+                const { value } = event.target;
+                if (value === '' || re.test(value)) {
+                  setPin2(value);
+                }
               }}
               margin="normal"
               variant="outlined"
@@ -206,7 +218,7 @@ export default observer(() => {
               fullWidth={isMobile}
               InputProps={{
                 inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6, type: isPc ? 'text' : 'number' },
+                inputProps: { maxLength: 6 },
               }}
               onKeyPress={(e: any) =>
                 e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })

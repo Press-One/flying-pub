@@ -71,9 +71,11 @@ export default (props: any) => {
         return;
       }
       setSubmitting(true);
-      const paymentUrl = await getRechargePaymentUrl(currency, amount, memo);
       if (isMobile) {
         setOpeningMixinSchema(true);
+      }
+      const paymentUrl = await getRechargePaymentUrl(currency, amount, memo);
+      if (isMobile) {
         const paymentActionSchema = `mixin://${paymentUrl.split('/').pop()}`;
         window.location.href = paymentActionSchema;
         await sleep(3000);
