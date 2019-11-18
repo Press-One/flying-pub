@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
+import { isMobile } from 'utils';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
@@ -20,7 +21,7 @@ export default observer(() => {
   return (
     <div>
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: isMobile ? 'top' : 'bottom', horizontal: 'center' }}
         open={snackbarStore.open}
         autoHideDuration={snackbarStore.autoHideDuration}
         onClose={() => snackbarStore.close()}
@@ -49,7 +50,9 @@ export default observer(() => {
       </Snackbar>
       <style jsx global>{`
         .MuiSnackbar-root .MuiTypography-root {
-          background: #63b3ed !important;
+          background: ${snackbarStore.type === 'error'
+            ? '#fc8181 !important'
+            : '#63b3ed !important'};
         }
       `}</style>
     </div>

@@ -1,41 +1,28 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import Info from '@material-ui/icons/Info';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
-import ButtonProgress from 'components/ButtonProgress';
 import Fade from '@material-ui/core/Fade';
-import NumberFormat from 'react-number-format';
-import { sleep, isMobile } from 'utils';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import Modal from 'components/Modal';
+import PinOTPInput from 'components/PinOTPInput';
+import { sleep, isMobile, isIPhone, stopBodyScroll } from 'utils';
 import { useStore } from 'store';
 import Api from './api';
 
-function NumberFormatCustom(props: any) {
-  const { inputRef, onChange, ...other } = props;
-
-  return (
-    <NumberFormat
-      {...other}
-      getInputRef={inputRef}
-      onValueChange={values => {
-        onChange({
-          target: {
-            value: values.value,
-          },
-        });
-      }}
-      isNumericString
-    />
-  );
-}
-
 export default observer(() => {
+  const [step, setStep] = React.useState(1);
   const [oldPin, setOldPin] = React.useState('');
   const [pin, setPin] = React.useState('');
   const [pin2, setPin2] = React.useState('');
   const [pending, setPending] = React.useState(false);
+  const [isVerified, setIsVerified] = React.useState(false);
+  const [errMessage, setErrMessage] = React.useState('');
+  const [openModal, setOpenModal] = React.useState(false);
   const { snackbarStore, walletStore } = useStore();
 
   React.useEffect(() => {
@@ -43,74 +30,14 @@ export default observer(() => {
       try {
         const isCustomPinExist = await Api.isCustomPinExist();
         walletStore.setIsCustomPinExist(isCustomPinExist);
+        if (!isCustomPinExist) {
+          setStep(2);
+        }
       } catch (err) {}
       await sleep(800);
       walletStore.setIsFetchedIsCustomPinExist(true);
     })();
-  }, [walletStore]);
-
-  const submit = async (pin: string, pin2: string, options: any = {}) => {
-    const { isCustomPinExist, oldPin } = options;
-    if (isCustomPinExist) {
-      if (!oldPin || oldPin.length !== 6) {
-        snackbarStore.show({
-          message: '请输入旧的支付密码',
-          type: 'error',
-        });
-        return;
-      }
-    }
-    if (!pin || pin.length !== 6) {
-      snackbarStore.show({
-        message: '请输入6位支付密码',
-        type: 'error',
-      });
-      return;
-    }
-    if (!pin2 || pin2.length !== 6) {
-      snackbarStore.show({
-        message: '请再输入一次6位密码',
-        type: 'error',
-      });
-      return;
-    }
-    if (pin !== pin2) {
-      snackbarStore.show({
-        message: '两次密码不匹配',
-        type: 'error',
-      });
-      return;
-    }
-    setPending(true);
-    try {
-      const payload: any = {
-        pinCode: pin,
-      };
-      if (isCustomPinExist) {
-        payload.oldPinCode = oldPin;
-      }
-      await Api.updatePin(payload);
-      const latestIsCustomPinExist = await Api.isCustomPinExist();
-      await sleep(1000);
-      walletStore.setIsCustomPinExist(latestIsCustomPinExist);
-      setOldPin('');
-      setPin('');
-      setPin2('');
-      await sleep(200);
-      snackbarStore.show({
-        message: '密码设置成功',
-        type: 'error',
-      });
-    } catch (err) {
-      await sleep(500);
-      snackbarStore.show({
-        message: '旧密码输入错误',
-        type: 'error',
-      });
-      setOldPin('');
-    }
-    setPending(false);
-  };
+  }, [walletStore, setStep]);
 
   const { isFetchedIsCustomPinExist, isCustomPinExist } = walletStore;
 
@@ -129,14 +56,160 @@ export default observer(() => {
     );
   }
 
+  const onCloseModal = () => {
+    setStep(isCustomPinExist ? 1 : 2);
+    setOldPin('');
+    setPin('');
+    setPin2('');
+    setErrMessage('');
+    setPending(false);
+    setIsVerified(false);
+    setOpenModal(false);
+  };
+
+  const step1 = () => {
+    const onOtpChange = (value: string) => {
+      setOldPin(value);
+      if (value.length === 6) {
+        setStep(2);
+      }
+    };
+    return (
+      <div>
+        <div className="text-sm text-gray-600">请输入旧的密码</div>
+        <div className="mt-5 py-2 text-gray-800">
+          {!isVerified && !pending && <PinOTPInput value={oldPin} onChange={onOtpChange} />}
+        </div>
+      </div>
+    );
+  };
+
+  const step2 = () => {
+    const onOtpChange = (value: string) => {
+      setPin(value);
+      if (value.length === 6) {
+        setStep(3);
+      }
+    };
+    return (
+      <Fade in={true} timeout={500}>
+        <div>
+          <div className="text-sm text-gray-600">请输入新的密码</div>
+          <div className="mt-5 py-2 text-gray-800">
+            {!pending && <PinOTPInput value={pin} onChange={onOtpChange} />}
+          </div>
+        </div>
+      </Fade>
+    );
+  };
+
+  const step3 = () => {
+    const onOtpChange = (value: string) => {
+      setPin2(value);
+      if (value.length === 6) {
+        console.log(` ------------- step ---------------`, step);
+        console.log(` ------------- pin ---------------`, pin);
+        console.log(` ------------- value ---------------`, value);
+        if (pin !== value) {
+          if (isMobile) {
+            setErrMessage('两次密码不匹配');
+          } else {
+            snackbarStore.show({
+              message: '两次密码不匹配',
+              type: 'error',
+            });
+          }
+          setPin('');
+          setPin2('');
+          setStep(2);
+          return;
+        }
+        setErrMessage('');
+        setPending(true);
+        setTimeout(async () => {
+          const payload: any = {
+            pinCode: pin,
+          };
+          if (isCustomPinExist) {
+            payload.oldPinCode = oldPin;
+            try {
+              const isValid = await Api.validatePin({
+                pinCode: oldPin,
+              });
+              if (!isValid) {
+                snackbarStore.show({
+                  message: '旧密码错误，请重试',
+                  type: 'error',
+                });
+                onCloseModal();
+                return;
+              }
+            } catch (err) {
+              console.log(` ------------- err ---------------`, err);
+            }
+          }
+          try {
+            await Api.updatePin(payload);
+            const latestIsCustomPinExist = await Api.isCustomPinExist();
+            setPending(false);
+            setIsVerified(true);
+            await sleep(1000);
+            onCloseModal();
+            await sleep(400);
+            walletStore.setIsCustomPinExist(latestIsCustomPinExist);
+            snackbarStore.show({
+              message: '密码设置成功',
+            });
+          } catch (err) {
+            onCloseModal();
+            snackbarStore.show({
+              message: '密码设置失败',
+            });
+          }
+          setPending(false);
+        }, 500);
+      }
+    };
+    return (
+      <Fade in={true} timeout={500}>
+        <div>
+          <div className="text-sm text-gray-600">再次输入新的密码</div>
+          <div className="mt-5 py-2 text-gray-800">
+            {!isVerified && !pending && <PinOTPInput value={pin2} onChange={onOtpChange} />}
+          </div>
+          {!isVerified && pending && (
+            <div className="fixed-width flex items-center justify-center md:px-6">
+              <Loading size={38} />
+            </div>
+          )}
+          {isVerified && (
+            <div className="fixed-width flex items-center justify-center md:px-6 text-5xl text-blue-400">
+              <Fade in={true} timeout={500}>
+                <CheckCircleOutline className="-mt-2" />
+              </Fade>
+            </div>
+          )}
+          <style jsx>{`
+            .fixed-width {
+              width: 168px;
+              height: 44px;
+              padding-bottom: 5px;
+              box-sizing: content-box;
+            }
+          `}</style>
+        </div>
+      </Fade>
+    );
+  };
+
   return (
     <Fade in={true} timeout={500}>
-      <div className="text-sm mt-5 root flex flex-col justify-between md:justify-start">
+      <div className="text-sm mt-5 root text-center">
         <div>
           {isCustomPinExist && (
-            <div className="mb-4 text-green-500 flex items-center text-lg justify-center md:justify-start mt-2 md:mt-0">
+            <div className="mb-6 md:mb-4 text-green-500 flex flex-col md:flex-row items-center justify-center md:justify-start text-5xl md:text-lg mt-6 md:mt-0">
               <CheckCircle />
-              <span className="text-sm ml-1">支付密码已设置</span>
+              <span className="text-sm mt-2 md:mt-0 md:ml-1">支付密码已设置</span>
             </div>
           )}
           {!isCustomPinExist && (
@@ -147,100 +220,54 @@ export default observer(() => {
               尚未设置支付密码
             </div>
           )}
-          <div className="font-bold text-center md:text-left mt-5 md:mt-0 text-base">
-            {isCustomPinExist ? '修改' : '设置'}支付密码
-          </div>
-          <div className="text-gray-800 w-3/5 m-auto md:ml-0 md:mr-0 md:w-full">
-            <div className="-mt-1" />
-            {isCustomPinExist && (
-              <div>
-                <TextField
-                  value={oldPin}
-                  placeholder="旧的支付密码"
-                  onChange={(event: any) => {
-                    const re = /^[0-9]+[.]?[0-9]*$/;
-                    const { value } = event.target;
-                    if (value === '' || re.test(value)) {
-                      setOldPin(value);
-                    }
-                  }}
-                  margin="normal"
-                  variant="outlined"
-                  type="password"
-                  fullWidth={isMobile}
-                  InputProps={{
-                    inputComponent: NumberFormatCustom,
-                    inputProps: { maxLength: 6 },
-                  }}
-                  onKeyPress={(e: any) =>
-                    e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
-                  }
-                />
-                <div className="-mt-2" />
-              </div>
-            )}
-            <TextField
-              value={pin}
-              placeholder={`6位支付密码（纯数字）`}
-              onChange={(event: any) => {
-                const re = /^[0-9]+[.]?[0-9]*$/;
-                const { value } = event.target;
-                if (value === '' || re.test(value)) {
-                  setPin(value);
-                }
-              }}
-              margin="normal"
-              variant="outlined"
-              type="password"
-              fullWidth={isMobile}
-              InputProps={{
-                inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6 },
-              }}
-              onKeyPress={(e: any) =>
-                e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
-              }
-            />
-            <div className="-mt-2" />
-            <TextField
-              value={pin2}
-              placeholder="再输入一次6位密码"
-              onChange={(event: any) => {
-                const re = /^[0-9]+[.]?[0-9]*$/;
-                const { value } = event.target;
-                if (value === '' || re.test(value)) {
-                  setPin2(value);
-                }
-              }}
-              margin="normal"
-              variant="outlined"
-              type="password"
-              fullWidth={isMobile}
-              InputProps={{
-                inputComponent: NumberFormatCustom,
-                inputProps: { maxLength: 6 },
-              }}
-              onKeyPress={(e: any) =>
-                e.key === 'Enter' && submit(pin, pin2, { oldPin, isCustomPinExist })
-              }
-            />
-          </div>
-          <div className="flex items-center text-gray-500 mt-1 justify-center md:justify-start">
-            <Info />
-            <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
-          </div>
         </div>
-        <div className="mt-4 text-center md:text-left pb-5 md:pb-0">
+        <div className="md:hidden flex items-center justify-center text-gray-500 mb-2">
+          <Info />
+          <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
+        </div>
+        <div className="text-center md:text-left">
           <Button
-            onClick={() => submit(pin, pin2, { oldPin, isCustomPinExist })}
+            onClick={() => {
+              stopBodyScroll(false, {
+                disabled: true,
+              });
+              setOpenModal(true);
+            }}
             fullWidth={isMobile}
           >
-            保存 <ButtonProgress isDoing={pending} />
+            {isCustomPinExist ? '重置' : '设置'}支付密码
           </Button>
         </div>
+        <div className="hidden md:flex items-center text-gray-500 mt-2">
+          <Info />
+          <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
+        </div>
+        <Modal open={openModal} onClose={() => onCloseModal()}>
+          <div
+            className={classNames(
+              {
+                'fixed-scroll': isIPhone && !pending && !isVerified,
+              },
+              'p-8 bg-white rounded text-center mx-5',
+            )}
+          >
+            <div className="text-lg font-bold text-gray-700 pb-5">
+              {isCustomPinExist ? '重置' : '设置'}支付密码
+            </div>
+            {step === 1 && step1()}
+            {step === 2 && step2()}
+            {step === 3 && step3()}
+            {isMobile && errMessage && (
+              <div className="text-xs text-center text-red-400 mt-2">{errMessage}</div>
+            )}
+          </div>
+        </Modal>
         <style jsx>{`
+          .fixed-scroll {
+            margin-top: -42vh;
+          }
           .root {
-            height: 50vh;
+            height: 160px;
           }
         `}</style>
       </div>

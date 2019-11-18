@@ -122,7 +122,7 @@ export default observer(() => {
                       });
                     }}
                   >
-                    设置钱包
+                    设置密码
                   </div>
                   <div
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"

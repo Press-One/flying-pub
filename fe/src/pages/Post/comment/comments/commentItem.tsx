@@ -18,7 +18,7 @@ export default class CommentItem extends React.Component<any, any> {
     const isOwner = !!user && comment.userId === user.id;
     return (
       <div className="comment-item flex">
-        <div className="avatar mr-4 rounded">
+        <div className="avatar mr-3 md:mr-4 rounded">
           <img src={comment.user.avatar} width="36px" height="36px" alt="avatar" />
         </div>
         <div className="w-full">
@@ -41,7 +41,7 @@ export default class CommentItem extends React.Component<any, any> {
                 <div
                   className={classNames(
                     {
-                      'text-blue-600': comment.voted,
+                      'text-blue-400': comment.voted,
                     },
                     'flex items-center cursor-pointer p-1',
                   )}

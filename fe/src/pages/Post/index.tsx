@@ -311,13 +311,13 @@ export default observer((props: any) => {
         </div>
         {isMobile && (
           <div className="flex items-center justify-center pt-5">
-            <div className="flex justify-center mr-8">{VoteView(post.id, extra)}</div>
             <div
               className="text-white w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer border-blue-400 text-base font-bold bg-blue-400"
               onClick={reward}
             >
               赏
             </div>
+            <div className="flex justify-center ml-8">{VoteView(post.id, extra)}</div>
           </div>
         )}
         {authorMixinClientId && RewardView()}

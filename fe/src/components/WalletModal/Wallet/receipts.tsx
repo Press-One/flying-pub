@@ -21,12 +21,14 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
   return (
     <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none">
       <div className="flex items-center text-gray-700 text-sm">
-        <div className="mr-4 w-10 h-10">
-          <img
-            className="w-10 h-10"
-            src={currencyIconMap[receipt.currency]}
-            alt={receipt.currency}
-          />
+        <div className="mr-4">
+          <div className="w-10 h-10">
+            <img
+              className="w-10 h-10"
+              src={currencyIconMap[receipt.currency]}
+              alt={receipt.currency}
+            />
+          </div>
         </div>
         {getTypeName(receipt.type)}
         {receipt.type === 'REWARD' && (

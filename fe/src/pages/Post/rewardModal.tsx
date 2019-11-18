@@ -363,6 +363,11 @@ export default observer((props: any) => {
     return (
       <div>
         <div className="text-base font-bold text-gray-700">选择支付方式</div>
+        {isIPhone && (
+          <Tooltip placement="right" title="触发 input 的 focus">
+            <div className="hidden" />
+          </Tooltip>
+        )}
         <div className="mt-6 mx-2 md:mx-4">
           {payments.map((payment: any) => (
             <div key={payment.method}>

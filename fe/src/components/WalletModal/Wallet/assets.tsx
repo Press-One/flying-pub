@@ -11,13 +11,22 @@ import { sleep, isMobile } from 'utils';
 import Api from './api';
 
 const Asset = (props: any) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, walletStore } = useStore();
+  const { isCustomPinExist } = walletStore;
   const { asset, amount } = props;
 
   const onWithdraw = (currency: string) => {
+    if (!isCustomPinExist) {
+      snackbarStore.show({
+        message: '请先设置支付密码',
+        type: 'error',
+      });
+      return;
+    }
     if (Number(amount) === 0) {
       snackbarStore.show({
         message: '没有余额可以提现哦',
+        type: 'error',
       });
       return;
     }
