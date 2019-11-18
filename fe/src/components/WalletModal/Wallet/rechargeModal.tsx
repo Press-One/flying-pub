@@ -133,7 +133,7 @@ export default (props: any) => {
               />
             </div>
             <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
-              <Button>
+              <Button fullWidth={isMobile}>
                 确定 <ButtonProgress isDoing={openingMixinSchema} />
               </Button>
             </div>

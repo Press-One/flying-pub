@@ -178,8 +178,10 @@ export default observer((props: any) => {
     }
     return (
       <div>
-        <div className="text-center pb-6">
-          <Button onClick={reward}>赞赏</Button>
+        <div className="text-center pb-6 md:mt-5">
+          <div className="hidden md:block">
+            <Button onClick={reward}>赞赏</Button>
+          </div>
           {noReward && (
             <div className="mt-5 text-gray-600 pb-5">还没有人赞赏，来支持一下作者吧！</div>
           )}
@@ -308,7 +310,15 @@ export default observer((props: any) => {
           }
         </div>
         {isMobile && (
-          <div className="flex justify-center pt-2 pb-10">{VoteView(post.id, extra)}</div>
+          <div className="flex items-center justify-center pt-5">
+            <div className="flex justify-center mr-8">{VoteView(post.id, extra)}</div>
+            <div
+              className="text-white w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer border-blue-400 text-base font-bold bg-blue-400"
+              onClick={reward}
+            >
+              赏
+            </div>
+          </div>
         )}
         {authorMixinClientId && RewardView()}
         {CommentView()}

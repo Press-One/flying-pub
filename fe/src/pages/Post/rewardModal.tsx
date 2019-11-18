@@ -7,7 +7,7 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import Info from '@material-ui/icons/Info';
 import Button from 'components/Button';
-import OTPInput from 'otp-input-react';
+import PinOTPInput from 'components/PinOTPInput';
 import Loading from 'components/Loading';
 import Modal from 'components/Modal';
 import ButtonProgress from 'components/ButtonProgress';
@@ -116,6 +116,7 @@ export default observer((props: any) => {
   };
 
   const onOtpChange = (value: string) => {
+    console.log(` ------------- value ---------------`, value);
     setPin(value);
     if (value.length === 6) {
       console.log('确认支付');
@@ -195,14 +196,14 @@ export default observer((props: any) => {
 
   const step1 = () => {
     return (
-      <div className="md:px-2">
-        <div className="text-lg font-bold text-gray-700">选择币种</div>
-        <div className="flex flex-wrap justify-between mt-4 w-64 pb-5">
+      <div>
+        <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
+        <div className="flex flex-wrap justify-between mt-4 w-64 pb-2">
           {currencies.map((currency: any) => {
             return (
               <div key={currency} className="p-1" title={currency}>
                 <div
-                  className="text-center border rounded p-3 px-5 cursor-pointer border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-400"
+                  className="text-center border rounded p-3 px-5 cursor-pointer border-gray-300 text-gray-600 md:hover:border-blue-400 md:hover:text-blue-400"
                   onClick={() => {
                     localStorage.setItem('REWARD_CURRENCY', currency);
                     setSelectedCurrency(currency);
@@ -296,8 +297,8 @@ export default observer((props: any) => {
             inputProps={{ maxLength: 20 }}
           />
         </div>
-        <div className="text-center mt-6">
-          <Button onClick={() => next(amount, selectedCurrency)}>下一步</Button>
+        <div className="text-center mt-6" onClick={() => next(amount, selectedCurrency)}>
+          <Button fullWidth={isMobile}>下一步</Button>
         </div>
         <div
           className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
@@ -474,26 +475,7 @@ export default observer((props: any) => {
         <div className="mt-5 text-gray-800">
           {!isPaid && !paying && (
             <div>
-              <div>
-                <OTPInput
-                  inputClassName="border border-gray-400 rounded opt-input"
-                  value={pin}
-                  onChange={onOtpChange}
-                  autoFocus
-                  OTPLength={6}
-                  otpType="number"
-                  secure={isPc}
-                />
-                <div className="md:hidden flex justify-center">
-                  {'......'.split('').map((value, index) => (
-                    <div className="fake-input flex justify-center" key={index}>
-                      {pin.length > index && (
-                        <i className="dot w-2 h-2 rounded-full bg-gray-700"></i>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <PinOTPInput value={pin} onChange={onOtpChange} />
               <div className="flex justify-center mt-6 text-sm md:text-xs text-blue-400">
                 <div className="cursor-pointer" onClick={() => setStep(3)}>
                   选择其他支付方式
@@ -518,23 +500,6 @@ export default observer((props: any) => {
           .fixed-width {
             width: 168px;
             box-sizing: content-box;
-          }
-          .fake-input {
-            width: 32px;
-            height: 0;
-            margin: 0 2px;
-          }
-          .fake-input .dot {
-            margin-top: -20px;
-          }
-        `}</style>
-        <style jsx global>{`
-          .opt-input {
-            margin: 0 2px !important;
-            color: ${isMobile ? '#fff' : 'inherit'};
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
           }
         `}</style>
       </div>
@@ -642,7 +607,7 @@ export default observer((props: any) => {
       <div
         className={classNames(
           {
-            'fixed-scroll': isIPhone && !paying && !isPaid,
+            'fixed-scroll': isIPhone && (step === 2 || step === 4) && !paying && !isPaid,
           },
           'p-8 md:px-10 bg-white rounded text-center',
         )}

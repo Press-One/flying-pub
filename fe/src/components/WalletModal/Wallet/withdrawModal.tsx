@@ -5,13 +5,13 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import Help from '@material-ui/icons/Help';
 import Tooltip from '@material-ui/core/Tooltip';
-import OTPInput from 'otp-input-react';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import Modal from 'components/Modal';
+import PinOTPInput from 'components/PinOTPInput';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { sleep, isMobile, isPc, stopBodyScroll, isIPhone } from 'utils';
+import { sleep, isPc, stopBodyScroll, isIPhone, isMobile } from 'utils';
 import { checkAmount } from './utils';
 import Api from './api';
 
@@ -94,8 +94,8 @@ export default (props: any) => {
           />
         </div>
         <div className="mt-5" onClick={() => tryGoStep2(amount, currency, balance)}>
-          <Button>
-            <div className="flex items-center">继续</div>
+          <Button fullWidth={isMobile}>
+            <div className="flex items-center">下一步</div>
           </Button>
         </div>
       </div>
@@ -156,26 +156,7 @@ export default (props: any) => {
         <div className="mt-5 text-gray-800">
           {!isPaid && !paying && (
             <div>
-              <div>
-                <OTPInput
-                  inputClassName="border border-gray-400 rounded opt-input"
-                  value={pin}
-                  onChange={onOtpChange}
-                  autoFocus
-                  OTPLength={6}
-                  otpType="number"
-                  secure={isPc}
-                />
-                <div className="md:hidden flex justify-center">
-                  {'......'.split('').map((value, index) => (
-                    <div className="fake-input flex justify-center" key={index}>
-                      {pin.length > index && (
-                        <i className="dot w-2 h-2 rounded-full bg-gray-700"></i>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <PinOTPInput value={pin} onChange={onOtpChange} />
               <div
                 className="mt-4 text-sm md:text-xs text-blue-400 cursor-pointer"
                 onClick={() => {
@@ -204,23 +185,6 @@ export default (props: any) => {
           .fixed-width {
             width: 168px;
             box-sizing: content-box;
-          }
-          .fake-input {
-            width: 32px;
-            height: 0;
-            margin: 0 2px;
-          }
-          .fake-input .dot {
-            margin-top: -20px;
-          }
-        `}</style>
-        <style jsx global>{`
-          .opt-input {
-            margin: 0 2px !important;
-            color: ${isMobile ? '#fff' : 'inherit'};
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
           }
         `}</style>
       </div>
