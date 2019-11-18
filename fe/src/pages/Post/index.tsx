@@ -17,7 +17,7 @@ import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, stopBodyScroll } from 'utils';
+import { ago, isPc, isMobile, sleep } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 
@@ -124,7 +124,6 @@ export default observer((props: any) => {
 
   const onCloseRewardModal = async (isSuccess: boolean) => {
     setOpenRewardModal(false);
-    stopBodyScroll(false);
     if (isSuccess) {
       await sleep(800);
       const rewardSummary = await FeedApi.getRewardSummary(post.id);
@@ -163,7 +162,6 @@ export default observer((props: any) => {
       return;
     }
     setOpenRewardModal(true);
-    stopBodyScroll(true);
   };
 
   if (!post) {

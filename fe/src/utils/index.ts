@@ -107,34 +107,33 @@ export const getLoginUrl = () =>
 let stoppedBodyScroll = false;
 let scrollTop = 0;
 export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
-  // if (isPc) {
-  //   return;
-  // }
-  // console.log(` ------------- stoppedBodyScroll ---------------`, stoppedBodyScroll);
-  // console.log(` ------------- isFixed ---------------`, isFixed);
-  // const { disabled } = options;
-  // const bodyEl = document.body;
-  // if (disabled) {
-  //   bodyEl.style.position = 'static';
-  //   // window.scrollTo(0, scrollTop);
-  //   return;
-  // }
-  // if (isFixed === stoppedBodyScroll) {
-  //   return;
-  // }
-  // if (isFixed) {
-  //   if (stoppedBodyScroll) {
-  //     return;
-  //   }
-  //   scrollTop = window.scrollY;
-  //   bodyEl.style.position = 'fixed';
-  //   if (scrollTop > 0) {
-  //     bodyEl.style.top = -scrollTop + 'px';
-  //   }
-  // } else {
-  //   bodyEl.style.position = 'static';
-  //   bodyEl.style.top = '';
-  //   window.scrollTo(0, scrollTop);
-  // }
-  // stoppedBodyScroll = isFixed;
+  if (isPc) {
+    return;
+  }
+  console.log(` ------------- stoppedBodyScroll ---------------`, stoppedBodyScroll);
+  console.log(` ------------- isFixed ---------------`, isFixed);
+  const { disabled } = options;
+  const bodyEl = document.body;
+  if (disabled) {
+    bodyEl.style.position = 'static';
+    return;
+  }
+  if (isFixed === stoppedBodyScroll) {
+    return;
+  }
+  if (isFixed) {
+    if (stoppedBodyScroll) {
+      return;
+    }
+    scrollTop = window.scrollY;
+    bodyEl.style.position = 'fixed';
+    if (scrollTop > 0) {
+      bodyEl.style.top = -scrollTop + 'px';
+    }
+  } else {
+    bodyEl.style.position = 'static';
+    bodyEl.style.top = '';
+    window.scrollTo(0, scrollTop);
+  }
+  stoppedBodyScroll = isFixed;
 };

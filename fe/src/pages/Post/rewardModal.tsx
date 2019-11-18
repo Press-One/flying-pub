@@ -17,6 +17,7 @@ import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
 import { sleep, isPc, isMixin, stopBodyScroll, isMobile, isIPhone } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export default observer((props: any) => {
   const cachedCurrency = localStorage.getItem('REWARD_CURRENCY');
@@ -257,6 +258,11 @@ export default observer((props: any) => {
         <div className="text-base text-gray-700">
           打赏给 <span className="font-bold">{toAuthor}</span>
         </div>
+        {isIPhone && (
+          <Tooltip placement="right" title="触发 input 的 focus">
+            <div className="hidden" />
+          </Tooltip>
+        )}
         <div className="mt-3 text-gray-800">
           <TextField
             value={amount}
@@ -638,7 +644,7 @@ export default observer((props: any) => {
           {
             'fixed-scroll': isIPhone && !paying && !isPaid,
           },
-          'p-8 bg-white rounded text-center mx-5',
+          'p-8 md:px-10 bg-white rounded text-center',
         )}
       >
         {step === 1 && step1()}
