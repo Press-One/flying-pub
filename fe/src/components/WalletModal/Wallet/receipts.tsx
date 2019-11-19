@@ -23,7 +23,7 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
   }
   return (
     <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none">
-      <div className="flex items-center text-gray-700 text-sm">
+      <div className="flex items-center text-gray-700 text-sm md:w-8/12">
         <div className="mr-4">
           <div className="w-10 h-10">
             <img
@@ -37,7 +37,7 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
         {receipt.type === 'REWARD' && (
           <a
             href={`${getPostsSiteDomain()}/posts/${receipt.objectRId}`}
-            className="text-blue-400 ml-2 truncate w-5/12 hidden md:block"
+            className="text-blue-400 ml-2 truncate w-6/12 hidden md:block"
             target="_blank"
             rel="noopener noreferrer"
             title={(postMap[receipt.objectRId] || {}).title}

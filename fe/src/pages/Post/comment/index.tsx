@@ -308,7 +308,7 @@ export default observer((props: IProps) => {
     const hasComments = comments.length > 0;
     return (
       <div className="pb-8 md:pb-0 comment">
-        {hasComments && (
+        {(hasComments || isPc) && (
           <div>
             <div className="text-lg font-bold flex text-gray-700">
               <div className="flex items-center">
