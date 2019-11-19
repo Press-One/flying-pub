@@ -35,6 +35,7 @@ export default observer((props: any) => {
   const { isLogin } = userStore;
   const { currentPost: post, isFetched: isFetchedFeed } = feedStore;
   const [pending, setPending] = React.useState(true);
+  const [voting, setVoting] = React.useState(false);
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
@@ -208,12 +209,17 @@ export default observer((props: any) => {
       modalStore.openLogin();
       return;
     }
+    if (voting) {
+      return;
+    }
+    setVoting(true);
     const post = await Api.createVote({
       objectType: 'posts',
       objectId: postId,
       type: 'UP',
     });
     feedStore.updatePostExtraMap(post.fileRId, post);
+    setVoting(false);
   };
 
   const resetVote = async (postId: string) => {
@@ -221,11 +227,16 @@ export default observer((props: any) => {
       modalStore.openLogin();
       return;
     }
+    if (voting) {
+      return;
+    }
+    setVoting(true);
     const post = await Api.deleteVote({
       objectType: 'posts',
       objectId: postId,
     });
     feedStore.updatePostExtraMap(post.fileRId, post);
+    setVoting(false);
   };
 
   const VoteView = (postId: string, extra: any = {}) => {
