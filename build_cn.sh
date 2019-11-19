@@ -5,7 +5,8 @@ git checkout release
 git clean -f -d
 git pull
 
-cd fe yarn install
+cd fe
+yarn install
 yarn build
 cd /pressone/medium
 
