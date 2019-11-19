@@ -331,7 +331,7 @@ export default observer((props: any) => {
               </div>
             )}
             <div className="flex justify-center">{VoteView(post.id, extra)}</div>
-            {!authorMixinClientId && <div className="pb-10" />}
+            {!authorMixinClientId && <div className="pb-30" />}
           </div>
         )}
         {authorMixinClientId && RewardView()}
