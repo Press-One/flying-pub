@@ -1,7 +1,7 @@
 FROM node:10.15.2
 
 ADD . /app
-ADD ./fe/build /app/be/build
+RUN mv ./fe/build /app/be/build
 
 WORKDIR /app/be
 RUN npm config set registry https://registry.npm.taobao.org
