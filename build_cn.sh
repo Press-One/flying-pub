@@ -6,6 +6,7 @@ git clean -f -d
 git pull
 
 cd fe
+yarn install
 yarn build
 
 IMAGE_NAME="dh-cn.press.one/pressone/medium"
