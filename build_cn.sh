@@ -9,6 +9,7 @@ cd fe
 yarn install
 yarn build
 cd /pressone/medium
+ls
 
 IMAGE_NAME="dh-cn.press.one/pressone/medium"
 
