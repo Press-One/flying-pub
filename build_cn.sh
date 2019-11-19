@@ -7,11 +7,7 @@ git pull
 
 cd fe yarn install
 yarn build
-<<<<<<< HEAD
 cd /pressone/medium
-=======
-cd ..
->>>>>>> master
 
 IMAGE_NAME="dh-cn.press.one/pressone/medium"
 
