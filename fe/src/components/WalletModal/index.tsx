@@ -12,7 +12,7 @@ import css from 'styled-jsx/css';
 
 const styles = css`
   .wallet-modal {
-    width: ${isMobile ? 'auto' : '840px'};
+    width: ${isMobile ? 'auto' : '860px'};
   }
   .wallet-modal-content,
   :global(.wallet-content) {

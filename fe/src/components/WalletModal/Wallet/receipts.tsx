@@ -18,6 +18,9 @@ const getTypeName = (type: string) => {
 };
 
 const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) => {
+  if (receipt.type === 'RECHARGE' && receipt.memo === '打赏文章') {
+    return null;
+  }
   return (
     <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none">
       <div className="flex items-center text-gray-700 text-sm">
