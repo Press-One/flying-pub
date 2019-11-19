@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Favorite from '@material-ui/icons/Favorite';
+import ThumbUpAlt from '@material-ui/icons/ThumbUpAlt';
 import Comment from '@material-ui/icons/Comment';
 import { ago, getPostSelector } from '../../../utils';
 import { getPostId } from '../../../store/feed';
@@ -32,7 +32,7 @@ export default (props: any) => {
           <div className="flex truncate mt-2 gray text-xs md:text-sm items-center h-5">
             {
               <div className="flex items-center font-bold text-sm md:text-base mr-5">
-                <Favorite /> <span className="text-xs md:text-sm ml-1">{upVotesCount || ''}</span>
+                <ThumbUpAlt /> <span className="text-xs md:text-sm ml-1">{upVotesCount || ''}</span>
               </div>
             }
             {commentsCount > 0 && (

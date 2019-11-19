@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import TextField from '@material-ui/core/TextField';
 import Info from '@material-ui/icons/Info';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import Button from 'components/Button';

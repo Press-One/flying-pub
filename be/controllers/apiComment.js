@@ -10,11 +10,11 @@ exports.create = async ctx => {
   const userId = ctx.verification.user.id;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  const invalidWords = SensitiveWordsDetector.check(data.content);
-  if (invalidWords.length > 0) {
+  const hasInvalidWord = SensitiveWordsDetector.check(data.content);
+  if (hasInvalidWord) {
     throws({
       code: 400,
-      message: `包含敏感词: ${invalidWords.join(',')}`
+      message: `包含敏感词，请修改后重新发布`
     })
   }
   const comment = await Comment.create(userId, data);

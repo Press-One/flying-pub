@@ -41,8 +41,13 @@ export const removeQuery = (name: string) => {
   }
 };
 
+export const isDevelopment = process.env.REACT_APP_ENV === 'development';
+
+export const isStaging = process.env.REACT_APP_ENV === 'staging';
+
+export const isProduction = process.env.REACT_APP_ENV === 'production';
+
 export const getApiEndpoint = () => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
   return isDevelopment ? `http://${window.location.hostname}:8070` : window.location.origin;
 };
 

@@ -3,6 +3,8 @@ const words = require('./words');
 
 exports.check = (content) => {
   const scanner = new FastScanner(words)
-  const hits = scanner.hits(content)
-  return Object.keys(hits);
+  const result = scanner.search(content, {
+    quick: true
+  });
+  return result.length > 0;
 }

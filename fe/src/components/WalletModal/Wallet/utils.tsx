@@ -1,4 +1,8 @@
-export const currencies = ['CNB', 'BTC', 'ETH', 'EOS', 'BOX', 'PRS'];
+import { isProduction } from 'utils';
+
+export const currencies = isProduction
+  ? ['PRS', 'BOX', 'BTC', 'EOS', 'ETH', 'XIN']
+  : ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'];
 
 export const currencyIconMap: any = {
   CNB: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
@@ -16,11 +20,11 @@ export const getPostsSiteDomain = () => {
 
 const maxAmount: any = {
   CNB: 1000000,
-  BTC: 0.1,
+  BTC: 0.01,
   ETH: 1,
-  EOS: 1,
+  EOS: 10,
   BOX: 100,
-  PRS: 100,
+  PRS: 1000,
   XIN: 10,
 };
 

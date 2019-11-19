@@ -264,7 +264,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="px-3 md:px-0 md:w-7/12 m-auto relative">
+      <div className="px-4 md:px-0 md:w-7/12 m-auto relative">
         <div className="hidden md:block">
           <BackButton />
         </div>
@@ -295,7 +295,7 @@ export default observer((props: any) => {
           }
         `}</style>
         <div
-          className={`mt-6 text-base md:text-lg text-black markdown-body pb-6`}
+          className={`mt-6 text-base md:text-lg text-black markdown-body pb-6 px-1 md:px-0`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
         <div className="hidden md:block">
