@@ -322,16 +322,20 @@ export default observer((props: any) => {
         </div>
         {isMobile && (
           <div className="flex items-center justify-center pt-5">
-            <div
-              className="text-white w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer border-blue-400 text-base font-bold bg-blue-400"
-              onClick={reward}
-            >
-              赏
-            </div>
-            <div className="flex justify-center ml-8">{VoteView(post.id, extra)}</div>
+            {authorMixinClientId && (
+              <div
+                className="text-white w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer border-blue-400 text-base font-bold bg-blue-400 mr-8"
+                onClick={reward}
+              >
+                赏
+              </div>
+            )}
+            <div className="flex justify-center">{VoteView(post.id, extra)}</div>
+            {!authorMixinClientId && <div className="pb-10" />}
           </div>
         )}
         {authorMixinClientId && RewardView()}
+        {!authorMixinClientId && <div className="mt-4 pb-8 border-t border-gray-300" />}
         {CommentView()}
         <RewardModal
           open={openRewardModal}
