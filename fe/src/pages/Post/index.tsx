@@ -285,7 +285,11 @@ export default observer((props: any) => {
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
           <div className="flex items-center w-6 h-6 mr-2">
-            <img className="w-6 h-6 rounded-full" src={post.attributes.avatar} alt={post.author} />
+            <img
+              className="w-6 h-6 rounded-full border border-gray-300"
+              src={post.attributes.avatar}
+              alt={post.author}
+            />
           </div>
           <span className="mr-5">{post.author}</span>
           <span className="mr-5">{ago(post.pubDate)}</span>
@@ -335,7 +339,7 @@ export default observer((props: any) => {
           </div>
         )}
         {authorMixinClientId && RewardView()}
-        {!authorMixinClientId && <div className="mt-4 pb-8 border-t border-gray-300" />}
+        {!authorMixinClientId && <div className="mt-16 pb-8 border-t border-gray-300" />}
         {CommentView()}
         <RewardModal
           open={openRewardModal}

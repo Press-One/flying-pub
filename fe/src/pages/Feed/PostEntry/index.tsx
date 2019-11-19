@@ -18,7 +18,7 @@ export default (props: any) => {
           <div className="flex items-center">
             <div className="flex items-center w-6 h-6 mr-2">
               <img
-                className="w-6 h-6 rounded-full"
+                className="w-6 h-6 rounded-full border border-gray-300"
                 src={post.attributes.avatar}
                 alt={post.author}
               />
