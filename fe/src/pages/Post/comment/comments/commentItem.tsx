@@ -50,7 +50,7 @@ export default class CommentItem extends React.Component<any, any> {
                   <span className="flex items-center text-lg mr-1">
                     <ThumbUpAltOutlined />
                   </span>
-                  <span className="font-bold">{comment.upVotesCount || ''}</span>
+                  <span className="font-bold">{Number(comment.upVotesCount) || ''}</span>
                 </div>
               </div>
             </div>
