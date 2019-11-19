@@ -8,6 +8,7 @@ import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ExitToApp from '@material-ui/icons/ExitToApp';
+import OpenInNew from '@material-ui/icons/OpenInNew';
 import Chat from '@material-ui/icons/Chat';
 import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
@@ -204,6 +205,22 @@ export default observer(() => {
                   <div
                     onClick={() => {
                       handleClose();
+                      window.open('https://xue.cn');
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <OpenInNew />
+                        </span>{' '}
+                        XUE.cn
+                        <span className="pr-2" />
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleClose();
                       openIntercom();
                     }}
                   >
@@ -248,6 +265,22 @@ export default observer(() => {
                           <Edit />
                         </span>{' '}
                         写文章
+                      </div>
+                    </MenuItem>
+                  </div>
+                  <div
+                    onClick={() => {
+                      handleClose();
+                      window.open('https://xue.cn');
+                    }}
+                  >
+                    <MenuItem className="text-gray-700">
+                      <div className="py-1 flex items-center">
+                        <span className="flex items-center text-xl mr-2">
+                          <OpenInNew />
+                        </span>{' '}
+                        XUE.cn
+                        <span className="pr-2" />
                       </div>
                     </MenuItem>
                   </div>

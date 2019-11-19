@@ -17,6 +17,7 @@ import Api from 'api';
 
 interface IProps {
   fileRId: number;
+  alwaysShowCommentEntry: boolean;
 }
 
 export default observer((props: IProps) => {
@@ -35,6 +36,7 @@ export default observer((props: IProps) => {
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [openCommentEntry, setOpenCommentEntry] = React.useState(false);
   const [isVoting, setIsVoting] = React.useState(false);
+  const { alwaysShowCommentEntry } = props;
 
   React.useEffect(() => {
     const scrollCallBack = debounce(() => {
@@ -379,7 +381,7 @@ export default observer((props: IProps) => {
           </div>
         )}
 
-        {isMobile && openCommentEntry && renderFixedCommentEntry()}
+        {isMobile && (openCommentEntry || alwaysShowCommentEntry) && renderFixedCommentEntry()}
 
         {renderDeleteConfirm(showConfirmDialog, deleteCommentId)}
       </div>

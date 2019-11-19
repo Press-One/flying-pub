@@ -199,7 +199,7 @@ export default observer((props: any) => {
     }
     return (
       <div className="pb-10">
-        <Comment fileRId={post.id} />
+        <Comment fileRId={post.id} alwaysShowCommentEntry={post.content.length < 500} />
       </div>
     );
   };
