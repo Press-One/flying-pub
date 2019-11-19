@@ -8,7 +8,7 @@ git pull
 cd fe
 yarn install
 yarn build
-cd ..
+cd /pressone/medium
 
 IMAGE_NAME="dh-cn.press.one/pressone/medium"
 
