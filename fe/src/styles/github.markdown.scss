@@ -328,14 +328,14 @@
 
   ol ol,
   ul ol {
-    list-style-type: lower-roman !important;
+    list-style-type: lower-roman;
   }
 
   ul ul ol,
   ul ol ol,
   ol ul ol,
   ol ol ol {
-    list-style-type: lower-alpha !important;
+    list-style-type: lower-alpha;
   }
 
   dd {

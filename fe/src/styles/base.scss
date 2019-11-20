@@ -24,6 +24,15 @@ a {
   outline: none !important;
 }
 
+/************************************** OL, UL STYLES **************************************/
+ol {
+  list-style-type: decimal;
+}
+
+ul {
+  list-style-type: disc;
+}
+
 /************************************** SVG STYLES **************************************/
 .MuiSvgIcon-root {
   font-size: inherit !important;
