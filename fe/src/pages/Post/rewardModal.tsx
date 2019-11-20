@@ -571,6 +571,7 @@ export default observer((props: any) => {
             className="text-blue-400"
             href="https://mixin.one/messenger"
             target="_blank"
+            rel="noopener noreferrer"
           >
             前往下载
           </a>
