@@ -79,7 +79,13 @@ export default observer(() => {
               isMobile ? '2xl' : '3xl'
             }`}
           >
-            {feed.title}
+            <a
+              rel="noopener noreferrer"
+              href="http://localhost:4070/posts/31ece6bd4e33dda348f443fc75e93aba27a210b5335d75751cfd30fa528d47d4"
+              target="_blank"
+            >
+              {feed.title}
+            </a>
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
           <div className="text-gray-600 text-center mt-3 text-base">{feed.description}</div>
