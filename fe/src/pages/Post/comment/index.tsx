@@ -308,6 +308,7 @@ export default observer((props: IProps) => {
     const hasComments = comments.length > 0;
     return (
       <div className="pb-8 md:pb-0 comment">
+        {hasComments && <div className="mt-8 pb-4 border-t border-gray-300 md:hidden" />}
         {!hasComments && isMobile && <div className="mt-10" />}
         {(hasComments || isPc) && (
           <div>

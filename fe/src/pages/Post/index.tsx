@@ -188,7 +188,6 @@ export default observer((props: any) => {
           )}
         </div>
         {!noReward && <RewardSummary summary={rewardSummary} />}
-        {!noReward && <div className="mt-8 pb-4 md:border-none border-t border-gray-300" />}
       </div>
     );
   };
@@ -342,7 +341,7 @@ export default observer((props: any) => {
           </div>
         )}
         {authorMixinClientId && RewardView()}
-        {!authorMixinClientId && <div className="mt-16 pb-8 border-t border-gray-300" />}
+        {!authorMixinClientId && <div className="pt-6" />}
         {CommentView()}
         <RewardModal
           open={openRewardModal}

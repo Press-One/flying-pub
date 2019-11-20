@@ -6,7 +6,7 @@ export default (props: any) => {
   let { amountMap = {}, users = [] } = props.summary;
   const currencies = Object.keys(amountMap);
   return (
-    <div>
+    <div className="md:pb-8">
       <div className="w-10/12 md:w-5/12 mx-auto py-2 -mt-2">
         <div className="flex items-center justify-center text-gray-500">
           <span className="border-b border-gray-500 w-5" />
