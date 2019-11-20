@@ -39,7 +39,6 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
             href={`${getPostsSiteDomain()}/posts/${receipt.objectRId}`}
             className="text-blue-400 ml-2 truncate w-6/12 hidden md:block"
             target="_blank"
-            rel="noopener noreferrer"
             title={(postMap[receipt.objectRId] || {}).title}
           >
             {(postMap[receipt.objectRId] || {}).title}
