@@ -44,20 +44,28 @@ export default observer((props: any) => {
   const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
+  const { postId } = props.match.params;
 
   React.useEffect(() => {
     (async () => {
-      if (post) {
-        const blocks = await FeedApi.getBlocks(post.id);
-        const block = blocks[0];
-        const toAddress = block.user_address;
-        const { payment_url } = JSON.parse(block.meta);
-        const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-        setToAddress(toAddress);
-        setAuthorMixinClientId(mixinClientId);
+      setToAddress('');
+      setAuthorMixinClientId('');
+      if (post && post.id === postId) {
+        try {
+          const blocks = await FeedApi.getBlocks(postId);
+          const block = blocks[0];
+          const toAddress = block.user_address;
+          const { payment_url } = JSON.parse(block.meta);
+          const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
+          setToAddress(toAddress);
+          setAuthorMixinClientId(mixinClientId);
+          console.log(` ------------- mixinClientId ---------------`);
+        } catch (err) {
+          console.log(` ------------- err ---------------`, err);
+        }
       }
     })();
-  }, [post]);
+  }, [post, postId]);
 
   React.useEffect(() => {
     (async () => {
@@ -69,9 +77,8 @@ export default observer((props: any) => {
   }, [isFetchedFeed]);
 
   React.useEffect(() => {
-    const { postId } = props.match.params;
     feedStore.setPostId(decodeURIComponent(postId));
-  }, [props, feedStore]);
+  }, [postId, feedStore]);
 
   React.useEffect(() => {
     if (post) {
@@ -82,7 +89,7 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     (async () => {
-      if (post && post.id === props.match.params.postId) {
+      if (post && post.id === postId) {
         try {
           const rewardSummary = await FeedApi.getRewardSummary(post.id);
           setRewardSummary(rewardSummary);
@@ -90,7 +97,7 @@ export default observer((props: any) => {
         setIsFetchedReward(true);
       }
     })();
-  }, [post, props]);
+  }, [post, postId]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
