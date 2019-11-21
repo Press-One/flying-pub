@@ -59,7 +59,7 @@ export default observer((props: any) => {
           const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
           setToAddress(toAddress);
           setAuthorMixinClientId(mixinClientId);
-          console.log(` ------------- mixinClientId ---------------`);
+          console.log(` ------------- mixinClientId ---------------`, mixinClientId);
         } catch (err) {
           console.log(` ------------- err ---------------`, err);
         }
