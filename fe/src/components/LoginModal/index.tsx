@@ -71,7 +71,8 @@ export default observer(() => {
             <div className="mt-4">
               <a href={getLoginUrl()}>
                 <Button>
-                  使用 Mixin <span className="hidden md:inline-block">扫码</span>登陆
+                  使用<span className="mx-1"> Mixin </span>
+                  <span className="hidden md:inline-block">扫码</span>登陆
                 </Button>
               </a>
             </div>

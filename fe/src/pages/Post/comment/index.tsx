@@ -295,7 +295,7 @@ export default observer((props: IProps) => {
     return (
       <Fade in={true} timeout={200}>
         <div
-          className="fixed bottom-0 left-0 w-full py-2 px-3 border-t border-gray-300 bg-white"
+          className="fixed z-10 bottom-0 left-0 w-full py-2 px-3 border-t border-gray-300 bg-white"
           onClick={() => setOpenDrawer(true)}
         >
           <div className="rounded-lg bg-gray-200 text-gray-600 py-2 px-3">说点什么...</div>
