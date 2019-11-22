@@ -337,12 +337,19 @@ const updateReceiptByUuid = async (uuid, data) => {
   const receipt = await Receipt.getByUuid(uuid);
   if (receipt.status === "SUCCESS") {
     console.log(`这条收据状态已经是 SUCCESS 了, 跳过`);
-    return;
+    return null;
   }
   if (receipt.viewToken) {
     delete data.viewToken;
   }
+  const lockKey = `${config.serviceKey}_UPDATE_RECEIPT_${uuid}`;
+  const locked = await Cache.pTryLock(lockKey, 10); // 10s
+  if (locked) {
+    console.log('正在更新收据，锁住了，请返回');
+    return null;
+  }
   await Receipt.updateByUuid(uuid, data);
+  Cache.pUnLock(lockKey);
   const updatedReceipt = await Receipt.getByUuid(uuid);
   Log.createAnonymity(
     "更新收据",
@@ -356,6 +363,7 @@ const updateReceiptByUuid = async (uuid, data) => {
   }
   await clearCachedBalance(user.id);
   refreshCachedBalance(user.id);
+  return updatedReceipt;
 };
 
 const saveSnapshots = async (snapshots) => {
@@ -363,10 +371,12 @@ const saveSnapshots = async (snapshots) => {
   for (const snapshot of snapshots) {
     tasks.push(saveSnapshot(snapshot));
   }
-  await Promise.all(tasks);
+  const updatedReceipts = await Promise.all(tasks);
+  return updatedReceipts;
 };
 
 const saveSnapshot = async (snapshot) => {
+  let updatedReceipt = null;
   if (
     snapshot &&
     snapshot.type === "snapshot" &&
@@ -388,19 +398,17 @@ const saveSnapshot = async (snapshot) => {
       receipt.snapshotId = snapshot.snapshot_id;
       receipt.fromProviderUserId = snapshot.user_id;
       receipt.toProviderUserId = snapshot.opponent_id;
-    } else {
-      return snapshot;
     }
 
     receipt.viewToken = getViewToken(snapshot.snapshot_id);
 
     try {
-      await updateReceiptByUuid(snapshot.trace_id, receipt);
+      updatedReceipt = await updateReceiptByUuid(snapshot.trace_id, receipt);
     } catch (e) {
       console.log(e);
     }
   }
-  return snapshot;
+  return updatedReceipt;
 };
 
 exports.syncMixinSnapshots = () => {
@@ -471,6 +479,7 @@ exports.syncMixinSnapshots = () => {
         fs.writeFileSync("session.json", json, "utf8");
       } catch (err) {
         log(`失败，准备开始下一次`);
+        console.log(err)
       }
       log(`完成，准备开始下一次`);
       clearTimeout(timerId);
@@ -510,9 +519,9 @@ const syncInitializedReceipt = async receipt => {
         snapshots.push(data[i]);
       }
     }
-    await saveSnapshots(snapshots);
-    const updatedReceipt = await Receipt.getByUuid(receipt.uuid);
-    if (updatedReceipt.status === "INITIALIZED") {
+    const updatedReceipts = await saveSnapshots(snapshots);
+    const thisReceipt = await Receipt.getByUuid(receipt.uuid);
+    if (thisReceipt.status === "INITIALIZED") {
       const now = new Date();
       const minutes = 10;
       if (now - date.getTime() > minutes * 60 * 1000) {
@@ -525,13 +534,16 @@ const syncInitializedReceipt = async receipt => {
           `${JSON.stringify(timeoutReceipt)}`
         );
       } else {
-        log(`${updatedReceipt.id} 处于 ${minutes} 分钟等待期`);
+        log(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
       }
-    } else if (updatedReceipt.status === "SUCCESS") {
-      Log.createAnonymity(
-        "同步初始化收据",
-        `INITIALIZED -> SUCCESS ${updatedReceipt.id}`
-      );
+    }
+    for (const updatedReceipt of updatedReceipts) {
+      if (updatedReceipt && updatedReceipt.status === "SUCCESS") {
+        Log.createAnonymity(
+          "同步初始化收据",
+          `INITIALIZED -> SUCCESS ${updatedReceipt.id}`
+        );
+      }
     }
   } catch (err) {
     log(`失败了`);
