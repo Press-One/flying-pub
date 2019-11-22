@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import Loading from 'components/Loading';
 import ConfirmDialog from 'components/ConfirmDialog';
-import { getXmlUrl, sleep } from 'utils';
+import { getXmlUrl, sleep, isMobile, isWeChat } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
@@ -36,10 +36,12 @@ export default observer((props: any) => {
         userStore.setUser(user);
         socketStore.init(user.id);
       } catch (err) {
-        const { url } = await Api.getAutoLoginUrl();
-        if (url) {
-          Api.deleteAutoLoginUrl();
-          window.location.href = url;
+        if (isMobile && !isWeChat) {
+          const { url } = await Api.getAutoLoginUrl();
+          if (url) {
+            Api.deleteAutoLoginUrl();
+            window.location.href = url;
+          }
         }
         console.log(err);
       }

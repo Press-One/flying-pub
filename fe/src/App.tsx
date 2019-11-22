@@ -12,6 +12,8 @@ import LoginModal from 'components/LoginModal';
 import WalletModal from 'components/WalletModal';
 import SnackBar from 'components/SnackBar';
 
+import { isIPhone } from 'utils';
+
 import { StoreProvider } from './store';
 
 import './styles/tailwind.css';
@@ -33,6 +35,11 @@ const AppRouter = () => {
           <LoginModal />
           <WalletModal />
           <SnackBar />
+          <style jsx global>{`
+            body {
+              min-height: ${isIPhone ? '110vh' : '100vh'};
+            }
+          `}</style>
         </div>
       </Router>
     </StoreProvider>

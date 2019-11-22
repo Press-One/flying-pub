@@ -16,7 +16,6 @@ const attempt = (value, schema, status = httpStatus.BAD_REQUEST) => {
       abortEarly: false
     }
   );
-  console.log(` ------------- ret ---------------`, ret);
   if (ret.error) {
     const errors = {};
     for (const item of ret.error.details) {

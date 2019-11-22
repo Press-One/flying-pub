@@ -106,9 +106,6 @@ export default observer(() => {
     const onOtpChange = (value: string) => {
       setPin2(value);
       if (value.length === 6) {
-        console.log(` ------------- step ---------------`, step);
-        console.log(` ------------- pin ---------------`, pin);
-        console.log(` ------------- value ---------------`, value);
         if (pin !== value) {
           if (isMobile) {
             setErrMessage('两次密码不匹配');

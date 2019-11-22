@@ -18,7 +18,7 @@ const getTypeName = (type: string) => {
 };
 
 const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) => {
-  if (receipt.type === 'RECHARGE' && receipt.memo === '打赏文章') {
+  if (receipt.type === 'RECHARGE' && receipt.memo.includes('打赏文章')) {
     return null;
   }
   return (

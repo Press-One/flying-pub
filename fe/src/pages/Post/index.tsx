@@ -17,7 +17,7 @@ import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep } from 'utils';
+import { ago, isPc, isMobile, sleep, onlyForLogin } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 
@@ -47,9 +47,15 @@ export default observer((props: any) => {
   const { postId } = props.match.params;
 
   React.useEffect(() => {
-    (async () => {
+    if (post && post.id === postId) {
       setToAddress('');
       setAuthorMixinClientId('');
+      setRewardSummary({ amountMap: {}, users: [] });
+    }
+  }, [post, postId]);
+
+  React.useEffect(() => {
+    (async () => {
       if (post && post.id === postId) {
         try {
           const blocks = await FeedApi.getBlocks(postId);
@@ -59,33 +65,12 @@ export default observer((props: any) => {
           const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
           setToAddress(toAddress);
           setAuthorMixinClientId(mixinClientId);
-          console.log(` ------------- mixinClientId ---------------`, mixinClientId);
         } catch (err) {
           console.log(` ------------- err ---------------`, err);
         }
       }
     })();
   }, [post, postId]);
-
-  React.useEffect(() => {
-    (async () => {
-      if (isFetchedFeed) {
-        await sleep(800);
-        setPending(false);
-      }
-    })();
-  }, [isFetchedFeed]);
-
-  React.useEffect(() => {
-    feedStore.setPostId(decodeURIComponent(postId));
-  }, [postId, feedStore]);
-
-  React.useEffect(() => {
-    if (post) {
-      const { title } = post;
-      document.title = `${title} - 飞帖`;
-    }
-  });
 
   React.useEffect(() => {
     (async () => {
@@ -98,6 +83,26 @@ export default observer((props: any) => {
       }
     })();
   }, [post, postId]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (isFetchedFeed && (!onlyForLogin() || isLogin)) {
+        await sleep(800);
+        setPending(false);
+      }
+    })();
+  }, [isFetchedFeed, isLogin]);
+
+  React.useEffect(() => {
+    feedStore.setPostId(decodeURIComponent(postId));
+  }, [postId, feedStore]);
+
+  React.useEffect(() => {
+    if (post) {
+      const { title } = post;
+      document.title = `${title} - 飞帖`;
+    }
+  });
 
   React.useEffect(() => {
     window.scrollTo(0, 0);

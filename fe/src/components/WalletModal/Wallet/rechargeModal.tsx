@@ -10,7 +10,7 @@ import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import { checkAmount } from './utils';
 import Api from './api';
-import { isMobile, isPc, sleep } from 'utils';
+import { isMobile, isPc, sleep, isIPhone } from 'utils';
 
 export default (props: any) => {
   const { userStore, socketStore, snackbarStore } = useStore();
@@ -30,6 +30,7 @@ export default (props: any) => {
       setStep(1);
       setAmount('');
       setMemo('');
+      setPaymentUrl('');
       setOpeningMixinSchema(false);
       setWaitingPayment(false);
       onClose(true);
@@ -46,6 +47,7 @@ export default (props: any) => {
     setStep(1);
     setAmount('');
     setMemo('');
+    setPaymentUrl('');
     setOpeningMixinSchema(false);
     setWaitingPayment(false);
     onClose();
@@ -113,7 +115,7 @@ export default (props: any) => {
                 margin="normal"
                 variant="outlined"
                 fullWidth
-                autoFocus={isPc}
+                autoFocus
                 onKeyPress={(e: any) => e.key === 'Enter' && tryRecharge(currency, amount, memo)}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">{currency}</InputAdornment>,
@@ -234,9 +236,21 @@ export default (props: any) => {
 
   return (
     <Modal open={open} onClose={onCloseModal}>
-      <div className="p-8 bg-white rounded text-center mx-5">
+      <div
+        className={classNames(
+          {
+            'fixed-scroll': isIPhone && step === 1 && !waitingPayment,
+          },
+          'p-8 bg-white rounded text-center mx-5',
+        )}
+      >
         {step === 1 && step1()}
         {step === 2 && step2()}
+        <style jsx>{`
+          .fixed-scroll {
+            margin-top: -42vh;
+          }
+        `}</style>
       </div>
     </Modal>
   );

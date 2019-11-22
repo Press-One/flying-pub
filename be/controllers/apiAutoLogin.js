@@ -5,7 +5,7 @@ const {
   Errors
 } = require('../models/validator');
 
-const type = `${config.serviceName}_AUTO_LOGIN`;
+const type = `${config.serviceKey}_AUTO_LOGIN`;
 const key = 'URL';
 
 exports.get = async (ctx) => {

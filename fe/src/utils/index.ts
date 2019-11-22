@@ -142,3 +142,5 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
   }
   stoppedBodyScroll = isFixed;
 };
+
+export const onlyForLogin = () => true;

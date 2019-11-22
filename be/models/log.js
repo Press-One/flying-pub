@@ -9,7 +9,7 @@ exports.create = async (userId, message) => {
   });
   const data = {
     userId,
-    message: `【${config.serviceName}】${user.name}：${message}`,
+    message: `【${config.serviceKey}】${user.name}：${message}`,
   };
   await Log.create(data);
   if (config.botEnabled) {
@@ -24,7 +24,7 @@ exports.create = async (userId, message) => {
 exports.createAnonymity = async (identity, message) => {
   const data = {
     userId: 0,
-    message: `【${config.serviceName}】 ${identity}：${message}`,
+    message: `【${config.serviceKey}】 ${identity}：${message}`,
   };
   await Log.create(data);
   if (config.botEnabled) {

@@ -24,7 +24,7 @@ export default observer((props: any) => {
   const cachedMethod = localStorage.getItem('REWARD_METHOD');
   const { userStore, socketStore, walletStore, modalStore, snackbarStore } = useStore();
   const { isLogin } = userStore;
-  const { open, onClose, fileRId, toAuthor, toAddress, toMixinClientId } = props;
+  const { open, onClose, fileRId, toAuthor } = props;
   const [step, setStep] = React.useState(cachedCurrency ? 2 : 1);
   const [selectedCurrency, setSelectedCurrency] = React.useState(cachedCurrency || '');
   const [amount, setAmount] = React.useState('');
@@ -45,17 +45,16 @@ export default observer((props: any) => {
       setIframeLoading(true);
       const { receipt } = data;
       await Api.reward(fileRId, {
-        toAddress,
         currency: receipt.currency,
         amount: receipt.amount,
         memo: receipt.memo,
-        toMixinClientId,
       });
       setIframeLoading(false);
       setStep(step > 1 ? 2 : 1);
       setAmount('');
       setMemo('');
       setPin('');
+      setPaymentUrl('');
       setPaying(false);
       setIsPaid(false);
       setOpeningMixinSchema(false);
@@ -71,19 +70,7 @@ export default observer((props: any) => {
     return () => {
       socketStore.off('recharge');
     };
-  }, [
-    step,
-    isLogin,
-    socketStore,
-    fileRId,
-    toAddress,
-    selectedCurrency,
-    amount,
-    memo,
-    toMixinClientId,
-    onClose,
-    snackbarStore,
-  ]);
+  }, [step, isLogin, socketStore, fileRId, selectedCurrency, amount, memo, onClose, snackbarStore]);
 
   React.useEffect(() => {
     (async () => {
@@ -109,6 +96,7 @@ export default observer((props: any) => {
     setAmount('');
     setMemo('');
     setPin('');
+    setPaymentUrl('');
     setOpeningMixinSchema(false);
     setPaying(false);
     setIsPaid(false);
@@ -116,7 +104,6 @@ export default observer((props: any) => {
   };
 
   const onOtpChange = (value: string) => {
-    console.log(` ------------- value ---------------`, value);
     setPin(value);
     if (value.length === 6) {
       console.log('确认支付');
@@ -129,11 +116,9 @@ export default observer((props: any) => {
           });
           if (isValid) {
             await Api.reward(fileRId, {
-              toAddress,
               currency: selectedCurrency,
               amount,
               memo,
-              toMixinClientId,
             });
             setPaying(false);
             setIsPaid(true);
@@ -170,7 +155,7 @@ export default observer((props: any) => {
       const { paymentUrl } = await WalletApi.recharge({
         amount,
         currency: selectedCurrency,
-        memo: memo || '打赏文章',
+        memo: memo || `飞帖打赏文章（${process.env.REACT_APP_NAME}）`,
       });
       console.log(` ------------- paymentUrl ---------------`, paymentUrl);
       return paymentUrl;
