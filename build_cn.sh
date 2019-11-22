@@ -1,4 +1,5 @@
 cd /pressone/medium
+git checkout .
 git reset --hard HEAD
 git pull
 git checkout release
