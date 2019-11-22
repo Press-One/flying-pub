@@ -119,34 +119,6 @@ exports.updateByUuid = async (uuid, data) => {
   return true;
 };
 
-exports.delete = async id => {
-  assert(id, Errors.ERR_IS_REQUIRED('id'));
-  const derivedReceipt = await exports.get(id);
-  const fileRId = derivedReceipt.objectId;
-  await Receipt.update({
-    deleted: true
-  }, {
-    where: {
-      id
-    }
-  });
-  const count = await exports.count(fileRId);
-  await Post.upsert(fileRId, {
-    commentsCount: count,
-  });
-  return true;
-};
-
-exports.count = async (objectId) => {
-  assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
-  const count = await Receipt.count({
-    where: {
-      objectId,
-      deleted: false,
-    },
-  });
-  return count;
-};
 
 exports.list = async (options = {}) => {
   const {
