@@ -112,7 +112,7 @@ export const getLoginUrl = () =>
 let stoppedBodyScroll = false;
 let scrollTop = 0;
 export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
-  if (isPc) {
+  if (isPc || isWeChat) {
     return;
   }
   console.log(` ------------- stoppedBodyScroll ---------------`, stoppedBodyScroll);
