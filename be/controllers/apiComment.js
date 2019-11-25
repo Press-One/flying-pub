@@ -1,4 +1,5 @@
 const Comment = require('../models/comment');
+const Log = require('../models/log');
 const {
   assert,
   throws,
@@ -18,6 +19,7 @@ exports.create = async ctx => {
     })
   }
   const comment = await Comment.create(userId, data);
+  Log.create(userId, `评论 ${data.objectType} ${data.objectId}`);
   ctx.body = comment;
 }
 
@@ -29,6 +31,7 @@ exports.remove = async ctx => {
   });
   assert(comment.userId === userId, Errors.ERR_NO_PERMISSION);
   const deletedComment = await Comment.delete(id);
+  Log.create(userId, `删除评论 ${id}`);
   ctx.body = deletedComment;
 }
 

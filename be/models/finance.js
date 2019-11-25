@@ -411,91 +411,6 @@ const saveSnapshot = async (snapshot) => {
   return updatedReceipt;
 };
 
-exports.syncMixinSnapshots = () => {
-  const log = message => {
-    console.log(`【同步交易队列】 ${message}`);
-  };
-  const syncKey = `${config.serviceKey}_SYNC_MIXIN_SNAPSHOTS`;
-  return new Promise(resolve => {
-    (async () => {
-      const isLock = await Cache.pTryLock(syncKey, 5); // 15s
-      if (isLock) {
-        resolve();
-        return;
-      }
-      const timerId = setTimeout(() => {
-        try {
-          Cache.pUnLock(syncKey);
-        } catch (err) {}
-        log("超时，不再等待，准备开始下一次");
-        resolve();
-        stop = true;
-      }, 10 * 1000);
-      let stop = false;
-      try {
-        let session = {};
-        const currencies = Object.keys(currencyMapAsset);
-        try {
-          session = JSON.parse(fs.readFileSync("session.json", "utf8"));
-        } catch (err) {
-          const current = new Date();
-          for (const currency of currencies) {
-            session[currency] = {
-              offset: current.toISOString()
-            };
-          }
-          const json = JSON.stringify(session);
-          fs.writeFileSync("session.json", json, "utf8");
-        }
-        const snapshots = [];
-        const tasks = currencies.map(async currency => {
-          try {
-            const result = await mixin.readSnapshots(
-              rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
-              currencyMapAsset[currency],
-              "100",
-              "ASC"
-            );
-            const {
-              data
-            } = result;
-            for (const i in data) {
-              session[currency].offset = data[i].created_at;
-              if (data[i].user_id) {
-                snapshots.push(data[i]);
-              }
-            }
-          } catch (err) {
-            log("失败，准备开始下一次");
-            console.log(err);
-          }
-        });
-        log(`step1: 开始发请求`);
-        await Promise.all(tasks);
-        log(`step2: 请求结束`);
-        await saveSnapshots(snapshots);
-        log(`step3: 更新数据库完毕`);
-        const json = JSON.stringify(session);
-        fs.writeFileSync("session.json", json, "utf8");
-      } catch (err) {
-        log(`失败，准备开始下一次`);
-        console.log(err)
-      }
-      log(`完成，准备开始下一次`);
-      clearTimeout(timerId);
-      if (stop) {
-        return;
-      }
-      try {
-        Cache.pUnLock(syncKey);
-      } catch (err) {
-        console.log(err);
-      }
-      resolve();
-    })();
-  });
-};
-
 const syncInitializedReceipt = async receipt => {
   const log = message => {
     console.log(`【同步初始化收据队列】 ${message}`);
@@ -561,7 +476,7 @@ exports.syncInitializedReceipts = async () => {
         log("超时，不再等待，准备开始下一次");
         resolve();
         stop = true;
-      }, 20 * 1000);
+      }, 15 * 1000);
       let stop = false;
       try {
         let receipts = await Receipt.list({
