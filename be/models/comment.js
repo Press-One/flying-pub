@@ -113,9 +113,9 @@ exports.list = async (options) => {
     },
     offset,
     limit,
-    order: [
-      ['upVotesCount', 'DESC']
-    ]
+    // order: [
+    //   ['upVotesCount', 'DESC']
+    // ]
   });
   const list = await Promise.all(
     comments.map((comment) => {
