@@ -14,7 +14,7 @@ export default (props: any) => {
     <Link to={`/posts/${encodeURIComponent(getPostId(post))}`}>
       <div id={getPostSelector(getPostId(post))} />
       <div className="border-t border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
-        <div className="px-3 gray">
+        <div className="px-4 gray">
           <div className="flex items-center">
             <div className="flex items-center w-6 h-6 mr-2">
               <img
