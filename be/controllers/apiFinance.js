@@ -42,7 +42,7 @@ exports.recharge = async ctx => {
       memo: data.memo
     });
     Log.create(user.id, `打算充值 ${data.amount} ${data.currency} ${data.memo || ''}`);
-    Log.create(user.id, '获得充值二维码 url');
+    Log.create(user.id, '获得充值二维码');
     ctx.ok({
       paymentUrl
     });

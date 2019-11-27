@@ -1,3 +1,4 @@
+const config = require('../config');
 const Comment = require('../models/comment');
 const Log = require('../models/log');
 const {
@@ -19,7 +20,7 @@ exports.create = async ctx => {
     })
   }
   const comment = await Comment.create(userId, data);
-  Log.create(userId, `评论 ${data.objectType} ${data.objectId}`);
+  Log.create(userId, `评论文章 ${config.serviceRoot}/posts/${data.objectId}`);
   ctx.body = comment;
 }
 
