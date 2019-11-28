@@ -353,7 +353,7 @@ const updateReceiptByUuid = async (uuid, data) => {
   const updatedReceipt = await Receipt.getByUuid(uuid);
   Log.createAnonymity(
     "更新收据",
-    JSON.stringify(updatedReceipt.id)
+    updatedReceipt.id
   );
   const user = await User.getByAddress(updatedReceipt.fromAddress);
   if (updatedReceipt.type === "RECHARGE") {
@@ -446,7 +446,7 @@ const syncInitializedReceipt = async receipt => {
         const timeoutReceipt = await Receipt.getByUuid(receipt.uuid);
         Log.createAnonymity(
           "这条收据过期了，状态已设置为 TIMEOUT",
-          `${JSON.stringify(timeoutReceipt.id)}`
+          timeoutReceipt.id
         );
       } else {
         log(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
