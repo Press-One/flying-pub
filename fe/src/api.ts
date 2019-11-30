@@ -33,8 +33,21 @@ export default {
       });
     }
     const text = await res.text();
+    const safeText = text
+      .replace(/<title>.*<\/title>/g, x => {
+        return x.replace(/&/g, encodeURIComponent('&'));
+      })
+      .replace(/<name>.*<\/name>/g, x => {
+        return x.replace(/&/g, encodeURIComponent('&'));
+      });
+    try {
+      const parser = new Parser();
+      await parser.parseString(safeText);
+    } catch (err) {
+      console.log(` ------------- err ---------------`, err);
+    }
     const parser = new Parser();
-    const result = await parser.parseString(text);
+    const result = await parser.parseString(safeText);
     return result;
   },
   fetchPosts() {

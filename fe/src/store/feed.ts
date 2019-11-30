@@ -24,6 +24,7 @@ export interface Post {
   isoDate: string;
   link: string;
   pubDate: string;
+  author: string;
   title: string;
 }
 
@@ -55,6 +56,20 @@ const extractFrontMatter = (post: Post): Post => {
   post.attributes = fmContent.attributes;
   post.content = fmContent.body;
   post.contentSnippet = removeMd(fmContentSnippet.body);
+  return post;
+};
+
+const decode = (post: Post): Post => {
+  try {
+    post.author = decodeURIComponent(post.author);
+    post.title = decodeURIComponent(post.title);
+  } catch (err) {}
+  return post;
+};
+
+const format = (post: Post): Post => {
+  post = extractFrontMatter(post);
+  post = decode(post);
   return post;
 };
 
@@ -119,7 +134,7 @@ export function createFeedStore() {
       this.isFetched = status;
     },
     setFeed(feed: Feed) {
-      feed.items = feed.items.map(extractFrontMatter);
+      feed.items = feed.items.map(format);
       for (const item of feed.items) {
         const post: any = item;
         this.postMap[post.id] = item;
