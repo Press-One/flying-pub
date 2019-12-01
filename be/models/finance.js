@@ -476,7 +476,7 @@ exports.syncInitializedReceipts = async () => {
         log("超时，不再等待，准备开始下一次");
         resolve();
         stop = true;
-      }, 15 * 1000);
+      }, 3 * 1000);
       let stop = false;
       try {
         let receipts = await Receipt.list({
