@@ -109,11 +109,11 @@ export default observer((props: IProps) => {
       const scrollElement = document.scrollingElement || document.documentElement;
       try {
         scrollElement.scrollTo({
-          top: 9999,
+          top: 99999,
           behavior: 'smooth',
         });
       } catch (err) {
-        scrollElement.scrollTop = 9999;
+        scrollElement.scrollTop = 99999;
       }
     } catch (e) {
       snackbarStore.show({
