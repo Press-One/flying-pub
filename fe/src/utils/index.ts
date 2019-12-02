@@ -91,8 +91,6 @@ export const isPc = !isMobile;
 
 export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
 
-export const isMixin = isMobile;
-
 export const getPostSelector = (postId: string) => {
   return 'post-' + postId.replace(/[^\w]/g, '');
 };

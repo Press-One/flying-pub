@@ -15,7 +15,7 @@ import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
 import Api from './api';
 import WalletApi from 'components/WalletModal/Wallet/api';
-import { sleep, isPc, isMixin, stopBodyScroll, isMobile, isIPhone } from 'utils';
+import { sleep, isPc, stopBodyScroll, isMobile, isIPhone } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 import Tooltip from '@material-ui/core/Tooltip';
 
@@ -40,15 +40,11 @@ export default observer((props: any) => {
     if (step !== 5 && step !== 6) {
       return;
     }
-    const afterRecharge = async (data: any) => {
+    const afterRecharge = () => {
       console.log(` ------------- afterRecharge ---------------`);
       setIframeLoading(true);
-      const { receipt } = data;
-      await Api.reward(fileRId, {
-        currency: receipt.currency,
-        amount: receipt.amount,
-        memo: receipt.memo,
-      });
+    };
+    const afterRechargeThenReward = async () => {
       setIframeLoading(false);
       setStep(step > 1 ? 2 : 1);
       setAmount('');
@@ -66,9 +62,11 @@ export default observer((props: any) => {
     };
     if (isLogin) {
       socketStore.on('recharge', afterRecharge);
+      socketStore.on('recharge_then_reward', afterRechargeThenReward);
     }
     return () => {
       socketStore.off('recharge');
+      socketStore.off('recharge_then_reward');
     };
   }, [step, isLogin, socketStore, fileRId, selectedCurrency, amount, memo, onClose, snackbarStore]);
 
@@ -152,7 +150,7 @@ export default observer((props: any) => {
 
   const getRechargePaymentUrl = async () => {
     try {
-      const { paymentUrl } = await WalletApi.recharge({
+      const { paymentUrl } = await Api.rechargeThenReward(fileRId, {
         amount,
         currency: selectedCurrency,
         memo: memo || `飞帖打赏文章（${process.env.REACT_APP_NAME}）`,
@@ -370,7 +368,7 @@ export default observer((props: any) => {
                   if (payment.enabled) {
                     localStorage.setItem('REWARD_METHOD', payment.method);
                     if (payment.method === 'mixin') {
-                      if (isMixin) {
+                      if (isMobile) {
                         openRechargePaymentUrl();
                       } else {
                         loadRechargePaymentUrl();

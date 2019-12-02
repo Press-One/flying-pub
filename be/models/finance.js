@@ -1,7 +1,5 @@
 const mathjs = require("mathjs");
 const Mixin = require("mixin-node");
-const rfc3339nano = require("rfc3339nano");
-const fs = require("fs");
 const config = require("../config");
 const User = require("./user");
 const Wallet = require("./wallet");
@@ -11,6 +9,7 @@ const Cache = require("./cache");
 const Log = require("./log");
 const Receipt = require("./receipt");
 const Sequelize = require("sequelize");
+const request = require('request-promise');
 const Op = Sequelize.Op;
 const {
   Joi,
@@ -99,6 +98,8 @@ exports.recharge = async (data = {}) => {
     toProviderUserId: wallet.mixinClientId
   });
   assertFault(receipt, Errors.ERR_RECEIPT_FAIL_TO_INIT);
+  Log.create(user.id, `打算充值 ${amount} ${currency} ${memo || ''}`);
+  Log.create(user.id, '获得充值二维码');
   const paymentUrl = getMixinPaymentUrl({
     toMixinClientId: wallet.mixinClientId,
     asset: currencyMapAsset[receipt.currency],
@@ -106,7 +107,10 @@ exports.recharge = async (data = {}) => {
     trace: receipt.uuid,
     memo
   });
-  return paymentUrl;
+  return {
+    uuid: receipt.uuid,
+    paymentUrl
+  };
 };
 
 exports.withdraw = async (data = {}) => {
@@ -324,6 +328,117 @@ exports.getBalanceMap = async userId => {
   return balanceMap;
 };
 
+const payForFile = async (data = {}) => {
+  data.amount = parseAmount(data.amount);
+  data.memo = data.memo || `飞帖打赏文章（${config.serviceName}）`;
+  data = attempt(data, {
+    userId: Joi.number().required(),
+    toAddress: Joi.string()
+      .trim()
+      .required(),
+    fileRId: Joi.string()
+      .trim()
+      .required(),
+    currency: Joi.string()
+      .trim()
+      .required(),
+    amount: Joi.string()
+      .trim()
+      .required(),
+    memo: Joi.string()
+      .trim()
+      .required(),
+    toMixinClientId: Joi.string()
+      .trim()
+      .required()
+  });
+  const {
+    userId,
+    toAddress,
+    fileRId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId
+  } = data;
+  const user = await User.get(userId, {
+    withProfile: true
+  });
+  const fromAddress = user.address;
+  await transferToUser({
+    userId,
+    fromAddress,
+    toAddress,
+    type: "REWARD",
+    objectType: "FILE",
+    objectRId: fileRId,
+    currency,
+    amount,
+    memo,
+    toMixinClientId
+  });
+  await syncRewardAmount(fileRId);
+  return true;
+};
+
+const getAuthorInfoByRId = async rId => {
+  const blocks = await request({
+    uri: `https://press.one/api/v2/blocks/${rId}`,
+    json: true
+  }).promise();
+  const block = blocks[0];
+  const address = block.user_address;
+  const {
+    payment_url
+  } = JSON.parse(block.meta);
+  const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
+  return {
+    address,
+    mixinClientId
+  }
+}
+
+const reward = async (fileRId, data = {}, options = {}) => {
+  const {
+    userId
+  } = options;
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  const {
+    address,
+    mixinClientId
+  } = await getAuthorInfoByRId(fileRId);
+  assert(address, Errors.ERR_IS_REQUIRED('address'));
+  assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
+  Log.create(userId, `开始打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId} ${mixinClientId}`);
+  await payForFile({
+    userId,
+    toAddress: address,
+    fileRId,
+    currency: data.currency,
+    amount: data.amount,
+    memo: data.memo,
+    toMixinClientId: mixinClientId,
+  });
+  Log.create(userId, `完成打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
+}
+exports.reward = reward;
+
+const tryCombo = async uuid => {
+  const combo = await Cache.pGet(`COMBO`, uuid);
+  if (combo) {
+    Log.createAnonymity(
+      "充值完毕，准备打赏",
+      uuid
+    );
+    await reward(combo.meta.fileRId, combo.data, {
+      userId: combo.meta.userId
+    });
+    await Cache.pDel(`COMBO`, uuid);
+    return true;
+  }
+  return false;
+}
+
 const updateReceiptByUuid = async (uuid, data) => {
   assert(data && Object.keys(data).length, Errors.ERR_IS_INVALID("data"));
   assert(data.raw || data.toRaw, Errors.ERR_IS_INVALID("data raw"));
@@ -360,6 +475,12 @@ const updateReceiptByUuid = async (uuid, data) => {
     socketIo.sendToUser(user.id, "recharge", {
       receipt: updatedReceipt
     });
+    const did = await tryCombo(updatedReceipt.uuid);
+    if (did) {
+      socketIo.sendToUser(user.id, "recharge_then_reward", {
+        did
+      });
+    }
   }
   await clearCachedBalance(user.id);
   refreshCachedBalance(user.id);
@@ -674,57 +795,4 @@ const syncRewardAmount = async fileRId => {
   await Post.upsert(fileRId, {
     rewardSummary: JSON.stringify(summary)
   });
-};
-
-exports.payForFile = async (data = {}) => {
-  data.amount = parseAmount(data.amount);
-  data.memo = data.memo || `飞帖打赏文章（${config.serviceName}）`;
-  data = attempt(data, {
-    userId: Joi.number().required(),
-    toAddress: Joi.string()
-      .trim()
-      .required(),
-    fileRId: Joi.string()
-      .trim()
-      .required(),
-    currency: Joi.string()
-      .trim()
-      .required(),
-    amount: Joi.string()
-      .trim()
-      .required(),
-    memo: Joi.string()
-      .trim()
-      .required(),
-    toMixinClientId: Joi.string()
-      .trim()
-      .required()
-  });
-  const {
-    userId,
-    toAddress,
-    fileRId,
-    currency,
-    amount,
-    memo,
-    toMixinClientId
-  } = data;
-  const user = await User.get(userId, {
-    withProfile: true
-  });
-  const fromAddress = user.address;
-  await transferToUser({
-    userId,
-    fromAddress,
-    toAddress,
-    type: "REWARD",
-    objectType: "FILE",
-    objectRId: fileRId,
-    currency,
-    amount,
-    memo,
-    toMixinClientId
-  });
-  await syncRewardAmount(fileRId);
-  return true;
 };

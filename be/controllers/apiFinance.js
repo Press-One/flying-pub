@@ -1,4 +1,3 @@
-const request = require('request-promise');
 const Finance = require('../models/finance');
 const Wallet = require('../models/wallet');
 const Post = require('../models/post')
@@ -9,6 +8,7 @@ const {
   Errors
 } = require('../models/validator');
 const {
+  pSet,
   pTryLock,
   pUnLock
 } = require('../models/cache');
@@ -35,14 +35,14 @@ exports.recharge = async ctx => {
   const key = `RECHARGE_${user.id}`;
   try {
     await assertTooManyRequests(key);
-    const paymentUrl = await Finance.recharge({
+    const {
+      paymentUrl
+    } = await Finance.recharge({
       userId: user.id,
       currency: data.currency,
       amount: data.amount,
       memo: data.memo
     });
-    Log.create(user.id, `打算充值 ${data.amount} ${data.currency} ${data.memo || ''}`);
-    Log.create(user.id, '获得充值二维码');
     ctx.ok({
       paymentUrl
     });
@@ -137,23 +137,6 @@ exports.validatePin = async ctx => {
   ctx.ok(isValid);
 }
 
-const getAuthorInfoByRId = async rId => {
-  const blocks = await request({
-    uri: `https://press.one/api/v2/blocks/${rId}`,
-    json: true
-  }).promise();
-  const block = blocks[0];
-  const address = block.user_address;
-  const {
-    payment_url
-  } = JSON.parse(block.meta);
-  const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-  return {
-    address,
-    mixinClientId
-  }
-}
-
 exports.reward = async ctx => {
   const {
     fileRId
@@ -166,28 +149,52 @@ exports.reward = async ctx => {
   const key = `REWARD_${user.id}`;
   try {
     await assertTooManyRequests(key);
-    const {
-      address,
-      mixinClientId
-    } = await getAuthorInfoByRId(fileRId);
-    assert(address, Errors.ERR_IS_REQUIRED('address'));
-    assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
-    Log.create(user.id, `开始打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId} ${mixinClientId}`);
-    await Finance.payForFile({
-      userId: user.id,
-      toAddress: address,
-      fileRId,
-      currency: data.currency,
-      amount: data.amount,
-      memo: data.memo,
-      toMixinClientId: mixinClientId,
+    await Finance.reward(fileRId, data, {
+      userId: user.id
     });
-    Log.create(user.id, `完成打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
     ctx.ok({
       success: true
     });
   } catch (err) {
     console.log(` ------------- err ---------------`, err);
+    ctx.er(err);
+  } finally {
+    pUnLock(key);
+  }
+}
+
+exports.rechargeThenReward = async ctx => {
+  const {
+    fileRId
+  } = ctx.params;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED('payload'));
+  const {
+    user
+  } = ctx.verification;
+  const key = `RECHARGE_${user.id}`;
+  try {
+    await assertTooManyRequests(key);
+    const {
+      uuid,
+      paymentUrl
+    } = await Finance.recharge({
+      userId: user.id,
+      currency: data.currency,
+      amount: data.amount,
+      memo: data.memo
+    });
+    await pSet(`COMBO`, uuid, {
+      meta: {
+        userId: user.id,
+        fileRId
+      },
+      data
+    });
+    ctx.ok({
+      paymentUrl
+    });
+  } catch (err) {
     ctx.er(err);
   } finally {
     pUnLock(key);

@@ -8,6 +8,7 @@ const {
   isCustomPinExist,
   validatePin,
   reward,
+  rechargeThenReward,
   getRewardSummary
 } = require('../controllers/apiFinance');
 
@@ -23,6 +24,7 @@ router.post('/pin', ensureAuthorization(), updateCustomPin);
 router.get('/pin/exist', ensureAuthorization(), isCustomPinExist);
 router.post('/pin/validate', ensureAuthorization(), validatePin);
 router.post('/reward/:fileRId', ensureAuthorization(), reward);
+router.post('/recharge_then_reward/:fileRId', ensureAuthorization(), rechargeThenReward);
 router.get('/reward/:fileRId', getRewardSummary);
 
 module.exports = router;
