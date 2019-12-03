@@ -3,22 +3,13 @@ const Comment = require('../models/comment');
 const Log = require('../models/log');
 const {
   assert,
-  throws,
   Errors
 } = require('../models/validator');
-const SensitiveWordsDetector = require('../utils/sensitiveWordsDetector');
 
 exports.create = async ctx => {
   const userId = ctx.verification.user.id;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  const hasInvalidWord = SensitiveWordsDetector.check(data.content);
-  if (hasInvalidWord) {
-    throws({
-      code: 400,
-      message: `包含敏感词，请修改后重新发布`
-    })
-  }
   const comment = await Comment.create(userId, data);
   Log.create(userId, `评论文章 ${config.serviceRoot}/posts/${data.objectId}`);
   ctx.body = comment;
