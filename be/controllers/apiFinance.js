@@ -74,7 +74,6 @@ exports.withdraw = async ctx => {
       success: true
     });
   } catch (err) {
-    console.log(` ------------- err ---------------`, err);
     ctx.er(err);
   } finally {
     pUnLock(key);
@@ -156,7 +155,6 @@ exports.reward = async ctx => {
       success: true
     });
   } catch (err) {
-    console.log(` ------------- err ---------------`, err);
     ctx.er(err);
   } finally {
     pUnLock(key);

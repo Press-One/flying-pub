@@ -141,7 +141,7 @@ export default observer(() => {
                 return;
               }
             } catch (err) {
-              console.log(` ------------- err ---------------`, err);
+              console.log(err);
             }
           }
           try {

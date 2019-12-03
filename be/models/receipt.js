@@ -98,13 +98,10 @@ exports.create = async (receipt) => {
   );
   assert(currencyMapAsset[receipt.currency], Errors.ERR_IS_INVALID("currency"));
 
-  console.log(` ------------- receipt.uuid ---------------`, receipt.uuid);
   receipt.uuid = receipt.uuid || uuidV1();
-  console.log(` ------------- 生成 uuid ---------------`, receipt.uuid);
   receipt.objectType = receipt.objectType || "";
 
   const newReceipt = await Receipt.create(receipt);
-  console.log(` ------------- create receipt ---------------`, packReceipt(newReceipt));
   return packReceipt(newReceipt);
 };
 

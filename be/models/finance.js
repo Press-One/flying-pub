@@ -19,6 +19,9 @@ const {
   assertFault
 } = require("./validator");
 const {
+  log
+} = require('../utils');
+const {
   parseAmount,
   currencyMapAsset
 } = Receipt;
@@ -451,7 +454,6 @@ const updateReceiptByUuid = async (uuid, data) => {
   assert(uuid, Errors.ERR_IS_REQUIRED("uuid"));
   const receipt = await Receipt.getByUuid(uuid);
   if (receipt.status === "SUCCESS") {
-    console.log(`这条收据状态已经是 SUCCESS 了, 跳过`);
     return null;
   }
   if (receipt.viewToken) {
@@ -460,7 +462,6 @@ const updateReceiptByUuid = async (uuid, data) => {
   const lockKey = `${config.serviceKey}_UPDATE_RECEIPT_${uuid}`;
   const locked = await Cache.pTryLock(lockKey, 10); // 10s
   if (locked) {
-    console.log('正在更新收据，锁住了，请返回');
     return null;
   }
   await Receipt.updateByUuid(uuid, data);
@@ -526,15 +527,15 @@ const saveSnapshot = async (snapshot) => {
     try {
       updatedReceipt = await updateReceiptByUuid(snapshot.trace_id, receipt);
     } catch (e) {
-      console.log(e);
+      log(e);
     }
   }
   return updatedReceipt;
 };
 
 const syncInitializedReceipt = async receipt => {
-  const log = message => {
-    console.log(`【同步初始化收据队列】 ${message}`);
+  const _log = message => {
+    log(`【同步初始化收据队列】 ${message}`);
   };
   try {
     const date = new Date(receipt.createdAt);
@@ -570,7 +571,7 @@ const syncInitializedReceipt = async receipt => {
           timeoutReceipt.id
         );
       } else {
-        log(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
+        _log(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
       }
     }
     for (const updatedReceipt of updatedReceipts) {
@@ -582,19 +583,19 @@ const syncInitializedReceipt = async receipt => {
       }
     }
   } catch (err) {
-    log(`失败了`);
-    console.log(err);
+    _log(`失败了`);
+    log(err);
   }
 };
 
 exports.syncInitializedReceipts = async () => {
-  const log = message => {
-    console.log(`【同步初始化收据队列】 ${message}`);
+  const _log = message => {
+    log(`【同步初始化收据队列】 ${message}`);
   };
   return new Promise(resolve => {
     (async () => {
       const timerId = setTimeout(() => {
-        log("超时，不再等待，准备开始下一次");
+        _log("超时，不再等待，准备开始下一次");
         resolve();
         stop = true;
       }, 3 * 1000);
@@ -606,10 +607,10 @@ exports.syncInitializedReceipts = async () => {
           }
         });
         if (receipts.length === 0) {
-          log("没有初始化的收据");
+          _log("没有初始化的收据");
           return;
         }
-        log(`初始化收据的总数：${receipts.length}`);
+        _log(`初始化收据的总数：${receipts.length}`);
         const limit = 5;
         while (receipts.length > 0) {
           let tasks = [];
@@ -620,13 +621,13 @@ exports.syncInitializedReceipts = async () => {
             tasks = receipts.slice(0, limit).map(syncInitializedReceipt);
             receipts = receipts.slice(limit);
           }
-          log(`当前请求收据数量：${tasks.length}`);
-          log(`本次剩余收据数量：${receipts.length}`);
+          _log(`当前请求收据数量：${tasks.length}`);
+          _log(`本次剩余收据数量：${receipts.length}`);
           await Promise.all(tasks);
         }
       } catch (err) {
-        log("失败，准备开始下一次");
-        console.log(err);
+        _log("失败，准备开始下一次");
+        log(err);
       }
       clearTimeout(timerId);
       if (stop) {

@@ -113,8 +113,6 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
   if (isPc || isWeChat) {
     return;
   }
-  console.log(` ------------- stoppedBodyScroll ---------------`, stoppedBodyScroll);
-  console.log(` ------------- isFixed ---------------`, isFixed);
   const { disabled } = options;
   const bodyEl = document.body;
   if (disabled) {

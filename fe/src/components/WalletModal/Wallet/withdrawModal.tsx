@@ -105,7 +105,6 @@ export default (props: any) => {
   const onOtpChange = (value: string) => {
     setPin(value);
     if (value.length === 6) {
-      console.log('确认支付');
       setPaying(true);
       setPin('');
       setTimeout(async () => {
@@ -135,7 +134,7 @@ export default (props: any) => {
             });
           }
         } catch (err) {
-          console.log(` ------------- err ---------------`, err);
+          console.log(err);
         }
         setPaying(false);
       }, 500);

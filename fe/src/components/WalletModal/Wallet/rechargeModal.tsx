@@ -62,7 +62,7 @@ export default (props: any) => {
       });
       return paymentUrl;
     } catch (err) {
-      console.log(` ------------- err ---------------`, err);
+      console.log(err);
     }
   };
 
@@ -182,7 +182,6 @@ export default (props: any) => {
             >
               <iframe
                 onLoad={() => {
-                  console.log(` ------------- onLoad ---------------`);
                   setTimeout(() => {
                     setIframeLoading(false);
                   }, 2000);

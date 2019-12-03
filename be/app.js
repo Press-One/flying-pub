@@ -9,6 +9,9 @@ const cors = require('@koa/cors');
 const config = require('./config');
 const session = require('koa-session');
 const fs = require('fs');
+const {
+  log
+} = require('./utils');
 
 const index = require('./routes/index');
 const user = require('./routes/user');
@@ -69,7 +72,7 @@ router.get('/api/session.json', async ctx => {
 app.use(router.routes(), router.allowedMethods());
 
 app.on('error', function (err) {
-  console.log(err)
+  log(err)
 });
 
 app.serverUpCallback = (server) => {

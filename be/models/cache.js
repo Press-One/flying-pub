@@ -5,7 +5,6 @@ let ioredis = require('ioredis');
 let util = require('util');
 const config = require('../config');
 
-let verbose = false;
 let redis;
 
 var getKey = function (type, id, callback) {
@@ -37,9 +36,6 @@ var rawSet = function (type, id, data, options, callback) {
       return callback(err);
     }
     var value = JSON.stringify(data);
-    if (verbose && config.debug) {
-      console.log('Set cache: ' + key + ' = ' + value);
-    }
     var args = [key, value];
     for (var i in options) {
       if (['EX', 'PX'].indexOf(i) !== -1 && options[i]) {
@@ -68,9 +64,6 @@ var del = function (type, id, callback) {
     if (err) {
       return callback(err);
     }
-    if (verbose && config.debug) {
-      console.log('Del cache: ' + key);
-    }
     redis.del(key, callback || function () {});
   });
 };
@@ -79,9 +72,6 @@ let lrem = function (type, id, data, callback) {
   getKey(type, id, function (err, key) {
     if (err) {
       return callback(err);
-    }
-    if (config.debug) {
-      console.log('Del cache by value: ' + data);
     }
     redis.lrem(key, 0, data, callback || function () {});
   });
@@ -102,11 +92,7 @@ var findAndDel = function (type, preStr, callback) {
       return callback(err);
     }
     async.eachSeries(data, function (item, cbf) {
-      // console.log('Clean ' + item);
       redis.del(item, function (err, result) {
-        if (err) {
-          console.log(err);
-        }
         cbf();
       });
     }, function (result) {
@@ -133,11 +119,7 @@ var get = function (type, id, callback) {
       try {
         value = JSON.parse(reply);
       } catch (err) {
-        console.log(err);
         return callback(err);
-      }
-      if (verbose && config.debug) {
-        console.log('Get cache: ' + key + ' = ' + reply);
       }
       callback(null, value);
     });
@@ -165,9 +147,6 @@ var mGet = function (type, ids, callback) {
           values.push(value);
         }
       }
-      if (verbose && config.debug) {
-        console.log('Get cache: ' + keys + ' = ' + reply);
-      }
       callback(null, values);
     });
   });
@@ -177,9 +156,6 @@ let rawPush = (type, id, left, values, callback) => {
   getKey(type, id, (err, key) => {
     if (err) {
       return callback(err);
-    }
-    if (verbose && config.debug) {
-      console.log(`RPUSH ${value} to ${key}`);
     }
     callback = callback || function () {};
     left ? redis.lpush(key, values, callback) :
@@ -201,9 +177,6 @@ let lRange = (type, id, start, stop, callback) => {
       return callback(err);
     }
     redis.lrange(key, start, stop, (err, reply) => {
-      if (verbose && config.debug) {
-        console.log('Get list: ' + key + ' = ' + reply);
-      }
       callback(err, reply);
     });
   });

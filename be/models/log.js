@@ -2,6 +2,9 @@ const request = require('request-promise');
 const User = require('./user');
 const Log = require('./sequelize/log');
 const config = require('../config');
+const {
+  log
+} = require('../utils');
 
 exports.create = async (userId, message) => {
   const user = await User.get(userId, {
@@ -16,7 +19,7 @@ exports.create = async (userId, message) => {
     try {
       sendToBot(data);
     } catch (e) {
-      console.log(e);
+      log(e);
     }
   }
 }
@@ -31,7 +34,7 @@ exports.createAnonymity = async (identity, message) => {
     try {
       sendToBot(data);
     } catch (e) {
-      console.log(e);
+      log(e);
     }
   }
 }

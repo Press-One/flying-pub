@@ -85,7 +85,6 @@ const generateWallet = async userId => {
     avatar_base64: config.logoBase64
   }, updateOptions);
   assertFault(mxProfileRaw, Errors.ERR_WALLET_FAIL_TO_UPDATE_AVATAR);
-  console.log(`${user.id}: 初始化钱包成功`);
 
   return aesCryptoWallet(wallet);
 };
@@ -110,7 +109,6 @@ exports.tryCreateWallet = async (userId) => {
   const existedWallet = await getByUserId(userId);
 
   if (existedWallet) {
-    console.log(`${userId}： 钱包已存在，无需初始化`);
     return user;
   }
 
@@ -152,8 +150,6 @@ exports.validatePin = async (userId, pinCode) => {
   const wallet = await getByUserId(userId);
   if (wallet.customPin) {
     const cryptoPin = aesCrypto(pinCode, config.aesKey256);
-    console.log(` ------------- wallet.customPin ---------------`, wallet.customPin);
-    console.log(` ------------- cryptoPin ---------------`, cryptoPin);
     return wallet.customPin === cryptoPin;
   }
   return false;

@@ -41,7 +41,6 @@ export default observer((props: any) => {
       return;
     }
     const afterRecharge = () => {
-      console.log(` ------------- afterRecharge ---------------`);
       setIframeLoading(true);
     };
     const afterRechargeThenReward = async () => {
@@ -104,7 +103,6 @@ export default observer((props: any) => {
   const onOtpChange = (value: string) => {
     setPin(value);
     if (value.length === 6) {
-      console.log('确认支付');
       setPaying(true);
       setPin('');
       setTimeout(async () => {
@@ -137,7 +135,7 @@ export default observer((props: any) => {
             });
           }
         } catch (err) {
-          console.log(` ------------- err ---------------`, err);
+          console.log(err);
           snackbarStore.show({
             message: '打赏失败了，请重试一下',
             type: 'error',
@@ -155,10 +153,9 @@ export default observer((props: any) => {
         currency: selectedCurrency,
         memo: memo || `飞帖打赏文章（${process.env.REACT_APP_NAME}）`,
       });
-      console.log(` ------------- paymentUrl ---------------`, paymentUrl);
       return paymentUrl;
     } catch (err) {
-      console.log(` ------------- err ---------------`, err);
+      console.log(err);
     }
   };
 

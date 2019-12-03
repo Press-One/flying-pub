@@ -66,7 +66,7 @@ export default observer((props: any) => {
           setToAddress(toAddress);
           setAuthorMixinClientId(mixinClientId);
         } catch (err) {
-          console.log(` ------------- err ---------------`, err);
+          console.log(err);
         }
       }
     })();

@@ -44,7 +44,7 @@ export default {
       const parser = new Parser();
       await parser.parseString(safeText);
     } catch (err) {
-      console.log(` ------------- err ---------------`, err);
+      console.log(err);
     }
     const parser = new Parser();
     const result = await parser.parseString(safeText);
