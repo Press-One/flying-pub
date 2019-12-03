@@ -168,14 +168,12 @@ const login = async (ctx, user, provider) => {
     const {
       userId
     } = insertedProfile;
-    const wallet = await Wallet.getByUserId(userId, {
-      isRaw: true
-    });
-    if (!wallet) {
+    const walletExists = await Wallet.exists(userId);
+    if (walletExists) {
+      Log.create(userId, `钱包已存在，无需初始化`);
+    } else {
       await Wallet.tryCreateWallet(userId);
       Log.create(userId, `钱包不存在，初始化成功`);
-    } else {
-      Log.create(userId, `钱包已存在，无需初始化`);
     }
   }
 

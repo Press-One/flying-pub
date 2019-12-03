@@ -83,9 +83,8 @@ exports.recharge = async (data = {}) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
   assert(currency, Errors.ERR_IS_REQUIRED("currency"));
   assert(amount, Errors.ERR_IS_REQUIRED("amount"));
-  const wallet = await Wallet.getByUserId(userId);
-  assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
-  assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
+  const mixinClientId = await Wallet.getMixinClientIdByUserId(userId);
+  assertFault(mixinClientId, Errors.ERR_WALLET_STATUS);
   const user = await User.get(userId, {
     withProfile: true
   });
@@ -98,13 +97,13 @@ exports.recharge = async (data = {}) => {
     status: "INITIALIZED",
     provider: "MIXIN",
     memo,
-    toProviderUserId: wallet.mixinClientId
+    toProviderUserId: mixinClientId
   });
   assertFault(receipt, Errors.ERR_RECEIPT_FAIL_TO_INIT);
   Log.create(user.id, `打算充值 ${amount} ${currency} ${memo || ''}`);
   Log.create(user.id, '获得充值二维码');
   const paymentUrl = getMixinPaymentUrl({
-    toMixinClientId: wallet.mixinClientId,
+    toMixinClientId: mixinClientId,
     asset: currencyMapAsset[receipt.currency],
     amount: parseAmount(amount),
     trace: receipt.uuid,
@@ -126,7 +125,8 @@ exports.withdraw = async (data = {}) => {
     memo = "飞帖提现"
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
-  const wallet = await Wallet.getByUserId(userId);
+  const wallet = await Wallet.getRawByUserId(userId);
+  console.log(` ------------- wallet ---------------`, wallet);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
   // @todo: 检查最大交易限额
@@ -254,7 +254,7 @@ const transfer = async (data = {}) => {
 
 const getBalanceByUserId = async (userId, currency) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
-  const wallet = await Wallet.getByUserId(userId);
+  const wallet = await Wallet.getRawByUserId(userId);
   const resp = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -689,7 +689,7 @@ const transferToUser = async (data = {}) => {
     memo,
     toMixinClientId
   } = data;
-  const wallet = await Wallet.getByUserId(userId);
+  const wallet = await Wallet.getRawByUserId(userId);
   const tfRaw = await transfer({
     currency,
     toMixinClientId,
@@ -761,7 +761,7 @@ const createRewardReceipt = async (data = {}) => {
     Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
     402
   );
-  const wallet = await Wallet.getByUserId(userId);
+  const mixinClientId = await Wallet.getMixinClientIdByUserId(userId);
   const receipt = await Receipt.create({
     fromAddress: fromAddress,
     toAddress: toAddress,
@@ -773,7 +773,7 @@ const createRewardReceipt = async (data = {}) => {
     status: "INITIALIZED",
     provider: "MIXIN",
     memo,
-    fromProviderUserId: wallet.mixinClientId,
+    fromProviderUserId: mixinClientId,
     toProviderUserId: toMixinClientId
   });
   assertFault(receipt, Errors.ERR_WALLET_FAIL_TO_CREATE_REWARD_RECEIPT);

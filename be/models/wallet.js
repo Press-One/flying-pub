@@ -89,21 +89,43 @@ const generateWallet = async userId => {
   return aesCryptoWallet(wallet);
 };
 
-const getByUserId = async (userId, options = {}) => {
-  const {
-    isRaw
-  } = options;
+exports.exists = async userId => {
   const wallet = await Wallet.findOne({
     where: {
       userId
     }
   });
-  if (isRaw) {
-    return wallet ? wallet.toJSON() : null;
-  }
+  return !!wallet;
+}
+
+const getByUserId = async userId => {
+  const wallet = await Wallet.findOne({
+    where: {
+      userId
+    }
+  });
+  return wallet ? wallet.toJSON() : null;
+}
+
+exports.getMixinClientIdByUserId = async userId => {
+  const wallet = await getByUserId(userId);
+  return wallet ? wallet.mixinClientId : null;
+}
+
+const getCustomPinByUserId = async userId => {
+  const wallet = await getByUserId(userId);
+  return wallet ? wallet.customPin : null;
+}
+exports.getCustomPinByUserId = getCustomPinByUserId;
+
+exports.getRawByUserId = async userId => {
+  const wallet = await Wallet.findOne({
+    where: {
+      userId
+    }
+  });
   return wallet ? aesDecryptWallet(wallet.toJSON()) : null;
 }
-exports.getByUserId = getByUserId;
 
 exports.tryCreateWallet = async (userId) => {
   const existedWallet = await getByUserId(userId);
@@ -124,14 +146,14 @@ exports.tryCreateWallet = async (userId) => {
 exports.updateCustomPin = async (userId, pinCode, options = {}) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
-  const wallet = await getByUserId(userId);
-  if (wallet.customPin) {
+  const customPin = await getCustomPinByUserId(userId);
+  if (customPin) {
     const {
       oldPinCode
     } = options;
     assert(oldPinCode, Errors.ERR_IS_REQUIRED('oldPinCode'))
     const cryptoOldPin = aesCrypto(oldPinCode, config.aesKey256);
-    assert(wallet.customPin === cryptoOldPin, Errors.ERR_WALLET_MISMATCH_PIN);
+    assert(customPin === cryptoOldPin, Errors.ERR_WALLET_MISMATCH_PIN);
   }
   const cryptoPin = aesCrypto(pinCode, config.aesKey256);
   await Wallet.update({
@@ -147,10 +169,10 @@ exports.updateCustomPin = async (userId, pinCode, options = {}) => {
 exports.validatePin = async (userId, pinCode) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
-  const wallet = await getByUserId(userId);
-  if (wallet.customPin) {
+  const customPin = await getCustomPinByUserId(userId);
+  if (customPin) {
     const cryptoPin = aesCrypto(pinCode, config.aesKey256);
-    return wallet.customPin === cryptoPin;
+    return customPin === cryptoPin;
   }
   return false;
 }

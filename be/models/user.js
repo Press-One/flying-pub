@@ -19,7 +19,6 @@ const packUser = async (user, options = {}) => {
 
   const {
     withProfile,
-    withWallet,
     withKeys
   } = options;
 
@@ -39,17 +38,7 @@ const packUser = async (user, options = {}) => {
     }
   }
 
-  const wallet = await Wallet.getByUserId(user.id);
-  if (withWallet) {
-    assert(wallet, Errors.ERR_NOT_FOUND('wallet'));
-    derivedUser = {
-      ...derivedUser,
-      ...wallet
-    }
-  }
-  if (wallet) {
-    derivedUser.mixinWalletClientId = wallet.mixinClientId;
-  }
+  derivedUser.mixinWalletClientId = await Wallet.getMixinClientIdByUserId(user.id);
 
   if (withKeys) {
     derivedUser.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.aesKey256);
@@ -120,13 +109,6 @@ exports.update = async (userId, data) => {
   return true;
 }
 
-exports.hasWallet = async (userId) => {
-  const user = await exports.get(userId, {
-    withWallet: true
-  });
-  return !!user.mixinClientId;
-};
-
 exports.get = async (id, options) => {
   return await get({
     id
@@ -141,7 +123,6 @@ exports.getByAddress = async (address, options) => {
 
 const get = async (query = {}, options = {}) => {
   const {
-    withWallet,
     withKeys,
     withProfile,
   } = options;
@@ -152,7 +133,6 @@ const get = async (query = {}, options = {}) => {
     return null;
   }
   const derivedUser = await packUser(user.toJSON(), {
-    withWallet,
     withKeys,
     withProfile,
   });

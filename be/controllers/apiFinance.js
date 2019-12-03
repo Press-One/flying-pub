@@ -118,8 +118,8 @@ exports.isCustomPinExist = async ctx => {
   const {
     user
   } = ctx.verification;
-  const wallet = await Wallet.getByUserId(user.id);
-  ctx.ok(!!wallet.customPin);
+  const customPin = await Wallet.getCustomPinByUserId(user.id);
+  ctx.ok(!!customPin);
 }
 
 exports.validatePin = async ctx => {
