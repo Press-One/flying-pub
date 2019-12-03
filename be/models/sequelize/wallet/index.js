@@ -38,7 +38,10 @@ const Wallet = sequelize.define('wallets', {
   },
   mixinAccount: {
     type: Sequelize.TEXT
-  }
+  },
+  version: {
+    type: Sequelize.TINYINT(1),
+  },
 }, {
   timestamps: true,
   charset: 'utf8mb4'

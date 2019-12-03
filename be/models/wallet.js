@@ -1,6 +1,7 @@
 const Mixin = require('mixin-node');
 const util = require('../utils');
 const config = require('../config');
+const walletConfig = require('../wallet.config');
 const Wallet = require('./sequelize/wallet');
 const User = require('./user');
 const {
@@ -21,12 +22,22 @@ const mixin = new Mixin({
   privatekey: config.mixin.privateKeyFilePath
 });
 
+const getNumberByMixinClientId = mixinClientId => {
+  let str = '';
+  for (const char of mixinClientId) {
+    if (/\d/.test(char) && String(Number(str)).length < 6) {
+      str += char;
+    }
+  }
+  return Number(str);
+}
+
 const aesCryptoWallet = data => {
-  data.mixinAesKey = aesCrypto(data.mixinAesKey, config.aesKey256);
-  data.mixinPin = aesCrypto(data.mixinPin, config.aesKey256);
-  data.mixinSessionId = aesCrypto(data.mixinSessionId, config.aesKey256);
-  data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, config.aesKey256);
-  data.mixinAccount = aesCrypto(JSON.stringify(data.mixinAccount), config.aesKey256);
+  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt;
+  data.mixinAesKey = aesCrypto(data.mixinAesKey, config.aesKey256, counterInitialValue);
+  data.mixinSessionId = aesCrypto(data.mixinSessionId, config.aesKey256, counterInitialValue);
+  data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, config.aesKey256, counterInitialValue);
+  data.mixinAccount = aesCrypto(JSON.stringify(data.mixinAccount), config.aesKey256, counterInitialValue);
   return data;
 };
 
@@ -34,11 +45,12 @@ const aesDecryptWallet = data => {
   if (!data.mixinAccount) {
     return data;
   }
-  data.mixinAesKey = aesDecrypt(data.mixinAesKey, config.aesKey256);
-  data.mixinPin = aesDecrypt(data.mixinPin, config.aesKey256);
-  data.mixinSessionId = aesDecrypt(data.mixinSessionId, config.aesKey256);
-  data.mixinPrivateKey = aesDecrypt(data.mixinPrivateKey, config.aesKey256);
-  data.mixinAccount = JSON.parse(aesDecrypt(data.mixinAccount, config.aesKey256));
+  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt : 5;
+  data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, config.aesKey256, counterInitialValue);
+  data.mixinAesKey = aesDecrypt(data.mixinAesKey, config.aesKey256, counterInitialValue);
+  data.mixinSessionId = aesDecrypt(data.mixinSessionId, config.aesKey256, counterInitialValue);
+  data.mixinPrivateKey = aesDecrypt(data.mixinPrivateKey, config.aesKey256, counterInitialValue);
+  data.mixinAccount = JSON.parse(aesDecrypt(data.mixinAccount, config.aesKey256, counterInitialValue));
   return data;
 };
 
@@ -78,7 +90,8 @@ const generateWallet = async userId => {
     mixinPin: pin,
     mixinSessionId: mxRaw.data.session_id,
     mixinPrivateKey: mxRaw.privatekey,
-    mixinAccount: mxRaw
+    mixinAccount: mxRaw,
+    version: 1,
   };
   // 更新 1px 的透明图片
   let mxProfileRaw = await mixin.account.updateProfile({
