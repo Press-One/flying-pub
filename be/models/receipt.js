@@ -35,6 +35,20 @@ const currencyMapAsset = {
 
 exports.currencyMapAsset = currencyMapAsset;
 
+const maxAmount = {
+  CNB: 1000000,
+  BTC: 0.01,
+  ETH: 0.1,
+  EOS: 10,
+  BOX: 20,
+  PRS: 1000,
+  XIN: 0.1,
+};
+
+const checkMaxAmount = (amount, currency) => {
+  return Number(amount) <= maxAmount[currency];
+}
+
 const packReceipt = receipt => {
   return receipt.toJSON();
 }
@@ -91,6 +105,7 @@ exports.create = async (receipt) => {
 
   receipt.amount = parseAmount(receipt.amount);
   assert(receipt.amount, Errors.ERR_IS_INVALID("amount"));
+  assert(checkMaxAmount(receipt.amount, receipt.currency), Errors.ERR_WALLET_GT_MAX_AMOUNT);
   assert(transferTypes.has(receipt.type), Errors.ERR_IS_INVALID("type"));
   assert(
     !receipt.objectType || transferObjectTypes.has(receipt.objectType),

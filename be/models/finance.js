@@ -126,10 +126,8 @@ exports.withdraw = async (data = {}) => {
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
   const wallet = await Wallet.getRawByUserId(userId);
-  console.log(` ------------- wallet ---------------`, wallet);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
-  // @todo: 检查最大交易限额
   const asset = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -754,7 +752,6 @@ const createRewardReceipt = async (data = {}) => {
     memo,
     toMixinClientId
   } = data;
-  // @todo: 检查最大交易限额
   const balance = await getBalanceByUserId(userId, currency);
   assert(
     mathjs.larger(balance, amount) || mathjs.equal(balance, amount),

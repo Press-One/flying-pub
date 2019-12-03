@@ -56,6 +56,7 @@ const errors = {
   ERR_WALLET_FAIL_TO_CREATE_WITHDRAW_RECEIPT: 'Error creating withdraw receipt.',
   ERR_WALLET_FAIL_TO_CREATE_REWARD_RECEIPT: 'Error creating reward receipt.',
   ERR_WALLET_MISMATCH_PIN: 'Error mismatching pin.',
+  ERR_WALLET_GT_MAX_AMOUNT: 'Error greater than max amount.',
 };
 
 const codes = Object.keys(errors);

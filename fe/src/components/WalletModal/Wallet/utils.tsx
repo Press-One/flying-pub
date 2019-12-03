@@ -21,11 +21,11 @@ export const getPostsSiteDomain = () => {
 const maxAmount: any = {
   CNB: 1000000,
   BTC: 0.01,
-  ETH: 1,
+  ETH: 0.1,
   EOS: 10,
-  BOX: 100,
+  BOX: 20,
   PRS: 1000,
-  XIN: 10,
+  XIN: 0.1,
 };
 
 export const checkAmount = (amount: string, currency: string, balance?: any) => {
