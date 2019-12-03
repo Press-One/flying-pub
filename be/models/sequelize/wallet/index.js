@@ -1,5 +1,11 @@
+const config = require('../../../wallet.config');
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const db = config.db;
+
+const sequelize = new Sequelize(db.database, db.user, db.password, {
+  host: db.host,
+  dialect: db.dialect
+});
 
 const Wallet = sequelize.define('wallets', {
   id: {
