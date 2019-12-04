@@ -1,4 +1,4 @@
-const config = require('../../../wallet.config');
+const config = require('../../../config.wallet');
 const Sequelize = require('sequelize');
 const db = config.db;
 

@@ -1,7 +1,7 @@
 const Mixin = require('mixin-node');
 const util = require('../utils');
 const config = require('../config');
-const walletConfig = require('../wallet.config');
+const walletConfig = require('../config.wallet');
 const Wallet = require('./sequelize/wallet');
 const User = require('./user');
 const {
