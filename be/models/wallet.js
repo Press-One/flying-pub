@@ -105,7 +105,6 @@ const generateWallet = async userId => {
 const getByUserId = async userId => {
   const wallet = await Wallet.findOne({
     where: {
-      type: config.serviceKey,
       userId
     }
   });
@@ -142,7 +141,6 @@ exports.tryCreateWallet = async (userId) => {
 
   const walletData = await generateWallet(userId);
   const wallet = await Wallet.create({
-    type: config.serviceKey,
     userId,
     ...walletData
   });
