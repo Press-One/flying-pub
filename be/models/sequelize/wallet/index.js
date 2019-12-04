@@ -13,9 +13,11 @@ const Wallet = sequelize.define('wallets', {
     primaryKey: true,
     autoIncrement: true
   },
+  type: {
+    type: Sequelize.STRING(24)
+  },
   userId: {
-    type: Sequelize.BIGINT,
-    unique: true
+    type: Sequelize.BIGINT
   },
   customPin: {
     type: Sequelize.STRING,
