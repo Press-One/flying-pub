@@ -86,7 +86,6 @@ exports.oauthCallback = async (ctx, next) => {
   assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
   const profile = providerGetter[provider](user);
-  Log.createAnonymity(profile.id, `登陆 oauth 成功`);
   const hasPermission = await checkPermission(provider, profile);
   const noPermission = !hasPermission;
   if (noPermission) {
