@@ -126,6 +126,7 @@ exports.withdraw = async (data = {}) => {
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
   const wallet = await Wallet.getRawByUserId(userId);
+  Log.create(userId, `钱包版本 ${wallet.version}`);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
   const asset = await getAsset({
@@ -688,6 +689,7 @@ const transferToUser = async (data = {}) => {
     toMixinClientId
   } = data;
   const wallet = await Wallet.getRawByUserId(userId);
+  Log.create(userId, `钱包版本 ${wallet.version}`);
   const tfRaw = await transfer({
     currency,
     toMixinClientId,
