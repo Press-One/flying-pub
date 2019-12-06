@@ -7,10 +7,13 @@ import BackButton from 'components/BackButton';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
 import ButtonOutlined from 'components/ButtonOutlined';
+import DrawerModal from 'components/DrawerModal';
 import Fade from '@material-ui/core/Fade';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import ThumbUp from '@material-ui/icons/ThumbUp';
+import Done from '@material-ui/icons/VerifiedUser';
 import Badge from '@material-ui/core/Badge';
+import Tooltip from '@material-ui/core/Tooltip';
 import classNames from 'classnames';
 import { getPostId } from 'store/feed';
 import RewardSummary from './rewardSummary';
@@ -39,12 +42,15 @@ export default observer((props: any) => {
   const [showImage, setShowImage] = React.useState(false);
   const [imgSrc, setImgSrc] = React.useState('');
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
+  const [openPrsIdentityModal, setOpenPrsIdentityModal] = React.useState(false);
   const [isFetchedReward, setIsFetchedReward] = React.useState(false);
+  const [preloadPrsIdentityIframe, setPreloadPrsIdentityIframe] = React.useState(false);
   const [toAddress, setToAddress] = React.useState('');
   const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
   const { postId } = props.match.params;
+  const prsIdentityUrl = `https://press.one/public/file/v?rId=${postId}`;
 
   React.useEffect(() => {
     if (post && post.id === postId) {
@@ -89,6 +95,8 @@ export default observer((props: any) => {
       if (isFetchedFeed && (!onlyForLogin() || isLogin)) {
         await sleep(800);
         setPending(false);
+        await sleep(2000);
+        setPreloadPrsIdentityIframe(true);
       }
     })();
   }, [isFetchedFeed, isLogin]);
@@ -191,7 +199,7 @@ export default observer((props: any) => {
     }
     return (
       <div>
-        <div className="text-center pb-6 md:mt-5">
+        <div className="text-center pb-6 md:pb-8 md:mt-5">
           <div className="hidden md:block">
             <Button onClick={reward}>赞赏</Button>
           </div>
@@ -284,6 +292,82 @@ export default observer((props: any) => {
     );
   };
 
+  const showPrsIdentityModal = (e: any) => {
+    if (isMobile) {
+      e.preventDefault();
+    }
+    setOpenPrsIdentityModal(true);
+  };
+
+  const prsIdentityView = () => {
+    const content = () => (
+      <a
+        href={prsIdentityUrl}
+        target="_blank"
+        className="flex justify-center items-center text-lg text-white rounded leading-none bg-gray overflow-hidden"
+        onClick={showPrsIdentityModal}
+      >
+        <div className="px-2">
+          <Done />
+        </div>
+        <div className="bg-green py px-2 text-xs font-bold">PRESS.one 认证</div>
+        <style jsx>{`
+          .bg-gray {
+            background: #888;
+          }
+          .bg-green {
+            background: #a5ce48;
+          }
+          .py {
+            padding-top: 10px;
+            padding-bottom: 10px;
+          }
+        `}</style>
+      </a>
+    );
+    return (
+      <div className="flex justify-center mt-3 pb-8">
+        {isMobile ? (
+          content()
+        ) : (
+          <Tooltip placement="top" title="点击查看这篇文章在 PRESS.one 链上的认证信息">
+            {content()}
+          </Tooltip>
+        )}
+      </div>
+    );
+  };
+
+  const prsIdentityIframeView = () => {
+    return (
+      <iframe
+        className="hidden"
+        title="press.one 认证"
+        src={`${prsIdentityUrl}&standalone=1`}
+      ></iframe>
+    );
+  };
+
+  const prsIdentityModal = () => {
+    return (
+      <DrawerModal
+        open={openPrsIdentityModal}
+        onClose={() => setOpenPrsIdentityModal(false)}
+        darkMode
+      >
+        <div>
+          <iframe title="press.one 认证" src={`${prsIdentityUrl}&standalone=1`}></iframe>
+          <style jsx>{`
+            iframe {
+              width: 100vw;
+              height: 90vh;
+            }
+          `}</style>
+        </div>
+      </DrawerModal>
+    );
+  };
+
   const { postExtraMap } = feedStore;
   const extra: any = postExtraMap[getPostId(post)] || {};
 
@@ -338,6 +422,8 @@ export default observer((props: any) => {
             </div>
           }
         </div>
+        {prsIdentityView()}
+        {preloadPrsIdentityIframe && prsIdentityIframeView()}
         {isMobile && (
           <div className="flex items-center justify-center pt-5">
             {authorMixinClientId && (
@@ -355,6 +441,7 @@ export default observer((props: any) => {
         {authorMixinClientId && RewardView()}
         {!authorMixinClientId && <div className="pt-6" />}
         {CommentView()}
+        {isMobile && prsIdentityModal()}
         <RewardModal
           open={openRewardModal}
           onClose={onCloseRewardModal}
