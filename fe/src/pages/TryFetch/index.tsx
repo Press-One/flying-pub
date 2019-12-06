@@ -68,9 +68,9 @@ export default observer((props: any) => {
   return (
     <div>
       <ConfirmDialog
-        content="阅读文章之前要先登陆一下哦"
+        content="阅读文章之前要先登录一下哦"
         open={showConfirmDialog}
-        okText="前往登陆"
+        okText="前往登录"
         cancel={() => {}}
         ok={modalStore.openLogin}
       />

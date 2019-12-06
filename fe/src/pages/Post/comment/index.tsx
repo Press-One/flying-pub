@@ -229,7 +229,7 @@ export default observer((props: IProps) => {
               <div className="text-gray-600 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
                 评论之前请先
                 <span className="text-blue-400 cursor-pointer" onClick={modalStore.openLogin}>
-                  登陆
+                  登录
                 </span>
               </div>
             )}

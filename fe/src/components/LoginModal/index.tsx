@@ -17,11 +17,11 @@ export default observer(() => {
     return (
       <div>
         <div className="p-8 bg-white md:rounded text-center main">
-          <div className="text-lg font-bold text-gray-700 leading-none">登陆</div>
+          <div className="text-lg font-bold text-gray-700 leading-none">登录</div>
           <div className="mt-4 text-gray-700">
-            您需要使用 Mixin App 登陆
+            您需要使用 Mixin App 登录
             <br className="mt-2" />
-            {isPc && '下一步你将跳转到 Mixin 登陆页'}
+            {isPc && '下一步你将跳转到 Mixin 登录页'}
             {isWeChat && <span className="font-bold">如果你已经安装了 Mixin App</span>}
             {isWeChat && (
               <div className="w-40 m-auto mt-3">
@@ -72,7 +72,7 @@ export default observer(() => {
               <a href={getLoginUrl()}>
                 <Button>
                   使用<span className="mx-1"> Mixin </span>
-                  <span className="hidden md:inline-block">扫码</span>登陆
+                  <span className="hidden md:inline-block">扫码</span>登录
                 </Button>
               </a>
             </div>

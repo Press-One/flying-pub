@@ -82,7 +82,7 @@ export default observer(() => {
                       }
                     }}
                   >
-                    登陆
+                    登录
                   </div>
                   <div
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
@@ -197,7 +197,7 @@ export default observer(() => {
                         <span className="flex items-center text-xl mr-2">
                           <AccountCircle />
                         </span>{' '}
-                        登陆
+                        登录
                         <span className="pr-2" />
                       </div>
                     </MenuItem>

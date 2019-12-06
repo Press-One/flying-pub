@@ -55,7 +55,7 @@ export default (props: any) => {
           <div className="text-sm">
             转给 <span className="font-bold mr-1">{mixinAccount.full_name}</span>
           </div>{' '}
-          <Tooltip placement="right" title="你当前登陆的 Mixin 账号">
+          <Tooltip placement="right" title="你当前登录的 Mixin 账号">
             <Help className="text-gray-600" />
           </Tooltip>
         </div>

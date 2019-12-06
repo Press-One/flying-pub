@@ -163,7 +163,7 @@ const login = async (ctx, user, provider) => {
     Log.create(user.id, `钱包不存在，初始化成功`);
   } else {
     insertedProfile = await Profile.get(profile.id);
-    Log.create(insertedProfile.userId, `登陆成功`);
+    Log.create(insertedProfile.userId, `登录成功`);
     const {
       userId
     } = insertedProfile;
