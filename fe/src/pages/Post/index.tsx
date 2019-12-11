@@ -304,6 +304,7 @@ export default observer((props: any) => {
       <a
         href={prsIdentityUrl}
         target="_blank"
+        rel="noopener noreferrer"
         className="flex justify-center items-center text-lg text-white rounded leading-none bg-gray overflow-hidden"
         onClick={showPrsIdentityModal}
       >
