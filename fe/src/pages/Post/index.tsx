@@ -20,7 +20,7 @@ import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, onlyForLogin, stopBodyScroll } from 'utils';
+import { ago, isPc, isMobile, sleep, onlyForLogin } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 
@@ -296,7 +296,6 @@ export default observer((props: any) => {
     if (isMobile) {
       e.preventDefault();
     }
-    stopBodyScroll(true);
     setOpenPrsIdentityModal(true);
   };
 
@@ -353,10 +352,7 @@ export default observer((props: any) => {
     return (
       <DrawerModal
         open={openPrsIdentityModal}
-        onClose={() => {
-          stopBodyScroll(false);
-          setOpenPrsIdentityModal(false);
-        }}
+        onClose={() => setOpenPrsIdentityModal(false)}
         darkMode
       >
         <div>
