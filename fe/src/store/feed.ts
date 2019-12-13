@@ -78,7 +78,7 @@ const getHotPoint = (postExtra: any) => {
   if (!postExtra) {
     return 0;
   }
-  const point = postExtra.upVotesCount + postExtra.commentsCount * 0.6;
+  const point = ~~postExtra.upVotesCount + ~~postExtra.commentsCount * 0.6;
   return point;
 };
 
