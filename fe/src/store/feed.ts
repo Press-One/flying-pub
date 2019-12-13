@@ -1,5 +1,6 @@
 import fm from 'front-matter';
 import removeMd from 'remove-markdown';
+import moment from 'moment';
 
 export interface Feed {
   description: string;
@@ -32,22 +33,16 @@ export const getPostId = (post: Post): string => {
   return post.guid || post.id || '';
 };
 
-const findByPostId = (postId: string) => {
-  return (post: Post) => {
-    return getPostId(post) === postId;
-  };
-};
-
 const getPagePosts = (posts: Post[], length: number) => {
   return posts.slice(0, length);
 };
 
-const getUniquePosts = (aPost: Post, posts: Post[]) => {
-  const filteredPosts: Post[] = posts.filter((post: Post) => {
-    return getPostId(post) !== getPostId(aPost);
+const getUniqueIds = (id: string, ids: any = []) => {
+  const uniqueIds: any = ids.filter((_id: string) => {
+    return _id !== id;
   });
-  filteredPosts.unshift(aPost);
-  return filteredPosts;
+  uniqueIds.unshift(id);
+  return uniqueIds;
 };
 
 const extractFrontMatter = (post: Post): Post => {
@@ -73,9 +68,29 @@ const format = (post: Post): Post => {
   return post;
 };
 
-const sortByPubDate = (posts: Post[]) => {
-  return posts.sort((p1: any, p2: any) => {
-    return new Date(p2.pubDate).getTime() - new Date(p1.pubDate).getTime();
+const sortByPubDate = (ids: Post[], postMap: any) => {
+  return ids.sort((id1: any, id2: any) => {
+    return new Date(postMap[id2].pubDate).getTime() - new Date(postMap[id1].pubDate).getTime();
+  });
+};
+
+const getHotPoint = (postExtra: any) => {
+  if (!postExtra) {
+    return 0;
+  }
+  const point = postExtra.upVotesCount + postExtra.commentsCount * 0.6;
+  return point;
+};
+
+const sortByHotPoint = (ids: Post[], postExtraMap: any) => {
+  return ids.sort((id1: any, id2: any) => {
+    return getHotPoint(postExtraMap[id2]) - getHotPoint(postExtraMap[id1]);
+  });
+};
+
+const filterPostsByDiffDays = (ids: [], postMap: any, diffDays: number) => {
+  return ids.filter((id: string) => {
+    return moment().diff(moment(postMap[id].pubDate), 'days') <= diffDays;
   });
 };
 
@@ -91,6 +106,16 @@ const getFeedInfo = (): FeedInfo => {
   };
 };
 
+const getPostsByIds = (ids: any = [], postMap: any) => {
+  return ids.map((id: string) => getPostById(id, postMap));
+};
+
+const getPostById = (id: string, postMap: any) => postMap[id];
+
+const findId = (ids: any = [], id: string) => {
+  return ids.find((_id: string) => _id === id);
+};
+
 export function createFeedStore() {
   let feed: Feed = {
     description: '',
@@ -104,52 +129,67 @@ export function createFeedStore() {
   const postMap: any = {};
   let prePushedPost: any;
   const postExtraMap: any = {};
+  const ids: any = [];
+  let enabledHotSort = true;
+  let cachedLastFilteredIds: any = [];
   return {
     feed,
+    ids,
+    order: 'HOT',
+    diffDays: 3,
     postMap,
-    isFetched: false,
+    isFetchedFeed: false,
+    isFetchedExtra: false,
     rssUrl: '',
     per: 10,
     page: 1,
     postId: '',
     prePushedPost,
     postExtraMap,
-    get pagePosts(): Post[] {
-      const posts = getPagePosts(this.feed.items, this.page * this.per);
-      if (this.prePushedPost) {
-        return getUniquePosts(this.prePushedPost, posts);
+    isChangingOrder: false,
+    get filteredIds() {
+      let sortedIds = [];
+      if (this.order === 'HOT') {
+        const filteredIds: any =
+          this.diffDays > 0
+            ? filterPostsByDiffDays(this.ids, this.postMap, this.diffDays)
+            : this.ids;
+        sortedIds =
+          enabledHotSort || cachedLastFilteredIds.length === 0
+            ? sortByHotPoint(filteredIds, this.postExtraMap)
+            : cachedLastFilteredIds;
+        enabledHotSort = false;
+      } else {
+        sortedIds = sortByPubDate(this.ids, this.postMap);
       }
+      cachedLastFilteredIds = sortedIds;
+      return sortedIds;
+    },
+    get pagePosts(): Post[] {
+      const pageIds = getPagePosts(this.filteredIds, this.page * this.per);
+      if (this.prePushedPost) {
+        const prePushedPostId = getPostId(this.prePushedPost);
+        const uniqueIds = getUniqueIds(prePushedPostId, pageIds);
+        const posts = getPostsByIds(uniqueIds, this.postMap);
+        return posts;
+      }
+      const posts = getPostsByIds(pageIds, this.postMap);
       return posts;
     },
     get currentPost() {
-      const post: Post | undefined = this.feed.items.find((item: Post) => {
-        return getPostId(item) === this.postId;
-      });
-      return post;
+      return getPostById(this.postId, this.postMap);
     },
     get hasMore() {
-      return this.page * this.per < this.feed.items.length;
+      return this.page * this.per < this.filteredIds.length;
     },
-    setIsFetched(status: boolean) {
-      this.isFetched = status;
-    },
-    setFeed(feed: Feed) {
-      feed.items = feed.items.map(format);
-      for (const item of feed.items) {
-        const post: any = item;
-        this.postMap[post.id] = item;
-      }
-      const sortedFiles = sortByPubDate(feed.items);
-      feed.items = sortedFiles;
-      feed.title = getFeedInfo().title || feed.title;
-      feed.description = getFeedInfo().description || feed.description;
-      this.feed = feed;
+    get isFetched() {
+      return this.isFetchedFeed && this.isFetchedExtra;
     },
     setRssUrl(rssUrl: string) {
       this.rssUrl = rssUrl;
     },
     loadMore() {
-      if (this.page * this.per >= this.feed.items.length) {
+      if (this.page * this.per >= this.filteredIds.length) {
         return;
       }
       this.page = this.page + 1;
@@ -159,20 +199,49 @@ export function createFeedStore() {
     },
     setPostId(postId: string) {
       this.postId = postId;
-      const pagePosts = getPagePosts(this.feed.items, this.page * this.per);
-      const post = pagePosts.find(findByPostId(this.postId));
-      if (!post) {
-        this.prePushedPost = this.feed.items.find(findByPostId(this.postId));
+      const pageIds = getPagePosts(this.filteredIds, this.page * this.per);
+      const id = findId(pageIds, this.postId);
+      if (!id) {
+        const prePushedPostId = findId(this.ids, this.postId);
+        this.prePushedPost = getPostById(prePushedPostId, this.postMap);
       }
       return;
     },
+    setIsFetchedFeed(status: boolean) {
+      this.isFetchedFeed = status;
+    },
+    setFeed(feed: Feed) {
+      feed.items = feed.items.map(format);
+      for (const item of feed.items) {
+        const post: any = item;
+        this.postMap[getPostId(post)] = item;
+        this.ids.push(getPostId(post));
+      }
+      feed.title = getFeedInfo().title || feed.title;
+      feed.description = getFeedInfo().description || feed.description;
+      this.feed = feed;
+    },
     setPostExtraMap(posts: any) {
+      if (!this.isFetchedExtra) {
+        enabledHotSort = true;
+      }
       for (const post of posts) {
         this.postExtraMap[post.fileRId] = post;
       }
+      this.isFetchedExtra = true;
     },
     updatePostExtraMap(fileRId: string, post: any) {
       this.postExtraMap[fileRId] = post;
+    },
+    setFilter(options: any = {}) {
+      enabledHotSort = true;
+      const { order, diffDays } = options;
+      this.order = order;
+      this.diffDays = diffDays;
+      this.page = 1;
+    },
+    setIsChangingOrder(status: boolean) {
+      this.isChangingOrder = status;
     },
   };
 }

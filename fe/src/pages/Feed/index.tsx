@@ -6,8 +6,8 @@ import { useStore } from 'store';
 import { getPostId, Post } from 'store/feed';
 import PostEntry from './PostEntry';
 import Loading from 'components/Loading';
+import Filter from './Filter';
 import { isMobile, getPostSelector } from 'utils';
-import PostApi from 'api';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -18,19 +18,6 @@ export default observer(() => {
       document.title = `${title} - 飞帖`;
     }
   });
-
-  React.useEffect(() => {
-    if (feedStore.isFetched) {
-      (async () => {
-        try {
-          const { posts } = await PostApi.fetchPosts();
-          feedStore.setPostExtraMap(posts);
-        } catch (err) {
-          console.log(err);
-        }
-      })();
-    }
-  }, [feedStore]);
 
   const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
     if (feedScrollTop === 0 && postId) {
@@ -56,7 +43,7 @@ export default observer(() => {
         feedStore.loadMore();
       }
       cacheStore.setFeedScrollTop(scrollTop);
-    }, 500);
+    }, 300);
     window.addEventListener('scroll', debounceScroll);
 
     return () => {
@@ -68,7 +55,7 @@ export default observer(() => {
     return null;
   }
 
-  const { feed, hasMore, pagePosts, postExtraMap } = feedStore;
+  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder } = feedStore;
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
@@ -84,24 +71,34 @@ export default observer(() => {
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
           <div className="text-gray-600 text-center mt-3 text-base">{feed.description}</div>
         </div>
-        <div className={`mt-${isMobile ? '8' : '10'}`}>
-          {pagePosts.map((post: Post) => {
-            const extra = postExtraMap[getPostId(post)];
-            return (
-              <PostEntry
-                post={post}
-                key={getPostId(post)}
-                upVotesCount={extra ? Number(extra.upVotesCount) || 0 : 0}
-                commentsCount={extra ? Number(extra.commentsCount) || 0 : 0}
-              />
-            );
-          })}
+        <Filter />
+        <div className="min-h-screen">
+          {!isChangingOrder && (
+            <div>
+              {pagePosts.map((post: Post) => {
+                const extra = postExtraMap[getPostId(post)];
+                return (
+                  <PostEntry
+                    post={post}
+                    key={getPostId(post)}
+                    upVotesCount={extra ? Number(extra.upVotesCount) || 0 : 0}
+                    commentsCount={extra ? Number(extra.commentsCount) || 0 : 0}
+                  />
+                );
+              })}
+            </div>
+          )}
+          {isChangingOrder && (
+            <div className="border-t border-gray-300 pt-40">
+              <Loading size={24} />
+            </div>
+          )}
+          {!isChangingOrder && hasMore && (
+            <div className="mt-10">
+              <Loading size={24} />
+            </div>
+          )}
         </div>
-        {hasMore && (
-          <div className="mt-10">
-            <Loading size={24} />
-          </div>
-        )}
       </div>
     </Fade>
   );

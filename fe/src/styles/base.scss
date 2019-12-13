@@ -44,8 +44,12 @@ ul {
   }
 }
 
+.MuiTab-textColorInherit.Mui-selected {
+  color: #63b3ed !important;
+}
+
 .MuiTabs-indicator {
-  background: #96c02d !important;
+  background: #63b3ed !important;
 }
 
 /************************************** INPUT STYLES **************************************/

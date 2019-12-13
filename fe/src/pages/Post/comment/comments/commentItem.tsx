@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { ago } from 'utils';
+import { ago, isMobile } from 'utils';
 import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
 import ClearOutlined from '@material-ui/icons/ClearOutlined';
 import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
@@ -24,7 +24,11 @@ export default class CommentItem extends React.Component<any, any> {
         <div className="w-full">
           <div className="flex justify-between items-center">
             <div className="flex items-center leading-none">
-              <span className="mr-3 text-sm gray">{comment.user.name}</span>
+              <span
+                className={classNames({ 'name-max-width': isMobile }, 'mr-3 text-sm gray truncate')}
+              >
+                {comment.user.name}
+              </span>
               <span className="hidden md:block gray text-xs">{ago(comment.createdAt)}</span>
             </div>
             <div className="relative">
@@ -64,6 +68,9 @@ export default class CommentItem extends React.Component<any, any> {
             {!hideDivider && <div className="border-b border-gray-300 my-4 md:my-6" />}
           </div>
           <style jsx>{`
+            .name-max-width {
+              max-width: 170px;
+            }
             .markdown-body :global(img) {
               max-width: 80%;
             }

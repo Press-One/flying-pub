@@ -102,8 +102,10 @@ export default observer((props: any) => {
   }, [isFetchedFeed, isLogin]);
 
   React.useEffect(() => {
-    feedStore.setPostId(decodeURIComponent(postId));
-  }, [postId, feedStore]);
+    if (isFetchedFeed) {
+      feedStore.setPostId(decodeURIComponent(postId));
+    }
+  }, [postId, feedStore, isFetchedFeed]);
 
   React.useEffect(() => {
     if (post) {
@@ -390,10 +392,15 @@ export default observer((props: any) => {
               alt={post.author}
             />
           </div>
-          <span className="mr-5">{post.author}</span>
+          <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
+            {post.author}
+          </span>
           <span className="mr-5">{ago(post.pubDate)}</span>
         </div>
         <style jsx>{`
+          .name-max-width {
+            max-width: 200px;
+          }
           .gray {
             color: #aea9ae;
           }

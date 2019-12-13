@@ -11,10 +11,7 @@ export default observer((props: any) => {
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 
   React.useEffect(() => {
-    (async () => {
-      if (feedStore.isFetched) {
-        return;
-      }
+    const tryFetchFeed = async () => {
       const rssUrl = `${getXmlUrl()}`;
       feedStore.setRssUrl(rssUrl);
       try {
@@ -29,8 +26,32 @@ export default observer((props: any) => {
           setShowConfirmDialog(true);
         }
       }
-      await sleep(800);
-      feedStore.setIsFetched(true);
+    };
+
+    const tryFetchSettings = async () => {
+      try {
+        const settings = await Api.fetchSettings();
+        const { filter } = settings;
+        if (filter) {
+          feedStore.setFilter(filter);
+        }
+      } catch (err) {}
+    };
+
+    const tryFetchPosts = async () => {
+      try {
+        const { posts } = await Api.fetchPosts();
+        feedStore.setPostExtraMap(posts);
+      } catch (err) {}
+    };
+
+    (async () => {
+      if (feedStore.isFetched) {
+        return;
+      }
+      await Promise.all([tryFetchFeed(), tryFetchSettings(), tryFetchPosts()]);
+      await sleep(200);
+      feedStore.setIsFetchedFeed(true);
       try {
         const user = await Api.fetchUser();
         userStore.setUser(user);

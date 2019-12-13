@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import ThumbUpAlt from '@material-ui/icons/ThumbUpAlt';
 import Comment from '@material-ui/icons/Comment';
+import classNames from 'classnames';
 import { ago, getPostSelector } from '../../../utils';
 import { getPostId } from '../../../store/feed';
+import { isMobile } from 'utils';
 
 export default (props: any) => {
   const { post, upVotesCount = 0, commentsCount = 0 } = props;
@@ -23,7 +25,9 @@ export default (props: any) => {
                 alt={post.author}
               />
             </div>
-            <span className="mr-5">{post.author}</span>
+            <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
+              {post.author}
+            </span>
             <span className="mr-5">{ago(post.pubDate)}</span>
           </div>
           <h2 className="mt-2 tracking-wide md:tracking-normal text-base font-semibold md:text-lg md:font-bold title leading-snug md:leading-normal">
@@ -43,6 +47,9 @@ export default (props: any) => {
           </div>
         </div>
         <style jsx>{`
+          .name-max-width {
+            max-width: 200px;
+          }
           .post:hover {
             background: rgba(0, 0, 0, 0.01);
           }

@@ -7,9 +7,6 @@ const {
   throws,
 } = require('../models/validator');
 const User = require('../models/user');
-const {
-  log
-} = require('../utils');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
