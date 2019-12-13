@@ -8,6 +8,7 @@ import PostEntry from './PostEntry';
 import Loading from 'components/Loading';
 import Filter from './Filter';
 import { isMobile, getPostSelector } from 'utils';
+import Api from 'api';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
@@ -18,6 +19,19 @@ export default observer(() => {
       document.title = `${title} - 飞帖`;
     }
   });
+
+  React.useEffect(() => {
+    if (feedStore.isFetched) {
+      (async () => {
+        try {
+          const { posts } = await Api.fetchPosts();
+          feedStore.setPostExtraMap(posts);
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }
+  }, [feedStore]);
 
   const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
     if (feedScrollTop === 0 && postId) {
