@@ -83,4 +83,10 @@ export default {
       },
     });
   },
+  fetchBlockMap() {
+    return request('/api/blocks');
+  },
+  fetchSubscriptions() {
+    return request(`/api/subscriptions`);
+  },
 };

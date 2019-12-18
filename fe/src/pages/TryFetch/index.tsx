@@ -7,7 +7,7 @@ import { getXmlUrl, sleep, isMobile, isWeChat } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
-  const { userStore, feedStore, socketStore, modalStore } = useStore();
+  const { userStore, feedStore, socketStore, subscriptionStore, modalStore } = useStore();
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,11 +45,28 @@ export default observer((props: any) => {
       } catch (err) {}
     };
 
+    const tryFetchBlockMap = async () => {
+      try {
+        const blockMap = await Api.fetchBlockMap();
+        feedStore.setBlockMap(blockMap);
+      } catch (err) {}
+    };
+
+    const tryFetchSubscriptions = async () => {
+      try {
+        const subscriptions = await Api.fetchSubscriptions();
+        const authors = subscriptions.map((subscription: any) => subscription.author);
+        subscriptionStore.setAuthors(authors);
+        feedStore.setAuthors(authors);
+      } catch (err) {}
+    };
+
     (async () => {
       if (feedStore.isFetched) {
         return;
       }
-      await Promise.all([tryFetchFeed(), tryFetchSettings(), tryFetchPosts()]);
+      await Promise.all([tryFetchFeed(), tryFetchSettings(), tryFetchPosts(), tryFetchBlockMap()]);
+      tryFetchSubscriptions();
       await sleep(200);
       feedStore.setIsFetchedFeed(true);
       try {
@@ -74,7 +91,7 @@ export default observer((props: any) => {
         console.log(err);
       }
     })();
-  }, [userStore, feedStore, socketStore, props]);
+  }, [userStore, feedStore, subscriptionStore, socketStore, props]);
 
   if (!feedStore.isFetched) {
     return (

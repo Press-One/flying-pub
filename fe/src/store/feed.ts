@@ -21,17 +21,13 @@ export interface Post {
   content: string;
   contentSnippet: string;
   guid?: string;
-  id?: string;
+  id: string;
   isoDate: string;
   link: string;
   pubDate: string;
   author: string;
   title: string;
 }
-
-export const getPostId = (post: Post): string => {
-  return post.guid || post.id || '';
-};
 
 const getPagePosts = (posts: Post[], length: number) => {
   return posts.slice(0, length);
@@ -116,6 +112,10 @@ const findId = (ids: any = [], id: string) => {
   return ids.find((_id: string) => _id === id);
 };
 
+const filterIdsByAuthors = (ids: any = [], blockMap: any, authors: any = []) => {
+  return ids.filter((id: string) => authors.includes(blockMap[id]));
+};
+
 export function createFeedStore() {
   let feed: Feed = {
     description: '',
@@ -132,6 +132,8 @@ export function createFeedStore() {
   const ids: any = [];
   let enabledHotSort = true;
   let cachedLastFilteredIds: any = [];
+  const blockMap: any = {};
+  const subAuthors: any = [];
   return {
     feed,
     ids,
@@ -147,6 +149,28 @@ export function createFeedStore() {
     prePushedPost,
     postExtraMap,
     isChangingOrder: false,
+    blockMap,
+    subAuthors,
+    get authorMap() {
+      const map: any = {};
+      for (let rId in this.blockMap) {
+        const address = this.blockMap[rId];
+        const post = this.postMap[rId];
+        if (post && !map[address]) {
+          const { author, avatar } = post.attributes;
+          map[address] = {
+            name: author,
+            avatar,
+          };
+        }
+      }
+      return map;
+    },
+    get posts(): Post[] {
+      const sortedIds = sortByPubDate(this.ids, this.postMap);
+      const posts = getPostsByIds(sortedIds, this.postMap);
+      return posts;
+    },
     get filteredIds() {
       let sortedIds = [];
       if (this.order === 'HOT') {
@@ -159,6 +183,8 @@ export function createFeedStore() {
             ? sortByHotPoint(filteredIds, this.postExtraMap)
             : cachedLastFilteredIds;
         enabledHotSort = false;
+      } else if (this.order === 'SUBSCRIPTION') {
+        sortedIds = filterIdsByAuthors(this.ids, this.blockMap, this.subAuthors);
       } else {
         sortedIds = sortByPubDate(this.ids, this.postMap);
       }
@@ -168,7 +194,7 @@ export function createFeedStore() {
     get pagePosts(): Post[] {
       const pageIds = getPagePosts(this.filteredIds, this.page * this.per);
       if (this.prePushedPost) {
-        const prePushedPostId = getPostId(this.prePushedPost);
+        const prePushedPostId = this.prePushedPost.id;
         const uniqueIds = getUniqueIds(prePushedPostId, pageIds);
         const posts = getPostsByIds(uniqueIds, this.postMap);
         return posts;
@@ -214,8 +240,8 @@ export function createFeedStore() {
       feed.items = feed.items.map(format);
       for (const item of feed.items) {
         const post: any = item;
-        this.postMap[getPostId(post)] = item;
-        this.ids.push(getPostId(post));
+        this.postMap[post.id] = post;
+        this.ids.push(post.id);
       }
       feed.title = getFeedInfo().title || feed.title;
       feed.description = getFeedInfo().description || feed.description;
@@ -242,6 +268,12 @@ export function createFeedStore() {
     },
     setIsChangingOrder(status: boolean) {
       this.isChangingOrder = status;
+    },
+    setBlockMap(blockMap: any) {
+      this.blockMap = blockMap;
+    },
+    setAuthors(authors: any) {
+      this.subAuthors = authors;
     },
   };
 }

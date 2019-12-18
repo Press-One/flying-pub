@@ -2,26 +2,30 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import classNames from 'classnames';
 import Fade from '@material-ui/core/Fade';
+import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { useStore } from 'store';
 import { sleep, isPc } from 'utils';
 import Api from 'api';
 
-const orderName = ['HOT', 'PUB_DATE'];
+const orderName = ['SUBSCRIPTION', 'HOT', 'PUB_DATE'];
 
 let filterTopPosition = 0;
 
-export default observer(() => {
+export default observer((props: any) => {
   const { feedStore } = useStore();
   const [fixed, setFixed] = React.useState(false);
   const selectorId = 'feed-filter';
   const { order, diffDays } = feedStore;
+  const { enableScroll } = props;
 
   React.useEffect(() => {
     let filterTopPosition = 0;
     const debounceScroll = debounce(() => {
+      if (!enableScroll) {
+        return false;
+      }
       const scrollElement = document.scrollingElement || document.documentElement;
       const scrollTop = scrollElement.scrollTop;
       if (filterTopPosition === 0) {
@@ -45,7 +49,7 @@ export default observer(() => {
     return () => {
       window.removeEventListener('scroll', debounceScroll);
     };
-  }, []);
+  }, [enableScroll]);
 
   const tryScroll = () => {
     if (filterTopPosition === 0) {
@@ -90,7 +94,7 @@ export default observer(() => {
       });
     } else {
       setFilter({
-        order: 'PUB_DATE',
+        order: orderName[value],
         diffDays: 0,
       });
     }
@@ -99,7 +103,7 @@ export default observer(() => {
   const hotItems = () => {
     return (
       <Fade in={true} timeout={500}>
-        <div className="py-2 pl-4 md:pl-10 md:py-3 flex border-t border-gray-300">
+        <div className="flex justify-center py-2 md:py-3 flex border-t border-gray-300 md:border-gray-200">
           {hotItem('3天内', 3)}
           {hotItem('7天内', 7)}
           {hotItem('15天内', 15)}
@@ -124,7 +128,7 @@ export default observer(() => {
             'bg-blue-400 text-white': diffDays === value,
             'bg-gray-200 text-gray-600': diffDays !== value,
           },
-          'py-1 px-3 mr-4 md:mr-5 text-xs rounded color md:cursor-pointer',
+          'py-1 px-3 mx-2 md:mx-3 text-xs rounded color md:cursor-pointer',
         )}
       >
         {text}
@@ -154,20 +158,26 @@ export default observer(() => {
           <div
             className={classNames(
               {
-                'md:w-7/12 md:m-auto border-b': fixed,
+                'md:w-7/12 md:m-auto': fixed,
+                'border-b': fixed || order !== 'HOT',
               },
               'filter border-t border-gray-300 md:border-gray-200',
             )}
           >
-            <Tabs value={orderName.indexOf(order)} onChange={handleOrderChange}>
+            <Tabs
+              value={orderName.indexOf(order)}
+              onChange={handleOrderChange}
+              className="relative"
+            >
+              <Tab label="关注" className="tab" />
               <Tab label="热榜" className="tab" />
               <Tab label="最新" className="tab" />
             </Tabs>
             {order === 'HOT' && hotItems()}
             <style jsx>{`
               .filter :global(.tab) {
-                width: 50%;
-                max-width: 50%;
+                width: 33.333333%;
+                max-width: 33.333333%;
                 font-weight: bold;
                 font-size: 15px;
               }

@@ -1,18 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ButtonOutlined from 'components/ButtonOutlined';
+import { useStore } from 'store';
 
-export default () => {
+export default observer((props: any) => {
+  const { pathStore } = useStore();
+  const { prevPath } = pathStore;
+
   return (
-    <div className="absolute top-0 left-0 -ml-32">
-      <Link to={`/`}>
+    <div className="absolute top-0 left-0 -ml-32 cursor-pointer">
+      <div onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}>
         <ButtonOutlined>
           <div className="p-1 flex justify-center items-center">
             <ArrowBackIos /> 返回
           </div>
         </ButtonOutlined>
-      </Link>
+      </div>
     </div>
   );
-};
+});

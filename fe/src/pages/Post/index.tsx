@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import Viewer from 'react-viewer';
 import marked from 'marked';
@@ -15,7 +16,6 @@ import Done from '@material-ui/icons/VerifiedUser';
 import Badge from '@material-ui/core/Badge';
 import Tooltip from '@material-ui/core/Tooltip';
 import classNames from 'classnames';
-import { getPostId } from 'store/feed';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
@@ -64,7 +64,7 @@ export default observer((props: any) => {
     (async () => {
       if (post && post.id === postId) {
         try {
-          const blocks = await FeedApi.getBlocks(postId);
+          const blocks = await FeedApi.getBlock(postId);
           const block = blocks[0];
           const toAddress = block.user_address;
           const { payment_url } = JSON.parse(block.meta);
@@ -371,30 +371,34 @@ export default observer((props: any) => {
     );
   };
 
-  const { postExtraMap } = feedStore;
-  const extra: any = postExtraMap[getPostId(post)] || {};
+  const { postExtraMap, blockMap } = feedStore;
+  const extra: any = postExtraMap[postId] || {};
 
   return (
     <Fade in={true} timeout={500}>
       <div className="px-4 md:px-0 md:w-7/12 m-auto relative">
         <div className="hidden md:block">
-          <BackButton />
+          <BackButton history={props.history} />
         </div>
         {isPc && (
           <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post.id, extra)}</div>
         )}
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
-          <div className="flex items-center w-6 h-6 mr-2">
-            <img
-              className="w-6 h-6 rounded-full border border-gray-300"
-              src={post.attributes.avatar}
-              alt={post.author}
-            />
-          </div>
-          <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-            {post.author}
-          </span>
+          <Link to={`/authors/${blockMap[postId]}`}>
+            <div className="flex items-center">
+              <div className="flex items-center w-6 h-6 mr-2">
+                <img
+                  className="w-6 h-6 rounded-full border border-gray-300"
+                  src={post.attributes.avatar}
+                  alt={post.author}
+                />
+              </div>
+              <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
+                {post.author}
+              </span>
+            </div>
+          </Link>
           <span className="mr-5">{ago(post.pubDate)}</span>
         </div>
         <style jsx>{`

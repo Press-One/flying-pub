@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Header from './layouts/header';
 import Feed from './pages/Feed';
 import Post from './pages/Post';
+import Author from './pages/Author';
+import Subscription from './pages/Subscription';
 import Wallet from './components/WalletModal/Wallet';
 import TryFetch from './pages/TryFetch';
 import PermissionDeny from './pages/PermissionDeny';
@@ -24,11 +26,13 @@ const AppRouter = () => {
     <StoreProvider>
       <Router>
         <div>
-          <Header />
+          <Route path="/" component={Header} />
           <div className={`container m-auto pt-5 md:pt-8`}>
             <Route path="/" component={TryFetch} />
             <Route path="/" exact component={Feed} />
             <Route path="/posts/:postId" exact component={Post} />
+            <Route path="/authors/:address" exact component={Author} />
+            <Route path="/subscriptions" exact component={Subscription} />
             <Route path="/wallet" exact component={Wallet} />
             <Route path="/permissionDeny" exact component={PermissionDeny} />
           </div>

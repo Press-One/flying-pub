@@ -7,6 +7,7 @@ import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 import Loading from 'components/Loading';
 import DrawerModal from 'components/DrawerModal';
+import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
 import Comments from './comments';
@@ -361,13 +362,7 @@ export default observer((props: IProps) => {
             resetVote={resetVote}
           />
         )}
-        {hasComments && (
-          <div className="mt-5 md:mt-10 text-gray-500 flex items-center justify-center">
-            <span className="h-px bg-gray-300 w-16 mr-2"></span>
-            <span className="text-gray-300 text-lg">·</span>
-            <span className="h-px bg-gray-300 w-16 ml-2"></span>
-          </div>
-        )}
+        {hasComments && <BottomLine />}
         {isPc && hasComments && comments.length > 3 && (
           <div className="text-center mt-2">
             <span

@@ -3,15 +3,15 @@ import { observer } from 'mobx-react-lite';
 import debounce from 'lodash.debounce';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { getPostId, Post } from 'store/feed';
-import PostEntry from './PostEntry';
 import Loading from 'components/Loading';
+import Posts from 'components/Posts';
 import Filter from './Filter';
-import { isMobile, getPostSelector } from 'utils';
+import { isMobile, getPostSelector, sleep } from 'utils';
 import Api from 'api';
 
 export default observer(() => {
   const { feedStore, cacheStore } = useStore();
+  const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
 
   React.useEffect(() => {
     const { title } = feedStore.feed;
@@ -39,13 +39,15 @@ export default observer(() => {
       if (!postDom) {
         return;
       }
-      window.scroll(0, postDom!.offsetTop - window.innerHeight / 2 + 100);
+      const restoreTop = postDom!.offsetTop - window.innerHeight / 2 + 100;
+      window.scroll(0, restoreTop);
     } else {
       window.scroll(0, feedScrollTop);
     }
   };
 
   React.useEffect(() => {
+    setEnableFilterScroll(false);
     const { feedScrollTop } = cacheStore;
     const { postId } = feedStore;
     restoreScrollPosition(feedScrollTop, postId);
@@ -60,8 +62,14 @@ export default observer(() => {
     }, 300);
     window.addEventListener('scroll', debounceScroll);
 
+    (async () => {
+      await sleep(200);
+      setEnableFilterScroll(true);
+    })();
+
     return () => {
       window.removeEventListener('scroll', debounceScroll);
+      setEnableFilterScroll(false);
     };
   }, [feedStore, cacheStore]);
 
@@ -69,7 +77,8 @@ export default observer(() => {
     return null;
   }
 
-  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder } = feedStore;
+  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap } = feedStore;
+  const hasPosts = pagePosts.length > 0;
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
@@ -85,31 +94,31 @@ export default observer(() => {
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
           <div className="text-gray-600 text-center mt-3 text-base">{feed.description}</div>
         </div>
-        <Filter />
+        <Filter enableScroll={enableFilterScroll} />
         <div className="min-h-screen">
-          {!isChangingOrder && (
-            <div>
-              {pagePosts.map((post: Post) => {
-                const extra = postExtraMap[getPostId(post)];
-                return (
-                  <PostEntry
-                    post={post}
-                    key={getPostId(post)}
-                    upVotesCount={extra ? Number(extra.upVotesCount) || 0 : 0}
-                    commentsCount={extra ? Number(extra.commentsCount) || 0 : 0}
-                  />
-                );
-              })}
-            </div>
+          {!isChangingOrder && hasPosts && (
+            <Posts posts={pagePosts} postExtraMap={postExtraMap} blockMap={blockMap} />
           )}
           {isChangingOrder && (
-            <div className="border-t border-gray-300 pt-40">
+            <div className="pt-40">
               <Loading size={24} />
             </div>
           )}
           {!isChangingOrder && hasMore && (
             <div className="mt-10">
               <Loading size={24} />
+            </div>
+          )}
+          {!isChangingOrder && !hasPosts && (
+            <div className="pt-32 text-center text-gray-500">
+              <div className="pt-4">去关注你感兴趣的作者吧！</div>
+              <div className="mt-2">
+                只需两步：点作者头像或昵称{' '}
+                <span role="img" aria-label="then">
+                  👉
+                </span>{' '}
+                点关注
+              </div>
             </div>
           )}
         </div>

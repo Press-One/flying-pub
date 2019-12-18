@@ -4,9 +4,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import People from '@material-ui/icons/People';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
+import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import Chat from '@material-ui/icons/Chat';
@@ -16,11 +18,20 @@ import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, getLoginUrl, isMobile, isWeChat, sleep, stopBodyScroll } from 'utils';
 
-export default observer(() => {
+export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
+  const [showBack, setShowBack] = React.useState(false);
+  const { userStore, feedStore, modalStore, pathStore } = useStore();
+  const { pushPath, prevPath } = pathStore;
+  const { pathname } = props.location;
+
   const handleClose = () => setAnchorEl(null);
-  const { userStore, feedStore, modalStore } = useStore();
+
+  React.useEffect(() => {
+    pushPath(pathname);
+    setShowBack(pathname !== '/');
+  }, [pathname, pushPath]);
 
   if (!feedStore.isFetched) {
     return isMobile ? <div className="h-12" /> : null;
@@ -37,17 +48,27 @@ export default observer(() => {
       <div className="container m-auto">
         <div className="md:hidden">
           <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
-            <Link to="/">
-              <div className="flex items-center">
-                <img
-                  src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
-                  alt="logo"
-                  width="36"
-                  height="36"
-                />
-                <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
+            {!showBack && (
+              <Link to="/">
+                <div className="flex items-center">
+                  <img
+                    src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                    alt="logo"
+                    width="36"
+                    height="36"
+                  />
+                  <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
+                </div>
+              </Link>
+            )}
+            {showBack && (
+              <div
+                className="flex items-center text-xl text-gray-700 p-2"
+                onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
+              >
+                <ArrowBackIos />
               </div>
-            </Link>
+            )}
             <div
               className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
               onClick={() => {
@@ -99,6 +120,17 @@ export default observer(() => {
               )}
               {userStore.isLogin && (
                 <div>
+                  <div
+                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+                    onClick={async () => {
+                      setOpenDrawer(false);
+                      stopBodyScroll(false);
+                      await sleep(200);
+                      props.history.push('/subscriptions');
+                    }}
+                  >
+                    我的关注
+                  </div>
                   <div
                     className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
                     onClick={async () => {
@@ -238,6 +270,22 @@ export default observer(() => {
               )}
               {userStore.isLogin && (
                 <div>
+                  <Link to="/subscriptions">
+                    <div
+                      onClick={() => {
+                        handleClose();
+                      }}
+                    >
+                      <MenuItem className="text-gray-700">
+                        <div className="py-1 flex items-center">
+                          <span className="flex items-center text-xl mr-2">
+                            <People />
+                          </span>{' '}
+                          我的关注
+                        </div>
+                      </MenuItem>
+                    </div>
+                  </Link>
                   <div
                     onClick={() => {
                       handleClose();
