@@ -172,24 +172,25 @@ export function createFeedStore() {
       return posts;
     },
     get filteredIds() {
-      let sortedIds = [];
+      let ids = [];
       if (this.order === 'HOT') {
         const filteredIds: any =
           this.diffDays > 0
             ? filterPostsByDiffDays(this.ids, this.postMap, this.diffDays)
             : this.ids;
-        sortedIds =
+        ids =
           enabledHotSort || cachedLastFilteredIds.length === 0
             ? sortByHotPoint(filteredIds, this.postExtraMap)
             : cachedLastFilteredIds;
         enabledHotSort = false;
       } else if (this.order === 'SUBSCRIPTION') {
-        sortedIds = filterIdsByAuthors(this.ids, this.blockMap, this.subAuthors);
+        const sortedIds = sortByPubDate(this.ids, this.postMap);
+        ids = filterIdsByAuthors(sortedIds, this.blockMap, this.subAuthors);
       } else {
-        sortedIds = sortByPubDate(this.ids, this.postMap);
+        ids = sortByPubDate(this.ids, this.postMap);
       }
-      cachedLastFilteredIds = sortedIds;
-      return sortedIds;
+      cachedLastFilteredIds = ids;
+      return ids;
     },
     get pagePosts(): Post[] {
       const pageIds = getPagePosts(this.filteredIds, this.page * this.per);
