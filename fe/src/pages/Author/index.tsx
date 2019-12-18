@@ -54,9 +54,7 @@ export default observer((props: any) => {
       try {
         await _Api.fetchSubscription(address);
         setSubscribed(true);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
       await sleep(200);
       setPending(false);
     })();
