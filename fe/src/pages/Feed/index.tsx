@@ -77,7 +77,7 @@ export default observer(() => {
     return null;
   }
 
-  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap } = feedStore;
+  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap, order } = feedStore;
   const hasPosts = pagePosts.length > 0;
 
   return (
@@ -109,7 +109,7 @@ export default observer(() => {
               <Loading size={24} />
             </div>
           )}
-          {!isChangingOrder && !hasPosts && (
+          {!isChangingOrder && !hasPosts && order === 'SUBSCRIPTION' && (
             <div className="pt-32 text-center text-gray-500">
               <div className="pt-4">去关注你感兴趣的作者吧！</div>
               <div className="mt-2">
@@ -119,6 +119,11 @@ export default observer(() => {
                 </span>{' '}
                 点关注
               </div>
+            </div>
+          )}
+          {!isChangingOrder && !hasPosts && order !== 'SUBSCRIPTION' && (
+            <div className="pt-32 text-center text-gray-500">
+              <div className="pt-4">暂无文章</div>
             </div>
           )}
         </div>
