@@ -61,7 +61,9 @@ router.use('/api/finance', finance.routes(), finance.allowedMethods());
 router.use('/api/posts', post.routes(), post.allowedMethods());
 router.use('/api/comments', comment.routes(), comment.allowedMethods());
 router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMethods());
-router.use('/api/settings', ensureAuthorization(), settings.routes(), settings.allowedMethods());
+router.use('/api/settings', ensureAuthorization({
+  strict: false
+}), settings.routes(), settings.allowedMethods());
 router.use('/api/subscriptions', ensureAuthorization(), subscription.routes(), subscription.allowedMethods());
 router.use('/api/blocks', block.routes(), block.allowedMethods());
 router.use('/api/logout', ensureAuthorization({

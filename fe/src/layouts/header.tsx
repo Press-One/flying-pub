@@ -22,7 +22,8 @@ export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [showBack, setShowBack] = React.useState(false);
-  const { userStore, feedStore, modalStore, pathStore } = useStore();
+  const { userStore, feedStore, modalStore, pathStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
   const { pathname } = props.location;
 
@@ -41,6 +42,307 @@ export default observer((props: any) => {
 
   const openIntercom = () => {
     (window as any).Intercom('show');
+  };
+
+  const MobileMenuView = () => {
+    const MenuItem = (props: any) => {
+      const { onClick } = props;
+      return (
+        <div
+          className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+          onClick={onClick}
+        >
+          {props.children}
+        </div>
+      );
+    };
+    return (
+      <Drawer
+        anchor="bottom"
+        open={openDrawer}
+        onClose={() => {
+          setOpenDrawer(false);
+          stopBodyScroll(false);
+        }}
+      >
+        <div className="bg-gray-300 leading-none">
+          {!userStore.isLogin && (
+            <div>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  if (isWeChat) {
+                    modalStore.openLogin();
+                  } else {
+                    window.location.href = getLoginUrl();
+                  }
+                }}
+              >
+                登录
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  openIntercom();
+                }}
+              >
+                反馈/建议
+              </MenuItem>
+            </div>
+          )}
+          {userStore.isLogin && (
+            <div>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  props.history.push('/subscriptions');
+                }}
+              >
+                我的关注
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  modalStore.openWallet({
+                    tab: 'assets',
+                  });
+                }}
+              >
+                我的资产
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  modalStore.openWallet({
+                    tab: 'settings',
+                  });
+                }}
+              >
+                设置密码
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  modalStore.openWallet({
+                    tab: 'receipts',
+                  });
+                }}
+              >
+                所有交易记录
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  openIntercom();
+                }}
+              >
+                反馈/建议
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  window.location.href = logoutUrl;
+                }}
+              >
+                退出账号
+              </MenuItem>
+            </div>
+          )}
+          <div className="mt-1">
+            <MenuItem
+              onClick={() => {
+                setOpenDrawer(false);
+                stopBodyScroll(false);
+              }}
+            >
+              取消
+            </MenuItem>
+          </div>
+        </div>
+      </Drawer>
+    );
+  };
+
+  const PCMenuView = () => {
+    return (
+      <Menu
+        anchorEl={anchorEl}
+        getContentAnchorEl={null}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        {!userStore.isLogin && (
+          <div>
+            <div
+              onClick={() => {
+                handleClose();
+                modalStore.openLogin();
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <AccountCircle />
+                  </span>{' '}
+                  登录
+                  <span className="pr-2" />
+                </div>
+              </MenuItem>
+            </div>
+            {settings['menu.links'].map((link: any) => {
+              return (
+                <div
+                  key={link.name}
+                  onClick={() => {
+                    handleClose();
+                    window.open(link.url);
+                  }}
+                >
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <OpenInNew />
+                      </span>{' '}
+                      {link.name}
+                      <span className="pr-2" />
+                    </div>
+                  </MenuItem>
+                </div>
+              );
+            })}
+            <div
+              onClick={() => {
+                handleClose();
+                openIntercom();
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <Chat />
+                  </span>{' '}
+                  反馈/建议
+                  <span className="pr-2" />
+                </div>
+              </MenuItem>
+            </div>
+          </div>
+        )}
+        {userStore.isLogin && (
+          <div>
+            <Link to="/subscriptions">
+              <div
+                onClick={() => {
+                  handleClose();
+                }}
+              >
+                <MenuItem className="text-gray-700">
+                  <div className="py-1 flex items-center">
+                    <span className="flex items-center text-xl mr-2">
+                      <People />
+                    </span>{' '}
+                    我的关注
+                  </div>
+                </MenuItem>
+              </div>
+            </Link>
+            <div
+              onClick={() => {
+                handleClose();
+                modalStore.openWallet();
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <AccountBalanceWallet />
+                  </span>{' '}
+                  我的钱包
+                </div>
+              </MenuItem>
+            </div>
+            <div
+              onClick={() => {
+                handleClose();
+                window.open(process.env.REACT_APP_PUB_URL);
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <Edit />
+                  </span>{' '}
+                  写文章
+                </div>
+              </MenuItem>
+            </div>
+            {settings['menu.links'].map((link: any) => {
+              return (
+                <div
+                  key={link.name}
+                  onClick={() => {
+                    handleClose();
+                    window.open(link.url);
+                  }}
+                >
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <OpenInNew />
+                      </span>{' '}
+                      {link.name}
+                      <span className="pr-2" />
+                    </div>
+                  </MenuItem>
+                </div>
+              );
+            })}
+            <div
+              onClick={() => {
+                handleClose();
+                openIntercom();
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <Chat />
+                  </span>{' '}
+                  反馈/建议
+                  <span className="pr-2" />
+                </div>
+              </MenuItem>
+            </div>
+            <a href={logoutUrl}>
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2">
+                    <ExitToApp />
+                  </span>{' '}
+                  退出账号
+                  <span className="pr-2" />
+                </div>
+              </MenuItem>
+            </a>
+          </div>
+        )}
+      </Menu>
+    );
   };
 
   return (
@@ -79,289 +381,14 @@ export default observer((props: any) => {
               <MenuIcon />
             </div>
           </div>
-          <Drawer
-            anchor="bottom"
-            open={openDrawer}
-            onClose={() => {
-              setOpenDrawer(false);
-              stopBodyScroll(false);
-            }}
-          >
-            <div className="bg-gray-300 leading-none">
-              {!userStore.isLogin && (
-                <div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      if (isWeChat) {
-                        modalStore.openLogin();
-                      } else {
-                        window.location.href = getLoginUrl();
-                      }
-                    }}
-                  >
-                    登录
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      openIntercom();
-                    }}
-                  >
-                    反馈/建议
-                  </div>
-                </div>
-              )}
-              {userStore.isLogin && (
-                <div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      props.history.push('/subscriptions');
-                    }}
-                  >
-                    我的关注
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      modalStore.openWallet({
-                        tab: 'assets',
-                      });
-                    }}
-                  >
-                    我的资产
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      modalStore.openWallet({
-                        tab: 'settings',
-                      });
-                    }}
-                  >
-                    设置密码
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      modalStore.openWallet({
-                        tab: 'receipts',
-                      });
-                    }}
-                  >
-                    所有交易记录
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      setOpenDrawer(false);
-                      stopBodyScroll(false);
-                      await sleep(200);
-                      openIntercom();
-                    }}
-                  >
-                    反馈/建议
-                  </div>
-                  <div
-                    className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                    onClick={async () => {
-                      window.location.href = logoutUrl;
-                    }}
-                  >
-                    退出账号
-                  </div>
-                </div>
-              )}
-              <div
-                className="mt-1 py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-                onClick={() => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                }}
-              >
-                取消
-              </div>
-            </div>
-          </Drawer>
+          <MobileMenuView />
         </div>
         <div className="hidden md:block w-7/12 m-auto relative">
           <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">
             <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
               <MenuIcon />
             </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              getContentAnchorEl={null}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            >
-              {!userStore.isLogin && (
-                <div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      modalStore.openLogin();
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <AccountCircle />
-                        </span>{' '}
-                        登录
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      window.open('https://xue.cn');
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <OpenInNew />
-                        </span>{' '}
-                        XUE.cn
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      openIntercom();
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <Chat />
-                        </span>{' '}
-                        反馈/建议
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </div>
-                </div>
-              )}
-              {userStore.isLogin && (
-                <div>
-                  <Link to="/subscriptions">
-                    <div
-                      onClick={() => {
-                        handleClose();
-                      }}
-                    >
-                      <MenuItem className="text-gray-700">
-                        <div className="py-1 flex items-center">
-                          <span className="flex items-center text-xl mr-2">
-                            <People />
-                          </span>{' '}
-                          我的关注
-                        </div>
-                      </MenuItem>
-                    </div>
-                  </Link>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      modalStore.openWallet();
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <AccountBalanceWallet />
-                        </span>{' '}
-                        我的钱包
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      window.open(process.env.REACT_APP_PUB_URL);
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <Edit />
-                        </span>{' '}
-                        写文章
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      window.open('https://xue.cn');
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <OpenInNew />
-                        </span>{' '}
-                        XUE.cn
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <div
-                    onClick={() => {
-                      handleClose();
-                      openIntercom();
-                    }}
-                  >
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <Chat />
-                        </span>{' '}
-                        反馈/建议
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </div>
-                  <a href={logoutUrl}>
-                    <MenuItem className="text-gray-700">
-                      <div className="py-1 flex items-center">
-                        <span className="flex items-center text-xl mr-2">
-                          <ExitToApp />
-                        </span>{' '}
-                        退出账号
-                        <span className="pr-2" />
-                      </div>
-                    </MenuItem>
-                  </a>
-                </div>
-              )}
-            </Menu>
+            <PCMenuView />
           </div>
         </div>
       </div>

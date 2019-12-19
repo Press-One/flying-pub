@@ -10,7 +10,7 @@ import { isMobile, getPostSelector, sleep } from 'utils';
 import Api from 'api';
 
 export default observer(() => {
-  const { feedStore, cacheStore } = useStore();
+  const { feedStore, cacheStore, settingsStore } = useStore();
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
 
   React.useEffect(() => {
@@ -77,7 +77,8 @@ export default observer(() => {
     return null;
   }
 
-  const { feed, hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap, order } = feedStore;
+  const { hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap, order } = feedStore;
+  const { settings } = settingsStore;
   const hasPosts = pagePosts.length > 0;
 
   return (
@@ -89,10 +90,10 @@ export default observer(() => {
               isMobile ? '2xl' : '3xl'
             }`}
           >
-            {feed.title}
+            {settings['site.title']}
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
-          <div className="text-gray-600 text-center mt-3 text-base">{feed.description}</div>
+          <div className="text-gray-600 text-center mt-3 text-base">{settings['site.slogan']}</div>
         </div>
         <Filter enableScroll={enableFilterScroll} />
         <div className="min-h-screen">

@@ -7,7 +7,14 @@ import { getXmlUrl, sleep, isMobile, isWeChat } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
-  const { userStore, feedStore, socketStore, subscriptionStore, modalStore } = useStore();
+  const {
+    userStore,
+    feedStore,
+    socketStore,
+    subscriptionStore,
+    modalStore,
+    settingsStore,
+  } = useStore();
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 
   React.useEffect(() => {
@@ -31,10 +38,11 @@ export default observer((props: any) => {
     const tryFetchSettings = async () => {
       try {
         const settings = await Api.fetchSettings();
-        const { filter } = settings;
-        if (filter) {
-          feedStore.setFilter(filter);
-        }
+        settingsStore.setSettings(settings);
+        feedStore.setFilter({
+          order: settings['filter.order'],
+          hotDiffDays: settings['filter.hot.diffDays'],
+        });
       } catch (err) {}
     };
 
@@ -91,7 +99,7 @@ export default observer((props: any) => {
         console.log(err);
       }
     })();
-  }, [userStore, feedStore, subscriptionStore, socketStore, props]);
+  }, [userStore, feedStore, subscriptionStore, socketStore, settingsStore, props]);
 
   if (!feedStore.isFetched) {
     return (

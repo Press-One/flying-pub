@@ -1,3 +1,4 @@
+const config = require('../config');
 const Settings = require('../models/settings');
 const Log = require('../models/log');
 const {
@@ -6,20 +7,17 @@ const {
 } = require('../models/validator');
 
 exports.get = async ctx => {
-  const {
-    user
-  } = ctx.verification;
-  const userId = user.id;
-  const settings = await Settings.getByUserId(userId);
+  const userId = ctx.verification && ctx.verification.user.id;
+  const settings = userId ? await Settings.getByUserId(userId) : {};
   assert(settings, Errors.ERR_NOT_FOUND('settings'));
-  ctx.body = settings;
+  ctx.body = {
+    ...config.settings,
+    ...settings
+  };
 };
 
 exports.upsert = async ctx => {
-  const {
-    user
-  } = ctx.verification;
-  const userId = user.id;
+  const userId = ctx.verification && ctx.verification.user.id;
   const data = ctx.request.body.payload;
   await Settings.upsert(userId, {
     data
@@ -27,5 +25,8 @@ exports.upsert = async ctx => {
   const settings = await Settings.getByUserId(userId);
   assert(settings, Errors.ERR_NOT_FOUND('settings'));
   Log.create(userId, `保存用户设置 ${JSON.stringify(data)}`);
-  ctx.body = settings;
+  ctx.body = {
+    ...config.settings,
+    ...settings
+  };
 }

@@ -24,14 +24,13 @@ exports.upsert = async (userId, payload = {}) => {
   } = payload;
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  const insertedSettings = await Settings.findOne({
-    where: {
-      userId
-    }
-  });
+  const insertedSettings = await exports.getByUserId(userId);
   if (insertedSettings) {
     await Settings.update({
-      data: JSON.stringify(data)
+      data: JSON.stringify({
+        ...insertedSettings,
+        ...data
+      })
     }, {
       where: {
         userId

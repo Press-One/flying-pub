@@ -84,9 +84,9 @@ const sortByHotPoint = (ids: Post[], postExtraMap: any) => {
   });
 };
 
-const filterPostsByDiffDays = (ids: [], postMap: any, diffDays: number) => {
+const filterPostsByHotDiffDays = (ids: [], postMap: any, filterHotDiffDays: number) => {
   return ids.filter((id: string) => {
-    return moment().diff(moment(postMap[id].pubDate), 'days') <= diffDays;
+    return moment().diff(moment(postMap[id].pubDate), 'days') <= filterHotDiffDays;
   });
 };
 
@@ -94,13 +94,6 @@ interface FeedInfo {
   title: string;
   description: string;
 }
-
-const getFeedInfo = (): FeedInfo => {
-  return {
-    title: 'XUE.cn 自学编程',
-    description: '学习是一种社交活动',
-  };
-};
 
 const getPostsByIds = (ids: any = [], postMap: any) => {
   return ids.map((id: string) => getPostById(id, postMap));
@@ -137,8 +130,8 @@ export function createFeedStore() {
   return {
     feed,
     ids,
-    order: 'HOT',
-    diffDays: 3,
+    filterOrder: 'HOT',
+    filterHotDiffDays: 3,
     postMap,
     isFetchedFeed: false,
     isFetchedExtra: false,
@@ -173,17 +166,17 @@ export function createFeedStore() {
     },
     get filteredIds() {
       let ids = [];
-      if (this.order === 'HOT') {
+      if (this.filterOrder === 'HOT') {
         const filteredIds: any =
-          this.diffDays > 0
-            ? filterPostsByDiffDays(this.ids, this.postMap, this.diffDays)
+          this.filterHotDiffDays > 0
+            ? filterPostsByHotDiffDays(this.ids, this.postMap, this.filterHotDiffDays)
             : this.ids;
         ids =
           enabledHotSort || cachedLastFilteredIds.length === 0
             ? sortByHotPoint(filteredIds, this.postExtraMap)
             : cachedLastFilteredIds;
         enabledHotSort = false;
-      } else if (this.order === 'SUBSCRIPTION') {
+      } else if (this.filterOrder === 'SUBSCRIPTION') {
         const sortedIds = sortByPubDate(this.ids, this.postMap);
         ids = filterIdsByAuthors(sortedIds, this.blockMap, this.subAuthors);
       } else {
@@ -244,8 +237,6 @@ export function createFeedStore() {
         this.postMap[post.id] = post;
         this.ids.push(post.id);
       }
-      feed.title = getFeedInfo().title || feed.title;
-      feed.description = getFeedInfo().description || feed.description;
       this.feed = feed;
     },
     setPostExtraMap(posts: any) {
@@ -262,9 +253,9 @@ export function createFeedStore() {
     },
     setFilter(options: any = {}) {
       enabledHotSort = true;
-      const { order, diffDays } = options;
-      this.order = order;
-      this.diffDays = diffDays;
+      const { order, hotDiffDays } = options;
+      this.filterOrder = order;
+      this.filterHotDiffDays = hotDiffDays;
       this.page = 1;
     },
     setIsChangingOrder(status: boolean) {

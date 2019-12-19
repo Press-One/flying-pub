@@ -11,6 +11,7 @@ import { createCommentStore } from './comment';
 import { createSubscriptionStore } from './subscription';
 import { createModalStore } from './modal';
 import { createPathStore } from './lastPath';
+import { createSettingsStore } from './settings';
 
 const storeContext = React.createContext<any>(null);
 
@@ -30,6 +31,7 @@ export const StoreProvider = ({ children }: IProps) => {
     subscriptionStore: useLocalStore(createSubscriptionStore),
     modalStore: useLocalStore(createModalStore),
     pathStore: useLocalStore(createPathStore),
+    settingsStore: useLocalStore(createSettingsStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };

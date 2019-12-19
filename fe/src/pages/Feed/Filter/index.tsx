@@ -17,7 +17,7 @@ export default observer((props: any) => {
   const { feedStore } = useStore();
   const [fixed, setFixed] = React.useState(false);
   const selectorId = 'feed-filter';
-  const { order, diffDays } = feedStore;
+  const { filterOrder: order, filterHotDiffDays: hotDiffDays } = feedStore;
   const { enableScroll } = props;
 
   React.useEffect(() => {
@@ -78,7 +78,8 @@ export default observer((props: any) => {
     feedStore.setFilter(filter);
     try {
       await Api.saveSettings({
-        filter,
+        'filter.order': filter.order,
+        'filter.hot.diffDays': filter.hotDiffDays,
       });
     } catch (err) {}
     await sleep(500);
@@ -90,12 +91,12 @@ export default observer((props: any) => {
     if (orderName[value] === 'HOT') {
       setFilter({
         order: 'HOT',
-        diffDays: diffDays > 0 ? diffDays : 3,
+        hotDiffDays: hotDiffDays > 0 ? hotDiffDays : 3,
       });
     } else {
       setFilter({
         order: orderName[value],
-        diffDays: 0,
+        hotDiffDays: 0,
       });
     }
   };
@@ -120,13 +121,13 @@ export default observer((props: any) => {
           tryScroll();
           setFilter({
             order: 'HOT',
-            diffDays: value,
+            hotDiffDays: value,
           });
         }}
         className={classNames(
           {
-            'bg-blue-400 text-white': diffDays === value,
-            'bg-gray-200 text-gray-600': diffDays !== value,
+            'bg-blue-400 text-white': hotDiffDays === value,
+            'bg-gray-200 text-gray-600': hotDiffDays !== value,
           },
           'py-1 px-3 mx-2 md:mx-3 text-xs rounded color md:cursor-pointer',
         )}
