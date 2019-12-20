@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { currencies, currencyIconMap } from '../../components/WalletModal/Wallet/utils';
+import { currencyIconMap } from '../../components/WalletModal/Wallet/utils';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -22,8 +22,16 @@ import Tooltip from '@material-ui/core/Tooltip';
 export default observer((props: any) => {
   const cachedCurrency = localStorage.getItem('REWARD_CURRENCY');
   const cachedMethod = localStorage.getItem('REWARD_METHOD');
-  const { userStore, socketStore, walletStore, modalStore, snackbarStore } = useStore();
+  const {
+    userStore,
+    socketStore,
+    walletStore,
+    modalStore,
+    snackbarStore,
+    settingsStore,
+  } = useStore();
   const { isLogin } = userStore;
+  const { settings } = settingsStore;
   const { open, onClose, fileRId, toAuthor } = props;
   const [step, setStep] = React.useState(cachedCurrency ? 2 : 1);
   const [selectedCurrency, setSelectedCurrency] = React.useState(cachedCurrency || '');
@@ -179,7 +187,7 @@ export default observer((props: any) => {
       <div>
         <div className="text-lg font-bold text-gray-700 -mt-1">选择币种</div>
         <div className="flex flex-wrap justify-between mt-4 w-64 pb-2">
-          {currencies.map((currency: any) => {
+          {settings['wallet.currencies'].map((currency: any) => {
             return (
               <div key={currency} className="p-1" title={currency}>
                 <div

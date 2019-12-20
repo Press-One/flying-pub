@@ -255,7 +255,7 @@ export function createFeedStore() {
       enabledHotSort = true;
       const { order, hotDiffDays } = options;
       this.filterOrder = order;
-      this.filterHotDiffDays = hotDiffDays;
+      this.filterHotDiffDays = hotDiffDays ? hotDiffDays : 0;
       this.page = 1;
     },
     setIsChangingOrder(status: boolean) {

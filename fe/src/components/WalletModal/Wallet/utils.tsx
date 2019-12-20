@@ -1,9 +1,3 @@
-import { isProduction } from 'utils';
-
-export const currencies = isProduction
-  ? ['PRS', 'BOX', 'BTC', 'EOS', 'ETH', 'XIN']
-  : ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'];
-
 export const currencyIconMap: any = {
   CNB: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
   BTC: 'https://xue-images.pek3b.qingstor.com/1024-btc.png',

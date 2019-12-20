@@ -9,7 +9,6 @@ const {
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
   const settings = userId ? await Settings.getByUserId(userId) : {};
-  assert(settings, Errors.ERR_NOT_FOUND('settings'));
   ctx.body = {
     ...config.settings,
     ...settings

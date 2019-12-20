@@ -14,11 +14,11 @@ export default observer(() => {
           <BlockIcon />
         </div>
         <div className="mt-2 text-lg text-gray-700 font-bold">
-          {settings['site.permission.denyText']}
+          {settings['permission.denyText']}
         </div>
         <div className="mt-4">
-          <a className="font-bold text-blue-400" href={settings['site.permission.denyActionLink']}>
-            {settings['site.permission.denyActionText']}
+          <a className="font-bold text-blue-400" href={settings['permission.denyActionLink']}>
+            {settings['permission.denyActionText']}
           </a>
         </div>
       </div>

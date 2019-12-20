@@ -9,16 +9,21 @@ import { useStore } from 'store';
 import { sleep, isPc } from 'utils';
 import Api from 'api';
 
-const orderName = ['SUBSCRIPTION', 'HOT', 'PUB_DATE'];
-
 let filterTopPosition = 0;
 
 export default observer((props: any) => {
-  const { feedStore } = useStore();
-  const [fixed, setFixed] = React.useState(false);
+  const { feedStore, settingsStore } = useStore();
   const selectorId = 'feed-filter';
   const { filterOrder: order, filterHotDiffDays: hotDiffDays } = feedStore;
+  const { settings } = settingsStore;
   const { enableScroll } = props;
+  const [fixed, setFixed] = React.useState(false);
+  const showHot =
+    settings['filter.hot.enabled'] && settings['filter.hot.diffDaysOptions'].length > 1;
+  const orderName = ['SUBSCRIPTION', 'PUB_DATE'];
+  if (settings['filter.hot.enabled']) {
+    orderName.splice(1, 0, 'HOT');
+  }
 
   React.useEffect(() => {
     let filterTopPosition = 0;
@@ -96,19 +101,22 @@ export default observer((props: any) => {
     } else {
       setFilter({
         order: orderName[value],
-        hotDiffDays: 0,
       });
     }
   };
 
   const hotItems = () => {
+    const diffDaysOptions = settings['filter.hot.diffDaysOptions'];
+    if (diffDaysOptions.length === 0) {
+      return null;
+    }
     return (
       <Fade in={true} timeout={500}>
         <div className="flex justify-center py-2 md:py-3 flex border-t border-gray-300 md:border-gray-200">
-          {hotItem('3天内', 3)}
-          {hotItem('7天内', 7)}
-          {hotItem('15天内', 15)}
-          {hotItem('全部', 0)}
+          {diffDaysOptions.map((diffDays: number) => {
+            const text = diffDays > 0 ? `${diffDays}天内` : '全部';
+            return <div key={diffDays}>{hotItem(text, diffDays)}</div>;
+          })}
         </div>
       </Fade>
     );
@@ -116,7 +124,7 @@ export default observer((props: any) => {
 
   const hotItem = (text: string, value: number) => {
     return (
-      <span
+      <div
         onClick={() => {
           tryScroll();
           setFilter({
@@ -133,7 +141,7 @@ export default observer((props: any) => {
         )}
       >
         {text}
-      </span>
+      </div>
     );
   };
 
@@ -160,7 +168,7 @@ export default observer((props: any) => {
             className={classNames(
               {
                 'md:w-7/12 md:m-auto': fixed,
-                'border-b': fixed || order !== 'HOT',
+                'border-b': fixed || !showHot || order !== 'HOT',
               },
               'filter border-t border-gray-300 md:border-gray-200',
             )}
@@ -171,14 +179,14 @@ export default observer((props: any) => {
               className="relative"
             >
               <Tab label="关注" className="tab" />
-              <Tab label="热榜" className="tab" />
+              {settings['filter.hot.enabled'] && <Tab label="热榜" className="tab" />}
               <Tab label="最新" className="tab" />
             </Tabs>
-            {order === 'HOT' && hotItems()}
+            {showHot && order === 'HOT' && hotItems()}
             <style jsx>{`
               .filter :global(.tab) {
-                width: 33.333333%;
-                max-width: 33.333333%;
+                width: ${orderName.length === 2 ? '50%' : '33.333333%'};
+                max-width: 100%;
                 font-weight: bold;
                 font-size: 15px;
               }
@@ -190,7 +198,7 @@ export default observer((props: any) => {
   };
 
   const placeholder = () => {
-    const height = order === 'HOT' ? 92 : 49;
+    const height = showHot && order === 'HOT' ? 92 : 49;
     return (
       <div>
         <div id={`${selectorId}-placeholder`}></div>

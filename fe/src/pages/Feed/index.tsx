@@ -14,13 +14,6 @@ export default observer(() => {
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
 
   React.useEffect(() => {
-    const { title } = feedStore.feed;
-    if (title) {
-      document.title = `${title} - 飞帖`;
-    }
-  });
-
-  React.useEffect(() => {
     if (feedStore.isFetched) {
       (async () => {
         try {

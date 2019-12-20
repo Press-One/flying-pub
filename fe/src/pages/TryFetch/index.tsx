@@ -39,10 +39,23 @@ export default observer((props: any) => {
       try {
         const settings = await Api.fetchSettings();
         settingsStore.setSettings(settings);
-        feedStore.setFilter({
-          order: settings['filter.order'],
-          hotDiffDays: settings['filter.hot.diffDays'],
-        });
+        const order = settings['filter.order'];
+        const hotDisabled = !settings['filter.hot.enabled'];
+        if (hotDisabled) {
+          const validOrder = order === 'HOT' ? 'PUB_DATE' : order;
+          feedStore.setFilter({
+            order: validOrder,
+          });
+        } else {
+          const hotDiffDays = settings['filter.hot.diffDays'];
+          const diffDaysOptions = settings['filter.hot.diffDaysOptions'];
+          const isValidDiffDays = hotDiffDays && diffDaysOptions.includes(hotDiffDays);
+          feedStore.setFilter({
+            order,
+            hotDiffDays: isValidDiffDays ? hotDiffDays : diffDaysOptions[0],
+          });
+        }
+        document.title = `${settings['site.title']} - 飞帖`;
       } catch (err) {}
     };
 

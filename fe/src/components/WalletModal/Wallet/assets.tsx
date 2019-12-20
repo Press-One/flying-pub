@@ -6,7 +6,7 @@ import Fade from '@material-ui/core/Fade';
 import Info from '@material-ui/icons/Info';
 import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
-import { currencies, currencyIconMap } from './utils';
+import { currencyIconMap } from './utils';
 import { sleep, isMobile } from 'utils';
 import Api from './api';
 
@@ -63,7 +63,8 @@ const Asset = (props: any) => {
 };
 
 export default observer((props: any) => {
-  const { userStore, walletStore, snackbarStore } = useStore();
+  const { userStore, walletStore, snackbarStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const [currency, setCurrency] = React.useState('');
   const [openRechargeModal, setOpenRechargeModal] = React.useState(false);
   const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);
@@ -160,7 +161,7 @@ export default observer((props: any) => {
             </span>
           </div>
         )}
-        {currencies.map((asset: any) => {
+        {settings['wallet.currencies'].map((asset: any) => {
           return (
             <div key={asset}>
               <Asset
