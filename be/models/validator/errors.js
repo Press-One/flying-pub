@@ -36,6 +36,9 @@ const errors = {
   ERR_NO_PERMISSION: 'No permission',
   ERR_TOO_MANY_REQUEST: 'Too many request',
 
+  // auth
+  ERR_FAIL_TO_LOGIN: 'Fail to login',
+
   // Token
   ERR_AUTH_TOKEN_EXPIRED: 'Token expired',
 

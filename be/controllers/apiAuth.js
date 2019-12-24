@@ -5,6 +5,7 @@ const config = require('../config');
 const auth = require('../models/auth');
 const {
   assert,
+  throws,
   Errors
 } = require('../models/validator');
 const User = require('../models/user');
@@ -72,31 +73,36 @@ const providerPermissionChecker = {
 // }
 
 exports.oauthCallback = async (ctx, next) => {
-  const {
-    provider
-  } = ctx.params;
+  try {
+    const {
+      provider
+    } = ctx.params;
 
-  let user;
-  if (provider === 'pressone') {
-    user = await handlePressOneCallback(ctx, provider);
-  } else {
-    user = await handleOauthCallback(ctx, next, provider);
+    let user;
+    if (provider === 'pressone') {
+      user = await handlePressOneCallback(ctx, provider);
+    } else {
+      user = await handleOauthCallback(ctx, next, provider);
+    }
+
+    assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
+
+    const profile = providerGetter[provider](user);
+    const hasPermission = await checkPermission(provider, profile);
+    const noPermission = !hasPermission;
+    if (noPermission) {
+      Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);
+      ctx.redirect(config.permissionDenyUrl);
+      return false;
+    }
+
+    await login(ctx, user, provider);
+
+    ctx.redirect(ctx.session.auth.redirect);
+  } catch (err) {
+    console.log(err);
+    throws(Errors.ERR_FAIL_TO_LOGIN);
   }
-
-  assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
-
-  const profile = providerGetter[provider](user);
-  const hasPermission = await checkPermission(provider, profile);
-  const noPermission = !hasPermission;
-  if (noPermission) {
-    Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);
-    ctx.redirect(config.permissionDenyUrl);
-    return false;
-  }
-
-  await login(ctx, user, provider);
-
-  ctx.redirect(ctx.session.auth.redirect);
 }
 
 const handlePressOneCallback = async (ctx, provider) => {
