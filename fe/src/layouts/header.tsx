@@ -279,7 +279,7 @@ export default observer((props: any) => {
             <div
               onClick={() => {
                 handleClose();
-                window.open(process.env.REACT_APP_PUB_URL);
+                window.open(settings['pub.site.url']);
               }}
             >
               <MenuItem className="text-gray-700">

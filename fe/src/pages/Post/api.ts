@@ -21,9 +21,8 @@ export default {
     return request(`/api/finance/reward/${fileRId}`);
   },
   async getBlock(rId: string) {
-    const { REACT_APP_PRESS_ONE_API_END_POINT } = process.env;
     return request(`/api/v2/blocks/${rId}`, {
-      base: REACT_APP_PRESS_ONE_API_END_POINT,
+      base: 'https://press.one',
     });
   },
 };
