@@ -37,7 +37,8 @@ exports.oauthLogin = async ctx => {
 
 const checkPermission = async (provider, profile) => {
   const providerId = profile.id;
-  const isInWhiteList = config.whitelist[provider].includes(~~providerId);
+  const whitelist = config.whitelist[provider];
+  const isInWhiteList = whitelist && whitelist.includes(~~providerId);
   if (isInWhiteList) {
     return true;
   }
