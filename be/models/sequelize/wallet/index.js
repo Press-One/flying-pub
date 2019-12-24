@@ -39,7 +39,7 @@ const Wallet = sequelize.define('wallets', {
     type: Sequelize.TEXT
   },
   version: {
-    type: Sequelize.TINYINT(1),
+    type: Sequelize.STRING(1),
   },
 }, {
   timestamps: true,

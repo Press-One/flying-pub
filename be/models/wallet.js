@@ -91,7 +91,7 @@ const generateWallet = async userId => {
     mixinSessionId: mxRaw.data.session_id,
     mixinPrivateKey: mxRaw.privatekey,
     mixinAccount: mxRaw,
-    version: 1,
+    version: '1',
   };
   // 更新 1px 的透明图片
   let mxProfileRaw = await mixin.account.updateProfile({
@@ -108,7 +108,12 @@ const getByUserId = async userId => {
       userId
     }
   });
-  return wallet ? wallet.toJSON() : null;
+  if (!wallet) {
+    return null;
+  }
+  const walletJson = wallet.toJSON()
+  walletJson.version = Number(walletJson.version);
+  return walletJson;
 }
 
 exports.exists = async userId => {
