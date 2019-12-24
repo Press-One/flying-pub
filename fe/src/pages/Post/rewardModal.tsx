@@ -159,7 +159,7 @@ export default observer((props: any) => {
       const { paymentUrl } = await Api.rechargeThenReward(fileRId, {
         amount,
         currency: selectedCurrency,
-        memo: memo || `飞帖打赏文章（${process.env.REACT_APP_NAME}）`,
+        memo: memo || `飞帖打赏文章（${settings['site.name']}）`,
       });
       return paymentUrl;
     } catch (err) {

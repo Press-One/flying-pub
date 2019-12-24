@@ -73,7 +73,7 @@ const getMixinPaymentUrl = (options = {}) => {
 
 exports.recharge = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || `飞帖充值（${config.serviceName}）`;
+  data.memo = data.memo || `飞帖充值（${config.settings['site.name']}）`;
   const {
     userId,
     currency,
@@ -117,7 +117,7 @@ exports.recharge = async (data = {}) => {
 
 exports.withdraw = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || `飞帖提现（${config.serviceName}）`;
+  data.memo = data.memo || `飞帖提现（${config.settings['site.name']}）`;
   const {
     userId,
     currency,
@@ -332,7 +332,7 @@ exports.getBalanceMap = async userId => {
 
 const payForFile = async (data = {}) => {
   data.amount = parseAmount(data.amount);
-  data.memo = data.memo || `飞帖打赏文章（${config.serviceName}）`;
+  data.memo = data.memo || `飞帖打赏文章（${config.settings['site.name']}）`;
   data = attempt(data, {
     userId: Joi.number().required(),
     toAddress: Joi.string()
