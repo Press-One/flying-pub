@@ -13,13 +13,14 @@ const {
   assertFault,
   Errors
 } = require('./validator')
+const aesKey256 = config.encryption.aes.aesKey256;
 
 const mixin = new Mixin({
-  client_id: config.mixin.clientId,
-  aeskey: config.mixin.aesKey,
-  pin: config.mixin.pinCode,
-  session_id: config.mixin.sessionId,
-  privatekey: config.mixin.privateKeyFilePath
+  client_id: config.provider.mixin.clientId,
+  aeskey: config.provider.mixin.aesKey,
+  pin: config.provider.mixin.pinCode,
+  session_id: config.provider.mixin.sessionId,
+  privatekey: config.provider.mixin.privateKeyFilePath
 });
 
 const getNumberByMixinClientId = mixinClientId => {
@@ -34,10 +35,10 @@ const getNumberByMixinClientId = mixinClientId => {
 
 const aesCryptoWallet = data => {
   const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt;
-  data.mixinAesKey = aesCrypto(data.mixinAesKey, config.aesKey256, counterInitialValue);
-  data.mixinSessionId = aesCrypto(data.mixinSessionId, config.aesKey256, counterInitialValue);
-  data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, config.aesKey256, counterInitialValue);
-  data.mixinAccount = aesCrypto(JSON.stringify(data.mixinAccount), config.aesKey256, counterInitialValue);
+  data.mixinAesKey = aesCrypto(data.mixinAesKey, aesKey256, counterInitialValue);
+  data.mixinSessionId = aesCrypto(data.mixinSessionId, aesKey256, counterInitialValue);
+  data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, aesKey256, counterInitialValue);
+  data.mixinAccount = aesCrypto(JSON.stringify(data.mixinAccount), aesKey256, counterInitialValue);
   return data;
 };
 
@@ -46,11 +47,11 @@ const aesDecryptWallet = data => {
     return data;
   }
   const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt : 5;
-  data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, config.aesKey256, counterInitialValue);
-  data.mixinAesKey = aesDecrypt(data.mixinAesKey, config.aesKey256, counterInitialValue);
-  data.mixinSessionId = aesDecrypt(data.mixinSessionId, config.aesKey256, counterInitialValue);
-  data.mixinPrivateKey = aesDecrypt(data.mixinPrivateKey, config.aesKey256, counterInitialValue);
-  data.mixinAccount = JSON.parse(aesDecrypt(data.mixinAccount, config.aesKey256, counterInitialValue));
+  data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, aesKey256, counterInitialValue);
+  data.mixinAesKey = aesDecrypt(data.mixinAesKey, aesKey256, counterInitialValue);
+  data.mixinSessionId = aesDecrypt(data.mixinSessionId, aesKey256, counterInitialValue);
+  data.mixinPrivateKey = aesDecrypt(data.mixinPrivateKey, aesKey256, counterInitialValue);
+  data.mixinAccount = JSON.parse(aesDecrypt(data.mixinAccount, aesKey256, counterInitialValue));
   return data;
 };
 
@@ -162,10 +163,10 @@ exports.updateCustomPin = async (userId, pinCode, options = {}) => {
       oldPinCode
     } = options;
     assert(oldPinCode, Errors.ERR_IS_REQUIRED('oldPinCode'))
-    const cryptoOldPin = aesCrypto(oldPinCode, config.aesKey256);
+    const cryptoOldPin = aesCrypto(oldPinCode, aesKey256);
     assert(customPin === cryptoOldPin, Errors.ERR_WALLET_MISMATCH_PIN);
   }
-  const cryptoPin = aesCrypto(pinCode, config.aesKey256);
+  const cryptoPin = aesCrypto(pinCode, aesKey256);
   await Wallet.update({
     customPin: cryptoPin,
   }, {
@@ -181,7 +182,7 @@ exports.validatePin = async (userId, pinCode) => {
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
   const customPin = await getCustomPinByUserId(userId);
   if (customPin) {
-    const cryptoPin = aesCrypto(pinCode, config.aesKey256);
+    const cryptoPin = aesCrypto(pinCode, aesKey256);
     return customPin === cryptoPin;
   }
   return false;

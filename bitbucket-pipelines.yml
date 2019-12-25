@@ -5,19 +5,6 @@ definitions:
 
 pipelines:
   branches:
-    master:
-      - step:
-          name: medium
-          size: 2x
-          services:
-            - docker
-          caches:
-            - docker
-          script:
-            - export IMAGE_NAME=$DOCKER_REGISTRY_DOMAIN/$DOCKER_REGISTRY_USERNAME/medium:$BITBUCKET_BRANCH
-            - docker build -f Dockerfile-staging -t $IMAGE_NAME .
-            - docker login --username $DOCKER_REGISTRY_USERNAME --password $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_DOMAIN
-            - docker push $IMAGE_NAME
     release:
       - step:
           name: medium
@@ -25,4 +12,4 @@ pipelines:
           services:
             - docker
           script:
-            - echo -e 'Host 192.168.0.*\n\tUser huoju\n\tForwardAgent yes\n\tProxyCommand ssh huoju@139.198.2.168 nc %h %p' >> ~/.ssh/config && ssh -o StrictHostKeyChecking=no huoju@192.168.0.3 "sudo chmod 755 -R build_shortcuts && cd ./build_shortcuts && ./15_build_medium.sh"
+            - echo -e 'Host 192.168.0.*\n\tUser huoju\n\tForwardAgent yes\n\tProxyCommand ssh huoju@139.198.2.168 nc %h %p' >> ~/.ssh/config && ssh -o StrictHostKeyChecking=no huoju@192.168.0.3 "cd ./build_shortcuts && git pull && ./15_build_medium.sh"

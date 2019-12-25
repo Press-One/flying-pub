@@ -41,7 +41,7 @@ const packUser = async (user, options = {}) => {
   derivedUser.mixinWalletClientId = await Wallet.getMixinClientIdByUserId(user.id);
 
   if (withKeys) {
-    derivedUser.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.aesKey256);
+    derivedUser.privateKey = util.crypto.aesDecrypt(user.aesEncryptedHexOfPrivateKey, config.encryption.aes.aesKey256);
   } else {
     delete derivedUser.publicKey;
   }
@@ -57,7 +57,7 @@ const generateKey = () => {
   } = PrsUtil.createKeyPair({
     dump: true
   });
-  const aesEncryptedHexOfPrivateKey = util.crypto.aesCrypto(privateKey, config.aesKey256);
+  const aesEncryptedHexOfPrivateKey = util.crypto.aesCrypto(privateKey, config.encryption.aes.aesKey256);
   return {
     aesEncryptedHexOfPrivateKey,
     publicKey,

@@ -15,7 +15,7 @@ exports.create = async (userId, message) => {
     message: `【${config.serviceKey}】${user.name}：${message}`,
   };
   await Log.create(data);
-  if (config.botEnabled) {
+  if (config.telegramBot.enabled) {
     try {
       sendToBot(data);
     } catch (e) {
@@ -30,7 +30,7 @@ exports.createAnonymity = async (identity, message) => {
     message: `【${config.serviceKey}】 ${identity}：${message}`,
   };
   await Log.create(data);
-  if (config.botEnabled) {
+  if (config.telegramBot.enabled) {
     try {
       sendToBot(data);
     } catch (e) {
@@ -41,7 +41,7 @@ exports.createAnonymity = async (identity, message) => {
 
 const sendToBot = async data => {
   await request({
-    uri: config.botUrl,
+    uri: config.telegramBot.url,
     method: 'post',
     json: true,
     body: {

@@ -1,6 +1,6 @@
 "use strict";
 
-const serviceRoot = "http://localhost:8070";
+const serviceRoot = "http://localhost:9000";
 const serviceKey = "LOCAL_XUE_POSTS";
 const topicAddress = "09d1a501677c96d235cce86cba317a213f10bd74";
 
@@ -13,7 +13,7 @@ const config = {
 
   host: "127.0.0.1",
 
-  port: "8070",
+  port: "9000",
 
   queuePort: 8071,
 
@@ -21,7 +21,7 @@ const config = {
 
   topicAddress,
 
-  atomUrl: `https://xue.press.one/output/${topicAddress}`,
+  feedUrl: `https://xue.press.one/output/${topicAddress}`,
 
   db: {
     host: "127.0.0.1",
@@ -106,7 +106,7 @@ const config = {
     10
   ],
 
-  permissionDenyUrl: "http://localhost:4070/permissionDeny",
+  permissionDenyUrl: "http://localhost:5000/permissionDeny",
 
   whitelist: {
     mixin: [1095057]

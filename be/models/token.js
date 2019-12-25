@@ -38,7 +38,7 @@ exports.create = async (data, options = {}) => {
   };
   const token = jwt.sign(
     payload,
-    config.tokenPrivateKey,
+    config.encryption.jwt.key,
     jwtOptions
   );
 
@@ -48,7 +48,7 @@ exports.create = async (data, options = {}) => {
 };
 
 exports.verify = token => {
-  const decodedToken = jwt.verify(token, config.tokenPrivateKey);
+  const decodedToken = jwt.verify(token, config.encryption.jwt.key);
   return decodedToken;
 };
 

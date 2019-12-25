@@ -8,7 +8,7 @@ const {
 const queues = [];
 
 exports.up = () => {
-  if (config.mixin.sync) {
+  if (config.provider.mixin.sync) {
     queues.push(createSyncInitializedQueue());
   }
   queues.push(createAtomCacheQueue());

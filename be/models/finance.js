@@ -35,11 +35,11 @@ const bigFormat = bignumber => {
 const balanceCacheKey = `${config.serviceKey}_BALANCE_CACHE_KEY`;
 
 const mixin = new Mixin({
-  client_id: config.mixin.clientId,
-  aeskey: config.mixin.aesKey,
-  pin: config.mixin.pinCode,
-  session_id: config.mixin.sessionId,
-  privatekey: config.mixin.privateKeyFilePath
+  client_id: config.provider.mixin.clientId,
+  aeskey: config.provider.mixin.aesKey,
+  pin: config.provider.mixin.pinCode,
+  session_id: config.provider.mixin.sessionId,
+  privatekey: config.provider.mixin.privateKeyFilePath
 });
 
 const getViewToken = snapshotId => {

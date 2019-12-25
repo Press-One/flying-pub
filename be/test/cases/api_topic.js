@@ -10,7 +10,7 @@ it('can not create file when missing name', () => {
     .send({
       payload: topic
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(400);
 });
 
@@ -22,6 +22,6 @@ it('create topic', () => {
     .send({
       payload: topic
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200);
 });

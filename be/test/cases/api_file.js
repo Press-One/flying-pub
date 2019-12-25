@@ -17,7 +17,7 @@ it('can not create file when missing title', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(400);
 });
 
@@ -30,7 +30,7 @@ it('can not create file when missing content', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(400);
 });
 
@@ -43,7 +43,7 @@ it('can not create file when missing mimeType', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(400);
 });
 
@@ -57,7 +57,7 @@ it('create file', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200)
     .then((res) => {
       fileId = res.body.id;
@@ -74,7 +74,7 @@ it('create draft', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200)
     .then((res) => {
       draftId = res.body.id;
@@ -91,7 +91,7 @@ it('update draft', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200)
     .then((res) => {
       res.body.updatedFile.status.should.be.equal('draft');
@@ -108,7 +108,7 @@ it('publish draft', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200)
     .then((res) => {
       res.body.updatedFile.rId.should.not.be.equal(null);
@@ -125,7 +125,7 @@ it('This file can not be updated because it\'s not published', () => {
     .send({
       payload: file
     })
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(400);
 });
 
@@ -136,36 +136,36 @@ it('This file can not be updated because it\'s not published', () => {
 //   };
 //   return api.put(`/api/files/${OTHERS_file_ID}`)
 //     .send({ payload: file })
-//     .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+//     .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
 //     .expect(400);
 // });
 
 it('list files', () => {
   return api.get(`/api/files`)
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200);
 });
 
 it('get file', () => {
   return api.get(`/api/files/${fileId}`)
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200);
 });
 
 it('get file with an invalid fileId', () => {
   return api.get(`/api/files/999999`)
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(404);
 });
 
 it('delete file', () => {
   return api.delete(`/api/files/${fileId}`)
-    .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+    .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
     .expect(200);
 });
 
 // it('delete file when no permission', () => {
 //   return api.delete(`/api/files/${OTHERS_file_ID}`)
-//     .set('Cookie', [`${config.authTokenKey}=${global.token}`])
+//     .set('Cookie', [`${config.auth.tokenKey}=${global.token}`])
 //     .expect(400);
 // });

@@ -7,9 +7,9 @@ const config = require('../config');
 const buildPassport = () => {
 
   passport.use(new MixinStrategy({
-    clientID: config.mixin.clientId,
-    clientSecret: config.mixin.clientSecret,
-    callbackURL: config.mixin.callbackUrl
+    clientID: config.provider.mixin.clientId,
+    clientSecret: config.provider.mixin.clientSecret,
+    callbackURL: config.provider.mixin.callbackUrl
   }, (accessToken, refreshToken, profile, callback) => {
     profile.auth = {
       accessToken: accessToken,
@@ -31,7 +31,7 @@ const buildPassport = () => {
 
 const authenticate = {
   mixin: passport.authenticate('mixin', {
-    failureRedirect: config.mixin.loginUrl,
+    failureRedirect: config.provider.mixin.loginUrl,
     scope: 'PROFILE:READ'
   }),
 

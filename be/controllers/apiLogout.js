@@ -15,7 +15,7 @@ exports.logout = async (ctx) => {
     token
   } = ctx.verification;
   await Token.delFromRedis(token);
-  ctx.cookies.set(config.authTokenKey)
+  ctx.cookies.set(config.auth.tokenKey)
   Log.create(user.id, `登出`);
   ctx.redirect(from);
 }

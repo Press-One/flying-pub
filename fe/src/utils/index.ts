@@ -48,7 +48,7 @@ export const isStaging = process.env.REACT_APP_ENV === 'staging';
 export const isProduction = process.env.REACT_APP_ENV === 'production';
 
 export const getApiEndpoint = () => {
-  return isDevelopment ? `http://${window.location.hostname}:8070` : window.location.origin;
+  return isDevelopment ? `http://${window.location.hostname}:9000` : window.location.origin;
 };
 
 export const ago = (timestamp: string) => {

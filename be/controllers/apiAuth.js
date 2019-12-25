@@ -2,6 +2,9 @@
 
 const request = require('request-promise');
 const config = require('../config');
+const {
+  checkPermission
+} = require('../models/api');
 const auth = require('../models/auth');
 const {
   assert,
@@ -35,44 +38,6 @@ exports.oauthLogin = async ctx => {
   return authenticate[provider](ctx);
 };
 
-const checkPermission = async (provider, profile) => {
-  const providerId = profile.id;
-  const whitelist = config.whitelist[provider];
-  const isInWhiteList = whitelist && whitelist.includes(~~providerId);
-  if (isInWhiteList) {
-    return true;
-  }
-  const hasProviderPermission = await providerPermissionChecker[provider](profile);
-  return hasProviderPermission;
-}
-
-const providerPermissionChecker = {
-  mixin: async profile => {
-    return true;
-    // const rawJson = JSON.parse(profile.raw);
-    // const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
-    // return IsInMixinBoxGroup;
-  },
-  github: async () => {
-    return true;
-  },
-};
-
-// const checkIsInMixinBoxGroup = async mixinUuid => {
-//   try {
-//     await request({
-//       uri: `https://xiaolai-ri-openapi.groups.xue.cn/v1/users/${mixinUuid}`,
-//       json: true,
-//       headers: {
-//         Authorization: `Bearer ${config.boxGroupToken}`
-//       },
-//     }).promise();
-//     return true;
-//   } catch (err) {
-//     return false;
-//   }
-// }
-
 exports.oauthCallback = async (ctx, next) => {
   try {
     const {
@@ -89,12 +54,14 @@ exports.oauthCallback = async (ctx, next) => {
     assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
     const profile = providerGetter[provider](user);
-    const hasPermission = await checkPermission(provider, profile);
-    const noPermission = !hasPermission;
-    if (noPermission) {
-      Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);
-      ctx.redirect(config.permissionDenyUrl);
-      return false;
+    if (config.auth.enableChecking) {
+      const hasPermission = await checkPermission(provider, profile.id, profile.raw);
+      const noPermission = !hasPermission;
+      if (noPermission) {
+        Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);
+        ctx.redirect(config.permissionDenyUrl);
+        return false;
+      }
     }
 
     await login(ctx, user, provider);
@@ -189,7 +156,7 @@ const login = async (ctx, user, provider) => {
   });
 
   ctx.cookies.set(
-    config.authTokenKey,
+    config.auth.tokenKey,
     token, {
       expires: new Date('2100-01-01')
     }
@@ -218,6 +185,7 @@ const providerGetter = {
   },
 
   pressone: user => {
+    delete user.proofs;
     return {
       id: user.id,
       name: user.name,
