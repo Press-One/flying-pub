@@ -55,7 +55,7 @@ exports.oauthCallback = async (ctx, next) => {
 
     const profile = providerGetter[provider](user);
     if (config.auth.enableChecking) {
-      const hasPermission = await checkPermission(provider, profile.id, profile.raw);
+      const hasPermission = await checkPermission(provider, profile);
       const noPermission = !hasPermission;
       if (noPermission) {
         Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);

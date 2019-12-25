@@ -19,7 +19,7 @@ exports.get = async (ctx) => {
       user
     } = ctx.verification;
     const profile = await Profile.getByUserId(user.id);
-    const hasPermission = await checkPermission(profile.provider, profile.providerId, profile.raw);
+    const hasPermission = await checkPermission(profile.provider, profile);
     assert(hasPermission, Errors.ERR_NO_PERMISSION, 401);
   }
   try {

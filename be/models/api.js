@@ -99,13 +99,16 @@ exports.extendCtx = async (ctx, next) => {
   await next();
 };
 
-exports.checkPermission = async (provider, providerId, raw) => {
+exports.checkPermission = async (provider, profile) => {
+  const {
+    providerId
+  } = profile;
   const whitelist = config.auth.whitelist[provider];
   const isInWhiteList = whitelist && [provider].includes(~~providerId);
   if (isInWhiteList) {
     return true;
   }
-  const hasProviderPermission = await providerPermissionChecker[provider](raw);
+  const hasProviderPermission = await providerPermissionChecker[provider](profile);
   return hasProviderPermission;
 }
 
