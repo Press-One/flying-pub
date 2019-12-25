@@ -1,7 +1,14 @@
 const config = require('../config');
 const request = require('request-promise');
+const {
+  assert,
+  Errors
+} = require('../models/validator');
+const Profile = require('../models/profile');
+const {
+  checkPermission
+} = require('../models/api');
 const Cache = require('../models/cache');
-
 const type = `${config.serviceKey}_CACHE`;
 const key = 'ATOM';
 
