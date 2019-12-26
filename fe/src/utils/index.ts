@@ -91,14 +91,6 @@ export const isPc = !isMobile;
 
 export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
 
-export const getPostSelector = (postId: string) => {
-  return 'post-' + postId.replace(/[^\w]/g, '');
-};
-
-export const getXmlUrl = () => {
-  return `${getApiEndpoint()}/api/atom`;
-};
-
 export const sleep = (duration: number) =>
   new Promise((resolve: any) => {
     setTimeout(resolve, duration);

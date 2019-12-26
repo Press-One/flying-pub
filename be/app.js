@@ -16,14 +16,13 @@ const {
 const index = require('./routes/index');
 const user = require('./routes/user');
 const auth = require('./routes/auth');
-const atom = require('./routes/atom');
 const finance = require('./routes/finance');
 const post = require('./routes/post');
+const author = require('./routes/author');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const settings = require('./routes/settings');
 const subscription = require('./routes/subscription');
-const block = require('./routes/block');
 const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
@@ -56,16 +55,15 @@ router.all('*', models.api.extendCtx);
 router.use('/', index.routes(), index.allowedMethods());
 router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
-router.use('/api/atom', atom.routes(), atom.allowedMethods());
 router.use('/api/finance', finance.routes(), finance.allowedMethods());
 router.use('/api/posts', post.routes(), post.allowedMethods());
+router.use('/api/authors', author.routes(), author.allowedMethods());
 router.use('/api/comments', comment.routes(), comment.allowedMethods());
 router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMethods());
 router.use('/api/settings', ensureAuthorization({
   strict: false
 }), settings.routes(), settings.allowedMethods());
 router.use('/api/subscriptions', ensureAuthorization(), subscription.routes(), subscription.allowedMethods());
-router.use('/api/blocks', block.routes(), block.allowedMethods());
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());

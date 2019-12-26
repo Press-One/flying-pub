@@ -1,26 +1,32 @@
-const { assert, Errors } = require("./validator");
+const {
+  assert,
+  Errors
+} = require("./validator");
 const Comment = require("./sequelize/comment");
 const User = require("./user");
 const Post = require("./post");
 const Vote = require("./vote");
 
 const packComment = async (comment, options = {}) => {
-  const { userId } = options;
+  const {
+    userId
+  } = options;
   assert(comment, Errors.ERR_NOT_FOUND("comment"));
   const commentJson = comment.toJSON();
   const user = await User.get(commentJson.userId, {
     withProfile: true
   });
   commentJson.user = user;
-  const voted =
-    !!userId && (await Vote.isVoted(userId, "comments", comment.id));
+  const voted = !!userId && (await Vote.isVoted(userId, "comments", comment.id));
   commentJson.voted = voted;
   delete commentJson.deleted;
   return commentJson;
 };
 
 exports.get = async (id, options = {}) => {
-  const { userId } = options;
+  const {
+    userId
+  } = options;
   assert(id, Errors.ERR_IS_REQUIRED("id"));
   const comment = await Comment.findOne({
     where: {
@@ -47,7 +53,7 @@ exports.create = async (userId, data) => {
   });
   const fileRId = derivedComment.objectId;
   const count = await exports.count(fileRId);
-  await Post.upsert(fileRId, {
+  await Post.update(fileRId, {
     commentsCount: count
   });
   return derivedComment;
@@ -68,18 +74,15 @@ exports.delete = async id => {
   assert(id, Errors.ERR_IS_REQUIRED("id"));
   const derivedComment = await exports.get(id);
   const fileRId = derivedComment.objectId;
-  await Comment.update(
-    {
-      deleted: true
-    },
-    {
-      where: {
-        id
-      }
+  await Comment.update({
+    deleted: true
+  }, {
+    where: {
+      id
     }
-  );
+  });
   const count = await exports.count(fileRId);
-  await Post.upsert(fileRId, {
+  await Post.update(fileRId, {
     commentsCount: count
   });
   return true;
@@ -97,7 +100,12 @@ exports.count = async objectId => {
 };
 
 exports.list = async options => {
-  const { userId, objectId, offset, limit } = options;
+  const {
+    userId,
+    objectId,
+    offset,
+    limit
+  } = options;
   const comments = await Comment.findAll({
     where: {
       objectId,
@@ -105,7 +113,9 @@ exports.list = async options => {
     },
     offset,
     limit,
-    order: [["createdAt", "ASC"]]
+    order: [
+      ["createdAt", "ASC"]
+    ]
   });
   const list = await Promise.all(
     comments.map(comment => {

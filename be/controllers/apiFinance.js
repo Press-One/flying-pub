@@ -203,7 +203,7 @@ exports.getRewardSummary = async ctx => {
   const {
     fileRId
   } = ctx.params;
-  const post = await Post.get(fileRId);
+  const post = await Post.getByRId(fileRId);
   const summary = post && post.rewardSummary ? JSON.parse(post.rewardSummary) : {};
   const receipts = await Finance.getReceiptsByFileRId(fileRId);
   const userAddressSet = new Set();

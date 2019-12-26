@@ -22,7 +22,7 @@ export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [showBack, setShowBack] = React.useState(false);
-  const { userStore, feedStore, modalStore, pathStore, settingsStore } = useStore();
+  const { preloadStore, userStore, modalStore, pathStore, settingsStore } = useStore();
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
   const { pathname } = props.location;
@@ -34,7 +34,7 @@ export default observer((props: any) => {
     setShowBack(pathname !== '/');
   }, [pathname, pushPath]);
 
-  if (!feedStore.isFetched) {
+  if (!preloadStore.ready) {
     return isMobile ? <div className="h-12" /> : null;
   }
 

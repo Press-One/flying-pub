@@ -19,6 +19,7 @@ import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import Comment from './comment';
+import { Post } from 'store/feed';
 import { useStore } from 'store';
 import { ago, isPc, isMobile, sleep, onlyForLogin } from 'utils';
 import FeedApi from './api';
@@ -35,8 +36,8 @@ marked.setOptions({
 
 export default observer((props: any) => {
   const { feedStore, userStore, modalStore } = useStore();
+  const { post, setPost } = feedStore;
   const { isLogin } = userStore;
-  const { currentPost: post, isFetched: isFetchedFeed } = feedStore;
   const [pending, setPending] = React.useState(true);
   const [voting, setVoting] = React.useState(false);
   const [showImage, setShowImage] = React.useState(false);
@@ -45,74 +46,46 @@ export default observer((props: any) => {
   const [openPrsIdentityModal, setOpenPrsIdentityModal] = React.useState(false);
   const [isFetchedReward, setIsFetchedReward] = React.useState(false);
   const [preloadPrsIdentityIframe, setPreloadPrsIdentityIframe] = React.useState(false);
-  const [toAddress, setToAddress] = React.useState('');
-  const [authorMixinClientId, setAuthorMixinClientId] = React.useState('');
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const noReward = rewardSummary.users.length === 0;
-  const { postId } = props.match.params;
-  const prsIdentityUrl = `https://press.one/public/file/v?rId=${postId}`;
+  const { rId } = props.match.params;
+  const prsIdentityUrl = `https://press.one/public/file/v?rId=${rId}`;
 
   React.useEffect(() => {
-    if (post && post.id === postId) {
-      setToAddress('');
-      setAuthorMixinClientId('');
-      setRewardSummary({ amountMap: {}, users: [] });
-    }
-  }, [post, postId]);
+    setRewardSummary({ amountMap: {}, users: [] });
+  }, [rId]);
 
   React.useEffect(() => {
     (async () => {
-      if (post && post.id === postId) {
-        try {
-          const blocks = await FeedApi.getBlock(postId);
-          const block = blocks[0];
-          const toAddress = block.user_address;
-          const { payment_url } = JSON.parse(block.meta);
-          const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-          setToAddress(toAddress);
-          setAuthorMixinClientId(mixinClientId);
-        } catch (err) {
-          console.log(err);
-        }
-      }
-    })();
-  }, [post, postId]);
-
-  React.useEffect(() => {
-    (async () => {
-      if (post && post.id === postId) {
-        try {
-          const rewardSummary = await FeedApi.getRewardSummary(post.id);
-          setRewardSummary(rewardSummary);
-        } catch (err) {}
-        setIsFetchedReward(true);
-      }
-    })();
-  }, [post, postId]);
-
-  React.useEffect(() => {
-    (async () => {
-      if (isFetchedFeed && (!onlyForLogin() || isLogin)) {
-        await sleep(800);
+      try {
+        const post: Post = await Api.fetchPost(rId);
+        document.title = `${post.title} - 飞帖`;
+        setPost(post);
         setPending(false);
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, [rId, setPost]);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const rewardSummary = await FeedApi.getRewardSummary(rId);
+        setRewardSummary(rewardSummary);
+      } catch (err) {}
+      setIsFetchedReward(true);
+    })();
+  }, [rId]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!pending && (!onlyForLogin() || isLogin)) {
         await sleep(2000);
         setPreloadPrsIdentityIframe(true);
       }
     })();
-  }, [isFetchedFeed, isLogin]);
-
-  React.useEffect(() => {
-    if (isFetchedFeed) {
-      feedStore.setPostId(decodeURIComponent(postId));
-    }
-  }, [postId, feedStore, isFetchedFeed]);
-
-  React.useEffect(() => {
-    if (post) {
-      const { title } = post;
-      document.title = `${title} - 飞帖`;
-    }
-  });
+  }, [pending, isLogin]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -145,19 +118,6 @@ export default observer((props: any) => {
     };
   }, []);
 
-  const onCloseRewardModal = async (isSuccess: boolean) => {
-    setOpenRewardModal(false);
-    if (isSuccess) {
-      await sleep(800);
-      const rewardSummary = await FeedApi.getRewardSummary(post.id);
-      setRewardSummary(rewardSummary);
-    }
-  };
-
-  if (!feedStore.isFetched) {
-    return null;
-  }
-
   if (pending) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -167,6 +127,19 @@ export default observer((props: any) => {
       </div>
     );
   }
+
+  if (!post) {
+    return <WaitingForFeed />;
+  }
+
+  const onCloseRewardModal = async (isSuccess: boolean) => {
+    setOpenRewardModal(false);
+    if (isSuccess) {
+      await sleep(200);
+      const rewardSummary = await FeedApi.getRewardSummary(rId);
+      setRewardSummary(rewardSummary);
+    }
+  };
 
   const backToTop = () => {
     try {
@@ -186,10 +159,6 @@ export default observer((props: any) => {
     }
     setOpenRewardModal(true);
   };
-
-  if (!post) {
-    return <WaitingForFeed />;
-  }
 
   const RewardView = () => {
     if (!isFetchedReward) {
@@ -220,12 +189,12 @@ export default observer((props: any) => {
     }
     return (
       <div className="pb-10">
-        <Comment fileRId={post.id} alwaysShowCommentEntry={post.content.length < 500} />
+        <Comment fileRId={post.rId} alwaysShowCommentEntry={post.content.length < 500} />
       </div>
     );
   };
 
-  const createVote = async (postId: string) => {
+  const createVote = async (rId: string) => {
     if (!isLogin) {
       modalStore.openLogin();
       return;
@@ -236,14 +205,14 @@ export default observer((props: any) => {
     setVoting(true);
     const post = await Api.createVote({
       objectType: 'posts',
-      objectId: postId,
+      objectId: rId,
       type: 'UP',
     });
-    feedStore.updatePostExtraMap(post.fileRId, post);
+    feedStore.updatePost(post.rId, post);
     setVoting(false);
   };
 
-  const resetVote = async (postId: string) => {
+  const resetVote = async (rId: string) => {
     if (!isLogin) {
       modalStore.openLogin();
       return;
@@ -254,35 +223,32 @@ export default observer((props: any) => {
     setVoting(true);
     const post = await Api.deleteVote({
       objectType: 'posts',
-      objectId: postId,
+      objectId: rId,
     });
-    feedStore.updatePostExtraMap(post.fileRId, post);
+    feedStore.updatePost(post.rId, post);
     setVoting(false);
   };
 
-  const VoteView = (postId: string, extra: any = {}) => {
+  const VoteView = (post: Post) => {
     return (
       <div
         className={classNames(
           {
-            'border-blue-400 active': extra.voted,
-            'border-gray-400': !extra.voted,
+            'border-blue-400 active': post.voted,
+            'border-gray-400': !post.voted,
           },
           'w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer',
         )}
         onClick={() => {
-          extra.voted ? resetVote(postId) : createVote(postId);
+          post.voted ? resetVote(post.rId) : createVote(post.rId);
         }}
       >
-        <Badge
-          badgeContent={Number(extra.upVotesCount) || 0}
-          invisible={!Number(extra.upVotesCount)}
-        >
+        <Badge badgeContent={Number(post.upVotesCount) || 0} invisible={!Number(post.upVotesCount)}>
           <div
             className={classNames(
               {
-                'text-blue-400': extra.voted,
-                'text-gray-600': !extra.voted,
+                'text-blue-400': post.voted,
+                'text-gray-600': !post.voted,
               },
               'flex items-center text-xl',
             )}
@@ -371,31 +337,26 @@ export default observer((props: any) => {
     );
   };
 
-  const { postExtraMap, blockMap } = feedStore;
-  const extra: any = postExtraMap[postId] || {};
-
   return (
-    <Fade in={true} timeout={500}>
+    <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="px-4 md:px-0 md:w-7/12 m-auto relative">
         <div className="hidden md:block">
           <BackButton history={props.history} />
         </div>
-        {isPc && (
-          <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post.id, extra)}</div>
-        )}
+        {isPc && <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post)}</div>}
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
-          <Link to={`/authors/${blockMap[postId]}`}>
+          <Link to={`/authors/${post.author.address}}`}>
             <div className="flex items-center">
               <div className="flex items-center w-6 h-6 mr-2">
                 <img
                   className="w-6 h-6 rounded-full border border-gray-300"
-                  src={post.attributes.avatar}
-                  alt={post.author}
+                  src={post.author.avatar}
+                  alt={post.author.name}
                 />
               </div>
               <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-                {post.author}
+                {post.author.name}
               </span>
             </div>
           </Link>
@@ -438,7 +399,7 @@ export default observer((props: any) => {
         {preloadPrsIdentityIframe && prsIdentityIframeView()}
         {isMobile && (
           <div className="flex items-center justify-center pt-5">
-            {authorMixinClientId && (
+            {post.paymentUrl && (
               <div
                 className="text-white w-12 h-12 rounded-full border flex justify-center items-center like-badge cursor-pointer border-blue-400 text-base font-bold bg-blue-400 mr-8"
                 onClick={reward}
@@ -446,21 +407,20 @@ export default observer((props: any) => {
                 赏
               </div>
             )}
-            <div className="flex justify-center">{VoteView(post.id, extra)}</div>
-            {!authorMixinClientId && <div className="pb-30" />}
+            <div className="flex justify-center">{VoteView(post)}</div>
+            {!post.paymentUrl && <div className="pb-30" />}
           </div>
         )}
-        {authorMixinClientId && RewardView()}
-        {!authorMixinClientId && <div className="pt-6" />}
+        {post.paymentUrl && RewardView()}
+        {!post.paymentUrl && <div className="pt-6" />}
         {CommentView()}
         {isMobile && prsIdentityModal()}
         <RewardModal
           open={openRewardModal}
           onClose={onCloseRewardModal}
-          toAddress={toAddress}
-          toAuthor={post.author}
-          fileRId={post.id}
-          toMixinClientId={authorMixinClientId}
+          toAddress={post.author.address}
+          toAuthor={post.author.name}
+          fileRId={post.rId}
         />
         <Viewer
           onMaskClick={() => setShowImage(false)}

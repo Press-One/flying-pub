@@ -6,52 +6,64 @@ import { useStore } from 'store';
 import Loading from 'components/Loading';
 import Posts from 'components/Posts';
 import Filter from './Filter';
-import { isMobile, getPostSelector, sleep } from 'utils';
+import { isMobile, sleep } from 'utils';
 import Api from 'api';
 
 export default observer(() => {
-  const { feedStore, cacheStore, settingsStore } = useStore();
+  const { preloadStore, feedStore, settingsStore } = useStore();
+  const { ready } = preloadStore;
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
+  const [pagePending, setPagePending] = React.useState(false);
+
+  const { isFetched, hasMore, posts, order, pending } = feedStore;
+  const { settings } = settingsStore;
+  const hasPosts = posts.length > 0;
 
   React.useEffect(() => {
-    if (feedStore.isFetched) {
-      (async () => {
-        try {
-          const { posts } = await Api.fetchPosts();
-          feedStore.setPostExtraMap(posts);
-        } catch (err) {
-          console.log(err);
-        }
-      })();
-    }
-  }, [feedStore]);
-
-  const restoreScrollPosition = (feedScrollTop: number, postId: string) => {
-    if (feedScrollTop === 0 && postId) {
-      const postDom: any = document.querySelector(`#${getPostSelector(postId)}`);
-      if (!postDom) {
+    (async () => {
+      if (!ready) {
         return;
       }
-      const restoreTop = postDom!.offsetTop - window.innerHeight / 2 + 100;
-      window.scroll(0, restoreTop);
-    } else {
-      window.scroll(0, feedScrollTop);
-    }
-  };
+      if (isFetched) {
+        return;
+      }
+      setPagePending(true);
+      const { filterType, optionsForFetching } = feedStore;
+      try {
+        const { posts } = await Api.fetchPosts(filterType, {
+          ...optionsForFetching,
+        });
+        feedStore.addPosts(posts);
+        await sleep(500);
+        setPagePending(false);
+      } catch (err) {}
+    })();
+  }, [ready, isFetched, feedStore]);
 
   React.useEffect(() => {
+    if (!ready || !isFetched) {
+      return;
+    }
+    const loadMore = async () => {
+      try {
+        const { filterType, optionsForFetching, limit, length } = feedStore;
+        const { posts } = await Api.fetchPosts(filterType, {
+          ...optionsForFetching,
+          offset: length,
+          limit,
+        });
+        feedStore.addPosts(posts);
+      } catch (err) {}
+    };
+
     setEnableFilterScroll(false);
-    const { feedScrollTop } = cacheStore;
-    const { postId } = feedStore;
-    restoreScrollPosition(feedScrollTop, postId);
     const debounceScroll = debounce(() => {
       const scrollElement = document.scrollingElement || document.documentElement;
       const scrollTop = scrollElement.scrollTop;
       const triggerBottomPosition = scrollElement.scrollHeight - window.innerHeight;
-      if (triggerBottomPosition - scrollTop < 500) {
-        feedStore.loadMore();
+      if (hasMore && triggerBottomPosition - scrollTop < 600) {
+        loadMore();
       }
-      cacheStore.setFeedScrollTop(scrollTop);
     }, 300);
     window.addEventListener('scroll', debounceScroll);
 
@@ -64,15 +76,17 @@ export default observer(() => {
       window.removeEventListener('scroll', debounceScroll);
       setEnableFilterScroll(false);
     };
-  }, [feedStore, cacheStore]);
+  }, [ready, feedStore, isFetched, hasMore]);
 
-  if (!feedStore.isFetched) {
-    return null;
+  if (!ready || !feedStore.isFetched || pagePending) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30">
+          <Loading />
+        </div>
+      </div>
+    );
   }
-
-  const { hasMore, pagePosts, postExtraMap, isChangingOrder, blockMap, order } = feedStore;
-  const { settings } = settingsStore;
-  const hasPosts = pagePosts.length > 0;
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
@@ -90,20 +104,18 @@ export default observer(() => {
         </div>
         <Filter enableScroll={enableFilterScroll} />
         <div className="min-h-screen">
-          {!isChangingOrder && hasPosts && (
-            <Posts posts={pagePosts} postExtraMap={postExtraMap} blockMap={blockMap} />
-          )}
-          {isChangingOrder && (
+          {!pending && hasPosts && <Posts posts={posts} />}
+          {pending && (
             <div className="pt-40">
               <Loading size={24} />
             </div>
           )}
-          {!isChangingOrder && hasMore && (
+          {!pending && hasMore && (
             <div className="mt-10">
               <Loading size={24} />
             </div>
           )}
-          {!isChangingOrder && !hasPosts && order === 'SUBSCRIPTION' && (
+          {!pending && !hasPosts && order === 'SUBSCRIPTION' && (
             <div className="pt-32 text-center text-gray-500">
               <div className="pt-4">去关注你感兴趣的作者吧！</div>
               <div className="mt-2">
@@ -115,7 +127,7 @@ export default observer(() => {
               </div>
             </div>
           )}
-          {!isChangingOrder && !hasPosts && order !== 'SUBSCRIPTION' && (
+          {!pending && !hasPosts && order !== 'SUBSCRIPTION' && (
             <div className="pt-32 text-center text-gray-500">
               <div className="pt-4">暂无文章</div>
             </div>

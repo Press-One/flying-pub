@@ -1,25 +1,47 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./');
+const Author = require('./author');
 
-const Post = sequelize.define('posts', {
+const Post = sequelize.define('v2_post', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
     autoIncrement: true
   },
-  fileRId: {
+  rId: {
     type: Sequelize.STRING,
+    unique: true
+  },
+  userAddress: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  title: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  content: {
+    type: Sequelize.TEXT,
+    allowNull: false
+  },
+  paymentUrl: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  pubDate: {
+    type: Sequelize.DATE,
+    allowNull: false
   },
   rewardSummary: {
     type: Sequelize.STRING,
     defaultValue: ''
   },
   upVotesCount: {
-    type: Sequelize.BIGINT,
+    type: Sequelize.INTEGER,
     defaultValue: 0
   },
   commentsCount: {
-    type: Sequelize.BIGINT,
+    type: Sequelize.INTEGER,
     defaultValue: 0
   }
 }, {
@@ -28,5 +50,10 @@ const Post = sequelize.define('posts', {
 });
 
 Post.sync();
+
+Post.belongsTo(Author, {
+  foreignKey: 'userAddress',
+  targetKey: 'address'
+});
 
 module.exports = Post;

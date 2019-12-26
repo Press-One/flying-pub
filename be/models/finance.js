@@ -9,7 +9,6 @@ const Cache = require("./cache");
 const Log = require("./log");
 const Receipt = require("./receipt");
 const Sequelize = require("sequelize");
-const request = require('request-promise');
 const Op = Sequelize.Op;
 const {
   Joi,
@@ -383,32 +382,16 @@ const payForFile = async (data = {}) => {
   return true;
 };
 
-const getAuthorInfoByRId = async rId => {
-  const blocks = await request({
-    uri: `https://press.one/api/v2/blocks/${rId}`,
-    json: true
-  }).promise();
-  const block = blocks[0];
-  const address = block.user_address;
-  const {
-    payment_url
-  } = JSON.parse(block.meta);
-  const mixinClientId = payment_url ? payment_url.split('/').pop() : '';
-  return {
-    address,
-    mixinClientId
-  }
-}
-
 const reward = async (fileRId, data = {}, options = {}) => {
   const {
     userId
   } = options;
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
-  const {
-    address,
-    mixinClientId
-  } = await getAuthorInfoByRId(fileRId);
+  const post = await Post.getByRId(fileRId, {
+    withPaymentUrl: true
+  });
+  const address = post.author.address;
+  const mixinClientId = post.paymentUrl ? post.paymentUrl.split('/').pop() : '';
   assert(address, Errors.ERR_IS_REQUIRED('address'));
   assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
   Log.create(userId, `开始打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId} ${mixinClientId}`);
@@ -792,7 +775,7 @@ const syncRewardAmount = async fileRId => {
   for (const currency in summary) {
     summary[currency] = bigFormat(summary[currency]);
   }
-  await Post.upsert(fileRId, {
+  await Post.update(fileRId, {
     rewardSummary: JSON.stringify(summary)
   });
 };

@@ -1,12 +1,11 @@
-const request = require('request-promise');
 const {
   createQueue
 } = require('./utils');
-const ApiAtom = require('../../controllers/apiAtom');
+const Atom = require('../../models/atom');
 const config = require('../../config');
 
 exports.createAtomCacheQueue = () => {
-  const queue = createQueue(`${config.serviceKey}_ATOM_CACHE`, {
+  const queue = createQueue(`${config.serviceKey}_SYNC_ATOM`, {
     limiter: {
       max: 1,
       duration: 20 * 1000 * 1
@@ -20,7 +19,7 @@ exports.createAtomCacheQueue = () => {
     },
   });
 
-  queue.process(`${config.serviceKey}_SYNC`, ApiAtom.sync);
+  queue.process(`${config.serviceKey}_SYNC`, Atom.sync);
 
   return queue;
 }
