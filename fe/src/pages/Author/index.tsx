@@ -59,6 +59,7 @@ export default observer((props: any) => {
       try {
         const author = await Api.fetchAuthor(address);
         authorStore.setAuthor(author);
+        document.title = author.name;
       } catch (err) {
         console.log(err);
       }

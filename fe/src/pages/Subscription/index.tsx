@@ -25,6 +25,10 @@ export default observer((props: any) => {
   const [pending, setPending] = React.useState(false);
 
   React.useEffect(() => {
+    document.title = `我的关注`;
+  }, []);
+
+  React.useEffect(() => {
     (async () => {
       if (subscriptionStore.isFetched) {
         return;

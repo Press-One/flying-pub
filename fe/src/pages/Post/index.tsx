@@ -59,7 +59,7 @@ export default observer((props: any) => {
     (async () => {
       try {
         const post: Post = await Api.fetchPost(rId);
-        document.title = `${post.title} - 飞帖`;
+        document.title = `${post.author.name}`;
         setPost(post);
         setPending(false);
       } catch (err) {
@@ -346,7 +346,7 @@ export default observer((props: any) => {
         {isPc && <div className="absolute top-0 left-0 -ml-24 mt-24">{VoteView(post)}</div>}
         <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
-          <Link to={`/authors/${post.author.address}}`}>
+          <Link to={`/authors/${post.author.address}`}>
             <div className="flex items-center">
               <div className="flex items-center w-6 h-6 mr-2">
                 <img

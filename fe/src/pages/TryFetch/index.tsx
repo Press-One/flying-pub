@@ -37,7 +37,6 @@ export default observer((props: any) => {
         }
         feedStore.setFilter(filter);
       }
-      document.title = `${settings['site.title']} - 飞帖`;
       return settings;
     };
 

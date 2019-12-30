@@ -21,6 +21,7 @@ export default observer(() => {
   return (
     <div>
       <Snackbar
+        className="snack-bar"
         anchorOrigin={{ vertical: isMobile ? 'top' : 'bottom', horizontal: 'center' }}
         open={snackbarStore.open}
         autoHideDuration={snackbarStore.autoHideDuration}
@@ -49,7 +50,7 @@ export default observer(() => {
         />
       </Snackbar>
       <style jsx global>{`
-        .MuiSnackbar-root .MuiTypography-root {
+        .snack-bar > div {
           background: ${snackbarStore.type === 'error'
             ? '#fc8181 !important'
             : '#63b3ed !important'};

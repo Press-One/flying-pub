@@ -20,6 +20,10 @@ export default observer(() => {
   const hasPosts = posts.length > 0;
 
   React.useEffect(() => {
+    document.title = `${settings['site.title'] || ''}`;
+  }, [settings]);
+
+  React.useEffect(() => {
     (async () => {
       if (!ready) {
         return;

@@ -33,7 +33,6 @@ const AppRouter = () => {
             <Route path="/posts/:rId" exact component={Post} />
             <Route path="/authors/:address" exact component={Author} />
             <Route path="/subscriptions" exact component={Subscription} />
-            <Route path="/wallet" exact component={Wallet} />
             <Route path="/permissionDeny" exact component={PermissionDeny} />
           </div>
           <LoginModal />
