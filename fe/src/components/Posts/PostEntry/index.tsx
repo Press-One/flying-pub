@@ -4,28 +4,28 @@ import ThumbUpAlt from '@material-ui/icons/ThumbUpAlt';
 import Comment from '@material-ui/icons/Comment';
 import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
-import { ago, getPostSelector } from '../../../utils';
+import { ago } from '../../../utils';
 import { isMobile } from 'utils';
 
 export default (props: any) => {
-  const { post, upVotesCount = 0, commentsCount = 0, hideAuthor = false, blockMap = {} } = props;
+  const { post, hideAuthor = false } = props;
   if (!post) {
     return null;
   }
-  const postId = post.id;
+  const postId = post.rId;
   const author = () => {
     return (
-      <Link to={`/authors/${blockMap[postId]}`}>
+      <Link to={`/authors/${post.author.address}`}>
         <div className="flex items-center">
           <div className="flex items-center w-6 h-6 mr-2">
             <img
               className="w-6 h-6 rounded-full border border-gray-300"
-              src={post.attributes.avatar}
-              alt={post.author}
+              src={post.author.avatar}
+              alt={post.author.name}
             />
           </div>
           <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-            {post.author}
+            {post.author.name}
           </span>
         </div>
       </Link>
@@ -33,7 +33,7 @@ export default (props: any) => {
   };
   return (
     <div>
-      <div id={getPostSelector(postId)} />
+      <div id={post.rId} />
       <div className="border-b border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
         <div className="px-4 gray">
           {!hideAuthor && (
@@ -58,12 +58,13 @@ export default (props: any) => {
                   {
                     <div className="flex items-center font-bold text-sm md:text-base mr-5">
                       <ThumbUpAlt />{' '}
-                      <span className="text-xs md:text-sm ml-1">{upVotesCount || ''}</span>
+                      <span className="text-xs md:text-sm ml-1">{post.upVotesCount || ''}</span>
                     </div>
                   }
-                  {commentsCount > 0 && (
+                  {post.commentsCount > 0 && (
                     <div className="flex items-center font-bold text-sm md:text-base">
-                      <Comment /> <span className="text-xs md:text-sm ml-1">{commentsCount}</span>
+                      <Comment />{' '}
+                      <span className="text-xs md:text-sm ml-1">{post.commentsCount}</span>
                     </div>
                   )}
                 </div>

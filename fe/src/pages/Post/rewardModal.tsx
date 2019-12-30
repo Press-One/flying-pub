@@ -62,7 +62,7 @@ export default observer((props: any) => {
       setIsPaid(false);
       setOpeningMixinSchema(false);
       onClose(true);
-      await sleep(1000);
+      await sleep(500);
       snackbarStore.show({
         message: '打赏成功',
       });
@@ -126,9 +126,9 @@ export default observer((props: any) => {
             });
             setPaying(false);
             setIsPaid(true);
-            await sleep(1000);
+            await sleep(500);
             onCloseModal(true);
-            await sleep(1000);
+            await sleep(500);
             snackbarStore.show({
               message: '打赏成功',
             });

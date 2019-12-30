@@ -1,6 +1,7 @@
 import React from 'react';
 import { toJS } from 'mobx';
 import { useLocalStore } from 'mobx-react-lite';
+import { createPreloadStore } from './preload';
 import { createUserStore } from './user';
 import { createFeedStore } from './feed';
 import { createCacheStore } from './cache';
@@ -12,6 +13,7 @@ import { createSubscriptionStore } from './subscription';
 import { createModalStore } from './modal';
 import { createPathStore } from './lastPath';
 import { createSettingsStore } from './settings';
+import { createAuthorStore } from './author';
 
 const storeContext = React.createContext<any>(null);
 
@@ -21,6 +23,7 @@ interface IProps {
 
 export const StoreProvider = ({ children }: IProps) => {
   const store = {
+    preloadStore: useLocalStore(createPreloadStore),
     userStore: useLocalStore(createUserStore),
     feedStore: useLocalStore(createFeedStore),
     cacheStore: useLocalStore(createCacheStore),
@@ -32,6 +35,7 @@ export const StoreProvider = ({ children }: IProps) => {
     modalStore: useLocalStore(createModalStore),
     pathStore: useLocalStore(createPathStore),
     settingsStore: useLocalStore(createSettingsStore),
+    authorStore: useLocalStore(createAuthorStore),
   };
   return <storeContext.Provider value={store}>{children}</storeContext.Provider>;
 };

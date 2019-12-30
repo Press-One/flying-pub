@@ -33,7 +33,7 @@ export default observer(() => {
           setStep(2);
         }
       } catch (err) {}
-      await sleep(800);
+      await sleep(500);
       walletStore.setIsFetchedIsCustomPinExist(true);
     })();
   }, [walletStore, setStep]);

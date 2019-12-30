@@ -142,7 +142,7 @@ exports.tryCreateWallet = async (userId) => {
   const existedWallet = await getByUserId(userId);
 
   if (existedWallet) {
-    return user;
+    return true;
   }
 
   const walletData = await generateWallet(userId);

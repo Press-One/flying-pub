@@ -77,7 +77,7 @@ export default observer(() => {
         const receipts = await FinanceApi.getReceipts({
           limit: 100,
         });
-        await sleep(800);
+        await sleep(500);
         walletStore.setReceipts(receipts);
         walletStore.setIsFetchedReceipts(true);
       } catch (err) {}

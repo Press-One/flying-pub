@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./');
+const Author = require('./author');
 
 const Subscription = sequelize.define('subscriptions', {
   id: {
@@ -10,7 +11,7 @@ const Subscription = sequelize.define('subscriptions', {
   userId: {
     type: Sequelize.BIGINT,
   },
-  author: {
+  authorAddress: {
     type: Sequelize.STRING,
   },
 }, {
@@ -19,5 +20,10 @@ const Subscription = sequelize.define('subscriptions', {
 });
 
 Subscription.sync();
+
+Subscription.belongsTo(Author, {
+  foreignKey: 'authorAddress',
+  targetKey: 'address'
+});
 
 module.exports = Subscription;

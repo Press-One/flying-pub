@@ -75,7 +75,7 @@ export default observer((props: any) => {
         const balance = await Api.getBalance();
         walletStore.setBalance(balance);
       } catch (err) {}
-      await sleep(800);
+      await sleep(500);
       walletStore.setIsFetchedBalance(true);
     })();
   }, [walletStore]);

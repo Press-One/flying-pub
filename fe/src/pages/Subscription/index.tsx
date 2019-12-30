@@ -5,26 +5,42 @@ import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import BackButton from 'components/BackButton';
+import { isMobile } from 'utils';
+import Api from 'api';
 
-const author = (address: string, authorMap: any) => {
-  const profile = authorMap[address];
+const authorView = (author: any) => {
   return (
-    <Link to={`/authors/${address}`}>
+    <Link to={`/authors/${author.address}`}>
       <div className="flex items-center border-t border-gray-300 py-2 px-4 cursor-pointer">
-        <img className="w-10 h-10 rounded-full" src={profile.avatar} alt={profile.name} />
-        <div className="ml-3 author-name text-gray-700 truncate w-4/5">{profile.name}</div>
+        <img className="w-10 h-10 rounded-full" src={author.avatar} alt={author.name} />
+        <div className="ml-3 author-name text-gray-700 truncate w-4/5">{author.name}</div>
       </div>
     </Link>
   );
 };
 
 export default observer((props: any) => {
-  const { feedStore, subscriptionStore } = useStore();
-  const { authorMap } = feedStore;
+  const { preloadStore, subscriptionStore } = useStore();
   const { authors } = subscriptionStore;
-  const isFetched = subscriptionStore.isFetched && feedStore.isFetched;
+  const [pending, setPending] = React.useState(false);
 
-  if (!isFetched) {
+  React.useEffect(() => {
+    (async () => {
+      if (subscriptionStore.isFetched) {
+        return;
+      }
+      setPending(true);
+      try {
+        const subscriptions = await Api.fetchSubscriptions();
+        const authors = subscriptions.map((subscription: any) => subscription.author);
+        subscriptionStore.addAuthors(authors);
+      } catch (err) {}
+      setPending(false);
+    })();
+  }, [subscriptionStore]);
+
+  const loading = !preloadStore.ready || pending;
+  if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -37,7 +53,7 @@ export default observer((props: any) => {
   const hasAuthors = authors.length > 0;
 
   return (
-    <Fade in={true} timeout={500}>
+    <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="md:w-7/12 m-auto pb-10 relative">
         <div className="hidden md:block">
           <BackButton history={props.history} />
@@ -45,10 +61,10 @@ export default observer((props: any) => {
         <div className="text-center px-4 font-bold text-xl text-gray-700">我的关注</div>
         {hasAuthors && (
           <div className="mt-3 md:mt-8 md:w-6/12 md:m-auto border-b border-gray-300 md:border-gray-200">
-            {authors.map((address: any) => {
+            {authors.map((author: any) => {
               return (
-                <div key={address} className="author">
-                  {author(address, authorMap)}
+                <div key={author.address} className="author">
+                  {authorView(author)}
                 </div>
               );
             })}

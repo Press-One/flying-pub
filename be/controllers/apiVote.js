@@ -19,11 +19,12 @@ const syncCommentVote = async (objectId, upVotesCount, userId) => {
 }
 
 const syncPostVote = async (objectId, upVotesCount, userId) => {
-  await Post.upsert(objectId, {
+  await Post.update(objectId, {
     upVotesCount
   });
-  const post = await Post.get(objectId, {
-    userId
+  const post = await Post.getByRId(objectId, {
+    userId,
+    withVoted: true
   });
   assert(post, Errors.ERR_IS_REQUIRED('post'));
   return post;

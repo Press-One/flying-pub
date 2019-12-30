@@ -1,39 +1,51 @@
 const Subscription = require('./sequelize/subscription');
+const Author = require('./sequelize/author');
+const {
+  packAuthor
+} = require('./author');
 const {
   assert,
   Errors
 } = require('../models/validator');
 
-exports.get = async (userId, author) => {
+const packSubscription = (subscription) => {
+  delete subscription.authorAddress;
+  if (subscription.author) {
+    subscription.author = packAuthor(subscription.author);
+  }
+  return subscription;
+}
+
+exports.get = async (userId, authorAddress) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
-  assert(author, Errors.ERR_IS_REQUIRED('author address'));
+  assert(authorAddress, Errors.ERR_IS_REQUIRED('authorAddress'));
   const subscription = await Subscription.findOne({
     where: {
       userId,
-      author
+      authorAddress
     }
   });
   assert(subscription, Errors.ERR_NOT_FOUND('subscription'));
   return subscription;
 }
 
-exports.create = async (userId, author) => {
+exports.create = async (userId, authorAddress) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
-  assert(author, Errors.ERR_IS_REQUIRED('author address'));
+  assert(authorAddress, Errors.ERR_IS_REQUIRED('authorAddress'));
   const subscription = await Subscription.create({
     userId,
-    author
+    authorAddress
   });
-  return subscription.toJSON();
+  return packSubscription(subscription.toJSON());
 }
 
-exports.destroy = async (userId, author) => {
+exports.destroy = async (userId, authorAddress) => {
   assert(userId, Errors.ERR_IS_REQUIRED('userId'));
-  assert(author, Errors.ERR_IS_REQUIRED('author address'));
+  assert(authorAddress, Errors.ERR_IS_REQUIRED('authorAddress'));
   await Subscription.destroy({
     where: {
       userId,
-      author
+      authorAddress
     }
   });
   return true;
@@ -44,7 +56,13 @@ exports.list = async userId => {
   const subscriptions = await Subscription.findAll({
     where: {
       userId
-    }
+    },
+    include: [{
+      model: Author,
+      where: {
+        status: 'allow'
+      }
+    }]
   });
-  return subscriptions.map(subscription => subscription.toJSON());
+  return subscriptions.map(subscription => packSubscription(subscription.toJSON()));
 }

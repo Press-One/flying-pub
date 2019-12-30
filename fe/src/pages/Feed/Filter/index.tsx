@@ -6,7 +6,7 @@ import Fade from '@material-ui/core/Fade';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { useStore } from 'store';
-import { sleep, isPc } from 'utils';
+import { sleep, isPc, isMobile } from 'utils';
 import Api from 'api';
 
 let filterTopPosition = 0;
@@ -14,15 +14,15 @@ let filterTopPosition = 0;
 export default observer((props: any) => {
   const { feedStore, settingsStore } = useStore();
   const selectorId = 'feed-filter';
-  const { filterOrder: order, filterHotDiffDays: hotDiffDays } = feedStore;
+  const { filterType: type, filterDayRange: dayRange } = feedStore;
   const { settings } = settingsStore;
   const { enableScroll } = props;
   const [fixed, setFixed] = React.useState(false);
-  const showHot =
-    settings['filter.hot.enabled'] && settings['filter.hot.diffDaysOptions'].length > 1;
-  const orderName = ['SUBSCRIPTION', 'PUB_DATE'];
-  if (settings['filter.hot.enabled']) {
-    orderName.splice(1, 0, 'HOT');
+  const showPopularity =
+    settings['filter.popularity.enabled'] && settings['filter.dayRangeOptions'].length > 1;
+  const typeName = ['SUBSCRIPTION', 'PUB_DATE'];
+  if (settings['filter.popularity.enabled']) {
+    typeName.splice(1, 0, 'POPULARITY');
   }
 
   React.useEffect(() => {
@@ -79,63 +79,76 @@ export default observer((props: any) => {
   };
 
   const setFilter = async (filter: any) => {
-    feedStore.setIsChangingOrder(true);
+    feedStore.setPending(true);
     feedStore.setFilter(filter);
     try {
-      await Api.saveSettings({
-        'filter.order': filter.order,
-        'filter.hot.diffDays': filter.hotDiffDays,
-      });
+      const settings: any = {
+        'filter.type': filter.type,
+      };
+      if (filter.type === 'POPULARITY') {
+        settings['filter.dayRange'] = filter.dayRange;
+      }
+      await Api.saveSettings(settings);
     } catch (err) {}
-    await sleep(500);
-    feedStore.setIsChangingOrder(false);
+    try {
+      const { filterType, optionsForFetching, limit, length } = feedStore;
+      const { posts } = await Api.fetchPosts(filterType, {
+        ...optionsForFetching,
+        offset: length,
+        limit,
+      });
+      feedStore.addPosts(posts);
+    } catch (err) {}
+    await sleep(200);
+    feedStore.setPending(false);
   };
 
   const handleOrderChange = (e: any, value: any) => {
     tryScroll();
-    if (orderName[value] === 'HOT') {
+    if (typeName[value] === 'POPULARITY') {
+      const dayRangeOptions = settings['filter.dayRangeOptions'];
       setFilter({
-        order: 'HOT',
-        hotDiffDays: hotDiffDays > 0 ? hotDiffDays : 3,
+        type: 'POPULARITY',
+        dayRange: dayRange > 0 ? dayRange : dayRangeOptions[0],
       });
     } else {
       setFilter({
-        order: orderName[value],
+        type: typeName[value],
       });
     }
   };
 
-  const hotItems = () => {
-    const diffDaysOptions = settings['filter.hot.diffDaysOptions'];
-    if (diffDaysOptions.length === 0) {
+  const popularityItems = () => {
+    const dayRangeOptions = settings['filter.dayRangeOptions'];
+    if (dayRangeOptions.length === 0) {
       return null;
     }
     return (
-      <Fade in={true} timeout={500}>
+      <Fade in={true} timeout={isMobile ? 0 : 500}>
         <div className="flex justify-center py-2 md:py-3 flex border-t border-gray-300 md:border-gray-200">
-          {diffDaysOptions.map((diffDays: number) => {
-            const text = diffDays > 0 ? `${diffDays}天内` : '全部';
-            return <div key={diffDays}>{hotItem(text, diffDays)}</div>;
+          {dayRangeOptions.map((dayRange: number) => {
+            const text = dayRange > 0 ? `${dayRange}天内` : '全部';
+            return <div key={dayRange}>{popularityItem(text, dayRange)}</div>;
           })}
         </div>
       </Fade>
     );
   };
 
-  const hotItem = (text: string, value: number) => {
+  const popularityItem = (text: string, value: number) => {
     return (
       <div
         onClick={() => {
           tryScroll();
           setFilter({
-            order: 'HOT',
-            hotDiffDays: value,
+            type: 'POPULARITY',
+            dayRange: value,
           });
         }}
         className={classNames(
           {
-            'bg-blue-400 text-white': hotDiffDays === value,
-            'bg-gray-200 text-gray-600': hotDiffDays !== value,
+            'bg-blue-400 text-white': dayRange === value,
+            'bg-gray-200 text-gray-600': dayRange !== value,
           },
           'py-1 px-3 mx-2 md:mx-3 text-xs rounded color md:cursor-pointer',
         )}
@@ -146,6 +159,7 @@ export default observer((props: any) => {
   };
 
   const main = () => {
+    const typeValue = typeName.indexOf(type);
     return (
       <div
         id={selectorId}
@@ -168,24 +182,24 @@ export default observer((props: any) => {
             className={classNames(
               {
                 'md:w-7/12 md:m-auto': fixed,
-                'border-b': fixed || !showHot || order !== 'HOT',
+                'border-b': fixed || !showPopularity || type !== 'POPULARITY',
               },
               'filter border-t border-gray-300 md:border-gray-200',
             )}
           >
             <Tabs
-              value={orderName.indexOf(order)}
+              value={typeValue >= 0 ? typeValue : 0}
               onChange={handleOrderChange}
               className="relative"
             >
               <Tab label="关注" className="tab" />
-              {settings['filter.hot.enabled'] && <Tab label="热榜" className="tab" />}
+              {settings['filter.popularity.enabled'] && <Tab label="热榜" className="tab" />}
               <Tab label="最新" className="tab" />
             </Tabs>
-            {showHot && order === 'HOT' && hotItems()}
+            {showPopularity && type === 'POPULARITY' && popularityItems()}
             <style jsx>{`
               .filter :global(.tab) {
-                width: ${orderName.length === 2 ? '50%' : '33.333333%'};
+                width: ${typeName.length === 2 ? '50%' : '33.333333%'};
                 max-width: 100%;
                 font-weight: bold;
                 font-size: 15px;
@@ -198,7 +212,7 @@ export default observer((props: any) => {
   };
 
   const placeholder = () => {
-    const height = showHot && order === 'HOT' ? 92 : 49;
+    const height = showPopularity && type === 'POPULARITY' ? 92 : 49;
     return (
       <div>
         <div id={`${selectorId}-placeholder`}></div>

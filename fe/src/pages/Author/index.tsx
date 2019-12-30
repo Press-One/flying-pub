@@ -2,14 +2,13 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { Post } from 'store/feed';
 import Button from 'components/Button';
 import Posts from 'components/Posts';
 import Loading from 'components/Loading';
 import BackButton from 'components/BackButton';
+import debounce from 'lodash.debounce';
 import Api from 'api';
-import _Api from './api';
-import { sleep } from 'utils';
+import { sleep, isMobile } from 'utils';
 
 const authorView = (props: any = {}) => {
   const { author, subscribed, subscribe, unsubscribe } = props;
@@ -33,34 +32,84 @@ const authorView = (props: any = {}) => {
 };
 
 export default observer((props: any) => {
-  const { feedStore, subscriptionStore } = useStore();
-  const [subscribed, setSubscribed] = React.useState(false);
-  const [pending, setPending] = React.useState(true);
-  const { isFetched, posts, postExtraMap, blockMap, authorMap } = feedStore;
+  const { authorStore, subscriptionStore } = useStore();
+  const [pending, setPending] = React.useState(false);
+  const { author, subscribed, posts, hasMore } = authorStore;
   const { address } = props.match.params;
-  const author = authorMap[address] || {};
-  const authorPosts = posts.filter((post: Post) => blockMap[post.id] === address);
-  let cachedAddress = '';
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   React.useEffect(() => {
-    if (cachedAddress === address) {
+    if (author.address === address) {
       return;
     }
-    (async () => {
+    const fetchAuthorPosts = async () => {
+      const { length, limit } = authorStore;
+      const { posts } = await Api.fetchPosts('PUB_DATE', {
+        address,
+        offset: length,
+        limit,
+      });
+      authorStore.addPosts(posts);
+    };
+
+    const fetchAuthor = async () => {
       try {
-        await _Api.fetchSubscription(address);
-        setSubscribed(true);
-      } catch (err) {}
+        const author = await Api.fetchAuthor(address);
+        authorStore.setAuthor(author);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    const fetchSubscription = async () => {
+      try {
+        await Api.fetchSubscription(address);
+        authorStore.setSubscribed(true);
+      } catch (err) {
+        authorStore.setSubscribed(false);
+      }
+    };
+
+    (async () => {
+      setPending(true);
+      authorStore.reset();
+      await Promise.all([fetchAuthor(), fetchSubscription(), fetchAuthorPosts()]);
       await sleep(200);
       setPending(false);
     })();
-  }, [cachedAddress, address]);
+  }, [author, address, authorStore]);
 
-  if (pending || !isFetched) {
+  React.useEffect(() => {
+    // TODO: DRY
+    const fetchAuthorPosts = async () => {
+      const { length, limit } = authorStore;
+      const { posts } = await Api.fetchPosts('PUB_DATE', {
+        address,
+        offset: length,
+        limit,
+      });
+      authorStore.addPosts(posts);
+    };
+
+    const debounceScroll = debounce(() => {
+      const scrollElement = document.scrollingElement || document.documentElement;
+      const scrollTop = scrollElement.scrollTop;
+      const triggerBottomPosition = scrollElement.scrollHeight - window.innerHeight;
+      if (hasMore && triggerBottomPosition - scrollTop < 500) {
+        fetchAuthorPosts();
+      }
+    }, 300);
+    window.addEventListener('scroll', debounceScroll);
+
+    return () => {
+      window.removeEventListener('scroll', debounceScroll);
+    };
+  }, [address, authorStore, hasMore]);
+
+  if (pending) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -70,22 +119,11 @@ export default observer((props: any) => {
     );
   }
 
-  const tryFetchSubscriptions = async () => {
-    try {
-      const subscriptions = await Api.fetchSubscriptions();
-      const authors = subscriptions.map((subscription: any) => subscription.author);
-      subscriptionStore.setAuthors(authors);
-      feedStore.setAuthors(authors);
-    } catch (err) {}
-  };
-
   const subscribe = async () => {
     try {
-      await _Api.subscribe({
-        address,
-      });
-      setSubscribed(true);
-      tryFetchSubscriptions();
+      await Api.subscribe(address);
+      authorStore.setSubscribed(true);
+      subscriptionStore.addAuthor(authorStore.author);
     } catch (err) {
       console.log(err);
     }
@@ -93,16 +131,16 @@ export default observer((props: any) => {
 
   const unsubscribe = async () => {
     try {
-      await _Api.unsubscribe(address);
-      setSubscribed(false);
-      tryFetchSubscriptions();
+      await Api.unsubscribe(address);
+      authorStore.setSubscribed(false);
+      subscriptionStore.removeAuthor(authorStore.author.address);
     } catch (err) {
       console.log(err);
     }
   };
 
   return (
-    <Fade in={true} timeout={500}>
+    <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="md:w-7/12 m-auto pb-10 relative">
         <div className="hidden md:block">
           <BackButton history={props.history} />
@@ -116,14 +154,13 @@ export default observer((props: any) => {
           })}
         </div>
         <div className="py-10">
-          <Posts
-            posts={authorPosts}
-            postExtraMap={postExtraMap}
-            blockMap={blockMap}
-            borderTop
-            hideAuthor
-          />
+          <Posts posts={posts} borderTop hideAuthor />
         </div>
+        {!pending && hasMore && (
+          <div className="mt-10">
+            <Loading size={24} />
+          </div>
+        )}
       </div>
     </Fade>
   );

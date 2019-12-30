@@ -1,4 +1,5 @@
 import Parser from 'rss-parser';
+import qs from 'query-string';
 import request from './request';
 
 export default {
@@ -50,8 +51,12 @@ export default {
     const result = await parser.parseString(safeText);
     return result;
   },
-  fetchPosts() {
-    return request('/api/posts');
+  fetchPosts(type: string, options: any = {}) {
+    const path = type === 'SUBSCRIPTION' ? '/api/posts/subscription' : '/api/posts';
+    return request(`${path}?${qs.stringify(options)}`);
+  },
+  fetchPost(rId: string) {
+    return request(`/api/posts/${rId}`);
   },
   createVote(vote: any) {
     const path = '/api/votes';
@@ -83,10 +88,28 @@ export default {
       },
     });
   },
-  fetchBlockMap() {
-    return request('/api/blocks');
-  },
   fetchSubscriptions() {
     return request(`/api/subscriptions`);
+  },
+  fetchAuthor(address: string) {
+    return request(`/api/authors/${address}`);
+  },
+  fetchSubscription(address: string) {
+    return request(`/api/subscriptions/${address}`);
+  },
+  subscribe(address: string) {
+    return request(`/api/subscriptions`, {
+      method: 'POST',
+      body: {
+        payload: {
+          address,
+        },
+      },
+    });
+  },
+  unsubscribe(address: string) {
+    return request(`/api/subscriptions/${address}`, {
+      method: 'DELETE',
+    });
   },
 };
