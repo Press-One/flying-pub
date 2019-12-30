@@ -26,7 +26,6 @@ const syncAuthors = async (options = {}) => {
       }).promise();
       const length = authors.length;
       for (const author of authors) {
-        Log.createAnonymity('同步作者', `${author.user_address} ${author.status}`);
         await Author.upsert(author.user_address, {
           status: author.status
         });
