@@ -1,72 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="utf-8" />
-  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
-  <title>(新版本)加载中...</title>
-  <style>
-    .intercom-launcher-frame {
-      display: none !important;
-    }
-
-    .intercom-launcher-frame.show {
-      display: block !important;
-    }
-  </style>
-</head>
-
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-
-  <script>
-    window.intercomSettings = {
-      app_id: "q3uadlqf"
-    };
-    (function () {
-      var w = window;
-      var ic = w.Intercom;
-      if (typeof ic === "function") {
-        ic('reattach_activator');
-        ic('update', w.intercomSettings);
-      } else {
-        var d = document;
-        var i = function () {
-          i.c(arguments);
-        };
-        i.q = [];
-        i.c = function (args) {
-          i.q.push(args);
-        };
-        w.Intercom = i;
-        var l = function () {
-          setTimeout(() => {
-            var s = d.createElement('script');
-            s.type = 'text/javascript';
-            s.async = true;
-            s.src = 'https://widget.intercom.io/widget/q3uadlqf';
-            var x = d.getElementsByTagName('script')[0];
-            x.parentNode.insertBefore(s, x);
-            Intercom('onShow', function () {
-              const iframeEntry = document.querySelector('.intercom-launcher-frame');
-              iframeEntry.classList.add('show');
-            });
-            Intercom('onHide', function () {
-              const iframeEntry = document.querySelector('.intercom-launcher-frame');
-              iframeEntry.classList.remove('show');
-            });
-          }, 5000);
-        };
-        if (w.attachEvent) {
-          w.attachEvent('onload', l);
-        } else {
-          w.addEventListener('load', l, false);
-        }
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>加载中...</title>
+    <style>
+      .intercom-launcher-frame {
+        display: none !important;
       }
-    })();
-  </script>
-</body>
 
+      .intercom-launcher-frame.show {
+        display: block !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+
+    <script>
+      window.intercomSettings = {
+        app_id: 'q3uadlqf',
+      };
+      (function() {
+        var w = window;
+        var ic = w.Intercom;
+        if (typeof ic === 'function') {
+          ic('reattach_activator');
+          ic('update', w.intercomSettings);
+        } else {
+          var d = document;
+          var i = function() {
+            i.c(arguments);
+          };
+          i.q = [];
+          i.c = function(args) {
+            i.q.push(args);
+          };
+          w.Intercom = i;
+          var l = function() {
+            setTimeout(() => {
+              var s = d.createElement('script');
+              s.type = 'text/javascript';
+              s.async = true;
+              s.src = 'https://widget.intercom.io/widget/q3uadlqf';
+              var x = d.getElementsByTagName('script')[0];
+              x.parentNode.insertBefore(s, x);
+              Intercom('onShow', function() {
+                const iframeEntry = document.querySelector('.intercom-launcher-frame');
+                iframeEntry.classList.add('show');
+              });
+              Intercom('onHide', function() {
+                const iframeEntry = document.querySelector('.intercom-launcher-frame');
+                iframeEntry.classList.remove('show');
+              });
+            }, 5000);
+          };
+          if (w.attachEvent) {
+            w.attachEvent('onload', l);
+          } else {
+            w.addEventListener('load', l, false);
+          }
+        }
+      })();
+    </script>
+
+    <!-- 版本日期: 2019-12-30 -->
+  </body>
 </html>
