@@ -6,11 +6,9 @@ const Author = require('./author');
 const Post = require('./post');
 const Cache = require('./cache');
 const Log = require('./log');
-const PostExtra = require('./posts-extra');
 const type = `${config.serviceKey}_SYNC_ATOM`;
 
 const syncAuthors = async (options = {}) => {
-  console.log(` ------------- 同步作者 ---------------`);
   let stop = false;
   let done = false;
   while (!stop) {
@@ -28,15 +26,11 @@ const syncAuthors = async (options = {}) => {
       }).promise();
       const length = authors.length;
       for (const author of authors) {
-        // Log.createAnonymity('同步作者', `${author.user_address} ${author.status}`);
+        Log.createAnonymity('同步作者', `${author.user_address} ${author.status}`);
         await Author.upsert(author.user_address, {
           status: author.status
         });
       }
-      console.log(
-        ` ------------- 当前请求返回的用户数量 ---------------`,
-        length
-      );
       let offsetIncrement = 0;
       if (length < step) {
         // user 历史记录会改变，更新的 user 会排在最后，所以 offset 每次多抓 10 条，确保能抓到更新的 user 数据
@@ -52,7 +46,6 @@ const syncAuthors = async (options = {}) => {
         offsetIncrement = length;
       }
       const newOffset = offset + offsetIncrement;
-      console.log(` ------------- newOffset ---------------`, newOffset);
       await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.error(err);
@@ -126,7 +119,6 @@ const extractPost = async post => {
 };
 
 const syncPosts = async (options = {}) => {
-  console.log(` ------------- 同步文章 ---------------`);
   let stop = false;
   while (!stop) {
     try {
@@ -146,7 +138,6 @@ const syncPosts = async (options = {}) => {
       const items = result.items || [];
       if (items.length === 0) {
         stop = true;
-        console.log('所有文章同步完毕');
         continue;
       }
       const derivedItems = await Promise.all(items.map(extractPost));
@@ -163,26 +154,11 @@ const syncPosts = async (options = {}) => {
           name: author.name,
           avatar: author.avatar
         });
-        console.log(` ------------- 同步作者资料 author ---------------`, author);
-        // Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`)
+        Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`)
         await Post.create(derivedPost);
-        // Log.createAnonymity('同步文章', `${derivedPost.rId} ${derivedPost.title}`)
-        const postExtra = await PostExtra.get(derivedPost.rId);
-        if (postExtra) {
-          const {
-            rewardSummary,
-            upVotesCount,
-            commentsCount
-          } = postExtra;
-          await Post.update(derivedPost.rId, {
-            rewardSummary: rewardSummary || '',
-            upVotesCount: ~~upVotesCount,
-            commentsCount: ~~commentsCount
-          })
-        }
+        Log.createAnonymity('同步文章', `${derivedPost.rId} ${derivedPost.title}`)
       }
       const newOffset = offset + items.length;
-      console.log(` ------------- newOffset ---------------`, newOffset);
       await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.log(err);
