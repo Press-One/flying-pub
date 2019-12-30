@@ -17,7 +17,6 @@ export function createAuthorStore() {
     },
     setAuthor(author: any) {
       this.author = author;
-      this.posts.length = 0;
     },
     setSubscribed(subscribed: boolean) {
       this.subscribed = subscribed;
