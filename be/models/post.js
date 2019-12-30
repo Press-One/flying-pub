@@ -145,7 +145,7 @@ exports.create = async (data) => {
     userAddress: Joi.string().trim(),
     title: Joi.string().trim(),
     content: Joi.string().trim(),
-    paymentUrl: Joi.string().trim(),
+    paymentUrl: Joi.optional(),
     pubDate: Joi.date()
   });
   const exists = await getByRId(data.rId, {

@@ -25,8 +25,7 @@ const Post = sequelize.define('v2_post', {
     allowNull: false
   },
   paymentUrl: {
-    type: Sequelize.STRING,
-    allowNull: false
+    type: Sequelize.STRING
   },
   pubDate: {
     type: Sequelize.DATE,
