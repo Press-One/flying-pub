@@ -133,7 +133,7 @@ const syncPosts = async (options = {}) => {
       const {
         step = 20
       } = options;
-      const key = 'POSTS_OFFSET';
+      const key = 'POSTS_OFFSET_1';
       const offset = Number(await Cache.pGet(type, key)) || 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
       const text = await request({
