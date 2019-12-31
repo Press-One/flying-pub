@@ -18,13 +18,17 @@ const syncAuthors = async (options = {}) => {
       } = options;
       const key = 'AUTHORS_OFFSET';
       const offset = Number(await Cache.pGet(type, key)) || 0;
-      const uri = `${config.atom.authorsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
+      const uri = `${config.atom.authorsUrl}?topic=${config.atom.topic}&offset=${offset < 0 ? 0 : offset}&limit=${step}`;
       const authors = await request({
         uri,
         json: true,
         timeout: 5000
       }).promise();
       const length = authors.length;
+      if (offset === 0 && length === 0) {
+        stop = true;
+        return;
+      }
       for (const author of authors) {
         await Author.upsert(author.user_address, {
           status: author.status
