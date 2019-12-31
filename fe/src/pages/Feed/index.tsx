@@ -17,6 +17,7 @@ export default observer(() => {
 
   const { isFetched, hasMore, posts, order, pending } = feedStore;
   const { settings } = settingsStore;
+  const filterEnabled = settings['filter.enabled'];
   const hasPosts = posts.length > 0;
 
   React.useEffect(() => {
@@ -104,9 +105,14 @@ export default observer(() => {
             {settings['site.title']}
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
-          <div className="text-gray-600 text-center mt-3 text-base">{settings['site.slogan']}</div>
+          <div className="w-56 md:w-full m-auto text-gray-600 text-center mt-3 text-base">
+            {settings['site.slogan']}
+          </div>
         </div>
-        <Filter enableScroll={enableFilterScroll} />
+        {filterEnabled && <Filter enableScroll={enableFilterScroll} />}
+        {!filterEnabled && (
+          <div className="mt-10 md:mt-12 border-t border-gray-300 md:border-gray-200" />
+        )}
         <div className="min-h-screen">
           {!pending && hasPosts && <Posts posts={posts} />}
           {pending && (

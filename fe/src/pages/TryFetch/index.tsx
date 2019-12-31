@@ -14,9 +14,8 @@ export default observer((props: any) => {
     if (ready) {
       return;
     }
-    const fetchSettings = async () => {
-      const settings = await Api.fetchSettings();
-      settingsStore.setSettings(settings);
+
+    const initFilter = (settings: any) => {
       const type = settings['filter.type'];
       const popularityDisabled = !settings['filter.popularity.enabled'];
       if (popularityDisabled) {
@@ -36,6 +35,15 @@ export default observer((props: any) => {
           filter.dayRange = validDayRange;
         }
         feedStore.setFilter(filter);
+      }
+    };
+
+    const fetchSettings = async () => {
+      const settings = await Api.fetchSettings();
+      settingsStore.setSettings(settings);
+      const filterEnabled = settings['filter.enabled'];
+      if (filterEnabled) {
+        initFilter(settings);
       }
       return settings;
     };
