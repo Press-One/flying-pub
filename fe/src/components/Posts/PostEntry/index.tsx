@@ -8,28 +8,31 @@ import { ago } from '../../../utils';
 import { isMobile } from 'utils';
 
 export default (props: any) => {
-  const { post, hideAuthor = false } = props;
+  const { post, hideAuthor = false, authorPageEnabled } = props;
   if (!post) {
     return null;
   }
   const postId = post.rId;
   const author = () => {
-    return (
-      <Link to={`/authors/${post.author.address}`}>
-        <div className="flex items-center">
-          <div className="flex items-center w-6 h-6 mr-2">
-            <img
-              className="w-6 h-6 rounded-full border border-gray-300"
-              src={post.author.avatar}
-              alt={post.author.name}
-            />
-          </div>
-          <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-            {post.author.name}
-          </span>
+    const content = () => (
+      <div className="flex items-center">
+        <div className="flex items-center w-6 h-6 mr-2">
+          <img
+            className="w-6 h-6 rounded-full border border-gray-300"
+            src={post.author.avatar}
+            alt={post.author.name}
+          />
         </div>
+        <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
+          {post.author.name}
+        </span>
+      </div>
+    )
+    return authorPageEnabled ? (
+      <Link to={`/authors/${post.author.address}`}>
+        {content()}
       </Link>
-    );
+    ) : content();
   };
   return (
     <div>
@@ -38,7 +41,7 @@ export default (props: any) => {
         <div className="px-4 gray">
           {!hideAuthor && (
             <div className="flex items-center pb-2">
-              {isMobile ? (
+              {!authorPageEnabled ||isMobile ? (
                 author()
               ) : (
                 <Tooltip placement="left" title="点击进入 Ta 的主页">

@@ -159,7 +159,12 @@ export default observer((props: any) => {
           })}
         </div>
         <div className="py-10">
-          <Posts posts={posts} borderTop hideAuthor />
+          <Posts
+            posts={posts}
+            borderTop
+            hideAuthor
+            authorPageEnabled={settings['author.page.enabled']}
+          />
         </div>
         {!pending && hasMore && (
           <div className="mt-10">

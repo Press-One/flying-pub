@@ -5,7 +5,7 @@ import PostEntry from './PostEntry';
 
 export default (props: any) => {
   const posts: Post[] = props.posts || [];
-  const { borderTop, hideAuthor } = props;
+  const { borderTop, hideAuthor, authorPageEnabled } = props;
   return (
     <div
       className={classNames({
@@ -13,7 +13,7 @@ export default (props: any) => {
       })}
     >
       {posts.map((post: Post) => {
-        return <PostEntry post={post} key={post.rId} hideAuthor={hideAuthor} />;
+        return <PostEntry post={post} key={post.rId} hideAuthor={hideAuthor} authorPageEnabled={authorPageEnabled} />;
       })}
     </div>
   );

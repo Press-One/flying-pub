@@ -114,7 +114,9 @@ export default observer(() => {
           <div className="mt-10 md:mt-12 border-t border-gray-300 md:border-gray-200" />
         )}
         <div className="min-h-screen">
-          {!pending && hasPosts && <Posts posts={posts} />}
+          {!pending && hasPosts && (
+            <Posts posts={posts} authorPageEnabled={settings['author.page.enabled']} />
+          )}
           {pending && (
             <div className="pt-40">
               <Loading size={24} />
