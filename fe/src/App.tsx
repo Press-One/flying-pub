@@ -6,7 +6,6 @@ import Feed from './pages/Feed';
 import Post from './pages/Post';
 import Author from './pages/Author';
 import Subscription from './pages/Subscription';
-import Wallet from './components/WalletModal/Wallet';
 import TryFetch from './pages/TryFetch';
 import PermissionDeny from './pages/PermissionDeny';
 

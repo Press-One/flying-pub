@@ -245,22 +245,24 @@ export default observer((props: any) => {
         )}
         {userStore.isLogin && (
           <div>
-            <Link to="/subscriptions">
-              <div
-                onClick={() => {
-                  handleClose();
-                }}
-              >
-                <MenuItem className="text-gray-700">
-                  <div className="py-1 flex items-center">
-                    <span className="flex items-center text-xl mr-2">
-                      <People />
-                    </span>{' '}
-                    我的关注
-                  </div>
-                </MenuItem>
-              </div>
-            </Link>
+            {settings['subscriptions.enabled'] && (
+              <Link to="/subscriptions">
+                <div
+                  onClick={() => {
+                    handleClose();
+                  }}
+                >
+                  <MenuItem className="text-gray-700">
+                    <div className="py-1 flex items-center">
+                      <span className="flex items-center text-xl mr-2">
+                        <People />
+                      </span>{' '}
+                      我的关注
+                    </div>
+                  </MenuItem>
+                </div>
+              </Link>
+            )}
             <div
               onClick={() => {
                 handleClose();
@@ -276,21 +278,23 @@ export default observer((props: any) => {
                 </div>
               </MenuItem>
             </div>
-            {settings['pub.site.url'] && <div
-              onClick={() => {
-                handleClose();
-                window.open(settings['pub.site.url']);
-              }}
-            >
-              <MenuItem className="text-gray-700">
-                <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
-                    <Edit />
-                  </span>{' '}
-                  写文章
-                </div>
-              </MenuItem>
-            </div>}
+            {settings['pub.site.url'] && (
+              <div
+                onClick={() => {
+                  handleClose();
+                  window.open(settings['pub.site.url']);
+                }}
+              >
+                <MenuItem className="text-gray-700">
+                  <div className="py-1 flex items-center">
+                    <span className="flex items-center text-xl mr-2">
+                      <Edit />
+                    </span>{' '}
+                    写文章
+                  </div>
+                </MenuItem>
+              </div>
+            )}
             {settings['menu.links'].map((link: any) => {
               return (
                 <div

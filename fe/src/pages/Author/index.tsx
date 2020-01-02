@@ -11,28 +11,31 @@ import Api from 'api';
 import { sleep, isMobile } from 'utils';
 
 const authorView = (props: any = {}) => {
-  const { author, subscribed, subscribe, unsubscribe } = props;
+  const { author, subscribed, subscribe, unsubscribe, showSubscription } = props;
   return (
     <div className="flex flex-col items-center">
       <img className="w-16 h-16 rounded-full" src={author.avatar} alt={author.name} />
       <div className="font-bold mt-3 text-base text-center px-8">{author.name}</div>
-      <div className="mt-3 h-8">
-        {subscribed ? (
-          <Button onClick={unsubscribe} small color="gray">
-            已关注
-          </Button>
-        ) : (
-          <Button onClick={subscribe} small>
-            关注
-          </Button>
-        )}
-      </div>
+      {showSubscription && (
+        <div className="mt-3 h-8">
+          {subscribed ? (
+            <Button onClick={unsubscribe} small color="gray">
+              已关注
+            </Button>
+          ) : (
+            <Button onClick={subscribe} small>
+              关注
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
 export default observer((props: any) => {
-  const { authorStore, subscriptionStore } = useStore();
+  const { authorStore, subscriptionStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const [pending, setPending] = React.useState(false);
   const { author, subscribed, posts, hasMore } = authorStore;
   const { address } = props.match.params;
@@ -152,6 +155,7 @@ export default observer((props: any) => {
             subscribe,
             unsubscribe,
             subscribed,
+            showSubscription: settings['subscriptions.enabled'],
           })}
         </div>
         <div className="py-10">
