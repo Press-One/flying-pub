@@ -276,7 +276,7 @@ export default observer((props: any) => {
                 </div>
               </MenuItem>
             </div>
-            <div
+            {settings['pub.site.url'] && <div
               onClick={() => {
                 handleClose();
                 window.open(settings['pub.site.url']);
@@ -290,7 +290,7 @@ export default observer((props: any) => {
                   写文章
                 </div>
               </MenuItem>
-            </div>
+            </div>}
             {settings['menu.links'].map((link: any) => {
               return (
                 <div
