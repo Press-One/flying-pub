@@ -22,7 +22,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { commentStore, snackbarStore, userStore, modalStore } = useStore();
+  const { commentStore, feedStore, snackbarStore, userStore, modalStore } = useStore();
   const { total, comments, isFetched } = commentStore;
   const { user, isLogin } = userStore;
 
@@ -99,6 +99,9 @@ export default observer((props: IProps) => {
       const newComment = await CommentApi.create(comment);
       await sleep(500);
       commentStore.addComment(newComment);
+      feedStore.updatePost(feedStore.post.rId, {
+        commentsCount: commentStore.total,
+      });
       openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
         setDrawerReplyValue('');
