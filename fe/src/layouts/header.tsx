@@ -16,7 +16,15 @@ import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, getLoginUrl, isMobile, isWeChat, sleep, stopBodyScroll } from 'utils';
+import {
+  getApiEndpoint,
+  getLoginUrl,
+  isMobile,
+  isWeChat,
+  sleep,
+  stopBodyScroll,
+  isPc,
+} from 'utils';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -44,7 +52,7 @@ export default observer((props: any) => {
     (window as any).Intercom('show');
   };
 
-  const MobileMenuView = () => {
+  const mobileMenuView = () => {
     const MenuItem = (props: any) => {
       const { onClick } = props;
       return (
@@ -106,6 +114,18 @@ export default observer((props: any) => {
               >
                 我的关注
               </MenuItem>
+              {settings['pub.site.url'] && (
+                <MenuItem
+                  onClick={async () => {
+                    setOpenDrawer(false);
+                    stopBodyScroll(false);
+                    await sleep(200);
+                    window.location.href = settings['pub.site.url'];
+                  }}
+                >
+                  写文章
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={async () => {
                   setOpenDrawer(false);
@@ -176,7 +196,7 @@ export default observer((props: any) => {
     );
   };
 
-  const PCMenuView = () => {
+  const pcMenuView = () => {
     return (
       <Menu
         anchorEl={anchorEl}
@@ -385,16 +405,18 @@ export default observer((props: any) => {
               <MenuIcon />
             </div>
           </div>
-          <MobileMenuView />
+          {isMobile && mobileMenuView()}
         </div>
-        <div className="hidden md:block w-7/12 m-auto relative">
-          <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">
-            <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-              <MenuIcon />
-            </IconButton>
-            <PCMenuView />
+        {isPc && (
+          <div className="w-7/12 m-auto relative">
+            <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">
+              <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
+                <MenuIcon />
+              </IconButton>
+              {pcMenuView()}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Fade>
   );
