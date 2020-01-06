@@ -15,10 +15,10 @@ const {
 
 const index = require('./routes/index');
 const user = require('./routes/user');
+const author = require('./routes/author');
 const auth = require('./routes/auth');
 const finance = require('./routes/finance');
 const post = require('./routes/post');
-const author = require('./routes/author');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const settings = require('./routes/settings');
