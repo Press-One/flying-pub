@@ -21,7 +21,7 @@ import RewardModal from './rewardModal';
 import Comment from './comment';
 import { Post } from 'store/feed';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, onlyForLogin } from 'utils';
+import { ago, isPc, isMobile, sleep, onlyForLogin, initMathJax } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 
@@ -35,7 +35,8 @@ marked.setOptions({
 });
 
 export default observer((props: any) => {
-  const { feedStore, userStore, modalStore } = useStore();
+  const { preloadStore, feedStore, userStore, modalStore } = useStore();
+  const { ready } = preloadStore;
   const { post, setPost } = feedStore;
   const { isLogin } = userStore;
   const [pending, setPending] = React.useState(true);
@@ -57,37 +58,50 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     (async () => {
+      if (!ready) {
+        return;
+      }
       try {
         const post: Post = await Api.fetchPost(rId);
         document.title = `${post.author.name}`;
         setPost(post);
+        initMathJax(document.getElementById('post-content'));
         setPending(false);
       } catch (err) {
         console.log(err);
       }
     })();
-  }, [rId, setPost]);
+  }, [ready, rId, setPost]);
 
   React.useEffect(() => {
     (async () => {
+      if (!ready) {
+        return;
+      }
       try {
         const rewardSummary = await FeedApi.getRewardSummary(rId);
         setRewardSummary(rewardSummary);
       } catch (err) {}
       setIsFetchedReward(true);
     })();
-  }, [rId]);
+  }, [ready, rId]);
 
   React.useEffect(() => {
     (async () => {
+      if (!ready) {
+        return;
+      }
       if (!pending && (!onlyForLogin() || isLogin)) {
         await sleep(2000);
         setPreloadPrsIdentityIframe(true);
       }
     })();
-  }, [pending, isLogin]);
+  }, [ready, pending, isLogin]);
 
   React.useEffect(() => {
+    if (!ready) {
+      return;
+    }
     window.scrollTo(0, 0);
     const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
@@ -116,9 +130,9 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, []);
+  }, [ready]);
 
-  if (pending) {
+  if (!ready || pending) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -381,7 +395,8 @@ export default observer((props: any) => {
           }
         `}</style>
         <div
-          className={`mt-6 text-base md:text-lg text-black markdown-body pb-6 px-1 md:px-0`}
+          id="post-content"
+          className={`mt-6 text-base md:text-lg text-black markdown-body pb-6 px-1 md:px-0 overflow-hidden`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
         <div className="hidden md:block">

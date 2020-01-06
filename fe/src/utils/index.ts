@@ -1,5 +1,6 @@
 import qs from 'query-string';
 import moment from 'moment';
+export { initMathJax } from './mathJax';
 
 export const getQueryObject = () => {
   return qs.parse(window.location.search);

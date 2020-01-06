@@ -12,7 +12,7 @@ import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
 import Comments from './comments';
 import { useStore } from 'store';
-import { sleep, stopBodyScroll, isMobile, isPc } from 'utils';
+import { sleep, stopBodyScroll, isMobile, isPc, initMathJax } from 'utils';
 import CommentApi from './api';
 import Api from 'api';
 
@@ -67,6 +67,7 @@ export default observer((props: IProps) => {
       commentStore.setTotal(res['total']);
       commentStore.setComments(res['comments']);
       commentStore.setIsFetched(true);
+      initMathJax(document.getElementById('comments'));
     };
     fetchComments();
   }, [commentStore, props]);
@@ -99,6 +100,7 @@ export default observer((props: IProps) => {
       const newComment = await CommentApi.create(comment);
       await sleep(500);
       commentStore.addComment(newComment);
+      initMathJax(document.getElementById('comments'));
       feedStore.updatePost(feedStore.post.rId, {
         commentsCount: commentStore.total,
       });
@@ -356,14 +358,16 @@ export default observer((props: IProps) => {
           </div>
         </DrawerModal>
         {hasComments && (
-          <Comments
-            user={user}
-            comments={comments || []}
-            tryDeleteComment={tryDeleteComment}
-            replyTo={replyTo}
-            upVote={upVote}
-            resetVote={resetVote}
-          />
+          <div id="comments" className="overflow-hidden">
+            <Comments
+              user={user}
+              comments={comments || []}
+              tryDeleteComment={tryDeleteComment}
+              replyTo={replyTo}
+              upVote={upVote}
+              resetVote={resetVote}
+            />
+          </div>
         )}
         {hasComments && <BottomLine />}
         {isPc && hasComments && comments.length > 3 && (
