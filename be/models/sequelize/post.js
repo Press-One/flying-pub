@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('./');
 const Author = require('./author');
 
-const Post = sequelize.define('v2_post', {
+const Post = sequelize.define('post', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
