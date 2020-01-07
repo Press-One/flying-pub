@@ -28,8 +28,14 @@ exports.oauthLogin = async ctx => {
   const {
     provider
   } = ctx.params;
-  assert(providers.includes(provider), Errors.ERR_IS_INVALID(`provider: ${provider}`))
-  assert(authenticate[provider], Errors.ERR_IS_INVALID(`provider: ${provider}`));
+  assert(
+    providers.includes(provider),
+    Errors.ERR_IS_INVALID(`provider: ${provider}`)
+  );
+  assert(
+    authenticate[provider],
+    Errors.ERR_IS_INVALID(`provider: ${provider}`)
+  );
   assert(ctx.query.redirect, Errors.ERR_IS_REQUIRED('redirect'));
   ctx.session.auth = {
     provider: ctx.params.provider,
@@ -58,7 +64,10 @@ exports.oauthCallback = async (ctx, next) => {
       const hasPermission = await checkPermission(provider, profile);
       const noPermission = !hasPermission;
       if (noPermission) {
-        Log.createAnonymity(profile.id, `没有 ${provider} 权限，raw ${profile.raw}`);
+        Log.createAnonymity(
+          profile.id,
+          `没有 ${provider} 权限，raw ${profile.raw}`
+        );
         ctx.redirect(config.permissionDenyUrl);
         return false;
       }
@@ -71,7 +80,7 @@ exports.oauthCallback = async (ctx, next) => {
     console.log(err);
     throws(Errors.ERR_FAIL_TO_LOGIN);
   }
-}
+};
 
 const handlePressOneCallback = async (ctx, provider) => {
   const {
@@ -83,40 +92,61 @@ const handlePressOneCallback = async (ctx, provider) => {
     json: true,
     headers: {
       accept: 'application/json'
-    },
+    }
   }).promise();
-  return user
-}
+  return user;
+};
 
 const handleOauthCallback = async (ctx, next, provider) => {
   const {
     authenticate
   } = auth;
-  assert(authenticate[provider], Errors.ERR_IS_INVALID(`provider: ${provider}`))
+  assert(
+    authenticate[provider],
+    Errors.ERR_IS_INVALID(`provider: ${provider}`)
+  );
   assert(ctx.session, Errors.ERR_IS_REQUIRED('session'));
   assert(ctx.session.auth, Errors.ERR_IS_REQUIRED('session.auth'));
-  assert(ctx.session.auth.redirect, Errors.ERR_IS_REQUIRED('session.auth.redirect'));
-  assert(ctx.session.auth.provider === provider, Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`));
+  assert(
+    ctx.session.auth.redirect,
+    Errors.ERR_IS_REQUIRED('session.auth.redirect')
+  );
+  assert(
+    ctx.session.auth.provider === provider,
+    Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`)
+  );
 
   await authenticate[provider](ctx, next);
   assert(ctx.session, Errors.ERR_IS_REQUIRED('session'));
   assert(ctx.session.passport, Errors.ERR_IS_REQUIRED('session.passport'));
-  assert(ctx.session.passport.user, Errors.ERR_IS_REQUIRED('session.passport.user'));
-  assert(ctx.session.passport.user.auth, Errors.ERR_IS_REQUIRED('session.passport.user.auth'));
-  assert(ctx.session.passport.user.auth.accessToken, Errors.ERR_IS_REQUIRED('session.passport.user.auth.accessToken'));
-  assert(ctx.session.passport.user.provider === provider, Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`));
+  assert(
+    ctx.session.passport.user,
+    Errors.ERR_IS_REQUIRED('session.passport.user')
+  );
+  assert(
+    ctx.session.passport.user.auth,
+    Errors.ERR_IS_REQUIRED('session.passport.user.auth')
+  );
+  assert(
+    ctx.session.passport.user.auth.accessToken,
+    Errors.ERR_IS_REQUIRED('session.passport.user.auth.accessToken')
+  );
+  assert(
+    ctx.session.passport.user.provider === provider,
+    Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`)
+  );
 
   const {
     user
   } = ctx.session.passport;
   return user;
-}
+};
 
 const login = async (ctx, user, provider) => {
   const profile = providerGetter[provider](user);
-  const isNewUser = !await Profile.isExist(profile.id, {
-    provider,
-  });
+  const isNewUser = !(await Profile.isExist(profile.id, {
+    provider
+  }));
   let insertedProfile = {};
   if (isNewUser) {
     const userData = {
@@ -155,13 +185,10 @@ const login = async (ctx, user, provider) => {
     providerId: insertedProfile.providerId
   });
 
-  ctx.cookies.set(
-    config.auth.tokenKey,
-    token, {
-      expires: new Date('2100-01-01')
-    }
-  )
-}
+  ctx.cookies.set(config.auth.tokenKey, token, {
+    expires: new Date('2100-01-01')
+  });
+};
 
 const providerGetter = {
   github: user => {
@@ -170,7 +197,7 @@ const providerGetter = {
       name: user.username,
       avatar: user._json.avatar_url || DEFAULT_AVATAR,
       bio: user._json.bio,
-      raw: user._raw,
+      raw: user._raw
     };
   },
 
@@ -181,7 +208,7 @@ const providerGetter = {
       avatar: user._json.avatar_url || DEFAULT_AVATAR,
       bio: '',
       raw: JSON.stringify(user._json)
-    }
+    };
   },
 
   pressone: user => {
@@ -192,6 +219,6 @@ const providerGetter = {
       avatar: user.avatar || DEFAULT_AVATAR,
       bio: user.bio,
       raw: JSON.stringify(user)
-    }
+    };
   }
-}
+};

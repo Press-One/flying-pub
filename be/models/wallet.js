@@ -1,9 +1,11 @@
 const Mixin = require('mixin-node');
+const image2base64 = require('image-to-base64');
 const util = require('../utils');
 const config = require('../config');
 const walletConfig = require('../config.wallet');
 const Wallet = require('./sequelize/wallet');
 const User = require('./user');
+const Cache = require('./cache');
 const {
   aesCrypto,
   aesDecrypt
@@ -55,6 +57,17 @@ const aesDecryptWallet = data => {
   return data;
 };
 
+const getBase64Image = async (url) => {
+  const type = 'BASE64_IMAGE';
+  const cachedBase64Image = await Cache.pGet(type, url);
+  if (cachedBase64Image) {
+    return cachedBase64Image;
+  }
+  const base64 = await image2base64(url);
+  await Cache.pSet(type, url, base64);
+  return base64;
+}
+
 const generateWallet = async userId => {
   assertFault(userId, Errors.ERR_IS_REQUIRED(userId));
   const user = await User.get(userId, {
@@ -94,9 +107,10 @@ const generateWallet = async userId => {
     mixinAccount: mxRaw,
     version: '1',
   };
-  // 更新 1px 的透明图片
+  assert(config.logo, Errors.ERR_IS_REQUIRED('logo'));
+  const logoBase64 = await getBase64Image(config.logo);
   let mxProfileRaw = await mixin.account.updateProfile({
-    avatar_base64: config.logoBase64
+    avatar_base64: logoBase64
   }, updateOptions);
   assertFault(mxProfileRaw, Errors.ERR_WALLET_FAIL_TO_UPDATE_AVATAR);
 
