@@ -60,7 +60,7 @@ exports.oauthCallback = async (ctx, next) => {
     assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
     const profile = providerGetter[provider](user);
-    if (config.auth.enableChecking) {
+    if (config.settings['permission.isPrivate']) {
       const hasPermission = await checkPermission(provider, profile);
       const noPermission = !hasPermission;
       if (noPermission) {
