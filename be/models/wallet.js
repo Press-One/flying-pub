@@ -15,7 +15,7 @@ const {
   assertFault,
   Errors
 } = require('./validator')
-const aesKey256 = config.encryption.aes.aesKey256;
+const aesKey256 = walletConfig.encryption.aes.aesKey256;
 
 const mixin = new Mixin({
   client_id: config.provider.mixin.clientId,
@@ -36,7 +36,7 @@ const getNumberByMixinClientId = mixinClientId => {
 }
 
 const aesCryptoWallet = data => {
-  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt;
+  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt;
   data.mixinAesKey = aesCrypto(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesCrypto(data.mixinSessionId, aesKey256, counterInitialValue);
   data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, aesKey256, counterInitialValue);
@@ -48,7 +48,7 @@ const aesDecryptWallet = data => {
   if (!data.mixinAccount) {
     return data;
   }
-  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.salt : 5;
+  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt : 5;
   data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, aesKey256, counterInitialValue);
   data.mixinAesKey = aesDecrypt(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesDecrypt(data.mixinSessionId, aesKey256, counterInitialValue);
