@@ -16,7 +16,12 @@ const Subscription = sequelize.define('subscriptions', {
   },
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['userId']
+  }, {
+    fields: ['authorAddress']
+  }]
 });
 
 Subscription.sync();

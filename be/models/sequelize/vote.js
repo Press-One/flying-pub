@@ -21,7 +21,16 @@ const Vote = sequelize.define('votes', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['userId']
+  }, {
+    fields: ['objectType']
+  }, {
+    fields: ['objectId']
+  }, {
+    fields: ['type']
+  }]
 });
 
 Vote.sync();

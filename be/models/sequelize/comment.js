@@ -29,7 +29,14 @@ const Comment = sequelize.define('comments', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['userId']
+  }, {
+    fields: ['objectId']
+  }, {
+    fields: ['deleted']
+  }]
 });
 
 Comment.sync();

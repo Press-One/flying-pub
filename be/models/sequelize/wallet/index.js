@@ -14,7 +14,8 @@ const Wallet = sequelize.define('wallets', {
     autoIncrement: true
   },
   userId: {
-    type: Sequelize.BIGINT
+    type: Sequelize.BIGINT,
+    unique: true
   },
   customPin: {
     type: Sequelize.STRING,
@@ -43,7 +44,11 @@ const Wallet = sequelize.define('wallets', {
   },
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    unique: true,
+    fields: ['userId']
+  }]
 });
 
 Wallet.sync();

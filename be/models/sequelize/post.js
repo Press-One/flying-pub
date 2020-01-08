@@ -45,7 +45,11 @@ const Post = sequelize.define('post', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    unique: true,
+    fields: ['rId']
+  }]
 });
 
 Post.sync();

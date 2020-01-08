@@ -15,7 +15,10 @@ const Log = sequelize.define('logs', {
   },
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['userId']
+  }]
 });
 
 Log.sync();

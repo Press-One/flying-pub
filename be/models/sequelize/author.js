@@ -24,7 +24,10 @@ const Author = sequelize.define('author', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['status']
+  }]
 });
 
 Author.sync();

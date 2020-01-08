@@ -73,7 +73,25 @@ const Receipt = sequelize.define('receipts', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    unique: true,
+    fields: ['uuid']
+  }, {
+    fields: ['fromAddress']
+  }, {
+    fields: ['toAddress']
+  }, {
+    fields: ['type']
+  }, {
+    fields: ['currency']
+  }, {
+    fields: ['status']
+  }, {
+    fields: ['objectRId']
+  }, {
+    fields: ['objectType']
+  }]
 });
 
 Receipt.sync();

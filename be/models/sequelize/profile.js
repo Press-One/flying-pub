@@ -33,7 +33,15 @@ const Profile = sequelize.define('profiles', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    unique: true,
+    fields: ['userId']
+  }, {
+    fields: ['provider']
+  }, {
+    fields: ['providerId']
+  }]
 });
 
 Profile.sync();

@@ -29,7 +29,15 @@ const User = sequelize.define('users', {
   }
 }, {
   timestamps: true,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  indexes: [{
+    fields: ['providerId']
+  }, {
+    fields: ['provider']
+  }, {
+    unique: true,
+    fields: ['address']
+  }]
 });
 
 User.sync();
