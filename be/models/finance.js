@@ -515,10 +515,11 @@ const saveSnapshot = async (snapshot) => {
   return updatedReceipt;
 };
 
+const syncReceiptLog = message => {
+  log(`【同步初始化收据队列】 ${message}`);
+};
+
 const syncInitializedReceipt = async receipt => {
-  const _log = message => {
-    log(`【同步初始化收据队列】 ${message}`);
-  };
   try {
     const date = new Date(receipt.createdAt);
     const diffTime = 1 * 1000;
@@ -553,7 +554,7 @@ const syncInitializedReceipt = async receipt => {
           timeoutReceipt.id
         );
       } else {
-        _log(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
+        syncReceiptLog(`${thisReceipt.id} 处于 ${minutes} 分钟等待期`);
       }
     }
     for (const updatedReceipt of updatedReceipts) {
@@ -565,19 +566,16 @@ const syncInitializedReceipt = async receipt => {
       }
     }
   } catch (err) {
-    _log(`失败了`);
+    syncReceiptLog(`失败了`);
     log(err);
   }
 };
 
 exports.syncInitializedReceipts = async () => {
-  const _log = message => {
-    log(`【同步初始化收据队列】 ${message}`);
-  };
   return new Promise(resolve => {
     (async () => {
       const timerId = setTimeout(() => {
-        _log("超时，不再等待，准备开始下一次");
+        syncReceiptLog("超时，不再等待，准备开始下一次");
         resolve();
         stop = true;
       }, 3 * 1000);
@@ -589,10 +587,10 @@ exports.syncInitializedReceipts = async () => {
           }
         });
         if (receipts.length === 0) {
-          _log("没有初始化的收据");
+          syncReceiptLog("没有初始化的收据");
           return;
         }
-        _log(`初始化收据的总数：${receipts.length}`);
+        syncReceiptLog(`初始化收据的总数：${receipts.length}`);
         const limit = 5;
         while (receipts.length > 0) {
           let tasks = [];
@@ -603,12 +601,12 @@ exports.syncInitializedReceipts = async () => {
             tasks = receipts.slice(0, limit).map(syncInitializedReceipt);
             receipts = receipts.slice(limit);
           }
-          _log(`当前请求收据数量：${tasks.length}`);
-          _log(`本次剩余收据数量：${receipts.length}`);
+          syncReceiptLog(`当前请求收据数量：${tasks.length}`);
+          syncReceiptLog(`本次剩余收据数量：${receipts.length}`);
           await Promise.all(tasks);
         }
       } catch (err) {
-        _log("失败，准备开始下一次");
+        syncReceiptLog("失败，准备开始下一次");
         log(err);
       }
       clearTimeout(timerId);

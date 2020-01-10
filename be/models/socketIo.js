@@ -19,7 +19,7 @@ exports.EVENTS = {
   FILE_PUBLISHED: 'file_published'
 }
 
-const _log = (event, data) => {
+const socketLog = (event, data) => {
   if (typeof data === 'string') {
     log(`【Socket IO | ${event}】： ${data}`);
   } else {
@@ -41,9 +41,9 @@ exports.init = (redis, server) => {
     })
   )
   io.on('connection', socket => {
-    _log('connection', 'socket 已连接');
+    socketLog('connection', 'socket 已连接');
     socket.on('authenticate', async userId => {
-      _log('authenticate', `userId ${userId}`);
+      socketLog('authenticate', `userId ${userId}`);
       if (!userId) {
         socket.emit('authenticate', {
           status: 'FAILED',

@@ -1,1 +1,1 @@
-./start-be.sh & ./start-fe.sh
+./start-fe.sh & ./start-be.sh & ./start-queue.sh

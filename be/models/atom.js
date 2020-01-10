@@ -44,7 +44,6 @@ const syncAuthors = async (options = {}) => {
         }
         stop = true;
         done = true;
-        console.log('所有作者同步完毕');
       } else {
         offsetIncrement = length;
       }
