@@ -8,7 +8,7 @@ import Loading from 'components/Loading';
 import BackButton from 'components/BackButton';
 import debounce from 'lodash.debounce';
 import Api from 'api';
-import { sleep, isMobile } from 'utils';
+import { sleep, isMobile, generateAvatar } from 'utils';
 
 const authorView = (props: any = {}) => {
   const { author, subscribed, subscribe, unsubscribe, showSubscription } = props;
@@ -19,7 +19,7 @@ const authorView = (props: any = {}) => {
         src={author.avatar}
         alt={author.name}
         onError={(e: any) => {
-          e.target.src = `https://ui-avatars.com/api/?name=${author.name.slice(0, 1)}`;
+          e.target.src = generateAvatar(author.name);
         }}
       />
       <div className="font-bold mt-3 text-base text-center px-8">{author.name}</div>

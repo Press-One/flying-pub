@@ -21,7 +21,7 @@ import RewardModal from './rewardModal';
 import Comment from './comment';
 import { Post } from 'store/feed';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, onlyForLogin, initMathJax } from 'utils';
+import { ago, isPc, isMobile, sleep, onlyForLogin, initMathJax, generateAvatar } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 
@@ -372,10 +372,7 @@ export default observer((props: any) => {
                   src={post.author.avatar}
                   alt={post.author.name}
                   onError={(e: any) => {
-                    e.target.src = `https://ui-avatars.com/api/?name=${post.author.name.slice(
-                      0,
-                      1,
-                    )}`;
+                    e.target.src = generateAvatar(post.author.name);
                   }}
                 />
               </div>

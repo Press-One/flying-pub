@@ -4,8 +4,7 @@ import ThumbUpAlt from '@material-ui/icons/ThumbUpAlt';
 import Comment from '@material-ui/icons/Comment';
 import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
-import { ago } from '../../../utils';
-import { isMobile } from 'utils';
+import { isMobile, ago, generateAvatar } from 'utils';
 
 export default (props: any) => {
   const { post, hideAuthor = false, authorPageEnabled } = props;
@@ -22,7 +21,7 @@ export default (props: any) => {
             src={post.author.avatar}
             alt={post.author.name}
             onError={(e: any) => {
-              e.target.src = `https://ui-avatars.com/api/?name=${post.author.name.slice(0, 1)}`;
+              e.target.src = generateAvatar(post.author.avatar);
             }}
           />
         </div>

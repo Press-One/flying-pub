@@ -133,3 +133,6 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
 };
 
 export const onlyForLogin = () => false;
+
+export const generateAvatar = (name: string) =>
+  `https://ui-avatars.com/api/?name=${name.slice(0, 1)}`;
