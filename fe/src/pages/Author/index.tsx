@@ -14,7 +14,14 @@ const authorView = (props: any = {}) => {
   const { author, subscribed, subscribe, unsubscribe, showSubscription } = props;
   return (
     <div className="flex flex-col items-center">
-      <img className="w-16 h-16 rounded-full" src={author.avatar} alt={author.name} />
+      <img
+        className="w-16 h-16 rounded-full"
+        src={author.avatar}
+        alt={author.name}
+        onError={(e: any) => {
+          e.target.src = `https://ui-avatars.com/api/?name=${author.name.slice(0, 1)}`;
+        }}
+      />
       <div className="font-bold mt-3 text-base text-center px-8">{author.name}</div>
       {showSubscription && (
         <div className="mt-3 h-8">

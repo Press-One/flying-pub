@@ -21,18 +21,21 @@ export default (props: any) => {
             className="w-6 h-6 rounded-full border border-gray-300"
             src={post.author.avatar}
             alt={post.author.name}
+            onError={(e: any) => {
+              e.target.src = `https://ui-avatars.com/api/?name=${post.author.name.slice(0, 1)}`;
+            }}
           />
         </div>
         <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
           {post.author.name}
         </span>
       </div>
-    )
+    );
     return authorPageEnabled ? (
-      <Link to={`/authors/${post.author.address}`}>
-        {content()}
-      </Link>
-    ) : content();
+      <Link to={`/authors/${post.author.address}`}>{content()}</Link>
+    ) : (
+      content()
+    );
   };
   return (
     <div>
@@ -41,7 +44,7 @@ export default (props: any) => {
         <div className="px-4 gray">
           {!hideAuthor && (
             <div className="flex items-center pb-2">
-              {!authorPageEnabled ||isMobile ? (
+              {!authorPageEnabled || isMobile ? (
                 author()
               ) : (
                 <Tooltip placement="left" title="点击进入 Ta 的主页">

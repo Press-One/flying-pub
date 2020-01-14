@@ -367,6 +367,12 @@ export default observer((props: any) => {
                   className="w-6 h-6 rounded-full border border-gray-300"
                   src={post.author.avatar}
                   alt={post.author.name}
+                  onError={(e: any) => {
+                    e.target.src = `https://ui-avatars.com/api/?name=${post.author.name.slice(
+                      0,
+                      1,
+                    )}`;
+                  }}
                 />
               </div>
               <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>

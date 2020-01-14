@@ -12,7 +12,14 @@ const authorView = (author: any) => {
   return (
     <Link to={`/authors/${author.address}`}>
       <div className="flex items-center border-t border-gray-300 py-2 px-4 cursor-pointer">
-        <img className="w-10 h-10 rounded-full" src={author.avatar} alt={author.name} />
+        <img
+          className="w-10 h-10 rounded-full"
+          src={author.avatar}
+          alt={author.name}
+          onError={(e: any) => {
+            e.target.src = `https://ui-avatars.com/api/?name=${author.name.slice(0, 1)}`;
+          }}
+        />
         <div className="ml-3 author-name text-gray-700 truncate w-4/5">{author.name}</div>
       </div>
     </Link>
