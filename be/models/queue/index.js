@@ -1,4 +1,3 @@
-const config = require('../../config');
 const {
   createSyncInitializedQueue
 } = require('./mixin');
@@ -8,9 +7,7 @@ const {
 const queues = [];
 
 exports.up = () => {
-  if (config.provider.mixin.sync) {
-    queues.push(createSyncInitializedQueue());
-  }
+  queues.push(createSyncInitializedQueue());
   queues.push(createAtomCacheQueue());
 }
 

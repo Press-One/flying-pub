@@ -38,7 +38,7 @@ const mixin = new Mixin({
   aeskey: config.provider.mixin.aesKey,
   pin: config.provider.mixin.pinCode,
   session_id: config.provider.mixin.sessionId,
-  privatekey: config.provider.mixin.privateKeyFilePath
+  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
 });
 
 const getViewToken = snapshotId => {

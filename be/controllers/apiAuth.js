@@ -68,7 +68,8 @@ exports.oauthCallback = async (ctx, next) => {
           profile.id,
           `没有 ${provider} 权限，raw ${profile.raw}`
         );
-        ctx.redirect(config.permissionDenyUrl);
+        const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
+        ctx.redirect(`${clientHost}/permissionDeny`);
         return false;
       }
     }

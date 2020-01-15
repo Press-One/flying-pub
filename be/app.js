@@ -9,9 +9,6 @@ const cors = require('@koa/cors');
 const config = require('./config');
 const session = require('koa-session');
 const fs = require('fs');
-const {
-  log
-} = require('./utils');
 
 const index = require('./routes/index');
 const user = require('./routes/user');
@@ -43,7 +40,7 @@ app.use(cors({
 }));
 app.use(convert(logger()));
 
-app.keys = config.sessionKeys;
+app.keys = config.encryption.sessionKeys;
 app.use(session(config.session, app));
 const passport = models.auth.buildPassport();
 app.use(passport.initialize());
@@ -78,7 +75,7 @@ router.get('/api/session.json', async ctx => {
 app.use(router.routes(), router.allowedMethods());
 
 app.on('error', function (err) {
-  log(err)
+  console.log(err)
 });
 
 app.serverUpCallback = (server) => {

@@ -15,14 +15,14 @@ const {
   assertFault,
   Errors
 } = require('./validator')
-const aesKey256 = walletConfig.encryption.aes.aesKey256;
+const aesKey256 = walletConfig.encryption.aesKey256;
 
 const mixin = new Mixin({
   client_id: config.provider.mixin.clientId,
   aeskey: config.provider.mixin.aesKey,
   pin: config.provider.mixin.pinCode,
   session_id: config.provider.mixin.sessionId,
-  privatekey: config.provider.mixin.privateKeyFilePath
+  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
 });
 
 const getNumberByMixinClientId = mixinClientId => {
