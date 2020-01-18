@@ -42,6 +42,10 @@ const Post = sequelize.define('post', {
   commentsCount: {
     type: Sequelize.INTEGER,
     defaultValue: 0
+  },
+  deleted: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,

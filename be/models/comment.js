@@ -40,6 +40,26 @@ exports.get = async (id, options = {}) => {
   return derivedComment;
 };
 
+const count = async objectId => {
+  assert(objectId, Errors.ERR_IS_REQUIRED("objectId"));
+  const count = await Comment.count({
+    where: {
+      objectId,
+      deleted: false
+    }
+  });
+  return count;
+};
+exports.count = count;
+
+const syncComment = async fileRId => {
+  const count = await count(fileRId);
+  await Post.update(fileRId, {
+    commentsCount: count
+  });
+}
+exports.syncComment = syncComment;
+
 exports.create = async (userId, data) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
   assert(data, Errors.ERR_IS_REQUIRED("data"));
@@ -52,10 +72,7 @@ exports.create = async (userId, data) => {
     userId
   });
   const fileRId = derivedComment.objectId;
-  const count = await exports.count(fileRId);
-  await Post.update(fileRId, {
-    commentsCount: count
-  });
+  await syncComment(fileRId);
   return derivedComment;
 };
 
@@ -81,22 +98,8 @@ exports.delete = async id => {
       id
     }
   });
-  const count = await exports.count(fileRId);
-  await Post.update(fileRId, {
-    commentsCount: count
-  });
+  await syncComment(fileRId);
   return true;
-};
-
-exports.count = async objectId => {
-  assert(objectId, Errors.ERR_IS_REQUIRED("objectId"));
-  const count = await Comment.count({
-    where: {
-      objectId,
-      deleted: false
-    }
-  });
-  return count;
 };
 
 exports.list = async options => {
@@ -125,4 +128,17 @@ exports.list = async options => {
     })
   );
   return list;
+};
+
+exports.replaceObjectId = async (objectId, newObjectId) => {
+  assert(objectId, Errors.ERR_IS_REQUIRED('objectId'));
+  assert(newObjectId, Errors.ERR_IS_REQUIRED('newObjectId'));
+  await Comment.update({
+    objectId: newObjectId
+  }, {
+    where: {
+      objectId
+    }
+  })
+  return true;
 };

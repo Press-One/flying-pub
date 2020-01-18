@@ -138,7 +138,7 @@ exports.list = async (options = {}) => {
   return list;
 }
 
-exports.create = async (data) => {
+exports.create = async data => {
   assert(data, Errors.ERR_IS_REQUIRED('data'))
   const verifiedData = attempt(data, {
     rId: Joi.string().trim(),
@@ -148,20 +148,15 @@ exports.create = async (data) => {
     paymentUrl: Joi.optional(),
     pubDate: Joi.date()
   });
-  const exists = await getByRId(data.rId, {
-    includeAuthor: false
-  });
-  if (exists) {
-    return true;
-  }
   await Post.create(verifiedData);
   return true;
 }
 
-
 exports.delete = async rId => {
   assert(rId, Errors.ERR_IS_REQUIRED('rId'));
-  await Post.destroy({
+  await Post.update({
+    deleted: true
+  }, {
     where: {
       rId
     }

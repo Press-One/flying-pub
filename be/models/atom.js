@@ -1,4 +1,3 @@
-const Parser = require('rss-parser');
 const request = require('request-promise');
 const {
   fm
@@ -7,6 +6,10 @@ const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
 const Cache = require('./cache');
+const Receipt = require('./receipt');
+const Vote = require('./vote');
+const Comment = require('./comment');
+const Finance = require('./finance');
 const Log = require('./log');
 const type = `${config.serviceKey}_SYNC_ATOM`;
 
@@ -61,8 +64,8 @@ const syncAuthors = async (options = {}) => {
   return done;
 };
 
-const extractFrontMatter = post => {
-  const result = fm(post.content);
+const extractFrontMatter = rawPost => {
+  const result = fm(rawPost.content);
   return {
     title: result.attributes.title,
     avatar: result.attributes.avatar,
@@ -80,34 +83,50 @@ const getBlock = async rId => {
   return block;
 };
 
-const extractPost = async post => {
-  const rId = post.publish_tx_id;
+const pickPost = async rawPost => {
+  const rId = rawPost.publish_tx_id;
   const block = await getBlock(rId);
   const {
     title,
     avatar,
     content
-  } = extractFrontMatter(post);
-  const derivedPost = {
+  } = extractFrontMatter(rawPost);
+  const post = {
     rId,
     userAddress: block.user_address,
     title,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(post.updated_at)
+    pubDate: new Date(rawPost.updated_at)
   };
   const author = {
     address: block.user_address,
-    name: post.author,
+    name: rawPost.author,
     avatar
   };
-  const deleted = post.deleted;
+  const deleted = rawPost.deleted;
+  const updatedRId = rawPost.updated_tx_id;
   return {
-    deleted,
     author,
-    derivedPost
+    post,
+    deleted,
+    updatedRId
   };
 };
+
+const replacePost = async (rId, newRId) => {
+  await Promise.all([
+    Receipt.replaceObjectRId(rId, newRId),
+    Vote.replaceObjectId(rId, newRId, 'posts'),
+    Comment.replaceObjectId(rId, newRId)
+  ]);
+  await Promise.all([
+    Finance.syncRewardAmount(newRId),
+    Vote.syncVote('posts', newRId),
+    Comment.syncComment(newRId)
+  ])
+  return true;
+}
 
 const syncPosts = async (options = {}) => {
   let stop = false;
@@ -119,28 +138,29 @@ const syncPosts = async (options = {}) => {
       const key = 'POSTS_OFFSET';
       const offset = Number(await Cache.pGet(type, key)) || 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
-      const posts = await request({
+      const rawPosts = await request({
         uri,
         headers: {
           'accept-encoding': 'gzip'
         },
         timeout: 10000
       }).promise();
-      console.log(` ------------- posts ---------------`, posts);
-      if (posts.length === 0) {
+      console.log(` ------------- rawPosts ---------------`, rawPosts);
+      if (rawPosts.length === 0) {
         stop = true;
         continue;
       }
-      const derivedPosts = await Promise.all(posts.map(extractPost));
-      for (const index of derivedPosts.keys()) {
+      const pickedPosts = await Promise.all(rawPosts.map(pickPost));
+      for (const index of pickedPosts.keys()) {
         const {
-          deleted,
           author,
-          derivedPost
-        } = derivedPosts[index];
+          post,
+          deleted,
+          updatedRId
+        } = pickedPosts[index];
         if (deleted) {
-          await Post.delete(derivedPost.rId);
-          Log.createAnonymity('删除文章', `${derivedPost.rId} ${derivedPost.title}`)
+          await Post.delete(post.rId);
+          Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
           continue;
         }
         const insertedAuthor = await Author.getByAddress(author.address);
@@ -152,13 +172,21 @@ const syncPosts = async (options = {}) => {
           avatar: author.avatar
         });
         Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
-        await Post.create(derivedPost);
-        Log.createAnonymity(
-          '同步文章',
-          `${derivedPost.rId} ${derivedPost.title}`
-        );
+        const exists = await Post.getByRId(post.rId, {
+          includeAuthor: false
+        });
+        if (exists) {
+          Log.createAnonymity('文章已存在，跳过', `${post.rId}`);
+          continue;
+        }
+        await Post.create(post);
+        Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+        if (updatedRId) {
+          await replacePost(updatedRId, post.rId);
+          Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+        }
       }
-      const newOffset = offset + posts.length;
+      const newOffset = offset + rawPosts.length;
       await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.log(err);

@@ -131,6 +131,18 @@ exports.updateByUuid = async (uuid, data) => {
   return true;
 };
 
+exports.replaceObjectRId = async (objectRId, newObjectRId) => {
+  assert(objectRId, Errors.ERR_IS_REQUIRED('objectRId'));
+  assert(newObjectRId, Errors.ERR_IS_REQUIRED('newObjectRId'));
+  await Receipt.update({
+    objectRId: newObjectRId
+  }, {
+    where: {
+      objectRId
+    }
+  })
+  return true;
+};
 
 exports.list = async (options = {}) => {
   const {

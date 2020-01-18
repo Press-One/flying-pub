@@ -777,3 +777,4 @@ const syncRewardAmount = async fileRId => {
     rewardSummary: JSON.stringify(summary)
   });
 };
+exports.syncRewardAmount = syncRewardAmount;
