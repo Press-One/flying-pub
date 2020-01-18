@@ -70,16 +70,6 @@ const extractFrontMatter = post => {
   };
 };
 
-const encodeAtom = (text = '') => {
-  return text
-    .replace(/<title>.*<\/title>/g, x => {
-      return x.replace(/&/g, encodeURIComponent('&'));
-    })
-    .replace(/<name>.*<\/name>/g, x => {
-      return x.replace(/&/g, encodeURIComponent('&'));
-    });
-};
-
 const getBlock = async rId => {
   const blocks = await request({
     uri: `https://press.one/api/v2/blocks/${rId}`,
@@ -90,15 +80,8 @@ const getBlock = async rId => {
   return block;
 };
 
-const tryDecodeURIComponent = (text = '') => {
-  try {
-    return decodeURIComponent(text);
-  } catch (err) {}
-  return text;
-};
-
 const extractPost = async post => {
-  const rId = post.id;
+  const rId = post.publish_tx_id;
   const block = await getBlock(rId);
   const {
     title,
@@ -108,17 +91,19 @@ const extractPost = async post => {
   const derivedPost = {
     rId,
     userAddress: block.user_address,
-    title: tryDecodeURIComponent(title),
+    title,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(post.pubDate)
+    pubDate: new Date(post.updated_at)
   };
   const author = {
     address: block.user_address,
-    name: tryDecodeURIComponent(post.author),
+    name: post.author,
     avatar
   };
+  const deleted = post.deleted;
   return {
+    deleted,
     author,
     derivedPost
   };
@@ -134,24 +119,30 @@ const syncPosts = async (options = {}) => {
       const key = 'POSTS_OFFSET';
       const offset = Number(await Cache.pGet(type, key)) || 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
-      const text = await request({
+      const posts = await request({
         uri,
+        headers: {
+          'accept-encoding': 'gzip'
+        },
         timeout: 10000
       }).promise();
-      const safeText = encodeAtom(text);
-      const parser = new Parser();
-      const result = await parser.parseString(safeText);
-      const items = result.items || [];
-      if (items.length === 0) {
+      console.log(` ------------- posts ---------------`, posts);
+      if (posts.length === 0) {
         stop = true;
         continue;
       }
-      const derivedItems = await Promise.all(items.map(extractPost));
-      for (const index of items.keys()) {
+      const derivedPosts = await Promise.all(posts.map(extractPost));
+      for (const index of derivedPosts.keys()) {
         const {
+          deleted,
           author,
           derivedPost
-        } = derivedItems[index];
+        } = derivedPosts[index];
+        if (deleted) {
+          await Post.delete(derivedPost.rId);
+          Log.createAnonymity('删除文章', `${derivedPost.rId} ${derivedPost.title}`)
+          continue;
+        }
         const insertedAuthor = await Author.getByAddress(author.address);
         if (!insertedAuthor) {
           continue;
@@ -167,7 +158,7 @@ const syncPosts = async (options = {}) => {
           `${derivedPost.rId} ${derivedPost.title}`
         );
       }
-      const newOffset = offset + items.length;
+      const newOffset = offset + posts.length;
       await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.log(err);

@@ -157,3 +157,14 @@ exports.create = async (data) => {
   await Post.create(verifiedData);
   return true;
 }
+
+
+exports.delete = async rId => {
+  assert(rId, Errors.ERR_IS_REQUIRED('rId'));
+  await Post.destroy({
+    where: {
+      rId
+    }
+  });
+  return true;
+};
