@@ -773,7 +773,7 @@ const syncRewardAmount = async fileRId => {
   for (const currency in summary) {
     summary[currency] = bigFormat(summary[currency]);
   }
-  await Post.update(fileRId, {
+  await Post.updateByRId(fileRId, {
     rewardSummary: JSON.stringify(summary)
   });
 };

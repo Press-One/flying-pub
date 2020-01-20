@@ -57,9 +57,16 @@ const getByRId = async (rId, options = {}) => {
   } = options;
   const query = {
     where: {
-      rId
+      rId,
+      deleted: false
     }
   };
+  const {
+    ignoreDeleted
+  } = options;
+  if (ignoreDeleted) {
+    delete query.where.deleted;
+  }
   if (includeAuthor) {
     query.include = [{
       model: Author,
@@ -73,13 +80,15 @@ const getByRId = async (rId, options = {}) => {
 }
 exports.getByRId = getByRId;
 
-exports.update = async (rId, data) => {
+const updateByRId = async (rId, data) => {
   assert(rId, Errors.ERR_IS_REQUIRED('rId'))
   assert(data, Errors.ERR_IS_REQUIRED('data'))
   data = attempt(data, {
     rewardSummary: Joi.any().optional(),
     upVotesCount: Joi.number().optional(),
-    commentsCount: Joi.number().optional()
+    commentsCount: Joi.number().optional(),
+    latestRId: Joi.any().optional(),
+    deleted: Joi.boolean().optional()
   });
   await Post.update(data, {
     where: {
@@ -87,6 +96,19 @@ exports.update = async (rId, data) => {
     }
   });
   return true;
+}
+exports.updateByRId = updateByRId;
+
+exports.updateLatestRId = async (latestRId, newLatestRId) => {
+  assert(latestRId, Errors.ERR_IS_REQUIRED('latestRId'))
+  assert(newLatestRId, Errors.ERR_IS_REQUIRED('newLatestRId'))
+  await Post.update({
+    latestRId: newLatestRId
+  }, {
+    where: {
+      latestRId
+    }
+  });
 }
 
 const getOrder = orderBy => {
@@ -106,7 +128,9 @@ exports.list = async (options = {}) => {
     dropAuthor = false,
     dayRange
   } = options;
-  const where = {};
+  const where = {
+    deleted: false
+  };
   const byAddress = addresses && addresses.length > 0;
   if (byAddress) {
     where.userAddress = addresses;
@@ -154,12 +178,8 @@ exports.create = async data => {
 
 exports.delete = async rId => {
   assert(rId, Errors.ERR_IS_REQUIRED('rId'));
-  await Post.update({
+  await updateByRId(rId, {
     deleted: true
-  }, {
-    where: {
-      rId
-    }
   });
   return true;
 };

@@ -12,9 +12,16 @@ exports.get = async ctx => {
     userId,
     withVoted: true,
     withContent: true,
-    withPaymentUrl: true
+    withPaymentUrl: true,
+    ignoreDeleted: true
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
+  if (post.latestRId) {
+    ctx.body = {
+      latestRId: post.latestRId
+    }
+    return;
+  }
   ctx.body = post;
 }
 

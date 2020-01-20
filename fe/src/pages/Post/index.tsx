@@ -63,6 +63,10 @@ export default observer((props: any) => {
       }
       try {
         const post: Post = await Api.fetchPost(rId);
+        if (post.latestRId) {
+          window.location.href = `/posts/${post.latestRId}`;
+          return;
+        }
         document.title = `${post.author.name}`;
         setPost(post);
         initMathJax(document.getElementById('post-content'));

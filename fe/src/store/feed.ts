@@ -13,6 +13,7 @@ export interface Post {
   upVotesCount: number;
   commentsCount: number;
   voted: boolean;
+  latestRId?: string;
 }
 
 export function createFeedStore() {

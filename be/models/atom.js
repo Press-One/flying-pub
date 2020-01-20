@@ -9,6 +9,7 @@ const Cache = require('./cache');
 const Receipt = require('./receipt');
 const Vote = require('./vote');
 const Comment = require('./comment');
+const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
 const type = `${config.serviceKey}_SYNC_ATOM`;
@@ -68,6 +69,7 @@ const extractFrontMatter = rawPost => {
   const result = fm(rawPost.content);
   return {
     title: result.attributes.title,
+    authorName: result.attributes.author,
     avatar: result.attributes.avatar,
     content: result.body
   };
@@ -89,6 +91,7 @@ const pickPost = async rawPost => {
   const {
     title,
     avatar,
+    authorName,
     content
   } = extractFrontMatter(rawPost);
   const post = {
@@ -101,7 +104,7 @@ const pickPost = async rawPost => {
   };
   const author = {
     address: block.user_address,
-    name: rawPost.author,
+    name: authorName,
     avatar
   };
   const deleted = rawPost.deleted;
@@ -122,9 +125,13 @@ const replacePost = async (rId, newRId) => {
   ]);
   await Promise.all([
     Finance.syncRewardAmount(newRId),
-    Vote.syncVote('posts', newRId),
-    Comment.syncComment(newRId)
-  ])
+    Sync.syncVote('posts', newRId),
+    Sync.syncComment(newRId)
+  ]);
+  await Post.updateByRId(rId, {
+    latestRId: newRId
+  });
+  await Post.updateLatestRId(rId, newRId);
   return true;
 }
 
@@ -135,18 +142,16 @@ const syncPosts = async (options = {}) => {
       const {
         step = 20
       } = options;
-      const key = 'POSTS_OFFSET';
+      const key = 'POSTS_OFFSET_3';
       const offset = Number(await Cache.pGet(type, key)) || 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
       const rawPosts = await request({
         uri,
-        headers: {
-          'accept-encoding': 'gzip'
-        },
+        json: true,
         timeout: 10000
       }).promise();
-      console.log(` ------------- rawPosts ---------------`, rawPosts);
-      if (rawPosts.length === 0) {
+      const length = rawPosts.length;
+      if (offset === 0 && length === 0) {
         stop = true;
         continue;
       }
@@ -186,7 +191,20 @@ const syncPosts = async (options = {}) => {
           Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
         }
       }
-      const newOffset = offset + rawPosts.length;
+      let offsetIncrement = 0;
+      if (length < step) {
+        // post 历史记录会改变，更新的 post 会排在最后，所以 offset 每次多抓 10 条，确保能抓到更新的 post 数据
+        if (length === 0) {
+          offsetIncrement = -5;
+        } else if (length > 5) {
+          offsetIncrement = length - 5;
+        }
+        stop = true;
+        done = true;
+      } else {
+        offsetIncrement = length;
+      }
+      const newOffset = offset + offsetIncrement;
       await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.log(err);

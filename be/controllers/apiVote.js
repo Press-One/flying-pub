@@ -1,6 +1,5 @@
-const Comment = require('../models/comment');
-const Post = require('../models/post');
 const Vote = require('../models/vote');
+const Sync = require('../models/sync');
 const Log = require('../models/log');
 const {
   assert,
@@ -27,7 +26,7 @@ exports.create = async ctx => {
     objectId,
     type: data.type
   });
-  const object = await Vote.syncVote(objectType, objectId, {
+  const object = await Sync.syncVote(objectType, objectId, {
     userId
   });
   Log.create(userId, `点赞 ${objectType} ${objectId}`);
@@ -46,7 +45,7 @@ exports.delete = async ctx => {
     objectId
   } = data;
   await Vote.delete(userId, objectType, objectId);
-  const object = await Vote.syncVote(objectType, objectId, {
+  const object = await Sync.syncVote(objectType, objectId, {
     userId
   });
   Log.create(userId, `取消点赞 ${objectType} ${objectId}`);

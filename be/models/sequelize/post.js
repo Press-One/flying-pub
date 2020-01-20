@@ -43,6 +43,9 @@ const Post = sequelize.define('post', {
     type: Sequelize.INTEGER,
     defaultValue: 0
   },
+  latestRId: {
+    type: Sequelize.STRING
+  },
   deleted: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
@@ -53,6 +56,10 @@ const Post = sequelize.define('post', {
   indexes: [{
     unique: true,
     fields: ['rId']
+  }, {
+    fields: ['latestRId']
+  }, {
+    fields: ['deleted']
   }]
 });
 

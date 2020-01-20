@@ -4,8 +4,8 @@ const {
 } = require("./validator");
 const Comment = require("./sequelize/comment");
 const User = require("./user");
-const Post = require("./post");
 const Vote = require("./vote");
+const Sync = require("./sync");
 
 const packComment = async (comment, options = {}) => {
   const {
@@ -40,7 +40,7 @@ exports.get = async (id, options = {}) => {
   return derivedComment;
 };
 
-const count = async objectId => {
+exports.count = async objectId => {
   assert(objectId, Errors.ERR_IS_REQUIRED("objectId"));
   const count = await Comment.count({
     where: {
@@ -50,15 +50,6 @@ const count = async objectId => {
   });
   return count;
 };
-exports.count = count;
-
-const syncComment = async fileRId => {
-  const count = await count(fileRId);
-  await Post.update(fileRId, {
-    commentsCount: count
-  });
-}
-exports.syncComment = syncComment;
 
 exports.create = async (userId, data) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
@@ -72,7 +63,7 @@ exports.create = async (userId, data) => {
     userId
   });
   const fileRId = derivedComment.objectId;
-  await syncComment(fileRId);
+  await Sync.syncComment(fileRId);
   return derivedComment;
 };
 
