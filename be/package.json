@@ -8,11 +8,11 @@
     "start-prod": "node bin/run",
     "start-queue-prod": "node ./queue.js",
     "test": "node ./test",
-    "test-watch": "./node_modules/.bin/nodemon ./test",
-    "fe-server": "http-server ./build -p 5000"
+    "test-watch": "./node_modules/.bin/nodemon ./test"
   },
   "nodemonConfig": {
     "ignore": [
+      "build",
       "session.json"
     ]
   },
@@ -42,7 +42,7 @@
     "koa-router": "^7.0.0",
     "koa-session": "^5.12.3",
     "koa-static": "^2.0.0",
-    "koa-views": "^5.0.1",
+    "koa-views": "^6.2.1",
     "mathjs": "^6.2.3",
     "mixin-node": "^1.0.25",
     "mysql2": "1.7.0",

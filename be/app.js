@@ -6,11 +6,10 @@ const json = require('koa-json');
 const bodyparser = require('koa-bodyparser')();
 const logger = require('koa-logger');
 const cors = require('@koa/cors');
-const config = require('./config');
 const session = require('koa-session');
-const fs = require('fs');
+const serve = require('koa-static');
+const views = require('koa-views');
 
-const index = require('./routes/index');
 const user = require('./routes/user');
 const author = require('./routes/author');
 const auth = require('./routes/auth');
@@ -24,6 +23,7 @@ const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
 
+const config = require('./config');
 const models = require('./models');
 
 const {
@@ -45,11 +45,12 @@ app.use(session(config.session, app));
 const passport = models.auth.buildPassport();
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(views(__dirname + '/build'));
+app.use(serve('build'));
 
 router.all('*', models.api.errorHandler);
 router.all('*', models.api.extendCtx);
 
-router.use('/', index.routes(), index.allowedMethods());
 router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
 router.use('/api/finance', finance.routes(), finance.allowedMethods());
@@ -66,11 +67,7 @@ router.use('/api/logout', ensureAuthorization({
 }), logout.routes(), logout.allowedMethods());
 router.use('/api/auto_login', autoLogin.routes(), autoLogin.allowedMethods());
 router.use('/api/ping', ping.routes(), ping.allowedMethods());
-
-router.get('/api/session.json', async ctx => {
-  const session = fs.readFileSync('session.json', 'utf8')
-  ctx.ok(session);
-});
+router.get('*', async ctx => ctx.render('index'));
 
 app.use(router.routes(), router.allowedMethods());
 

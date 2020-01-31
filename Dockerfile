@@ -1,6 +1,7 @@
 FROM node:10.15.2
 
 ADD . /app
+RUN rm -rf /app/be/build
 RUN mv /app/fe/build /app/be/build
 
 WORKDIR /app/be
