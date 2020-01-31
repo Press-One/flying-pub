@@ -26,7 +26,6 @@
     "debug": "^2.2.0",
     "fastscan": "^1.0.6",
     "fnv-plus": "^1.2.12",
-    "front-matter": "^3.0.2",
     "http-status": "^1.3.2",
     "image-to-base64": "^2.0.1",
     "ioredis": "4.14.0",

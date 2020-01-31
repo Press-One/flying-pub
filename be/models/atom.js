@@ -1,6 +1,8 @@
 const Parser = require('rss-parser');
 const request = require('request-promise');
-const fm = require('front-matter');
+const {
+  fm
+} = require('../utils');
 const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
@@ -18,7 +20,9 @@ const syncAuthors = async (options = {}) => {
       } = options;
       const key = 'AUTHORS_OFFSET';
       const offset = Number(await Cache.pGet(type, key)) || 0;
-      const uri = `${config.atom.authorsUrl}?topic=${config.atom.topic}&offset=${offset < 0 ? 0 : offset}&limit=${step}`;
+      const uri = `${config.atom.authorsUrl}?topic=${
+        config.atom.topic
+      }&offset=${offset < 0 ? 0 : offset}&limit=${step}`;
       const authors = await request({
         uri,
         json: true,
@@ -156,9 +160,12 @@ const syncPosts = async (options = {}) => {
           name: author.name,
           avatar: author.avatar
         });
-        Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`)
+        Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
         await Post.create(derivedPost);
-        Log.createAnonymity('同步文章', `${derivedPost.rId} ${derivedPost.title}`)
+        Log.createAnonymity(
+          '同步文章',
+          `${derivedPost.rId} ${derivedPost.title}`
+        );
       }
       const newOffset = offset + items.length;
       await Cache.pSet(type, key, newOffset);
