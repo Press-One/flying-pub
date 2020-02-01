@@ -142,7 +142,7 @@ const syncPosts = async (options = {}) => {
       const {
         step = 20
       } = options;
-      const key = 'POSTS_OFFSET_3';
+      const key = 'POSTS_OFFSET';
       const offset = Number(await Cache.pGet(type, key)) || 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
       const rawPosts = await request({
@@ -164,12 +164,21 @@ const syncPosts = async (options = {}) => {
           updatedRId
         } = pickedPosts[index];
         if (deleted) {
-          await Post.delete(post.rId);
-          Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+          const exists = await Post.getByRId(post.rId);
+          if (exists) {
+            await Post.delete(post.rId);
+            Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+          }
           continue;
         }
         const insertedAuthor = await Author.getByAddress(author.address);
         if (!insertedAuthor) {
+          continue;
+        }
+        const exists = await Post.getByRId(post.rId, {
+          includeAuthor: false
+        });
+        if (exists) {
           continue;
         }
         await Author.upsert(author.address, {
@@ -177,13 +186,6 @@ const syncPosts = async (options = {}) => {
           avatar: author.avatar
         });
         Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
-        const exists = await Post.getByRId(post.rId, {
-          includeAuthor: false
-        });
-        if (exists) {
-          Log.createAnonymity('文章已存在，跳过', `${post.rId}`);
-          continue;
-        }
         await Post.create(post);
         Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
         if (updatedRId) {
