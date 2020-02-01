@@ -176,6 +176,7 @@ const syncPosts = async (options = {}) => {
           continue;
         }
         const exists = await Post.getByRId(post.rId, {
+          ignoreDeleted: true,
           includeAuthor: false
         });
         if (exists) {
