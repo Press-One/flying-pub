@@ -1,5 +1,5 @@
 const extractFm = text => {
-  const matched = text.match(/---[\w\W\n]*---\n/g);
+  const matched = text.split(/---\n/);
   if (!matched) {
     return {
       yaml: null,
@@ -7,8 +7,8 @@ const extractFm = text => {
     };
   }
   return {
-    yaml: matched[0],
-    body: text.slice(matched[0].length)
+    yaml: matched[1],
+    body: text.slice(matched[1].length + 8)
   };
 }
 
