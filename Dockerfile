@@ -11,5 +11,3 @@ RUN npm install
 WORKDIR /app
 
 EXPOSE 9000
-
-CMD chmod 777 *.sh && ./start-prod.sh
