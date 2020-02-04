@@ -5,6 +5,6 @@ yarn build
 
 cd ../
 
-IMAGE_NAME="medium"
+IMAGE_NAME="posts"
 
 docker build -t $IMAGE_NAME .
