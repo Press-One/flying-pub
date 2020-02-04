@@ -8,6 +8,13 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
   logging: config.sequelizeLogging
 });
 
+sequelize.sync().then(() => {
+  console.log('WALLET_DB connected successfully.');
+}, (err) => {
+  console.log(err);
+  process.exit(0);
+});
+
 const Wallet = sequelize.define('wallets', {
   id: {
     type: Sequelize.BIGINT,

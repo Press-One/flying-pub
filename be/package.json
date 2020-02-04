@@ -5,8 +5,8 @@
   "scripts": {
     "start": "./node_modules/.bin/nodemon bin/run",
     "start-queue": "./node_modules/.bin/nodemon ./queue.js",
-    "start-prod": "node bin/run",
-    "start-queue-prod": "node ./queue.js",
+    "start-prod": "./node_modules/.bin/pm2-runtime bin/run",
+    "start-queue-prod": "./node_modules/.bin/pm2-runtime ./queue.js",
     "test": "node ./test",
     "test-watch": "./node_modules/.bin/nodemon ./test"
   },
