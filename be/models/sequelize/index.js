@@ -8,13 +8,14 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
   logging: config.sequelizeLogging
 });
 
-sequelize.sync().then(() => {
-  console.log('Database connected successfully.');
-}, err => {
-  if (err.name === 'SequelizeConnectionError') {
-    console.log('Database maybe not ready to be connected');
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connected successfully.');
+  } catch (err) {
+    console.error('Unable to connect to the database:', err);
+    process.exit(0);
   }
-  process.exit(0);
-});
+})();
 
 module.exports = sequelize;
