@@ -1,6 +1,5 @@
 'use strict';
 
-const request = require('request-promise');
 const config = require('../config');
 const {
   checkPermission
@@ -17,7 +16,7 @@ const Wallet = require('../models/wallet');
 const Token = require('../models/token');
 const Log = require('../models/log');
 
-const providers = ['pressone', 'github', 'mixin'];
+const providers = ['github', 'mixin'];
 
 const DEFAULT_AVATAR = 'https://static.press.one/pub/avatar.png';
 
@@ -44,18 +43,13 @@ exports.oauthLogin = async ctx => {
   return authenticate[provider](ctx);
 };
 
-exports.oauthCallback = async (ctx, next) => {
+exports.oauthCallback = async ctx => {
   try {
     const {
       provider
     } = ctx.params;
 
-    let user;
-    if (provider === 'pressone') {
-      user = await handlePressOneCallback(ctx, provider);
-    } else {
-      user = await handleOauthCallback(ctx, next, provider);
-    }
+    const user = await handleOauthCallback(ctx, provider);
 
     assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
@@ -83,22 +77,7 @@ exports.oauthCallback = async (ctx, next) => {
   }
 };
 
-const handlePressOneCallback = async (ctx, provider) => {
-  const {
-    userAddress
-  } = ctx.query;
-  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
-  const user = await request({
-    uri: `https://press.one/api/v2/users/${userAddress}`,
-    json: true,
-    headers: {
-      accept: 'application/json'
-    }
-  }).promise();
-  return user;
-};
-
-const handleOauthCallback = async (ctx, next, provider) => {
+const handleOauthCallback = async (ctx, provider) => {
   const {
     authenticate
   } = auth;
@@ -117,7 +96,7 @@ const handleOauthCallback = async (ctx, next, provider) => {
     Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`)
   );
 
-  await authenticate[provider](ctx, next);
+  await authenticate[provider](ctx, () => {});
   assert(ctx.session, Errors.ERR_IS_REQUIRED('session'));
   assert(ctx.session.passport, Errors.ERR_IS_REQUIRED('session.passport'));
   assert(
@@ -209,17 +188,6 @@ const providerGetter = {
       avatar: user._json.avatar_url || DEFAULT_AVATAR,
       bio: '',
       raw: JSON.stringify(user._json)
-    };
-  },
-
-  pressone: user => {
-    delete user.proofs;
-    return {
-      id: user.id,
-      name: user.name,
-      avatar: user.avatar || DEFAULT_AVATAR,
-      bio: user.bio,
-      raw: JSON.stringify(user)
     };
   }
 };

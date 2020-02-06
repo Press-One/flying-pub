@@ -1,4 +1,3 @@
-const request = require('request-promise');
 const httpStatus = require('http-status');
 const config = require('../config');
 const Token = require('./token');
@@ -115,46 +114,11 @@ exports.checkPermission = async (provider, profile) => {
 
 const providerPermissionChecker = {
   mixin: async profile => {
-    const rawJson = JSON.parse(profile.raw);
-    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
-    return IsInMixinBoxGroup;
+    // can check mixin permission
+    return true;
   },
   github: async profile => {
-    const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
-    return isPaidUserOfXue;
-  },
-  pressone: async () => {
+    // can check github permission
     return true;
   }
 };
-
-const checkIsInMixinBoxGroup = async mixinUuid => {
-  try {
-    await request({
-      uri: `https://xiaolai-ri-openapi.groups.xue.cn/v1/users/${mixinUuid}`,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${config.auth.boxGroupToken}`
-      },
-    }).promise();
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-const checkIsPaidUserOfXue = async githubNickName => {
-  try {
-    const user = await request({
-      uri: `${config.auth.xueUserExtraApi}/${githubNickName}`,
-      json: true,
-      headers: {
-        'x-po-auth-token': config.auth.xueAdminToken
-      },
-    }).promise();
-    const isPaidUser = user.balance > 0;
-    return isPaidUser;
-  } catch (err) {
-    return false;
-  }
-}
