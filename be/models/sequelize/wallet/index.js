@@ -9,8 +9,11 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
 });
 
 sequelize.sync().then(() => {
-  console.log('WALLET_DB connected successfully.');
-}, () => {
+  console.log('Wallet database connected successfully.');
+}, err => {
+  if (err.name === 'SequelizeConnectionError') {
+    console.log('Database maybe not ready to be connected');
+  }
   process.exit(0);
 });
 
