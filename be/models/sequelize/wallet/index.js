@@ -10,8 +10,7 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
 
 sequelize.sync().then(() => {
   console.log('WALLET_DB connected successfully.');
-}, (err) => {
-  console.log(err);
+}, () => {
   process.exit(0);
 });
 
