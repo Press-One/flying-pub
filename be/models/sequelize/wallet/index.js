@@ -8,11 +8,15 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
   logging: config.sequelizeLogging
 });
 
-sequelize.sync().then(() => {
-  console.log('WALLET_DB connected successfully.');
-}, () => {
-  process.exit(0);
-});
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Wallet database connected successfully.');
+  } catch (err) {
+    console.error('Unable to connect to the database:', err);
+    process.exit(0);
+  }
+})();
 
 const Wallet = sequelize.define('wallets', {
   id: {
