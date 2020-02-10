@@ -1,7 +1,5 @@
 const request = require('request-promise');
-const {
-  fm
-} = require('../utils');
+const { fm } = require('../utils');
 const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
@@ -19,11 +17,10 @@ const syncAuthors = async (options = {}) => {
   let done = false;
   while (!stop) {
     try {
-      const {
-        step = 50
-      } = options;
+      const { step = 50 } = options;
       const key = 'AUTHORS_OFFSET';
-      const offset = Number(await Cache.pGet(type, key)) || 0;
+      const cachedOffset = Number(await Cache.pGet(type, key));
+      const offset = cachedOffset > 0 ? cachedOffset : 0;
       const uri = `${config.atom.authorsUrl}?topic=${
         config.atom.topic
       }&offset=${offset < 0 ? 0 : offset}&limit=${step}`;
@@ -88,12 +85,7 @@ const getBlock = async rId => {
 const pickPost = async rawPost => {
   const rId = rawPost.publish_tx_id;
   const block = await getBlock(rId);
-  const {
-    title,
-    avatar,
-    authorName,
-    content
-  } = extractFrontMatter(rawPost);
+  const { title, avatar, authorName, content } = extractFrontMatter(rawPost);
   const post = {
     rId,
     userAddress: block.user_address,
@@ -133,17 +125,16 @@ const replacePost = async (rId, newRId) => {
   });
   await Post.updateLatestRId(rId, newRId);
   return true;
-}
+};
 
 const syncPosts = async (options = {}) => {
   let stop = false;
   while (!stop) {
     try {
-      const {
-        step = 20
-      } = options;
+      const { step = 20 } = options;
       const key = 'POSTS_OFFSET';
-      const offset = Number(await Cache.pGet(type, key)) || 0;
+      const cachedOffset = Number(await Cache.pGet(type, key));
+      const offset = cachedOffset > 0 ? cachedOffset : 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
       const rawPosts = await request({
         uri,
@@ -157,12 +148,7 @@ const syncPosts = async (options = {}) => {
       }
       const pickedPosts = await Promise.all(rawPosts.map(pickPost));
       for (const index of pickedPosts.keys()) {
-        const {
-          author,
-          post,
-          deleted,
-          updatedRId
-        } = pickedPosts[index];
+        const { author, post, deleted, updatedRId } = pickedPosts[index];
         if (deleted) {
           const exists = await Post.getByRId(post.rId);
           if (exists) {
