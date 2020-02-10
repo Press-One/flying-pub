@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:10.15.2
 
 ADD . /app
 RUN rm -rf /app/be/build
