@@ -7,7 +7,7 @@ const {
 } = require('../models/validator');
 
 exports.get = async ctx => {
-  const userId = ctx.verification && ctx.verification.user.id;
+  const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
   const settings = userId ? await Settings.getByUserId(userId) : {};
   ctx.body = {
     ...config.settings,
