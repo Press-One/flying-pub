@@ -89,7 +89,7 @@ exports.delete = async id => {
       id
     }
   });
-  await syncComment(fileRId);
+  await Sync.syncComment(fileRId);
   return true;
 };
 
