@@ -5,6 +5,6 @@ yarn build
 
 cd ../
 
-IMAGE_NAME="posts"
+IMAGE_NAME="reader"
 
 docker build -t $IMAGE_NAME .
