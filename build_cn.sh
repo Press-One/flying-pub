@@ -2,13 +2,13 @@ cd fe
 npm config set registry https://registry.npm.taobao.org
 yarn install
 yarn build
-cd /pressone/posts
+cd /pressone/reader
 
-IMAGE_NAME="dh-cn.press.one/pressone/posts"
-BOX_IMAGE_NAME="dh-cn.press.one/pressone/box-posts"
-XUE_IMAGE_NAME="dh-cn.press.one/pressone/xue-posts"
-PRS_IMAGE_NAME="dh-cn.press.one/pressone/prs-posts"
-BLOG_IMAGE_NAME="dh-cn.press.one/pressone/blog-posts"
+IMAGE_NAME="dh-cn.press.one/pressone/reader"
+BOX_IMAGE_NAME="dh-cn.press.one/pressone/box-reader"
+XUE_IMAGE_NAME="dh-cn.press.one/pressone/xue-reader"
+PRS_IMAGE_NAME="dh-cn.press.one/pressone/prs-reader"
+BLOG_IMAGE_NAME="dh-cn.press.one/pressone/blog-reader"
 
 sudo docker login --username pressone --password 57e348ab37aa5b55f68b7642ac584a41 dh-cn.press.one
 sudo docker build -t $IMAGE_NAME .
