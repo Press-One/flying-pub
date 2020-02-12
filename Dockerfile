@@ -7,6 +7,7 @@ RUN mv /app/fe/build /app/be/build
 WORKDIR /app/be
 RUN npm config set registry https://registry.npm.taobao.org
 RUN npm install
+RUN npm install wait-on -g
 
 WORKDIR /app
 
