@@ -1,0 +1,1 @@
+cd fe && yarn install && cd ../be && yarn install
