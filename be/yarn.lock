@@ -5137,10 +5137,10 @@ sequelize-pool@^2.3.0:
   resolved "https://registry.npm.taobao.org/sequelize-pool/download/sequelize-pool-2.3.0.tgz#64f1fe8744228172c474f530604b6133be64993d"
   integrity sha1-ZPH+h0QigXLEdPUwYEthM75kmT0=
 
-sequelize@5.13.0:
-  version "5.13.0"
-  resolved "https://registry.npm.taobao.org/sequelize/download/sequelize-5.13.0.tgz?cache=0&sync_timestamp=1576219402971&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fsequelize%2Fdownload%2Fsequelize-5.13.0.tgz#c600775bbd738d7e4ec1bbe05d29655615a5d734"
-  integrity sha1-xgB3W71zjX5OwbvgXSllVhWl1zQ=
+sequelize@5.15.1:
+  version "5.15.1"
+  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-5.15.1.tgz#f130ded17e74395ae7f5e265277c99577e895afb"
+  integrity sha512-DCzzJYvJLMKnyf8G3at2A+yM9M2fSQmTmuOYIpCWM8Gjqx3XfgNTd1NkuyPWFoi1/d1AXQsN2VDPXkPczida8A==
   dependencies:
     bluebird "^3.5.0"
     cls-bluebird "^2.1.0"
