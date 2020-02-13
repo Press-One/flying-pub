@@ -47,7 +47,7 @@
     "mixin-node": "^1.0.25",
     "mysql2": "1.7.0",
     "passport-mixin": "^0.1.24",
-    "pg": "7.0.0",
+    "pg": "7.0.2",
     "pg-hstore": "2.3.3",
     "pm2": "^3.5.1",
     "prs-utility": "^0.0.4",
