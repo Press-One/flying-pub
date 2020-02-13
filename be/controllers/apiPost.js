@@ -52,6 +52,12 @@ exports.listBySubscriptions = async ctx => {
   const limit = Math.min(~~ctx.query.limit || 20, 50);
   const userId = ctx.verification.user.id;
   const subscriptions = await Subscription.list(userId);
+  if (subscriptions.length === 0) {
+    ctx.body = {
+      posts: []
+    };
+    return;
+  }
   const authorAddresses = subscriptions.map(subscription => subscription.author.address);
   const posts = await Post.list({
     addresses: authorAddresses,
