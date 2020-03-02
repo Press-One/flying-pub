@@ -212,6 +212,29 @@ let unLock = (key, callback) => {
 
 let pUnLock = util.promisify(unLock);
 
+let pDeleteKeysByPattern = (pattern) => {
+  return new Promise((resolve, reject) => {
+    const stream = redis.scanStream({
+      match: pattern
+    });
+    stream.on("data", (keys) => {
+      if (keys.length) {
+        const pipeline = redis.pipeline();
+        keys.forEach((key) => {
+          pipeline.del(key);
+        });
+        pipeline.exec();
+      }
+    });
+    stream.on("end", () => {
+      resolve();
+    });
+    stream.on("error", (e) => {
+      reject(e);
+    });
+  });
+};
+
 let init = () => {
   redis = new ioredis({
     port: config.redis.port,
@@ -244,7 +267,8 @@ const cache = {
   unLock,
   init,
   pTryLock,
-  pUnLock
+  pUnLock,
+  pDeleteKeysByPattern
 };
 
 cache.pSet = util.promisify(set.bind(cache));

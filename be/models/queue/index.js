@@ -1,3 +1,4 @@
+const Cache = require('../cache');
 const {
   createSyncInitializedQueue
 } = require('./mixin');
@@ -6,7 +7,8 @@ const {
 } = require('./atom');
 const queues = [];
 
-exports.up = () => {
+exports.up = async () => {
+  await Cache.pDeleteKeysByPattern('bull:*');
   queues.push(createSyncInitializedQueue());
   queues.push(createAtomCacheQueue());
 }
