@@ -17,6 +17,8 @@ exports.createSyncInitializedQueue = () => {
     repeat: {
       every: 1 * 1000 * 1
     },
+    removeOnComplete: true,
+    removeOnFail: true
   });
 
   queue.process(`${config.serviceKey}_SYNC`, Finance.syncInitializedReceipts);
