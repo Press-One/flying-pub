@@ -3,9 +3,12 @@ const {
 } = require('./utils');
 const Finance = require('../finance');
 const config = require('../../config');
+const Cache = require('../cache');
 
-exports.createSyncInitializedQueue = () => {
-  const queue = createQueue(`${config.serviceKey}_SYNC_INITIALIZED_RECEIPTS`, {
+exports.createSyncInitializedQueue = async () => {
+  const queueName = `${config.serviceKey}_SYNC_INITIALIZED_RECEIPTS`;
+  await Cache.pDeleteKeysByPattern(`bull:${queueName}*`);
+  const queue = createQueue(queueName, {
     limiter: {
       max: 1,
       duration: 1 * 1000 * 1
