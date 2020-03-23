@@ -1,7 +1,6 @@
 cd fe
 npm config set registry https://registry.npm.taobao.org
-yarn install
-yarn build
+yarn install && yarn build && || { exit 1; }
 cd /pressone/reader
 
 IMAGE_NAME="dh-cn.press.one/pressone/reader"
