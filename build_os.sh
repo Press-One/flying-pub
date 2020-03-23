@@ -1,6 +1,6 @@
 cd fe
 npm config set registry https://registry.npm.taobao.org
-yarn install && yarn build && || { exit 1; }
+yarn install && yarn build || { exit 1; }
 
 cd ../
 
