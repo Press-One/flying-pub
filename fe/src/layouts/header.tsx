@@ -11,7 +11,6 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
-import Chat from '@material-ui/icons/Chat';
 import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
 import { Link } from 'react-router-dom';
