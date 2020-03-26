@@ -48,10 +48,6 @@ export default observer((props: any) => {
 
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
 
-  const openIntercom = () => {
-    (window as any).Intercom('show');
-  };
-
   const mobileMenuView = () => {
     const MenuItem = (props: any) => {
       const { onClick } = props;
@@ -89,16 +85,6 @@ export default observer((props: any) => {
                 }}
               >
                 登录
-              </MenuItem>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  openIntercom();
-                }}
-              >
-                反馈/建议
               </MenuItem>
             </div>
           )}
@@ -161,16 +147,6 @@ export default observer((props: any) => {
                 }}
               >
                 所有交易记录
-              </MenuItem>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  openIntercom();
-                }}
-              >
-                反馈/建议
               </MenuItem>
               <MenuItem
                 onClick={async () => {
@@ -245,22 +221,6 @@ export default observer((props: any) => {
                 </div>
               );
             })}
-            <div
-              onClick={() => {
-                handleClose();
-                openIntercom();
-              }}
-            >
-              <MenuItem className="text-gray-700">
-                <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
-                    <Chat />
-                  </span>{' '}
-                  反馈/建议
-                  <span className="pr-2" />
-                </div>
-              </MenuItem>
-            </div>
           </div>
         )}
         {userStore.isLogin && (
@@ -336,22 +296,6 @@ export default observer((props: any) => {
                 </div>
               );
             })}
-            <div
-              onClick={() => {
-                handleClose();
-                openIntercom();
-              }}
-            >
-              <MenuItem className="text-gray-700">
-                <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
-                    <Chat />
-                  </span>{' '}
-                  反馈/建议
-                  <span className="pr-2" />
-                </div>
-              </MenuItem>
-            </div>
             <a href={logoutUrl}>
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
