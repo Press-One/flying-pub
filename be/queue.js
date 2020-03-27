@@ -1,10 +1,8 @@
-const app = require('./app');
-const config = require('./config');
-const http = require('http');
+const models = require('./models');
 const queue = require('./models/queue');
 
-const server = http.createServer(app.callback());
-server.listen(config.queuePort, () => {
-  app.serverUpCallback(server);
-  queue.up();
-});
+models.cache.init();
+
+queue.up();
+
+process.stdin.resume();
