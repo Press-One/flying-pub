@@ -115,11 +115,9 @@ exports.checkPermission = async (provider, profile) => {
 
 const providerPermissionChecker = {
   mixin: async profile => {
-    // 暂时不检测 Mixin 权限，因为 API 问题，需要 lyric 协作解决 By Junhong
-    return true
-    // const rawJson = JSON.parse(profile.raw);
-    // const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
-    // return IsInMixinBoxGroup;
+    const rawJson = JSON.parse(profile.raw);
+    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
+    return IsInMixinBoxGroup;
   },
   github: async profile => {
     const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
