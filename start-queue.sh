@@ -1,1 +1,1 @@
-cd be && yarn start-queue
+cd server && yarn start-queue

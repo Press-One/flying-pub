@@ -48,8 +48,8 @@ TOPIC=e4d4d92b8bb666fcd72a3483c95cf945f19c2bd9;http://${YOUR_HOST_IP}:8000/api/w
 进入 `reader` 仓库，复制配置文件
 
 ```
-cp ../flying-reader/config/config.reader.js ./be/config.js
-cp ../flying-reader/config/config.reader-wallet.js ./be/config.wallet.js
+cp ../flying-reader/config/config.reader.js ./server/config.js
+cp ../flying-reader/config/config.reader-wallet.js ./server/config.wallet.js
 ```
 
 启动

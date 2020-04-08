@@ -1,5 +1,5 @@
 {
-  "name": "prs-medium-fe",
+  "name": "reader-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

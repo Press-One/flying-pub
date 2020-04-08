@@ -1,26 +1,26 @@
-be/node_modules
+server/node_modules
 
-be/npm-debug.log*
-be/yarn-debug.log*
-be/yarn-error.log*
+server/npm-debug.log*
+server/yarn-debug.log*
+server/yarn-error.log*
 
-be/config.js
+server/config.js
 
 # dependencies
-fe/node_modules
-fe/.pnp
-fe/.pnp.js
+client/node_modules
+client/.pnp
+client/.pnp.js
 
 # testing
-fe/coverage
+client/coverage
 
 # misc
-fe/.DS_Store
-fe/.env.local
-fe/.env.development.local
-fe/.env.test.local
-fe/.env.production.local
+client/.DS_Store
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
 
-fe/npm-debug.log*
-fe/yarn-debug.log*
-fe/yarn-error.log*
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*

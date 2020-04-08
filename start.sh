@@ -1,1 +1,1 @@
-./start-fe.sh & ./start-be.sh & ./start-queue.sh
+./start-client.sh & ./start-server.sh & ./start-queue.sh

@@ -1,1 +1,1 @@
-cd fe && yarn install && cd ../be && yarn install
+cd client && yarn install && cd ../server && yarn install

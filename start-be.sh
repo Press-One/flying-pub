@@ -1,1 +1,0 @@
-cd be && yarn start
