@@ -25,10 +25,15 @@ const ping = require('./routes/ping');
 
 const config = require('./config');
 const models = require('./models');
+const prepare = require('./prepare');
 
 const {
   ensureAuthorization,
 } = require('./models/api');
+
+if (process.env.NODE_ENV === 'production') {
+  prepare.initStatic();
+}
 
 const redis = models.cache.init();
 
