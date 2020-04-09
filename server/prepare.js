@@ -26,12 +26,9 @@ const tryDownloadFavicon = async url => {
 }
 
 const tryUseStaticCDN = async cdn => {
-  if (!cdn) {
-    return;
-  }
   try {
     const indexHtml = await pReadFile('./build/index.html');
-    const newIndexHtml = indexHtml.toString().replace(/="\/static/g, `="${cdn}/static`);
+    const newIndexHtml = indexHtml.toString().replace(/(?<==").*?(?=\/static)/g, () => cdn || '');
     await pWriteFile('./build/index.html', newIndexHtml);
   } catch (e) {
     console.log(e);
