@@ -51,7 +51,9 @@ const passport = models.auth.buildPassport();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(views(__dirname + '/build'));
-app.use(serve('build'));
+app.use(serve('build', {
+  maxage: 365 * 24 * 60 * 60,
+}));
 
 router.all('*', models.api.errorHandler);
 router.all('*', models.api.extendCtx);
