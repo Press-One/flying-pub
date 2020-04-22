@@ -78,6 +78,10 @@ let lrem = function (type, id, data, callback) {
 };
 
 var findKeys = function (type, preStr, callback) {
+  console.log({
+    type,
+    preStr
+  });
   getKey(type, preStr, function (err, key) {
     if (err) {
       return callback(err);
@@ -276,5 +280,6 @@ cache.pSetWithExpired = util.promisify(setWithExpired.bind(cache));
 cache.pGet = util.promisify(get.bind(cache));
 cache.pDel = util.promisify(del.bind(cache));
 cache.pFindAndDel = util.promisify(findAndDel.bind(cache));
+cache.pFindKeys = util.promisify(findKeys.bind(cache));
 
 module.exports = cache;

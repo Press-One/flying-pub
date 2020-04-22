@@ -8,6 +8,8 @@ const {
   assert,
   Errors
 } = require('./validator')
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED('user'));
@@ -119,6 +121,23 @@ exports.getByAddress = async (address, options) => {
   return await get({
     address
   }, options);
+}
+
+exports.getByMixinAccountId = async mixinAccountId => {
+  const user = await User.findOne({
+    where: {
+      mixinAccountRaw: {
+        [Op.like]: `%"user_id":"${mixinAccountId}%`
+      }
+    }
+  });
+  if (!user) {
+    return null;
+  }
+  const derivedUser = await packUser(user.toJSON(), {
+    withProfile: true,
+  });
+  return derivedUser;
 }
 
 const get = async (query = {}, options = {}) => {
