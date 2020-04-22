@@ -140,7 +140,7 @@ const trySendText = async (userId, text) => {
     }
   };
   await mixin.sendText(text, options);
-  Log.create(userId, `收到 Mixin 通知 ${text}`);
+  Log.create(userId, `收到 Mixin 通知， ${text}`);
 }
 
 const trySendButton = async (userId, text) => {
