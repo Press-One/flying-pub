@@ -1,5 +1,7 @@
 const request = require('request-promise');
-const { fm } = require('../utils');
+const {
+  fm
+} = require('../utils');
 const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
@@ -10,14 +12,18 @@ const Comment = require('./comment');
 const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
+const Mixin = require('./mixin');
 const type = `${config.serviceKey}_SYNC_ATOM`;
+const Subscription = require('./subscription');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
   let done = false;
   while (!stop) {
     try {
-      const { step = 50 } = options;
+      const {
+        step = 50
+      } = options;
       const key = 'AUTHORS_OFFSET';
       const cachedOffset = Number(await Cache.pGet(type, key));
       const offset = cachedOffset > 0 ? cachedOffset : 0;
@@ -85,7 +91,12 @@ const getBlock = async rId => {
 const pickPost = async rawPost => {
   const rId = rawPost.publish_tx_id;
   const block = await getBlock(rId);
-  const { title, avatar, authorName, content } = extractFrontMatter(rawPost);
+  const {
+    title,
+    avatar,
+    authorName,
+    content
+  } = extractFrontMatter(rawPost);
   const post = {
     rId,
     userAddress: block.user_address,
@@ -131,7 +142,9 @@ const syncPosts = async (options = {}) => {
   let stop = false;
   while (!stop) {
     try {
-      const { step = 20 } = options;
+      const {
+        step = 20
+      } = options;
       const key = 'POSTS_OFFSET';
       const cachedOffset = Number(await Cache.pGet(type, key));
       const offset = cachedOffset > 0 ? cachedOffset : 0;
@@ -148,7 +161,12 @@ const syncPosts = async (options = {}) => {
       }
       const pickedPosts = await Promise.all(rawPosts.map(pickPost));
       for (const index of pickedPosts.keys()) {
-        const { author, post, deleted, updatedRId } = pickedPosts[index];
+        const {
+          author,
+          post,
+          deleted,
+          updatedRId
+        } = pickedPosts[index];
         if (deleted) {
           const exists = await Post.getByRId(post.rId);
           if (exists) {
@@ -178,6 +196,12 @@ const syncPosts = async (options = {}) => {
         if (updatedRId) {
           await replacePost(updatedRId, post.rId);
           Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+        } else {
+          await notifySubscribers({
+            address: author.address,
+            name: author.name,
+            post
+          });
         }
       }
       let offsetIncrement = 0;
@@ -201,6 +225,26 @@ const syncPosts = async (options = {}) => {
     }
   }
 };
+
+const notifySubscribers = async (options = {}) => {
+  const {
+    address,
+    name,
+    post
+  } = options;
+  const subscriptions = await Subscription.listSubscribers(address);
+  while (subscriptions.length > 0) {
+    const subscription = subscriptions.shift();
+    const truncatedTitle = post.title.slice(0, 10);
+    const postfix = post.title.length > truncatedTitle.length ? '...' : '';
+    const postUrl = `${config.serviceRoot}/posts/${post.rId}`;
+    await Mixin.pushToNotifyQueue({
+      userId: subscription.userId,
+      text: `${name}发布《${truncatedTitle}${postfix}》`,
+      url: postUrl
+    });
+  }
+}
 
 exports.sync = async () => {
   // 同步所有 authors

@@ -9,3 +9,8 @@ exports.log = message => {
     console.log(message);
   }
 }
+
+exports.sleep = (duration) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, duration);
+  });

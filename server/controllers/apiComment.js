@@ -1,6 +1,7 @@
 const config = require('../config');
 const Comment = require('../models/comment');
 const Log = require('../models/log');
+const request = require('request-promise');
 const {
   assert,
   Errors
@@ -8,9 +9,22 @@ const {
 
 exports.create = async ctx => {
   const userId = ctx.verification.user.id;
+  const userName = ctx.verification.user.name;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
   const comment = await Comment.create(userId, data);
+  await request({
+    uri: `${config.settings['pub.site.url']}/api/notify`,
+    method: 'POST',
+    json: true,
+    body: {
+      payload: {
+        rId: data.objectId,
+        commentUser: userName,
+        redirect: `/posts/${data.objectId}?commentId=${comment.id}`
+      }
+    }
+  }).promise();
   Log.create(userId, `评论文章 ${config.serviceRoot}/posts/${data.objectId}`);
   ctx.body = comment;
 }

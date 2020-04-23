@@ -78,10 +78,6 @@ let lrem = function (type, id, data, callback) {
 };
 
 var findKeys = function (type, preStr, callback) {
-  console.log({
-    type,
-    preStr
-  });
   getKey(type, preStr, function (err, key) {
     if (err) {
       return callback(err);

@@ -1,4 +1,6 @@
 const Profile = require('./sequelize/profile');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const {
   Joi,
   attempt,
@@ -21,6 +23,20 @@ exports.getByUserId = async userId => {
       userId
     }
   });
+  return profile ? profile.toJSON() : null;
+}
+
+exports.getByMixinAccountId = async mixinAccountId => {
+  const profile = await Profile.findOne({
+    where: {
+      raw: {
+        [Op.like]: `%"user_id":"${mixinAccountId}%`
+      }
+    }
+  });
+  if (!profile) {
+    return null;
+  }
   return profile ? profile.toJSON() : null;
 }
 

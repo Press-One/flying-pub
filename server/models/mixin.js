@@ -1,10 +1,13 @@
 const Mixin = require('mixin-node');
 const config = require('../config');
 const Log = require('./log');
-const User = require('./user');
+const Profile = require('./profile');
 const Conversation = require('./conversation');
 const Cache = require('./cache');
-const TYPE = 'MIXIN_NOTIFY';
+const {
+  sleep
+} = require('../utils');
+const TYPE = `${config.serviceKey}_MIXIN_NOTIFY`;
 const JOB_ID_PREFIX = 'JOB_';
 
 let enabled = false;
@@ -32,11 +35,6 @@ const mixinWsLog = (message) => {
     console.log(`【Mixin WebSocket】: ${message}`);
   }
 };
-
-const sleep = (duration) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
 
 const start = () => {
   mixin.onConnect = () => {
@@ -82,7 +80,18 @@ const start = () => {
           user_id
         } = msgObj.data;
         if (conversation_id && user_id) {
-          await tryCreateConversation(msgObj);
+          const profile = await Profile.getByMixinAccountId(user_id);
+          if (!profile) {
+            await mixin.sendText('飞帖没有查询到你的账户信息，请先到飞帖登录一下', msgObj);
+            return;
+          }
+          try {
+            await tryCreateConversation(profile.userId, msgObj);
+            await trySendText(profile.userId, '你成功开通了消息提醒。一旦有文章发布成功、打赏、评论等消息，我会第一时间通知你');
+          } catch (e) {
+            console.log(e);
+            await mixin.sendText('服务出错了', msgObj);
+          }
         }
       }
     } catch (e) {
@@ -93,37 +102,29 @@ const start = () => {
   mixin.start();
 }
 
-const tryCreateConversation = async msgObj => {
-  try {
-    const {
-      conversation_id,
-      user_id
-    } = msgObj.data;
-    const user = await User.getByMixinAccountId(user_id);
-    const conversation = await Conversation.tryCreateConversation(user.id, {
-      conversationId: conversation_id,
-      mixinAccountId: user_id,
-      raw: JSON.stringify(msgObj)
-    });
-    if (conversation) {
-      Log.create(user.id, '开通 Mixin 通知');
-    }
-  } catch (e) {
-    console.log(e);
+const tryCreateConversation = async (userId, msgObj) => {
+  const {
+    conversation_id,
+    user_id
+  } = msgObj.data;
+  const conversation = await Conversation.tryCreateConversation(userId, {
+    conversationId: conversation_id,
+    mixinAccountId: user_id,
+    raw: JSON.stringify(msgObj)
+  });
+  if (conversation) {
+    Log.create(userId, '开通 Mixin 通知');
   }
 }
 
 const trySendToUser = async (userId, text, options = {}) => {
-  await trySendText(userId, text);
   const {
     url
   } = options;
   if (url) {
-    console.log({
-      url
-    });
-    await sleep(1000);
-    await trySendButton(userId, `[{ "label": "去看看", "color": "#4A90E2", "action": "${url}" }]`);
+    await trySendButton(userId, `[{ "label": "${text}", "color": "#4A90E2", "action": "${url}" }]`);
+  } else {
+    await trySendText(userId, text);
   }
 }
 
@@ -154,10 +155,6 @@ const trySendButton = async (userId, text) => {
       user_id: conversation.mixinAccountId,
     }
   };
-  console.log({
-    text,
-    options
-  });
   await mixin.sendButton(text, options);
 }
 
@@ -175,22 +172,13 @@ exports.tryNotify = async () => {
     }
   }
   try {
-    console.log(` ------------- tryNotify ---------------`);
     if (!connected) {
       return false;
     }
     const keys = await Cache.pFindKeys(TYPE, `${JOB_ID_PREFIX}*`);
-    if (keys.length > 0) {
-      console.log({
-        keys
-      });
-    }
     while (keys.length > 0) {
       const id = keys.shift().match(/JOB_(.*)/)[0];
       const data = await Cache.pGet(TYPE, id);
-      console.log({
-        data
-      });
       if (data) {
         const {
           userId,
@@ -202,6 +190,7 @@ exports.tryNotify = async () => {
         });
       }
       await Cache.pDel(TYPE, id);
+      await sleep(200);
     }
   } catch (e) {
     console.log(e);

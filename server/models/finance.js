@@ -394,17 +394,17 @@ const reward = async (fileRId, data = {}, options = {}) => {
   const mixinClientId = post.paymentUrl ? post.paymentUrl.split('/').pop() : '';
   assert(address, Errors.ERR_IS_REQUIRED('address'));
   assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
-  Log.create(userId, `开始打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId} ${mixinClientId}`);
+  Log.create(userId, `开始打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId} ${mixinClientId}`);
   await payForFile({
     userId,
     toAddress: address,
     fileRId,
     currency: data.currency,
     amount: data.amount,
-    memo: data.memo,
+    memo: `${data.memo || '打赏文章'} | rId: ${fileRId}`,
     toMixinClientId: mixinClientId,
   });
-  Log.create(userId, `完成打赏 ${data.amount} ${data.currency} ${data.memo || ''} ${fileRId}`);
+  Log.create(userId, `完成打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId}`);
 }
 exports.reward = reward;
 

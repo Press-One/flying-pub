@@ -66,3 +66,13 @@ exports.list = async userId => {
   });
   return subscriptions.map(subscription => packSubscription(subscription.toJSON()));
 }
+
+exports.listSubscribers = async authorAddress => {
+  assert(authorAddress, Errors.ERR_IS_REQUIRED('authorAddress'));
+  const subscriptions = await Subscription.findAll({
+    where: {
+      authorAddress
+    }
+  });
+  return subscriptions.map(subscription => packSubscription(subscription.toJSON()));
+}
