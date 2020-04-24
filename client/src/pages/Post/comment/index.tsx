@@ -88,22 +88,20 @@ export default observer((props: IProps) => {
     if (!isFetchedComments) {
       return;
     }
+    if (!selectedCommentId) {
+      return;
+    }
     (async () => {
       await sleep(500);
       const commentEle: any = document.querySelector(`#comment_${selectedCommentId}`);
       if (commentEle) {
         scrollToHere(commentEle.offsetTop);
         removeQuery('commentId');
-        await sleep(800);
-        const cachedId = selectedCommentId;
-        setSelectedCommentId('0');
-        await sleep(300);
-        setSelectedCommentId(cachedId);
-        await sleep(600);
-        setSelectedCommentId('0');
+        await sleep(2000);
+        setSelectedCommentId('');
       }
     })();
-  }, [isFetchedComments]);
+  }, [isFetchedComments, selectedCommentId]);
 
   const reply = async () => {
     if (isCreatingComment || isDrawerCreatingComment) {

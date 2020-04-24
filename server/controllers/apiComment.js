@@ -46,7 +46,7 @@ exports.create = async ctx => {
   } catch (e) {
     console.log(e);
   }
-  Log.create(userId, `评论文章 ${config.serviceRoot}/posts/${data.objectId}`);
+  Log.create(userId, `评论文章 ${config.serviceRoot}${postPath}`);
   ctx.body = comment;
 }
 
