@@ -87,7 +87,7 @@ const start = () => {
           }
           try {
             await tryCreateConversation(profile.userId, msgObj);
-            await trySendText(profile.userId, '你成功开通了消息提醒。一旦有文章发布成功、打赏、评论等消息，我会第一时间通知你');
+            await trySendText(profile.userId, '你成功开通了消息提醒。一旦有已关注的作者发布新文章、或者是其他人在评论区 @ 你，我会第一时间通知你');
           } catch (e) {
             console.log(e);
             await mixin.sendText('服务出错了', msgObj);

@@ -136,3 +136,15 @@ export const onlyForLogin = () => false;
 
 export const generateAvatar = (name: string) =>
   `https://ui-avatars.com/api/?name=${name.slice(0, 1)}`;
+
+export const scrollToHere = (top: number) => {
+  const scrollElement = document.scrollingElement || document.documentElement;
+  try {
+    scrollElement.scrollTo({
+      top,
+      behavior: 'smooth',
+    });
+  } catch (err) {
+    scrollElement.scrollTop = top;
+  }
+};

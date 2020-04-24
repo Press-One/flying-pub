@@ -11,6 +11,7 @@ import PermissionDeny from './pages/PermissionDeny';
 
 import LoginModal from 'components/LoginModal';
 import WalletModal from 'components/WalletModal';
+import NotificationModal from 'components/NotificationModal';
 import SnackBar from 'components/SnackBar';
 
 import { isIPhone } from 'utils';
@@ -37,6 +38,7 @@ const AppRouter = () => {
           <LoginModal />
           <WalletModal />
           <SnackBar />
+          <NotificationModal />
           <style jsx global>{`
             body {
               min-height: ${isIPhone ? '110vh' : '100vh'};

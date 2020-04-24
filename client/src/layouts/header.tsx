@@ -6,6 +6,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import People from '@material-ui/icons/People';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
+import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
@@ -13,6 +14,7 @@ import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import Fade from '@material-ui/core/Fade';
 import Drawer from '@material-ui/core/Drawer';
+import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import {
@@ -338,21 +340,53 @@ export default observer((props: any) => {
                 <ArrowBackIos />
               </div>
             )}
-            <div
-              className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
-              onClick={() => {
-                setOpenDrawer(true);
-                stopBodyScroll(true);
-              }}
-            >
-              <MenuIcon />
+            <div className="flex items-center">
+              {settings['notification.enabled'] &&
+                userStore.isLogin &&
+                !userStore.user.notificationEnabled && (
+                  <Badge
+                    badgeContent={1}
+                    className="px-2 text-2xl text-gray-700 mr-8"
+                    color="error"
+                    variant="dot"
+                    invisible={false}
+                    onClick={() => {
+                      modalStore.openNotification();
+                    }}
+                  >
+                    <NotificationsOutlined />
+                  </Badge>
+                )}
+              <div
+                className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
+                onClick={() => {
+                  setOpenDrawer(true);
+                  stopBodyScroll(true);
+                }}
+              >
+                <MenuIcon />
+              </div>
             </div>
           </div>
           {isMobile && mobileMenuView()}
         </div>
         {isPc && (
           <div className="w-7/12 m-auto relative">
-            <div className="absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20">
+            <div className="flex items-center absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20 z-50">
+              {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
+                <Badge
+                  badgeContent={1}
+                  className="px-2 text-2xl text-gray-700 mr-8 cursor-pointer"
+                  color="error"
+                  variant="dot"
+                  invisible={false}
+                  onClick={() => {
+                    modalStore.openNotification();
+                  }}
+                >
+                  <NotificationsOutlined />
+                </Badge>
+              )}
               <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
                 <MenuIcon />
               </IconButton>

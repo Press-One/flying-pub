@@ -10,9 +10,19 @@ import DrawerModal from 'components/DrawerModal';
 import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
+import { toJS } from 'mobx';
 import Comments from './comments';
 import { useStore } from 'store';
-import { sleep, stopBodyScroll, isMobile, isPc, initMathJax } from 'utils';
+import {
+  sleep,
+  stopBodyScroll,
+  isMobile,
+  isPc,
+  initMathJax,
+  getQuery,
+  removeQuery,
+  scrollToHere,
+} from 'utils';
 import CommentApi from './api';
 import Api from 'api';
 
@@ -38,6 +48,8 @@ export default observer((props: IProps) => {
   const [openCommentEntry, setOpenCommentEntry] = React.useState(false);
   const [isVoting, setIsVoting] = React.useState(false);
   const { alwaysShowCommentEntry } = props;
+  const [selectedCommentId, setSelectedCommentId] = React.useState(getQuery('commentId') || '0');
+  const isFetchedComments = commentStore.isFetched;
 
   React.useEffect(() => {
     const scrollCallBack = debounce(() => {
@@ -72,6 +84,27 @@ export default observer((props: IProps) => {
     fetchComments();
   }, [commentStore, props]);
 
+  React.useEffect(() => {
+    if (!isFetchedComments) {
+      return;
+    }
+    (async () => {
+      await sleep(500);
+      const commentEle: any = document.querySelector(`#comment_${selectedCommentId}`);
+      if (commentEle) {
+        scrollToHere(commentEle.offsetTop);
+        removeQuery('commentId');
+        await sleep(800);
+        const cachedId = selectedCommentId;
+        setSelectedCommentId('0');
+        await sleep(300);
+        setSelectedCommentId(cachedId);
+        await sleep(600);
+        setSelectedCommentId('0');
+      }
+    })();
+  }, [isFetchedComments]);
+
   const reply = async () => {
     if (isCreatingComment || isDrawerCreatingComment) {
       return;
@@ -97,7 +130,11 @@ export default observer((props: IProps) => {
         objectId: props.fileRId,
         objectType: 'post',
       };
-      const newComment = await CommentApi.create(comment);
+      const mentionsUserIds = getMentionUserIds(_value, commentStore.comments);
+      const newComment = await CommentApi.create({
+        ...comment,
+        options: { mentionsUserIds },
+      });
       await sleep(500);
       commentStore.addComment(newComment);
       initMathJax(document.getElementById('comments'));
@@ -112,16 +149,9 @@ export default observer((props: IProps) => {
       } else {
         setValue('');
       }
-      const scrollElement = document.scrollingElement || document.documentElement;
-      try {
-        scrollElement.scrollTo({
-          top: 99999,
-          behavior: 'smooth',
-        });
-      } catch (err) {
-        scrollElement.scrollTop = 99999;
-      }
+      scrollToHere(99999);
     } catch (e) {
+      console.log(e);
       snackbarStore.show({
         message: e.message || '发布失败，请稍后重试',
         type: 'error',
@@ -129,6 +159,20 @@ export default observer((props: IProps) => {
     } finally {
       openDrawer ? setIsDrawerCreatingComment(false) : setIsCreatingComment(false);
     }
+  };
+
+  const getMentionUserIds = (content: string, comments: any = []) => {
+    const users: any = comments.map((comment: any) => toJS(comment.user));
+    const matched: any = content.match(/@([^ ]*) /g) || [];
+    const mentionUserNames = matched.map((mention: string) => mention.replace('@', '').trim());
+    const mentionUserIds = new Set();
+    for (const name of mentionUserNames) {
+      const user = users.find((user: any) => user.name === name || user.name.startsWith(name));
+      if (user) {
+        mentionUserIds.add(user.id);
+      }
+    }
+    return Array.from(mentionUserIds);
   };
 
   const upVote = async (commentId: number) => {
@@ -366,6 +410,7 @@ export default observer((props: IProps) => {
               replyTo={replyTo}
               upVote={upVote}
               resetVote={resetVote}
+              selectedId={selectedCommentId}
             />
           </div>
         )}

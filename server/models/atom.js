@@ -235,12 +235,12 @@ const notifySubscribers = async (options = {}) => {
   const subscriptions = await Subscription.listSubscribers(address);
   while (subscriptions.length > 0) {
     const subscription = subscriptions.shift();
-    const truncatedTitle = post.title.slice(0, 10);
+    const truncatedTitle = post.title.slice(0, 20);
     const postfix = post.title.length > truncatedTitle.length ? '...' : '';
     const postUrl = `${config.serviceRoot}/posts/${post.rId}`;
     await Mixin.pushToNotifyQueue({
       userId: subscription.userId,
-      text: `${name}发布《${truncatedTitle}${postfix}》`,
+      text: `${name}发布《${truncatedTitle}${postfix}》`.slice(0, 35),
       url: postUrl
     });
   }

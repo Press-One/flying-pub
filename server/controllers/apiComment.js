@@ -2,6 +2,7 @@ const config = require('../config');
 const Comment = require('../models/comment');
 const Log = require('../models/log');
 const request = require('request-promise');
+const Mixin = require('../models/mixin');
 const {
   assert,
   Errors
@@ -11,20 +12,40 @@ exports.create = async ctx => {
   const userId = ctx.verification.user.id;
   const userName = ctx.verification.user.name;
   const data = ctx.request.body.payload;
+  const {
+    options = {}
+  } = data;
+  const {
+    mentionsUserIds = []
+  } = options;
+  delete data.options;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
   const comment = await Comment.create(userId, data);
-  await request({
-    uri: `${config.settings['pub.site.url']}/api/notify`,
-    method: 'POST',
-    json: true,
-    body: {
-      payload: {
-        rId: data.objectId,
-        commentUser: userName,
-        redirect: `/posts/${data.objectId}?commentId=${comment.id}`
+  const postPath = `/posts/${data.objectId}?commentId=${comment.id}`;
+  try {
+    await request({
+      uri: `${config.settings['pub.site.url']}/api/notify`,
+      method: 'POST',
+      json: true,
+      body: {
+        payload: {
+          rId: data.objectId,
+          commentUser: userName,
+          redirect: postPath
+        }
       }
+    }).promise();
+    while (mentionsUserIds.length > 0) {
+      const mentionsUserId = mentionsUserIds.shift();
+      await Mixin.pushToNotifyQueue({
+        userId: mentionsUserId,
+        text: `${userName}回复了你的评论`,
+        url: `${config.serviceRoot}${postPath}`
+      });
     }
-  }).promise();
+  } catch (e) {
+    console.log(e);
+  }
   Log.create(userId, `评论文章 ${config.serviceRoot}/posts/${data.objectId}`);
   ctx.body = comment;
 }

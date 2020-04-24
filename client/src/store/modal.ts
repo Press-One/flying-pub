@@ -11,6 +11,10 @@ export function createModalStore() {
       open: false,
       data: {},
     },
+    notification: {
+      open: false,
+      data: {},
+    },
     openLogin(data: any = {}) {
       if (isMobile && !isWeChat) {
         window.location.href = getLoginUrl();
@@ -36,6 +40,16 @@ export function createModalStore() {
     closeWallet() {
       this.wallet.open = false;
       this.wallet.data = {};
+      stopBodyScroll(false);
+    },
+    openNotification(data: any = {}) {
+      this.notification.open = true;
+      this.notification.data = data;
+      stopBodyScroll(true);
+    },
+    closeNotification() {
+      this.notification.open = false;
+      this.notification.data = {};
       stopBodyScroll(false);
     },
   };
