@@ -75,6 +75,8 @@ const start = () => {
           message_id: msgObj.data.message_id
         });
         mixinWsLog(`Sent ACKNOWLEDGE_MESSAGE_RECEIPT id: ${receipt_id}`);
+        mixinWsLog(`Receive message: `);
+        console.log(msgObj);
         const {
           conversation_id,
           user_id
