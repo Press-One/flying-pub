@@ -130,15 +130,18 @@ const providerPermissionChecker = {
 
 const checkIsInMixinBoxGroup = async mixinUuid => {
   try {
-    await request({
-      uri: `https://courses.firesbox.com/a1/open-api/v1/users/${mixinUuid}`,
+    const res = await request({
+      uri: `${config.auth.boxGroupAuthBaseApi}/${mixinUuid}`,
       json: true,
       headers: {
+        group_id: config.auth.boxGroupId,
         Authorization: `Bearer ${config.auth.boxGroupToken}`
       },
     }).promise();
-    return true;
+    const isValid = res.user_id === mixinUuid;
+    return isValid;
   } catch (err) {
+    console.log(err);
     return false;
   }
 }
