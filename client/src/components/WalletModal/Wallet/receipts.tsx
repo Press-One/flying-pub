@@ -86,7 +86,7 @@ export default observer(() => {
         walletStore.setIsFetchedReceipts(true);
       } catch (err) {}
     })();
-  }, [walletStore]);
+  }, [walletStore, receiptLimit]);
 
   const loadMore = async () => {
     try {
