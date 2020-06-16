@@ -67,22 +67,40 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
 };
 
 export default observer(() => {
+  const page = React.useRef(1);
+  const [loading, setLoading] = React.useState(false);
   const { userStore, walletStore, feedStore } = useStore();
   const { mixinWalletClientId } = userStore.user;
-  const { isFetchedReceipts, receipts } = walletStore;
+  const { isFetchedReceipts, receipts, receiptLimit, hasMoreReceipt } = walletStore;
 
   React.useEffect(() => {
     (async () => {
       try {
         const receipts = await FinanceApi.getReceipts({
-          limit: 100,
+          offset: 0,
+          limit: receiptLimit,
         });
+        page.current += 1;
         await sleep(500);
-        walletStore.setReceipts(receipts);
+        walletStore.addReceipts(receipts);
         walletStore.setIsFetchedReceipts(true);
       } catch (err) {}
     })();
   }, [walletStore]);
+
+  const loadMore = async () => {
+    try {
+      setLoading(true);
+      const newReceipts = await FinanceApi.getReceipts({
+        offset: (page.current - 1) * receiptLimit,
+        limit: receiptLimit,
+      });
+      page.current += 1;
+      await sleep(500);
+      walletStore.addReceipts(newReceipts);
+      setLoading(false);
+    } catch (err) {}
+  };
 
   if (!isFetchedReceipts) {
     return (
@@ -105,6 +123,19 @@ export default observer(() => {
         {receipts.map((receipt: any) => (
           <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
         ))}
+        {hasMoreReceipt && (
+          <div className="mt-5 pt-2 pb-8">
+            {!loading && (
+              <div className="text-blue-400 cursor-pointer text-center" onClick={loadMore}>
+                加载更多
+              </div>
+            )}
+            {loading && <Loading />}
+          </div>
+        )}
+        {!hasMoreReceipt && (
+          <div className="text-gray-500 py-8 text-center text-sm">没有更多了</div>
+        )}
         {receipts.length === 0 && (
           <div className="text-gray-500 mt-32 text-center text-sm">暂时没有交易记录</div>
         )}

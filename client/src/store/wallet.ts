@@ -4,6 +4,8 @@ export function createWalletStore() {
     balance: {},
     isFetchedReceipts: false,
     receipts: [],
+    hasMoreReceipt: true,
+    receiptLimit: 10,
     isFetchedIsCustomPinExist: false,
     isCustomPinExist: false,
     get hasBalance() {
@@ -18,8 +20,11 @@ export function createWalletStore() {
     setIsFetchedReceipts(status: boolean) {
       this.isFetchedReceipts = status;
     },
-    setReceipts(receipts: any) {
-      this.receipts = receipts;
+    addReceipts(receipts: any) {
+      if (receipts.length < this.receiptLimit) {
+        this.hasMoreReceipt = false;
+      }
+      this.receipts = this.receipts.concat(receipts);
     },
     setIsFetchedIsCustomPinExist(status: boolean) {
       this.isFetchedIsCustomPinExist = status;
