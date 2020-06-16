@@ -92,7 +92,7 @@ export default observer((props: IProps) => {
       return;
     }
     (async () => {
-      await sleep(500);
+      await sleep(1000);
       const commentEle: any = document.querySelector(`#comment_${selectedCommentId}`);
       if (commentEle) {
         scrollToHere(commentEle.offsetTop);

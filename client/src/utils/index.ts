@@ -142,7 +142,6 @@ export const scrollToHere = (top: number) => {
   try {
     scrollElement.scrollTo({
       top,
-      behavior: 'smooth',
     });
   } catch (err) {
     scrollElement.scrollTop = top;
