@@ -1,4 +1,4 @@
-FROM node:10.15.2
+FROM node:11
 
 ADD . /app
 RUN rm -rf /app/server/build
