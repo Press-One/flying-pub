@@ -28,7 +28,7 @@
 配置生成之后，请打开 `Settings.toml`，手动修改一行代码
 
 ```
-webhook: http://${YOUR_HOST_IP}:8000/api/webhook/medium
+webhook: "http://${YOUR_HOST_IP}:8000/api/webhook/medium"
 ```
 
 把你的电脑的本地 IP 填到 `${YOUR_HOST_IP}`
