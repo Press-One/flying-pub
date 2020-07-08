@@ -7,8 +7,9 @@ yarn install && yarn build || { exit 1; }
 
 cd /pressone/reader
 
+sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qingcloud.com
+
 # 静态文件上传到 CDN
-docker login -u prs-os -p pressone dockerhub.qingcloud.com
 docker run -it --rm -v $(pwd)/client/build/static/js:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/js'"
 docker run -it --rm -v $(pwd)/client/build/static/css:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/css'"
 
@@ -18,7 +19,6 @@ XUE_IMAGE_NAME="dockerhub.qingcloud.com/pressone/xue-reader"
 PRS_IMAGE_NAME="dockerhub.qingcloud.com/pressone/prs-reader"
 BLOG_IMAGE_NAME="dockerhub.qingcloud.com/pressone/blog-reader"
 
-sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qingcloud.com
 sudo docker build -t $IMAGE_NAME .
 
 sudo docker tag $IMAGE_NAME $BOX_IMAGE_NAME
