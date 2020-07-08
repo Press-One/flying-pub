@@ -4,10 +4,13 @@ set -e
 cd client
 npm config set registry https://registry.npm.taobao.org
 yarn install && yarn build || { exit 1; }
+
+cd /pressone/reader
+
+# 静态文件上传到 CDN
 docker login -u prs-os -p pressone dockerhub.qingcloud.com
 docker run -it --rm -v $(pwd)/client/build/static/js:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/js'"
 docker run -it --rm -v $(pwd)/client/build/static/css:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/css'"
-cd /pressone/reader
 
 IMAGE_NAME="dockerhub.qingcloud.com/pressone/reader"
 BOX_IMAGE_NAME="dockerhub.qingcloud.com/pressone/box-reader"
