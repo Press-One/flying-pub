@@ -52,6 +52,12 @@ cp ../flying-reader/config/config.reader.js ./server/config.js
 cp ../flying-reader/config/config.reader-wallet.js ./server/config.wallet.js
 ```
 
+安装依赖
+
+```
+./install.sh
+```
+
 启动
 
 ```
