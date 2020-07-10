@@ -28,6 +28,9 @@ const tryDownloadFavicon = async url => {
 const tryUseStaticCDN = async cdn => {
   try {
     const indexHtml = await pReadFile('./build/index.html');
+    if (indexHtml.includes(cdn)) {
+      return;
+    }
     const fragments = indexHtml.toString().split('<');
     const newIndexHtml = fragments.map(item => item.replace(/(?<==").*?(?=\/static)/g, () => cdn || '')).join('<');
     await pWriteFile('./build/index.html', newIndexHtml);
