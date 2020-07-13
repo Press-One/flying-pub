@@ -48,6 +48,7 @@ export default observer((props: any) => {
   const [isFetchedReward, setIsFetchedReward] = React.useState(false);
   const [preloadPrsIdentityIframe, setPreloadPrsIdentityIframe] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
+  const [isBan, setIsBan] = React.useState(false);
   const noReward = rewardSummary.users.length === 0;
   const { rId } = props.match.params;
   const prsIdentityUrl = `https://press.one/public/file/v?rId=${rId}`;
@@ -70,10 +71,11 @@ export default observer((props: any) => {
         document.title = `${post.author.name}`;
         setPost(post);
         initMathJax(document.getElementById('post-content'));
-        setPending(false);
       } catch (err) {
+        setIsBan(err.message === 'Post has been deleted');
         console.log(err);
       }
+      setPending(false);
     })();
   }, [ready, rId, setPost]);
 
@@ -141,6 +143,16 @@ export default observer((props: any) => {
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
           <Loading />
+        </div>
+      </div>
+    );
+  }
+
+  if (isBan) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+          抱歉，你访问的文章不存在
         </div>
       </div>
     );

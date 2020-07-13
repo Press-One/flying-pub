@@ -50,7 +50,7 @@
     "pg": "7.0.2",
     "pg-hstore": "2.3.3",
     "pm2": "^3.5.1",
-    "prs-utility": "^0.0.4",
+    "prs-utility": "^0.1.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "rfc3339nano": "^1.0.2",

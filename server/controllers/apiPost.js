@@ -2,12 +2,14 @@ const Post = require('../models/post');
 const Subscription = require('../models/subscription');
 const {
   assert,
-  Errors
+  Errors,
+  throws
 } = require('../models/validator');
 
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
   const rId = ctx.params.id;
+  const includeDeleted = ctx.query.includeDeleted;
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
@@ -22,6 +24,9 @@ exports.get = async ctx => {
     }
     return;
   }
+  if (!includeDeleted && post.deleted && !post.latestRId) {
+    throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
+  }
   ctx.body = post;
 }
 
@@ -31,12 +36,14 @@ exports.list = async ctx => {
   const order = ctx.query.order || 'PUB_DATE';
   const address = ctx.query.address;
   const dayRange = ctx.query.dayRange;
+  const filterBan = ctx.query.filterBan;
   const query = {
     offset,
     limit,
     order,
     dropAuthor: !!address,
-    dayRange
+    dayRange,
+    filterBan
   };
   if (address) {
     query.addresses = [address];
@@ -67,4 +74,16 @@ exports.listBySubscriptions = async ctx => {
   ctx.body = {
     posts
   };
+}
+
+exports.update = async ctx => {
+  const rId = ctx.params.id;
+  const data = ctx.request.body.payload;
+  console.log({
+    rId,
+    data
+  });
+  assert(data, Errors.ERR_IS_REQUIRED('payload'));
+  await Post.updateByRId(rId, data);
+  ctx.body = true;
 }

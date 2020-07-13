@@ -126,7 +126,8 @@ exports.list = async (options = {}) => {
     limit = 20,
     order = 'PUB_DATE',
     dropAuthor = false,
-    dayRange
+    dayRange,
+    filterBan
   } = options;
   const where = {
     deleted: false
@@ -139,6 +140,10 @@ exports.list = async (options = {}) => {
     where.pubDate = {
       [Op.gte]: moment().subtract(~~dayRange, 'days').toDate()
     }
+  }
+  if (filterBan) {
+    where.deleted = true;
+    where.latestRId = null
   }
   const posts = await Post.findAll({
     where,

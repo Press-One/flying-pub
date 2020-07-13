@@ -42,8 +42,8 @@ const errors = {
   // Token
   ERR_AUTH_TOKEN_EXPIRED: 'Token expired',
 
-  // File
-  ERR_FILE_NOT_PUBLISHED: 'This file can not be updated because it\'s not published',
+  // Post
+  ERR_POST_HAS_BEEN_DELETED: 'Post has been deleted',
 
   // 钱包
   ERR_WALLET_TRANSFER_VIA_MIXIN: 'Error transferring via Mixin wallet',
