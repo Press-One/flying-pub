@@ -11,7 +11,7 @@ set -e
 cd client
 yarn install && yarn build || { exit 1; }
 
-cd ~/pressone/reader
+cd /pressone/reader
 
 sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qingcloud.com
 
@@ -19,13 +19,11 @@ sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qin
 sudo docker run --rm -v $(pwd)/client/build/static/js:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/js'"
 sudo docker run --rm -v $(pwd)/client/build/static/css:/app/src dockerhub.qingcloud.com/pressone/qingcloud-uploader sh -c "npm start -- --folder='reader/static/css'"
 
-sudo docker login --username pressone --password 57e348ab37aa5b55f68b7642ac584a41 dh.press.one
-
-IMAGE_NAME="dh.press.one/pressone/reader"
-BOX_IMAGE_NAME="dh.press.one/pressone/box-reader"
-XUE_IMAGE_NAME="dh.press.one/pressone/xue-reader"
-PRS_IMAGE_NAME="dh.press.one/pressone/prs-reader"
-BLOG_IMAGE_NAME="dh.press.one/pressone/blog-reader"
+IMAGE_NAME="dockerhub.qingcloud.com/pressone/reader"
+BOX_IMAGE_NAME="dockerhub.qingcloud.com/pressone/box-reader"
+XUE_IMAGE_NAME="dockerhub.qingcloud.com/pressone/xue-reader"
+PRS_IMAGE_NAME="dockerhub.qingcloud.com/pressone/prs-reader"
+BLOG_IMAGE_NAME="dockerhub.qingcloud.com/pressone/blog-reader"
 
 sudo docker build -t $IMAGE_NAME .
 
