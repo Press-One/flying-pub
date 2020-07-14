@@ -11,9 +11,17 @@ const User = require('../models/user');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
-    strict = true
+    strict = true,
+      checkApiAccessKey = false,
   } = options;
   return async (ctx, next) => {
+    if (strict && checkApiAccessKey) {
+      const apiAccessKey = config.auth.apiAccessKey;
+      if (apiAccessKey === ctx.headers['x-api-access-key']) {
+        await next();
+        return;
+      }
+    }
     const token = ctx.cookies.get(config.auth.tokenKey);
     if (!token && !strict) {
       await next();

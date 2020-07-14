@@ -20,7 +20,7 @@ const isPrivate = config.settings['permission.isPrivate'];
 const checkApiAccessKey = () => {
   return async (ctx, next) => {
     const apiAccessKey = config.auth.apiAccessKey;
-    assert(apiAccessKey === ctx.headers['api_access_key'], Errors.ERR_IS_INVALID('apiAccessKey'), 401);
+    assert(apiAccessKey === ctx.headers['x-api-access-key'], Errors.ERR_IS_INVALID('apiAccessKey'), 401);
     await next();
   }
 }
@@ -30,7 +30,8 @@ router.get('/', ensureAuthorization({
 }), list);
 router.get('/subscription', ensureAuthorization(), listBySubscriptions);
 router.get('/:id', ensureAuthorization({
-  strict: isPrivate
+  strict: isPrivate,
+  checkApiAccessKey: true
 }), get);
 router.put('/:id', checkApiAccessKey(), update);
 
