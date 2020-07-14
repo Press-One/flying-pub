@@ -25,6 +25,7 @@ BOX_IMAGE_NAME="dockerhub.qingcloud.com/pressone/box-reader"
 XUE_IMAGE_NAME="dockerhub.qingcloud.com/pressone/xue-reader"
 PRS_IMAGE_NAME="dockerhub.qingcloud.com/pressone/prs-reader"
 BLOG_IMAGE_NAME="dockerhub.qingcloud.com/pressone/blog-reader"
+WRITING_IMAGE_NAME="dockerhub.qingcloud.com/pressone/writing-reader"
 
 sudo docker build -t $IMAGE_NAME .
 
@@ -32,9 +33,11 @@ sudo docker tag $IMAGE_NAME $BOX_IMAGE_NAME
 sudo docker tag $IMAGE_NAME $XUE_IMAGE_NAME
 sudo docker tag $IMAGE_NAME $PRS_IMAGE_NAME
 sudo docker tag $IMAGE_NAME $BLOG_IMAGE_NAME
+sudo docker tag $IMAGE_NAME $WRITING_IMAGE_NAME
 
 sudo docker push $BOX_IMAGE_NAME
 sudo docker push $XUE_IMAGE_NAME
 sudo docker push $PRS_IMAGE_NAME
 sudo docker push $BLOG_IMAGE_NAME
+sudo docker push $WRITING_IMAGE_NAME
 
