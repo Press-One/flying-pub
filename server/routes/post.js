@@ -26,7 +26,8 @@ const checkApiAccessKey = () => {
 }
 
 router.get('/', ensureAuthorization({
-  strict: isPrivate
+  strict: isPrivate,
+  checkApiAccessKey: true
 }), list);
 router.get('/subscription', ensureAuthorization(), listBySubscriptions);
 router.get('/:id', ensureAuthorization({
