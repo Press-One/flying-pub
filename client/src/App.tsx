@@ -15,7 +15,7 @@ import NotificationModal from 'components/NotificationModal';
 import SnackBar from 'components/SnackBar';
 import Contact from './components/Contact';
 
-import { isIPhone } from 'utils';
+import { isIPhone, isPc } from 'utils';
 
 import { StoreProvider } from './store';
 
@@ -40,7 +40,7 @@ const AppRouter = () => {
           <WalletModal />
           <SnackBar />
           <NotificationModal />
-          <Contact />
+          {isPc && <Contact />}
           <style jsx global>{`
             body {
               min-height: ${isIPhone ? '110vh' : '100vh'};
