@@ -107,7 +107,7 @@ const generateWallet = async userId => {
     mixinAccount: mxRaw,
     version: '1',
   };
-  const logo = config.logo || config['site.logo'];
+  const logo = config.logo || config.settings['site.logo'];
   assert(logo, Errors.ERR_IS_REQUIRED('logo'));
   const logoBase64 = await getBase64Image(logo);
   let mxProfileRaw = await mixin.account.updateProfile({
