@@ -61,13 +61,14 @@ exports.errorHandler = async (ctx, next) => {
   try {
     await next();
   } catch (err) {
-    console.log(err.message);
+    if (err.status != 404) {
+      console.log(err);
+    }
     if (
       err.status &&
       err.status >= httpStatus.BAD_REQUEST &&
       err.status < httpStatus.INTERNAL_SERVER_ERROR
     ) {
-      console.log(err);
       ctx.throws(err);
       return;
     }
