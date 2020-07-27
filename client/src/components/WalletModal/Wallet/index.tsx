@@ -59,14 +59,14 @@ export default observer(() => {
               <span className="text-2xl mr-2 flex items-center">
                 <AccountBalanceWallet />
               </span>
-              钱包
+              打赏钱包
             </div>
             <div className="ml-2 mt-3">
               <Tab tab={tab} thisTab="assets" onClick={() => setTab('assets')}>
                 <span className="text-lg mr-2 flex items-center">
                   <AccountBalanceWalletRounded />
                 </span>
-                资产
+                余额
               </Tab>
               <Tab tab={tab} thisTab="settings" onClick={() => setTab('settings')}>
                 <Badge
@@ -100,7 +100,7 @@ export default observer(() => {
                 <span className="text-2xl mr-2 items-center hidden md:flex">
                   <AccountBalanceWalletRounded />
                 </span>
-                <span className="md:hidden">我的</span>资产
+                <span className="md:hidden">我的</span>余额
               </div>
               <div className="mt-4">
                 <Assets setTab={setTab} />

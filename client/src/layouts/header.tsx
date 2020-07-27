@@ -7,7 +7,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import People from '@material-ui/icons/People';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
-import Edit from '@material-ui/icons/Edit';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import ExitToApp from '@material-ui/icons/ExitToApp';
@@ -91,16 +90,6 @@ export default observer((props: any) => {
           )}
           {userStore.isLogin && (
             <div>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  props.history.push('/subscriptions');
-                }}
-              >
-                我的关注
-              </MenuItem>
               {settings['pub.site.url'] && (
                 <MenuItem
                   onClick={async () => {
@@ -118,12 +107,22 @@ export default observer((props: any) => {
                   setOpenDrawer(false);
                   stopBodyScroll(false);
                   await sleep(200);
+                  props.history.push('/subscriptions');
+                }}
+              >
+                我的关注
+              </MenuItem>
+              <MenuItem
+                onClick={async () => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
                   modalStore.openWallet({
                     tab: 'assets',
                   });
                 }}
               >
-                我的资产
+                我的余额
               </MenuItem>
               <MenuItem
                 onClick={async () => {
@@ -185,12 +184,7 @@ export default observer((props: any) => {
       >
         {!userStore.isLogin && (
           <div>
-            <div
-              onClick={() => {
-                handleClose();
-                modalStore.openLogin();
-              }}
-            >
+            <div>
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
                   <span className="flex items-center text-xl mr-2">
@@ -255,27 +249,10 @@ export default observer((props: any) => {
                   <span className="flex items-center text-xl mr-2">
                     <AccountBalanceWallet />
                   </span>{' '}
-                  我的钱包
+                  打赏钱包
                 </div>
               </MenuItem>
             </div>
-            {settings['pub.site.url'] && (
-              <div
-                onClick={() => {
-                  handleClose();
-                  window.open(settings['pub.site.url']);
-                }}
-              >
-                <MenuItem className="text-gray-700">
-                  <div className="py-1 flex items-center">
-                    <span className="flex items-center text-xl mr-2">
-                      <Edit />
-                    </span>{' '}
-                    写文章
-                  </div>
-                </MenuItem>
-              </div>
-            )}
             {settings['menu.links'].map((link: any) => {
               return (
                 <div
@@ -371,29 +348,66 @@ export default observer((props: any) => {
           {isMobile && mobileMenuView()}
         </div>
         {isPc && (
-          <div className="w-7/12 m-auto relative">
-            <div className="flex items-center absolute top-0 right-0 text-xl mt-6 pt-2 -mr-20 z-50">
-              {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
-                <Badge
-                  badgeContent={1}
-                  className="px-2 text-2xl text-gray-700 mr-8 cursor-pointer"
-                  color="error"
-                  variant="dot"
-                  invisible={false}
+          <div className="py-1 border-b border-gray-300">
+            <div className="w-7/12 mx-auto flex justify-between items-center">
+              <Link to="/">
+                <div className="flex items-center -ml-2">
+                  <img
+                    src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                    alt="logo"
+                    width="36"
+                    height="36"
+                  />
+                  <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
+                </div>
+              </Link>
+              {!userStore.isLogin && (
+                <div
+                  className="text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal cursor-pointer"
                   onClick={() => {
-                    modalStore.openNotification();
+                    handleClose();
+                    modalStore.openLogin();
                   }}
                 >
-                  <NotificationsOutlined />
-                </Badge>
+                  登录
+                </div>
               )}
-              <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                <MenuIcon />
-              </IconButton>
-              {pcMenuView()}
+              {userStore.isLogin && (
+                <div className="flex items-center -mr-2">
+                  <a
+                    href={settings['pub.site.url']}
+                    className="mr-4 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal"
+                  >
+                    写文章
+                  </a>
+                  {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
+                    <Badge
+                      badgeContent={1}
+                      className="px-2 text-2xl text-gray-700 mr-4 cursor-pointer"
+                      color="error"
+                      variant="dot"
+                      invisible={false}
+                      onClick={() => {
+                        modalStore.openNotification();
+                      }}
+                    >
+                      <NotificationsOutlined />
+                    </Badge>
+                  )}
+                  <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
+                    <MenuIcon />
+                  </IconButton>
+                  {pcMenuView()}
+                </div>
+              )}
             </div>
           </div>
         )}
+        <style jsx global>{`
+          .MuiIconButton-root {
+            padding: 6px;
+          }
+        `}</style>
       </div>
     </Fade>
   );

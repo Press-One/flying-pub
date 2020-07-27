@@ -133,7 +133,7 @@ export default observer(() => {
             {loading && <Loading />}
           </div>
         )}
-        {!hasMoreReceipt && (
+        {receipts.length > 0 && !hasMoreReceipt && (
           <div className="text-gray-500 py-8 text-center text-sm">没有更多了</div>
         )}
         {receipts.length === 0 && (
