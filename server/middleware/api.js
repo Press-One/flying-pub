@@ -1,13 +1,17 @@
 const request = require('request-promise');
 const httpStatus = require('http-status');
 const config = require('../config');
-const Token = require('./token');
+const Token = require('../models/token');
 const {
   assert,
   Errors,
   throws,
 } = require('../models/validator');
 const User = require('../models/user');
+const Profile = require('../models/profile');
+const {
+  login
+} = require('../controllers/apiAuth');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
@@ -43,18 +47,44 @@ exports.ensureAuthorization = (options = {}) => {
       }
       throws(Errors.ERR_AUTH_TOKEN_EXPIRED, 401);
     }
-    const {
-      data: {
-        userId
-      }
-    } = decodedToken;
+    const userId = await getUserIdByDecodedToken(ctx, decodedToken);
+    assert(userId, Errors.ERR_NOT_FOUND('userId'));
     const user = await User.get(userId, {
-      withProfile: true
+      withProfile: true,
     });
     ctx.verification.user = user;
     assert(user, Errors.ERR_NOT_FOUND('user'));
     await next();
   }
+}
+
+const getUserIdByDecodedToken = async (ctx, decodedToken) => {
+  console.log(` ------------- debugger decodedToken ---------------`);
+  console.log({
+    decodedToken
+  });
+  if (decodedToken.provider === 'reader') {
+    return decodedToken.data.userId;
+  } else if (decodedToken.provider === 'pub') {
+    const {
+      data: {
+        providerId,
+        profileRaw,
+        provider
+      },
+    } = decodedToken;
+    const profile = await Profile.get(provider, ~~providerId);
+    if (profile) {
+      return profile.userId;
+    }
+    const insertedUser = await login(ctx, {
+      _json: JSON.parse(profileRaw)
+    }, provider, {
+      registerByToken: true
+    });
+    return insertedUser.id;
+  }
+  return null
 }
 
 exports.errorHandler = async (ctx, next) => {
@@ -109,65 +139,3 @@ exports.extendCtx = async (ctx, next) => {
   };
   await next();
 };
-
-exports.checkPermission = async (provider, profile) => {
-  const {
-    providerId
-  } = profile;
-  const whitelist = config.auth.whitelist[provider];
-  const isInWhiteList = whitelist && [provider].includes(~~providerId);
-  if (isInWhiteList) {
-    return true;
-  }
-  const hasProviderPermission = await providerPermissionChecker[provider](profile);
-  return hasProviderPermission;
-}
-
-const providerPermissionChecker = {
-  mixin: async profile => {
-    const rawJson = JSON.parse(profile.raw);
-    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
-    return IsInMixinBoxGroup;
-  },
-  github: async profile => {
-    const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
-    return isPaidUserOfXue;
-  },
-  pressone: async () => {
-    return true;
-  }
-};
-
-const checkIsInMixinBoxGroup = async mixinUuid => {
-  try {
-    const res = await request({
-      uri: `${config.auth.boxGroupAuthBaseApi}/${mixinUuid}`,
-      json: true,
-      headers: {
-        group_id: config.auth.boxGroupId,
-        Authorization: `Bearer ${config.auth.boxGroupToken}`
-      },
-    }).promise();
-    const isValid = res.user_id === mixinUuid;
-    return isValid;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
-}
-
-const checkIsPaidUserOfXue = async githubNickName => {
-  try {
-    const user = await request({
-      uri: `${config.auth.xueUserExtraApi}/${githubNickName}`,
-      json: true,
-      headers: {
-        'x-po-auth-token': config.auth.xueAdminToken
-      },
-    }).promise();
-    const isPaidUser = user.balance > 0;
-    return isPaidUser;
-  } catch (err) {
-    return false;
-  }
-}

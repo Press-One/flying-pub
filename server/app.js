@@ -29,7 +29,9 @@ const prepare = require('./prepare');
 
 const {
   ensureAuthorization,
-} = require('./models/api');
+  errorHandler,
+  extendCtx
+} = require('./middleware/api');
 
 if (process.env.NODE_ENV === 'production') {
   prepare.initStatic();
@@ -55,8 +57,8 @@ app.use(serve('build', {
   maxage: 365 * 24 * 60 * 60,
 }));
 
-router.all('*', models.api.errorHandler);
-router.all('*', models.api.extendCtx);
+router.all('*', errorHandler);
+router.all('*', extendCtx);
 
 router.use('/api/user', ensureAuthorization(), user.routes(), user.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());

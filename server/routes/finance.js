@@ -14,7 +14,7 @@ const {
 
 const {
   ensureAuthorization
-} = require('../models/api');
+} = require('../middleware/api');
 
 router.get('/balance', ensureAuthorization(), getBalance);
 router.post('/recharge', ensureAuthorization(), recharge);

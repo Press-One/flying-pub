@@ -28,7 +28,7 @@ exports.create = async (data, options = {}) => {
     jwtOptions.expiresIn = ~~options.expiresIn || DEFAULT_EXPIRED_DAY * DAY_SECONDS;
   }
 
-  const provider = options.provider || 'pub';
+  const provider = options.provider || 'reader';
   const payload = {
     iat: Math.floor(Date.now() / 1000),
     jti: uuidv4(),

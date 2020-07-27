@@ -13,7 +13,7 @@ const {
 
 const {
   ensureAuthorization
-} = require('../models/api');
+} = require('../middleware/api');
 
 const isPrivate = config.settings['permission.isPrivate'];
 

@@ -6,7 +6,7 @@ const {
 } = require('../controllers/apiComment');
 const {
   ensureAuthorization
-} = require('../models/api');
+} = require('../middleware/api');
 
 router.get('/', ensureAuthorization({
   strict: false

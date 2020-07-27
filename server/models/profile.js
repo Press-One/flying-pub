@@ -8,9 +8,13 @@ const {
   Errors
 } = require('../models/validator');
 
-exports.get = async providerId => {
+exports.get = async (provider, providerId) => {
+  assert(provider, Errors.ERR_IS_REQUIRED('provider'));
+  assert(providerId, Errors.ERR_IS_REQUIRED('providerId'));
+
   const profile = await Profile.findOne({
     where: {
+      provider,
       providerId
     }
   });
@@ -40,20 +44,8 @@ exports.getByMixinAccountId = async mixinAccountId => {
   return profile ? profile.toJSON() : null;
 }
 
-exports.isExist = async (providerId, options = {}) => {
-  const {
-    provider
-  } = options;
-  assert(provider, Errors.ERR_IS_REQUIRED('provider'));
-  assert(providerId, Errors.ERR_IS_REQUIRED('providerId'));
-
-  const profile = await Profile.findOne({
-    where: {
-      provider,
-      providerId
-    }
-  });
-  return !!profile;
+exports.isExist = async (provider, providerId) => {
+  return !!await exports.get(provider, providerId);
 }
 
 exports.createProfile = async (data = {}) => {
