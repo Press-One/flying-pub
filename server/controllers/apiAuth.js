@@ -202,7 +202,7 @@ const handleOauthCallback = async (ctx, provider) => {
   return user;
 };
 
-const login = async (ctx, user, provider, options = {}) => {
+const login = async (ctx, user, provider) => {
   const profile = providerGetter[provider](user);
   const isNewUser = !(await Profile.isExist(provider, profile.id));
   let insertedProfile = {};
@@ -221,9 +221,6 @@ const login = async (ctx, user, provider, options = {}) => {
       provider
     });
     await Wallet.tryCreateWallet(user.id);
-    if (options.registerByToken) {
-      Log.create(user.id, '使用 Token 注册账户');
-    }
     Log.create(user.id, `我被创建了`);
     Log.create(user.id, `钱包不存在，初始化成功`);
   } else {
@@ -241,24 +238,17 @@ const login = async (ctx, user, provider, options = {}) => {
     }
   }
 
-  if (!options.registerByToken) {
-    const token = await Token.create({
-      userId: insertedProfile.userId,
-      providerId: insertedProfile.providerId,
-      profileRaw: provider === 'mixin' ? profile.raw : '',
-      provider
-    });
+  const token = await Token.create({
+    userId: insertedProfile.userId,
+    providerId: insertedProfile.providerId,
+    profileRaw: provider === 'mixin' ? profile.raw : '',
+    provider
+  });
 
-    ctx.cookies.set(config.auth.tokenKey, token, {
-      expires: new Date('2100-01-01')
-    });
-  };
-
-  const insertedUser = await User.get(insertedProfile.userId);
-  return insertedUser;
+  ctx.cookies.set(config.auth.tokenKey, token, {
+    expires: new Date('2100-01-01')
+  });
 }
-
-exports.login = login;
 
 const providerGetter = {
   github: user => {

@@ -1,4 +1,3 @@
-const request = require('request-promise');
 const httpStatus = require('http-status');
 const config = require('../config');
 const Token = require('../models/token');
@@ -8,10 +7,6 @@ const {
   throws,
 } = require('../models/validator');
 const User = require('../models/user');
-const Profile = require('../models/profile');
-const {
-  login
-} = require('../controllers/apiAuth');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
@@ -47,7 +42,11 @@ exports.ensureAuthorization = (options = {}) => {
       }
       throws(Errors.ERR_AUTH_TOKEN_EXPIRED, 401);
     }
-    const userId = await getUserIdByDecodedToken(ctx, decodedToken);
+    const {
+      data: {
+        userId
+      }
+    } = decodedToken;
     assert(userId, Errors.ERR_NOT_FOUND('userId'));
     const user = await User.get(userId, {
       withProfile: true,
@@ -56,35 +55,6 @@ exports.ensureAuthorization = (options = {}) => {
     assert(user, Errors.ERR_NOT_FOUND('user'));
     await next();
   }
-}
-
-const getUserIdByDecodedToken = async (ctx, decodedToken) => {
-  console.log(` ------------- debugger decodedToken ---------------`);
-  console.log({
-    decodedToken
-  });
-  if (decodedToken.provider === 'reader') {
-    return decodedToken.data.userId;
-  } else if (decodedToken.provider === 'pub') {
-    const {
-      data: {
-        providerId,
-        profileRaw,
-        provider
-      },
-    } = decodedToken;
-    const profile = await Profile.get(provider, ~~providerId);
-    if (profile) {
-      return profile.userId;
-    }
-    const insertedUser = await login(ctx, {
-      _json: JSON.parse(profileRaw)
-    }, provider, {
-      registerByToken: true
-    });
-    return insertedUser.id;
-  }
-  return null
 }
 
 exports.errorHandler = async (ctx, next) => {

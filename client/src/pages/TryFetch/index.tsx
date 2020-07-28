@@ -82,7 +82,7 @@ export default observer((props: any) => {
       }
       await sleep(200);
     })();
-  }, [userStore, feedStore, preloadStore, socketStore, settingsStore, props]);
+  }, [userStore, feedStore, preloadStore, socketStore, settingsStore, modalStore, props]);
 
   return (
     <div>
