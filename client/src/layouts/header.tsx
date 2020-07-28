@@ -33,6 +33,7 @@ export default observer((props: any) => {
   const { preloadStore, userStore, modalStore, pathStore, settingsStore } = useStore();
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
+  const { user, isLogin } = userStore;
   const { pathname } = props.location;
 
   const handleClose = () => setAnchorEl(null);
@@ -349,57 +350,64 @@ export default observer((props: any) => {
         </div>
         {isPc && (
           <div className="py-1 border-b border-gray-300">
-            <div className="w-7/12 mx-auto flex justify-between items-center">
-              <Link to="/">
-                <div className="flex items-center -ml-2">
-                  <img
-                    src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
-                    alt="logo"
-                    width="36"
-                    height="36"
-                  />
-                  <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
-                </div>
-              </Link>
-              {!userStore.isLogin && (
-                <div
-                  className="text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal cursor-pointer"
-                  onClick={() => {
-                    handleClose();
-                    modalStore.openLogin();
-                  }}
-                >
-                  登录
-                </div>
-              )}
-              {userStore.isLogin && pathname !== '/permissionDeny' && (
-                <div className="flex items-center -mr-2">
-                  <a
-                    href={settings['pub.site.url']}
-                    className="mr-4 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal"
+            <div className="container mx-auto">
+              <div className="w-7/12 mx-auto flex justify-between items-center">
+                <Link to="/">
+                  <div className="flex items-center -ml-2">
+                    <img
+                      src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                      alt="logo"
+                      width="36"
+                      height="36"
+                    />
+                    <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
+                  </div>
+                </Link>
+                {!userStore.isLogin && (
+                  <div
+                    className="text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal cursor-pointer"
+                    onClick={() => {
+                      handleClose();
+                      modalStore.openLogin();
+                    }}
                   >
-                    写文章
-                  </a>
-                  {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
-                    <Badge
-                      badgeContent={1}
-                      className="px-2 text-2xl text-gray-700 mr-4 cursor-pointer"
-                      color="error"
-                      variant="dot"
-                      invisible={false}
-                      onClick={() => {
-                        modalStore.openNotification();
-                      }}
+                    登录
+                  </div>
+                )}
+                {userStore.isLogin && pathname !== '/permissionDeny' && (
+                  <div className="flex items-center -mr-2">
+                    <a
+                      href={settings['pub.site.url']}
+                      className="mr-4 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal"
                     >
-                      <NotificationsOutlined />
-                    </Badge>
-                  )}
-                  <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                    <MenuIcon />
-                  </IconButton>
-                  {pcMenuView()}
-                </div>
-              )}
+                      写文章
+                    </a>
+                    {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
+                      <Badge
+                        badgeContent={1}
+                        className="px-2 text-2xl text-gray-700 mr-4 cursor-pointer"
+                        color="error"
+                        variant="dot"
+                        invisible={false}
+                        onClick={() => {
+                          modalStore.openNotification();
+                        }}
+                      >
+                        <NotificationsOutlined />
+                      </Badge>
+                    )}
+                    {isLogin && (
+                      <div className="flex items-center pl-1 mr-3">
+                        <img src={user.avatar} className="w-8 h-8 rounded-full" alt="头像" />
+                      </div>
+                    )}
+                    <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
+                      <MenuIcon />
+                    </IconButton>
+                    {pcMenuView()}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
