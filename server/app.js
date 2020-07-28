@@ -54,9 +54,12 @@ const passport = models.auth.buildPassport();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(views(__dirname + '/build'));
-app.use(serve('build', {
-  maxage: 365 * 24 * 60 * 60,
-}));
+
+const serveOptions = {};
+if (!config.staticCDN) {
+  serveOptions.maxage = 365 * 24 * 60 * 60;
+}
+app.use(serve('build', serveOptions));
 
 router.all('*', errorHandler);
 router.all('*', extendCtx);
