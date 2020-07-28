@@ -53,6 +53,13 @@ export default observer((props: any) => {
         const user = await Api.fetchUser();
         userStore.setUser(user);
         socketStore.init(user.id);
+
+        // 提前请求 pub 的 user 接口，创建 pub 用户，减少进入 pub 时等待的时间
+        if (isProduction && settings['SSO.enabled']) {
+          setTimeout(() => {
+            Api.tryInitPubUser(`${settings['pub.site.url']}`);
+          }, 2000);
+        }
       } catch (err) {
         if (settings['permission.isPrivate']) {
           setShowConfirmDialog(true);
@@ -79,12 +86,6 @@ export default observer((props: any) => {
       const passed = await fetchUser(settings);
       if (passed) {
         preloadStore.done();
-        if (isProduction && settings['SSO.enabled']) {
-          // 提前请求 pub 的 user 接口，创建 pub 用户，减少进入 pub 时等待的时间
-          setTimeout(() => {
-            Api.tryInitPubUser(`${settings['pub.site.url']}`);
-          }, 2000);
-        }
       }
       await sleep(200);
     })();
