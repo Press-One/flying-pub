@@ -15,6 +15,8 @@ const packUser = async (user, options = {}) => {
   let derivedUser = {
     id: user.id,
     address: user.address,
+    provider: user.provider,
+    providerId: user.providerId,
   };
 
   const {

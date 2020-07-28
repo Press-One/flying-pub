@@ -1,5 +1,6 @@
 const config = require('../config');
 const Comment = require('../models/comment');
+const Profile = require('../models/profile');
 const Log = require('../models/log');
 const request = require('request-promise');
 const Mixin = require('../models/mixin');
@@ -9,8 +10,9 @@ const {
 } = require('../models/validator');
 
 exports.create = async ctx => {
-  const userId = ctx.verification.user.id;
-  const userName = ctx.verification.user.name;
+  const {
+    user
+  } = ctx.verification;
   const data = ctx.request.body.payload;
   const {
     options = {}
@@ -20,7 +22,7 @@ exports.create = async ctx => {
   } = options;
   delete data.options;
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  const comment = await Comment.create(userId, data);
+  const comment = await Comment.create(user.id, data);
   const postPath = `/posts/${data.objectId}?commentId=${comment.id}`;
   try {
     await request({
@@ -30,7 +32,9 @@ exports.create = async ctx => {
       body: {
         payload: {
           rId: data.objectId,
-          commentUser: userName,
+          provider: user.provider,
+          providerId: user.providerId,
+          commentUser: user.name,
           redirect: postPath
         }
       }
@@ -39,14 +43,14 @@ exports.create = async ctx => {
       const mentionsUserId = mentionsUserIds.shift();
       await Mixin.pushToNotifyQueue({
         userId: mentionsUserId,
-        text: `${userName}回复了你的评论`,
+        text: `${user.name}回复了你的评论`,
         url: `${config.serviceRoot}${postPath}`
       });
     }
   } catch (e) {
     console.log(e);
   }
-  Log.create(userId, `评论文章 ${config.serviceRoot}${postPath}`);
+  Log.create(user.id, `评论文章 ${config.serviceRoot}${postPath}`);
   ctx.body = comment;
 }
 

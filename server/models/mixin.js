@@ -129,6 +129,7 @@ const trySendToUser = async (userId, text, options = {}) => {
   } else {
     await trySendText(userId, text);
   }
+  Log.create(userId, `通知：${text} ${url || ''}`);
 }
 
 const trySendText = async (userId, text) => {

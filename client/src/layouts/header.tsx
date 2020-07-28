@@ -44,7 +44,7 @@ export default observer((props: any) => {
   }, [pathname, pushPath]);
 
   if (!preloadStore.ready) {
-    return isMobile ? <div className="h-12" /> : null;
+    return isMobile ? <div className="h-12" /> : <div style={{ height: 45 }} />;
   }
 
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
