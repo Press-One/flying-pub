@@ -418,17 +418,22 @@ export default observer((props: any) => {
           className={`mt-6 text-base md:text-lg text-black markdown-body pb-6 px-1 md:px-0 overflow-hidden`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
-        <div className="hidden md:block">
-          {
-            <div className="fixed bottom-0 right-0 mr-10 mb-10 cursor-pointer" onClick={backToTop}>
-              <ButtonOutlined>
-                <div className="text-xl">
-                  <ArrowUpward />
-                </div>
-              </ButtonOutlined>
-            </div>
-          }
-        </div>
+        {post.content.length > 100 && (
+          <div className="hidden md:block">
+            {
+              <div
+                className="fixed bottom-0 right-0 mr-20 mb-12 cursor-pointer"
+                onClick={backToTop}
+              >
+                <ButtonOutlined>
+                  <div className="text-xl">
+                    <ArrowUpward />
+                  </div>
+                </ButtonOutlined>
+              </div>
+            }
+          </div>
+        )}
         {prsIdentityView()}
         {preloadPrsIdentityIframe && prsIdentityIframeView()}
         {isMobile && (
