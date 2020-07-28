@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import ConfirmDialog from 'components/ConfirmDialog';
-import { sleep, isMobile, isWeChat, getQuery, removeQuery } from 'utils';
+import { sleep, isMobile, isWeChat, getQuery, removeQuery, isProduction } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
@@ -79,6 +79,12 @@ export default observer((props: any) => {
       const passed = await fetchUser(settings);
       if (passed) {
         preloadStore.done();
+        if (isProduction && settings['SSO.enabled']) {
+          // 提前请求 pub 的 user 接口，创建 pub 用户，减少进入 pub 时等待的时间
+          setTimeout(() => {
+            Api.tryInitPubUser(`${settings['pub.site.url']}`);
+          }, 2000);
+        }
       }
       await sleep(200);
     })();

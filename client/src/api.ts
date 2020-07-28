@@ -35,10 +35,10 @@ export default {
     }
     const text = await res.text();
     const safeText = text
-      .replace(/<title>.*<\/title>/g, x => {
+      .replace(/<title>.*<\/title>/g, (x) => {
         return x.replace(/&/g, encodeURIComponent('&'));
       })
-      .replace(/<name>.*<\/name>/g, x => {
+      .replace(/<name>.*<\/name>/g, (x) => {
         return x.replace(/&/g, encodeURIComponent('&'));
       });
     try {
@@ -110,6 +110,12 @@ export default {
   unsubscribe(address: string) {
     return request(`/api/subscriptions/${address}`, {
       method: 'DELETE',
+    });
+  },
+  tryInitPubUser(pubUrl: string) {
+    return request('/api/user', {
+      base: pubUrl,
+      credentials: 'include',
     });
   },
 };
