@@ -22,9 +22,8 @@ export default observer(() => {
               <div className="mt-3">点击发消息图标</div>
               <div className="mt-3">和机器人打声招呼</div>
               <div className="mt-3">收到成功提示，开通成功！</div>
-              <div className="mt-3">一旦有已关注的作者发布新文章</div>
-              <div className="mt-3">或者是其他人在评论区 @ 你</div>
-              <div className="mt-3">将会第一时间通知你</div>
+              <div className="mt-3">如果你收到新消息</div>
+              <div className="mt-3">机器人将会第一时间通知你</div>
             </div>
           </div>
         </div>

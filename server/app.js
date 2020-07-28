@@ -19,6 +19,7 @@ const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const settings = require('./routes/settings');
 const subscription = require('./routes/subscription');
+const conversation = require('./routes/conversation');
 const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
@@ -71,6 +72,7 @@ router.use('/api/settings', ensureAuthorization({
   strict: false
 }), settings.routes(), settings.allowedMethods());
 router.use('/api/subscriptions', ensureAuthorization(), subscription.routes(), subscription.allowedMethods());
+router.use('/api/conversations', conversation.routes(), conversation.allowedMethods());
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());

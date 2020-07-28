@@ -18,6 +18,6 @@ const checkApiAccessKey = () => {
 }
 
 router.get('/:providerId', checkApiAccessKey(), get);
-router.post('/:providerId', checkApiAccessKey(), notify);
+router.post('/notify', checkApiAccessKey(), notify);
 
 module.exports = router;
