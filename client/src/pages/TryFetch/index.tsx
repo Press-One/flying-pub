@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import ConfirmDialog from 'components/ConfirmDialog';
-import { sleep, isMobile, isWeChat } from 'utils';
+import { sleep, isMobile, isWeChat, getQuery, removeQuery } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
@@ -57,6 +57,10 @@ export default observer((props: any) => {
         if (settings['permission.isPrivate']) {
           setShowConfirmDialog(true);
           return false;
+        } else if (getQuery('action') === 'login') {
+          await sleep(500);
+          modalStore.openLogin();
+          removeQuery('action');
         }
         if (isMobile && !isWeChat) {
           const { url } = await Api.getAutoLoginUrl();

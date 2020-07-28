@@ -293,7 +293,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={isMobile ? 500 : 1500}>
-      <div className="container m-auto">
+      <div>
         <div className="md:hidden">
           <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
             {!showBack && (
@@ -372,7 +372,7 @@ export default observer((props: any) => {
                   登录
                 </div>
               )}
-              {userStore.isLogin && (
+              {userStore.isLogin && pathname !== '/permissionDeny' && (
                 <div className="flex items-center -mr-2">
                   <a
                     href={settings['pub.site.url']}
