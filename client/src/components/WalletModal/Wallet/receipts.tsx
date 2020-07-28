@@ -5,7 +5,7 @@ import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import { currencyIconMap, getPostsSiteDomain } from './utils';
 import FinanceApi from './api';
-import { sleep } from 'utils';
+import { sleep, isMobile } from 'utils';
 import { useStore } from 'store';
 
 const getTypeName = (type: string) => {
@@ -82,7 +82,7 @@ export default observer(() => {
         });
         page.current += 1;
         await sleep(500);
-        walletStore.addReceipts(receipts);
+        walletStore.setReceipts(receipts);
         walletStore.setIsFetchedReceipts(true);
       } catch (err) {}
     })();
@@ -110,7 +110,7 @@ export default observer(() => {
         </div>
         <style jsx>{`
           .root {
-            height: 65vh;
+            height: ${isMobile ? '65vh' : 'auto'};
           }
         `}</style>
       </div>
@@ -134,14 +134,14 @@ export default observer(() => {
           </div>
         )}
         {receipts.length > 0 && !hasMoreReceipt && (
-          <div className="text-gray-500 py-8 text-center text-sm">没有更多了</div>
+          <div className="text-gray-500 py-8 md:pb-2 text-center text-sm">没有更多了</div>
         )}
         {receipts.length === 0 && (
           <div className="text-gray-500 mt-32 text-center text-sm">暂时没有交易记录</div>
         )}
         <style jsx>{`
           .root {
-            height: 65vh;
+            height: ${isMobile ? '65vh' : 'auto'};
           }
         `}</style>
       </div>

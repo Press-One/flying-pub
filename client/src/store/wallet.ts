@@ -20,6 +20,12 @@ export function createWalletStore() {
     setIsFetchedReceipts(status: boolean) {
       this.isFetchedReceipts = status;
     },
+    setReceipts(receipts: any) {
+      if (receipts.length < this.receiptLimit) {
+        this.hasMoreReceipt = false;
+      }
+      this.receipts = receipts;
+    },
     addReceipts(receipts: any) {
       if (receipts.length < this.receiptLimit) {
         this.hasMoreReceipt = false;
