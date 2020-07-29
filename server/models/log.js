@@ -2,17 +2,19 @@ const request = require('request-promise');
 const User = require('./user');
 const Log = require('./sequelize/log');
 const config = require('../config');
+const Cache = require('./cache');
 const {
   log
 } = require('../utils');
 
 exports.create = async (userId, message) => {
+  const userDevice = await Cache.pGet('USER_DEVICE', String(userId));
   const user = await User.get(userId, {
     withProfile: true
   });
   const data = {
     userId,
-    message: `【${config.serviceKey}】${user.name}：${message}`,
+    message: `【${config.serviceKey} ${userDevice}】${user.name}：${message}`,
   };
   await Log.create(data);
   if (config.bot && config.bot.enabled) {

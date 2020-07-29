@@ -7,6 +7,7 @@ const {
   throws,
 } = require('../models/validator');
 const User = require('../models/user');
+const Cache = require('../models/cache');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
@@ -53,6 +54,10 @@ exports.ensureAuthorization = (options = {}) => {
     });
     ctx.verification.user = user;
     assert(user, Errors.ERR_NOT_FOUND('user'));
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      ctx.headers['user-agent'],
+    );
+    await Cache.pSet('USER_DEVICE', String(userId), isMobile ? 'MOBILE' : 'PC');
     await next();
   }
 }
