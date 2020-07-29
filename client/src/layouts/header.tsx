@@ -374,7 +374,7 @@ export default observer((props: any) => {
                     登录
                   </div>
                 )}
-                {userStore.isLogin && pathname !== '/permissionDeny' && (
+                {settings['pub.site.url'] && userStore.isLogin && pathname !== '/permissionDeny' && (
                   <div className="flex items-center -mr-2">
                     <a
                       href={settings['pub.site.url']}
