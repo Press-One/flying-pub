@@ -374,14 +374,16 @@ export default observer((props: any) => {
                     登录
                   </div>
                 )}
-                {settings['pub.site.url'] && userStore.isLogin && pathname !== '/permissionDeny' && (
+                {userStore.isLogin && pathname !== '/permissionDeny' && (
                   <div className="flex items-center -mr-2">
-                    <a
-                      href={settings['pub.site.url']}
-                      className="mr-4 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal"
-                    >
-                      写文章
-                    </a>
+                    {settings['pub.site.url'] && (
+                      <a
+                        href={settings['pub.site.url']}
+                        className="mr-4 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal"
+                      >
+                        写文章
+                      </a>
+                    )}
                     {settings['notification.enabled'] && !userStore.user.notificationEnabled && (
                       <Badge
                         badgeContent={1}
