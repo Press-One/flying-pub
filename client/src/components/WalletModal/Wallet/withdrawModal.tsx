@@ -67,6 +67,9 @@ export default (props: any) => {
             onChange={(event: any) => {
               const re = /^[0-9]+[.]?[0-9]*$/;
               const { value } = event.target;
+              if (isMobile && String(value).length > 8) {
+                return;
+              }
               if (value === '' || re.test(value)) {
                 setAmount(value);
               }
