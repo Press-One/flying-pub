@@ -56,7 +56,7 @@ const getMixinPaymentUrl = (options = {}) => {
     memo
   } = options;
   return (
-    "https://mixin.one/pay" +
+    "https://mixin-www.zeromesh.net/pay" +
     "?recipient=" +
     encodeURIComponent(toMixinClientId) +
     "&asset=" +
