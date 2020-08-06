@@ -27,23 +27,25 @@ exports.create = async ctx => {
   const comment = await Comment.create(user.id, data);
   const postPath = `/posts/${data.objectId}?commentId=${comment.id}`;
   try {
-    await request({
-      uri: `${config.settings['pub.site.url']}/api/notify`,
-      method: 'POST',
-      json: true,
-      body: {
-        payload: {
-          type: 'comment',
-          rId: data.objectId,
-          provider: user.provider,
-          providerId: user.providerId,
-          redirect: postPath,
-          options: {
-            fromUser: user.name,
+    if (mentionsUserIds.length === 0) {
+      await request({
+        uri: `${config.settings['pub.site.url']}/api/notify`,
+        method: 'POST',
+        json: true,
+        body: {
+          payload: {
+            type: 'comment',
+            rId: data.objectId,
+            provider: user.provider,
+            providerId: user.providerId,
+            redirect: postPath,
+            options: {
+              fromUser: user.name,
+            }
           }
         }
-      }
-    }).promise();
+      }).promise();
+    }
     while (mentionsUserIds.length > 0) {
       const mentionsUserId = mentionsUserIds.shift();
       await Mixin.pushToNotifyQueue({
