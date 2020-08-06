@@ -41,10 +41,11 @@ const authorView = (props: any = {}) => {
 };
 
 export default observer((props: any) => {
-  const { authorStore, subscriptionStore, settingsStore } = useStore();
+  const { authorStore, subscriptionStore, settingsStore, modalStore, userStore } = useStore();
   const { settings } = settingsStore;
   const [pending, setPending] = React.useState(false);
   const { author, subscribed, posts, hasMore } = authorStore;
+  const { isLogin } = userStore;
   const { address } = props.match.params;
 
   React.useEffect(() => {
@@ -131,6 +132,10 @@ export default observer((props: any) => {
   }
 
   const subscribe = async () => {
+    if (!isLogin) {
+      modalStore.openLogin();
+      return;
+    }
     try {
       await Api.subscribe(address);
       authorStore.setSubscribed(true);

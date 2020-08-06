@@ -3,6 +3,7 @@ import Api from 'api';
 
 export function createModalStore() {
   return {
+    showPageLoading: false,
     login: {
       open: false,
       data: {},
@@ -16,6 +17,9 @@ export function createModalStore() {
       data: {},
     },
     openLogin(data: any = {}) {
+      if (isMobile) {
+        this.showPageLoading = true;
+      }
       if (isMobile && !isWeChat) {
         window.location.href = getLoginUrl();
         return;

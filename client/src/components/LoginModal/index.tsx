@@ -3,12 +3,14 @@ import { observer } from 'mobx-react-lite';
 import Info from '@material-ui/icons/Info';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import Button from 'components/Button';
+import ButtonProgress from 'components/ButtonProgress';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
 import { getLoginUrl, isMobile } from 'utils';
 import { useStore } from 'store';
 
 export default observer(() => {
+  const [directing, setDirecting] = React.useState(false);
   const { modalStore } = useStore();
   const isPc = !isMobile;
   const isWeChat = isMobile;
@@ -69,10 +71,11 @@ export default observer(() => {
           )}
           {isPc && (
             <div className="mt-4">
-              <a href={getLoginUrl()}>
+              <a href={getLoginUrl()} onClick={() => setDirecting(true)}>
                 <Button>
                   使用<span className="mx-1"> Mixin </span>
                   <span className="hidden md:inline-block">扫码</span>登录
+                  <ButtonProgress isDoing={directing} />
                 </Button>
               </a>
             </div>

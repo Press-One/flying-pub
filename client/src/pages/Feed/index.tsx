@@ -15,7 +15,7 @@ export default observer(() => {
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
   const [pagePending, setPagePending] = React.useState(false);
 
-  const { isFetched, hasMore, posts, order, pending } = feedStore;
+  const { isFetched, hasMore, posts, filterType, pending } = feedStore;
   const { settings } = settingsStore;
   const filterEnabled = settings['filter.enabled'];
   const hasPosts = posts.length > 0;
@@ -122,16 +122,16 @@ export default observer(() => {
               <Loading size={24} />
             </div>
           )}
-          {!pending && hasMore && (
+          {!pending && hasPosts && hasMore && (
             <div className="mt-10">
               <Loading size={24} />
             </div>
           )}
-          {!pending && !hasPosts && order === 'SUBSCRIPTION' && (
+          {!pending && !hasPosts && filterType === 'SUBSCRIPTION' && (
             <div className="pt-32 text-center text-gray-500">
               <div className="pt-4">去关注你感兴趣的作者吧！</div>
               <div className="mt-2">
-                只需两步：点作者头像或昵称{' '}
+                点作者头像或昵称{' '}
                 <span role="img" aria-label="then">
                   👉
                 </span>{' '}
@@ -139,7 +139,7 @@ export default observer(() => {
               </div>
             </div>
           )}
-          {!pending && !hasPosts && order !== 'SUBSCRIPTION' && (
+          {!pending && !hasPosts && filterType !== 'SUBSCRIPTION' && (
             <div className="pt-32 text-center text-gray-500">
               <div className="pt-4">暂无文章</div>
             </div>

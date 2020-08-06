@@ -16,15 +16,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import {
-  getApiEndpoint,
-  getLoginUrl,
-  isMobile,
-  isWeChat,
-  sleep,
-  stopBodyScroll,
-  isPc,
-} from 'utils';
+import { getApiEndpoint, isMobile, sleep, stopBodyScroll, isPc } from 'utils';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -78,11 +70,7 @@ export default observer((props: any) => {
                   setOpenDrawer(false);
                   stopBodyScroll(false);
                   await sleep(200);
-                  if (isWeChat) {
-                    modalStore.openLogin();
-                  } else {
-                    window.location.href = getLoginUrl();
-                  }
+                  modalStore.openLogin();
                 }}
               >
                 登录

@@ -13,6 +13,7 @@ import LoginModal from 'components/LoginModal';
 import WalletModal from 'components/WalletModal';
 import NotificationModal from 'components/NotificationModal';
 import SnackBar from 'components/SnackBar';
+import PageLoading from './components/PageLoading';
 import Contact from './components/Contact';
 
 import { isIPhone, isPc } from 'utils';
@@ -40,6 +41,7 @@ const AppRouter = () => {
           <WalletModal />
           <SnackBar />
           <NotificationModal />
+          <PageLoading />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

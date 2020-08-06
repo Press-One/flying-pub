@@ -9,7 +9,8 @@ const buildPassport = () => {
   passport.use(new MixinStrategy({
     clientID: config.provider.mixin.clientId,
     clientSecret: config.provider.mixin.clientSecret,
-    callbackURL: config.provider.mixin.callbackUrl
+    callbackURL: config.provider.mixin.callbackUrl,
+    authorizationURL: config.provider.mixin.authorizationURL || ''
   }, (accessToken, refreshToken, profile, callback) => {
     profile.auth = {
       accessToken: accessToken,
