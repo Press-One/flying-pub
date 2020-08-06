@@ -560,7 +560,7 @@ export default observer((props: any) => {
           手机还没有安装 Mixin？
           <a
             className="text-blue-400"
-            href="https://mixin.one/messenger"
+            href="https://mixin-www.zeromesh.net/messenger"
             target="_blank"
             rel="noopener noreferrer"
           >

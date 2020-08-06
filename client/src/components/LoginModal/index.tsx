@@ -54,7 +54,7 @@ export default observer(() => {
             {!isWeChat && (
               <a
                 className="text-blue-400"
-                href="https://mixin.one/messenger"
+                href="https://mixin-www.zeromesh.net/messenger"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -64,7 +64,7 @@ export default observer(() => {
           </div>
           {isWeChat && (
             <div className="mt-4">
-              <a href="https://mixin.one/messenger">
+              <a href="https://mixin-www.zeromesh.net/messenger">
                 <Button>下载 Mixin App</Button>
               </a>
             </div>
