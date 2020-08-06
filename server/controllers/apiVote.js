@@ -45,11 +45,7 @@ exports.create = async ctx => {
     Log.create(userId, `点赞评论 ${url}`);
   }
   if (objectType === 'posts') {
-    const postPath = `/posts/${objectId}`;
-    const url = `${config.serviceRoot}${postPath}`;
-    console.log({
-      url
-    });
+    const url = `/posts/${objectId}`;
     try {
       await request({
         uri: `${config.settings['pub.site.url']}/api/notify`,
