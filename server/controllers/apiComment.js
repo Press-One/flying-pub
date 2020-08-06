@@ -1,6 +1,5 @@
 const config = require('../config');
 const Comment = require('../models/comment');
-const Profile = require('../models/profile');
 const Log = require('../models/log');
 const request = require('request-promise');
 const Mixin = require('../models/mixin');

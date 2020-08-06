@@ -1,6 +1,9 @@
+const config = require('../config');
 const Vote = require('../models/vote');
 const Sync = require('../models/sync');
 const Log = require('../models/log');
+const Mixin = require('../models/mixin');
+const Comment = require('../models/comment');
 const {
   assert,
   Errors
@@ -29,7 +32,15 @@ exports.create = async ctx => {
   const object = await Sync.syncVote(objectType, objectId, {
     userId
   });
-  Log.create(userId, `点赞 ${objectType} ${objectId}`);
+  const comment = await Comment.get(objectId);
+  const postPath = `/posts/${comment.objectId}?commentId=${objectId}`;
+  const url = `${config.serviceRoot}${postPath}`;
+  await Mixin.pushToNotifyQueue({
+    userId: comment.userId,
+    text: `你的评论收到了一个赞`,
+    url
+  });
+  Log.create(userId, `点赞 ${objectType} ${url}`);
   ctx.body = object;
 }
 
