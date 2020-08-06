@@ -236,6 +236,10 @@ const login = async (ctx, user, provider) => {
       await Wallet.tryCreateWallet(userId);
       Log.create(userId, `钱包不存在，初始化成功`);
     }
+    await Profile.update(userId, {
+      name: profile.name,
+      avatar: profile.avatar,
+    });
   }
 
   const token = await Token.create({

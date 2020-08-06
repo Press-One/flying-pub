@@ -74,3 +74,21 @@ exports.createProfile = async (data = {}) => {
   })
   return insertedProfile.toJSON();
 }
+
+exports.update = async (userId, data) => {
+  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(data, Errors.ERR_IS_REQUIRED('data'));
+  attempt(data, {
+    name: Joi.string().required(),
+    avatar: Joi.string().required(),
+  });
+  await Profile.update({
+    name: data.name,
+    avatar: data.avatar,
+  }, {
+    where: {
+      userId
+    }
+  })
+  return true;
+}
