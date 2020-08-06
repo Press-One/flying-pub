@@ -30,11 +30,14 @@ exports.create = async ctx => {
       json: true,
       body: {
         payload: {
+          type: 'comment',
           rId: data.objectId,
           provider: user.provider,
           providerId: user.providerId,
-          commentUser: user.name,
-          redirect: postPath
+          redirect: postPath,
+          options: {
+            fromUser: user.name,
+          }
         }
       }
     }).promise();
@@ -42,7 +45,7 @@ exports.create = async ctx => {
       const mentionsUserId = mentionsUserIds.shift();
       await Mixin.pushToNotifyQueue({
         userId: mentionsUserId,
-        text: `${user.name}回复了你的评论`,
+        text: `${user.name}刚刚回复了你的评论`,
         url: `${config.serviceRoot}${postPath}`
       });
     }

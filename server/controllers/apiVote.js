@@ -4,6 +4,7 @@ const Sync = require('../models/sync');
 const Log = require('../models/log');
 const Mixin = require('../models/mixin');
 const Comment = require('../models/comment');
+const request = require('request-promise');
 const {
   assert,
   Errors
@@ -32,15 +33,43 @@ exports.create = async ctx => {
   const object = await Sync.syncVote(objectType, objectId, {
     userId
   });
-  const comment = await Comment.get(objectId);
-  const postPath = `/posts/${comment.objectId}?commentId=${objectId}`;
-  const url = `${config.serviceRoot}${postPath}`;
-  await Mixin.pushToNotifyQueue({
-    userId: comment.userId,
-    text: `你的评论收到了一个赞`,
-    url
-  });
-  Log.create(userId, `点赞 ${objectType} ${url}`);
+  if (objectType === 'comments') {
+    const comment = await Comment.get(objectId);
+    const postPath = `/posts/${comment.objectId}?commentId=${objectId}`;
+    const url = `${config.serviceRoot}${postPath}`;
+    await Mixin.pushToNotifyQueue({
+      userId: comment.userId,
+      text: `你的评论收到了一个赞`,
+      url
+    });
+    Log.create(userId, `点赞评论 ${url}`);
+  }
+  if (objectType === 'posts') {
+    const postPath = `/posts/${objectId}`;
+    const url = `${config.serviceRoot}${postPath}`;
+    console.log({
+      url
+    });
+    try {
+      await request({
+        uri: `${config.settings['pub.site.url']}/api/notify`,
+        method: 'POST',
+        json: true,
+        body: {
+          payload: {
+            type: 'votePost',
+            rId: objectId,
+            provider: user.provider,
+            providerId: user.providerId,
+            redirect: url
+          }
+        }
+      }).promise();
+    } catch (err) {
+      console.log(err);
+    }
+    Log.create(userId, `点赞文章 ${url}`);
+  }
   ctx.body = object;
 }
 
