@@ -1,11 +1,4 @@
 #!/bin/bash
-
-git checkout . &&
-git fetch origin release &&
-git checkout release &&
-git clean -f -d &&
-until git pull; do sleep 2 ; done
-
 set -e
 
 cd client
