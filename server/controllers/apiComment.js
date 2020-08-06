@@ -4,6 +4,9 @@ const Log = require('../models/log');
 const request = require('request-promise');
 const Mixin = require('../models/mixin');
 const {
+  truncate
+} = require('../utils');
+const {
   assert,
   Errors
 } = require('../models/validator');
@@ -45,7 +48,7 @@ exports.create = async ctx => {
       const mentionsUserId = mentionsUserIds.shift();
       await Mixin.pushToNotifyQueue({
         userId: mentionsUserId,
-        text: `${user.name}刚刚回复了你的评论`,
+        text: `${truncate(user.name)} 刚刚回复了你的评论`,
         url: `${config.serviceRoot}${postPath}`
       });
     }
