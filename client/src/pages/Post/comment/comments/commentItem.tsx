@@ -73,7 +73,7 @@ export default class CommentItem extends React.Component<any, any> {
           </div>
           <div className="mt-2">
             <div
-              className="markdown-body comment dark text-base"
+              className="markdown-body comment text-base"
               dangerouslySetInnerHTML={{ __html: marked.parse(comment.content) }}
             />
             <div className="mt-3 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
