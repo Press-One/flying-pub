@@ -19,6 +19,7 @@ PRS_IMAGE_NAME="dockerhub.qingcloud.com/pressone/prs-reader"
 BLOG_IMAGE_NAME="dockerhub.qingcloud.com/pressone/blog-reader"
 WRITING_IMAGE_NAME="dockerhub.qingcloud.com/pressone/writing-reader"
 
+sudo docker system prune -f
 sudo docker build -t $IMAGE_NAME .
 
 sudo docker tag $IMAGE_NAME $BOX_IMAGE_NAME
