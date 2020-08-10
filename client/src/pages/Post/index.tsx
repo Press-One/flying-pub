@@ -68,7 +68,7 @@ export default observer((props: any) => {
           window.location.href = `/posts/${post.latestRId}`;
           return;
         }
-        document.title = `${post.author.name}`;
+        document.title = post.title;
         setPost(post);
         initMathJax(document.getElementById('post-content'));
       } catch (err) {
