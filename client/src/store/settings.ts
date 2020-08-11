@@ -1,6 +1,8 @@
 export function createSettingsStore() {
   return {
-    settings: {},
+    settings: {
+      extra: {},
+    },
     setSettings(settings: any = {}) {
       this.settings = settings;
     },

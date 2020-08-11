@@ -9,9 +9,14 @@ const {
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
   const settings = userId ? await Settings.getByUserId(userId) : {};
+  const extra = {
+    'notification.mixinClientId': config.provider.mixin.clientId,
+    'notification.mixinId': config.provider.mixin.id
+  }
   ctx.body = {
     ...config.settings,
-    ...settings
+    ...settings,
+    extra
   };
 };
 
