@@ -123,11 +123,12 @@ export default observer(() => {
         {receipts.map((receipt: any) => (
           <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
         ))}
+        {/* 用解决定位，解决移动端无法点击的问题 */}
         {hasMoreReceipt && (
-          <div className="mt-5 pt-2 pb-8">
+          <div className="mt-5 pt-2 pb-12 relative">
             {!loading && (
-              <div className="text-blue-400 cursor-pointer text-center" onClick={loadMore}>
-                加载更多
+              <div className="w-full absolute z-50 top-0 left-0" onClick={loadMore}>
+                <div className="text-blue-400 cursor-pointer text-center">加载更多</div>
               </div>
             )}
             {loading && <Loading />}
