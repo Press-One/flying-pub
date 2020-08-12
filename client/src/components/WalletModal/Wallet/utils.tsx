@@ -1,11 +1,11 @@
 export const currencyIconMap: any = {
-  CNB: 'https://xue-images.pek3b.qingstor.com/1025-cnb.png',
-  BTC: 'https://xue-images.pek3b.qingstor.com/1024-btc.png',
-  ETH: 'https://xue-images.pek3b.qingstor.com/1024-eth.png',
-  EOS: 'https://xue-images.pek3b.qingstor.com/1024-eos.png',
-  BOX: 'https://xue-images.pek3b.qingstor.com/1024-box.png',
-  PRS: 'https://xue-images.pek3b.qingstor.com/1024-prs.png',
-  XIN: 'https://xue-images.pek3b.qingstor.com/1024-xin.png',
+  CNB: 'https://img-cdn.xue.cn/1025-cnb.png',
+  BTC: 'https://img-cdn.xue.cn/1024-btc.png',
+  ETH: 'https://img-cdn.xue.cn/1024-eth.png',
+  EOS: 'https://img-cdn.xue.cn/1024-eos.png',
+  BOX: 'https://img-cdn.xue.cn/1024-box.png',
+  PRS: 'https://img-cdn.xue.cn/1024-prs.png',
+  XIN: 'https://img-cdn.xue.cn/1024-xin.png',
 };
 
 export const getPostsSiteDomain = () => {

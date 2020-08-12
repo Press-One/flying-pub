@@ -1,6 +1,6 @@
 飞帖阅读站，负责展示储存在区块链上的内容
 
-![Flying pub architecture](https://xue-images.pek3b.qingstor.com/213-reader.png)
+![Flying pub architecture](https://img-cdn.xue.cn/213-reader.png)
 
 ## 准备环境
 

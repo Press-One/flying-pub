@@ -289,7 +289,7 @@ export default observer((props: any) => {
               <Link to="/">
                 <div className="flex items-center">
                   <img
-                    src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                    src="https://img-cdn.xue.cn/1111-fly-pub.png"
                     alt="logo"
                     width="36"
                     height="36"
@@ -343,7 +343,7 @@ export default observer((props: any) => {
                 <Link to="/">
                   <div className="flex items-center -ml-2">
                     <img
-                      src="https://xue-images.pek3b.qingstor.com/1111-fly-pub.png"
+                      src="https://img-cdn.xue.cn/1111-fly-pub.png"
                       alt="logo"
                       width="36"
                       height="36"
