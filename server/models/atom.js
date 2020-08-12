@@ -239,13 +239,16 @@ const notifySubscribers = async (options = {}) => {
     const postUrl = `${config.serviceRoot}/posts/${post.rId}`;
     await Mixin.pushToNotifyQueue({
       userId: subscription.userId,
-      text: `${truncate(name)} 刚刚发布《${truncate(post.title, 12)}${postfix}》`.slice(0, 35),
+      text: `${truncate(name)} 刚刚发布了《${truncate(post.title, 12)}》`.slice(0, 35),
       url: postUrl
     });
   }
 }
 
 exports.sync = async () => {
+  if (!config.atom) {
+    return;
+  }
   // 同步所有 authors
   const syncAuthorsDone = await syncAuthors({
     step: 50
