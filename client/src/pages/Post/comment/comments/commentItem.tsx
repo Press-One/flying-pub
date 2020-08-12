@@ -73,10 +73,10 @@ export default class CommentItem extends React.Component<any, any> {
           </div>
           <div className="mt-2">
             <div
-              className="markdown-body comment text-base"
+              className="markdown-body comment"
               dangerouslySetInnerHTML={{ __html: marked.parse(comment.content) }}
             />
-            <div className="mt-3 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
+            <div className="mt-2 md:hidden text-gray-500 text-xs">{ago(comment.createdAt)}</div>
             {!hideDivider && <div className="border-b border-gray-300 mt-4 md:mt-6" />}
           </div>
         </div>
@@ -103,6 +103,12 @@ export default class CommentItem extends React.Component<any, any> {
           }
           .highlight {
             background: #e2f6ff;
+          }
+          .markdown-body {
+            font-size: ${isMobile ? 15 : 16}px;
+          }
+          .markdown-body :global(p) {
+            line-height: 1.625;
           }
         `}</style>
       </div>
