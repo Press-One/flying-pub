@@ -32,5 +32,3 @@ sudo docker push $XUE_IMAGE_NAME
 sudo docker push $PRS_IMAGE_NAME
 sudo docker push $BLOG_IMAGE_NAME
 sudo docker push $WRITING_IMAGE_NAME
-
-sudo docker system prune -f
