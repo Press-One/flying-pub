@@ -88,7 +88,8 @@ const updateByRId = async (rId, data) => {
     upVotesCount: Joi.number().optional(),
     commentsCount: Joi.number().optional(),
     latestRId: Joi.any().optional(),
-    deleted: Joi.boolean().optional()
+    deleted: Joi.boolean().optional(),
+    sticky: Joi.boolean().optional()
   });
   await Post.update(data, {
     where: {
@@ -127,7 +128,8 @@ exports.list = async (options = {}) => {
     order = 'PUB_DATE',
     dropAuthor = false,
     dayRange,
-    filterBan
+    filterBan,
+    filterSticky = false
   } = options;
   const where = {
     deleted: false
@@ -145,6 +147,9 @@ exports.list = async (options = {}) => {
     where.deleted = true;
     where.latestRId = null
   }
+  if (filterSticky) {
+    where.sticky = true;
+  }
   const posts = await Post.findAll({
     where,
     offset,
@@ -160,7 +165,7 @@ exports.list = async (options = {}) => {
   const list = await Promise.all(
     posts.map(post => {
       return packPost(post.toJSON(), {
-        dropAuthor
+        dropAuthor,
       });
     })
   );

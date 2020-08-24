@@ -49,6 +49,10 @@ const Post = sequelize.define('post', {
   deleted: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  sticky: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,
@@ -60,6 +64,8 @@ const Post = sequelize.define('post', {
     fields: ['latestRId']
   }, {
     fields: ['deleted']
+  }, {
+    fields: ['sticky']
   }]
 });
 

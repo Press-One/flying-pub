@@ -37,13 +37,15 @@ exports.list = async ctx => {
   const address = ctx.query.address;
   const dayRange = ctx.query.dayRange;
   const filterBan = ctx.query.filterBan;
+  const filterSticky = ctx.query.filterSticky;
   const query = {
     offset,
     limit,
     order,
     dropAuthor: !!address,
     dayRange,
-    filterBan
+    filterBan,
+    filterSticky
   };
   if (address) {
     query.addresses = [address];
@@ -79,10 +81,6 @@ exports.listBySubscriptions = async ctx => {
 exports.update = async ctx => {
   const rId = ctx.params.id;
   const data = ctx.request.body.payload;
-  console.log({
-    rId,
-    data
-  });
   assert(data, Errors.ERR_IS_REQUIRED('payload'));
   await Post.updateByRId(rId, data);
   ctx.body = true;

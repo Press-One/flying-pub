@@ -7,7 +7,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { isMobile, ago, generateAvatar } from 'utils';
 
 export default (props: any) => {
-  const { post, hideAuthor = false, authorPageEnabled } = props;
+  const {
+    post,
+    hideAuthor = false,
+    authorPageEnabled,
+    styleStickyEnabled = false,
+    hiddenSticky = false,
+  } = props;
   if (!post) {
     return null;
   }
@@ -36,6 +42,11 @@ export default (props: any) => {
       content()
     );
   };
+
+  if (hiddenSticky && post.sticky) {
+    return null;
+  }
+
   return (
     <div>
       <div id={post.rId} />
@@ -55,8 +66,15 @@ export default (props: any) => {
           )}
           <Link to={`/posts/${encodeURIComponent(postId)}`}>
             <div>
-              <h2 className="tracking-wide md:tracking-normal text-base font-semibold md:text-lg md:font-bold title leading-snug md:leading-normal">
-                {post.title}
+              <h2 className="tracking-wide md:tracking-normal text-base font-semibold md:text-lg md:font-bold">
+                <div className="title leading-snug md:leading-normal">
+                  {styleStickyEnabled && post.sticky && (
+                    <span className="bg-red-600 text-white px-1 md:px-2 rounded-sm text-xs md:text-sm round leading-none mr-2 font-normal sticky">
+                      置顶
+                    </span>
+                  )}
+                  {post.title}
+                </div>
               </h2>
               <div className="flex justify-between items-center mt-2 h-5 gray text-xs md:text-sm">
                 <div className="flex truncate items-center">
@@ -84,6 +102,13 @@ export default (props: any) => {
           }
           .post:hover {
             background: rgba(0, 0, 0, 0.01);
+          }
+          .sticky {
+            position: relative;
+            top: -${isMobile ? 1 : 2}px;
+            font-size: ${isMobile ? 13 : 14}px;
+            padding-top: 1px;
+            padding-bottom: 1px;
           }
           .title {
             color: #333;

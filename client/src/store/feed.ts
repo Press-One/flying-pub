@@ -19,10 +19,12 @@ export interface Post {
 export function createFeedStore() {
   const postMap: any = {};
   const rIdsSet = new Set();
+  const stickyRIdsSet = new Set();
   return {
     isFetched: false,
     postRId: '',
     rIdsSet,
+    stickyRIdsSet,
     postMap,
     filterType: '',
     filterDayRange: 3,
@@ -42,6 +44,9 @@ export function createFeedStore() {
       }
       return options;
     },
+    get stickyEnabled() {
+      return this.filterType !== 'SUBSCRIPTION';
+    },
     get length() {
       return this.posts.length;
     },
@@ -50,6 +55,20 @@ export function createFeedStore() {
     },
     get posts(): Post[] {
       return this.rIds.map((rId: string) => this.postMap[rId]);
+    },
+    get stickyRIds(): any {
+      return Array.from(this.stickyRIdsSet);
+    },
+    get stickyPosts(): Post[] {
+      return this.stickyRIds.map((rId: string) => this.postMap[rId]);
+    },
+    addStickyPosts(posts: Post[]) {
+      for (const post of posts) {
+        if (!this.stickyRIdsSet.has(post.rId)) {
+          this.postMap[post.rId] = post;
+          this.stickyRIdsSet.add(post.rId);
+        }
+      }
     },
     addPosts(posts: Post[]) {
       for (const post of posts) {

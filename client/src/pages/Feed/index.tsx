@@ -15,7 +15,7 @@ export default observer(() => {
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
   const [pagePending, setPagePending] = React.useState(false);
 
-  const { isFetched, hasMore, posts, filterType, pending } = feedStore;
+  const { isFetched, hasMore, posts, filterType, pending, stickyEnabled, stickyPosts } = feedStore;
   const { settings } = settingsStore;
   const filterEnabled = settings['filter.enabled'];
   const hasPosts = posts.length > 0;
@@ -35,13 +35,21 @@ export default observer(() => {
       setPagePending(true);
       const { filterType, optionsForFetching } = feedStore;
       try {
-        const { posts } = await Api.fetchPosts(filterType, {
-          ...optionsForFetching,
-        });
+        const [{ posts }, { posts: stickyPosts }] = await Promise.all([
+          Api.fetchPosts(filterType, {
+            ...optionsForFetching,
+          }),
+          Api.fetchPosts('', {
+            filterSticky: true,
+          }),
+        ]);
+        feedStore.addStickyPosts(stickyPosts);
         feedStore.addPosts(posts);
         await sleep(500);
         setPagePending(false);
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     })();
   }, [ready, isFetched, feedStore]);
 
@@ -114,8 +122,19 @@ export default observer(() => {
           <div className="mt-10 md:mt-12 border-t border-gray-300 md:border-gray-200" />
         )}
         <div className="min-h-screen">
+          {stickyEnabled && !pending && hasPosts && stickyPosts.length > 0 && (
+            <Posts
+              posts={stickyPosts}
+              authorPageEnabled={settings['author.page.enabled']}
+              styleStickyEnabled={true}
+            />
+          )}
           {!pending && hasPosts && (
-            <Posts posts={posts} authorPageEnabled={settings['author.page.enabled']} />
+            <Posts
+              posts={posts}
+              authorPageEnabled={settings['author.page.enabled']}
+              hiddenSticky={stickyEnabled}
+            />
           )}
           {pending && (
             <div className="pt-40">
