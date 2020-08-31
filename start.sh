@@ -1,1 +1,1 @@
-./start-client.sh & ./start-server.sh & ./start-queue.sh
+./start-client.sh & ./start-server.sh & sleep 30 && ./start-queue.sh
