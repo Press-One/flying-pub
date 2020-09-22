@@ -3,11 +3,7 @@
 const request = require('request-promise');
 const config = require('../config');
 const auth = require('../models/auth');
-const {
-  assert,
-  throws,
-  Errors
-} = require('../models/validator');
+const { assert, throws, Errors } = require('../models/validator');
 const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require('../models/wallet');
@@ -19,58 +15,69 @@ const providers = ['pressone', 'github', 'mixin'];
 const DEFAULT_AVATAR = 'https://static.press.one/pub/avatar.png';
 
 const checkPermission = async (provider, profile) => {
-  const {
-    providerId
-  } = profile;
+  const { providerId } = profile;
   const whitelist = config.auth.whitelist[provider];
   const isInWhiteList = whitelist && [provider].includes(~~providerId);
   if (isInWhiteList) {
     return true;
   }
-  const hasProviderPermission = await providerPermissionChecker[provider](profile);
+  const hasProviderPermission = await providerPermissionChecker[provider](
+    profile
+  );
   return hasProviderPermission;
-}
+};
 
 const providerPermissionChecker = {
-  mixin: async profile => {
+  mixin: async (profile) => {
     const rawJson = JSON.parse(profile.raw);
-    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
+    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(
+      rawJson.user_id,
+      profile
+    );
     return IsInMixinBoxGroup;
   },
-  github: async profile => {
+  github: async (profile) => {
     const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
     return isPaidUserOfXue;
   },
   pressone: async () => {
     return true;
-  }
+  },
 };
 
-const checkIsInMixinBoxGroup = async mixinUuid => {
+const checkIsInMixinBoxGroup = async (mixinUuid, profile) => {
   try {
     const res = await request({
       uri: `${config.auth.boxGroupAuthBaseApi}/${mixinUuid}`,
       json: true,
       headers: {
         group_id: config.auth.boxGroupId,
-        Authorization: `Bearer ${config.auth.boxGroupToken}`
+        Authorization: `Bearer ${config.auth.boxGroupToken}`,
       },
     }).promise();
     const isValid = res.user_id === mixinUuid;
+    try {
+      if (isValid && res.phone_number) {
+        Log.createAnonymity(profile.id, `保存手机号`);
+        profile.phone = res.phone_number;
+      }
+    } catch (err) {
+      console.log(err);
+    }
     return isValid;
   } catch (err) {
     console.log(err);
     return false;
   }
-}
+};
 
-const checkIsPaidUserOfXue = async githubNickName => {
+const checkIsPaidUserOfXue = async (githubNickName) => {
   try {
     const user = await request({
       uri: `${config.auth.xueUserExtraApi}/${githubNickName}`,
       json: true,
       headers: {
-        'x-po-auth-token': config.auth.xueAdminToken
+        'x-po-auth-token': config.auth.xueAdminToken,
       },
     }).promise();
     const isPaidUser = user.balance > 0;
@@ -78,15 +85,11 @@ const checkIsPaidUserOfXue = async githubNickName => {
   } catch (err) {
     return false;
   }
-}
+};
 
-exports.oauthLogin = async ctx => {
-  const {
-    authenticate
-  } = auth;
-  const {
-    provider
-  } = ctx.params;
+exports.oauthLogin = async (ctx) => {
+  const { authenticate } = auth;
+  const { provider } = ctx.params;
   assert(
     providers.includes(provider),
     Errors.ERR_IS_INVALID(`provider: ${provider}`)
@@ -98,16 +101,14 @@ exports.oauthLogin = async ctx => {
   assert(ctx.query.redirect, Errors.ERR_IS_REQUIRED('redirect'));
   ctx.session.auth = {
     provider: ctx.params.provider,
-    redirect: ctx.query.redirect
+    redirect: ctx.query.redirect,
   };
   return authenticate[provider](ctx);
 };
 
-exports.oauthCallback = async ctx => {
+exports.oauthCallback = async (ctx) => {
   try {
-    const {
-      provider
-    } = ctx.params;
+    const { provider } = ctx.params;
 
     let user;
     if (provider === 'pressone') {
@@ -127,13 +128,18 @@ exports.oauthCallback = async ctx => {
           profile.id,
           `没有 ${provider} 权限，raw ${profile.raw}`
         );
-        const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
+        const clientHost = ctx.session.auth.redirect
+          .split('/')
+          .slice(0, 3)
+          .join('/');
         ctx.redirect(`${clientHost}/permissionDeny`);
         return false;
       }
     }
 
-    await login(ctx, user, provider);
+    await login(ctx, user, provider, {
+      phone: profile.phone,
+    });
 
     ctx.redirect(ctx.session.auth.redirect);
   } catch (err) {
@@ -143,24 +149,20 @@ exports.oauthCallback = async ctx => {
 };
 
 const handlePressOneCallback = async (ctx, provider) => {
-  const {
-    userAddress
-  } = ctx.query;
+  const { userAddress } = ctx.query;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   const user = await request({
     uri: `https://press.one/api/v2/users/${userAddress}`,
     json: true,
     headers: {
-      accept: 'application/json'
-    }
+      accept: 'application/json',
+    },
   }).promise();
   return user;
 };
 
 const handleOauthCallback = async (ctx, provider) => {
-  const {
-    authenticate
-  } = auth;
+  const { authenticate } = auth;
   assert(
     authenticate[provider],
     Errors.ERR_IS_INVALID(`provider: ${provider}`)
@@ -196,20 +198,25 @@ const handleOauthCallback = async (ctx, provider) => {
     Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`)
   );
 
-  const {
-    user
-  } = ctx.session.passport;
+  const { user } = ctx.session.passport;
   return user;
 };
 
-const login = async (ctx, user, provider) => {
+const login = async (ctx, user, provider, options = {}) => {
   const profile = providerGetter[provider](user);
+
+  if (options.phone) {
+    jsonRaw = JSON.parse(profile.raw);
+    jsonRaw.phone = options.phone;
+    profile.raw = JSON.stringify(jsonRaw);
+  }
+
   const isNewUser = !(await Profile.isExist(provider, profile.id));
   let insertedProfile = {};
   if (isNewUser) {
     const userData = {
       providerId: profile.id,
-      provider
+      provider,
     };
     if (provider === 'mixin') {
       userData.mixinAccountRaw = profile.raw;
@@ -218,7 +225,7 @@ const login = async (ctx, user, provider) => {
     insertedProfile = await Profile.createProfile({
       userId: user.id,
       profile,
-      provider
+      provider,
     });
     await Wallet.tryCreateWallet(user.id);
     Log.create(user.id, `我被创建了`);
@@ -226,9 +233,7 @@ const login = async (ctx, user, provider) => {
   } else {
     insertedProfile = await Profile.get(provider, profile.id);
     Log.create(insertedProfile.userId, `登录成功`);
-    const {
-      userId
-    } = insertedProfile;
+    const { userId } = insertedProfile;
     const walletExists = await Wallet.exists(userId);
     if (walletExists) {
       Log.create(userId, `钱包已存在，无需初始化`);
@@ -246,30 +251,30 @@ const login = async (ctx, user, provider) => {
     userId: insertedProfile.userId,
     providerId: insertedProfile.providerId,
     profileRaw: provider === 'mixin' ? profile.raw : '',
-    provider
+    provider,
   });
 
   const cookieOptions = {
-    expires: new Date('2100-01-01')
-  }
+    expires: new Date('2100-01-01'),
+  };
   if (config.settings['SSO.enabled']) {
     cookieOptions.domain = config.auth.SSOTokenDomain;
   }
   ctx.cookies.set(config.auth.tokenKey, token, cookieOptions);
-}
+};
 
 const providerGetter = {
-  github: user => {
+  github: (user) => {
     return {
       id: user._json.id,
       name: user.username,
       avatar: user._json.avatar_url || DEFAULT_AVATAR,
       bio: user._json.bio,
-      raw: user._raw
+      raw: user._raw,
     };
   },
 
-  mixin: user => {
+  mixin: (user) => {
     return {
       id: user._json.identity_number,
       name: user._json.full_name,
@@ -283,18 +288,18 @@ const providerGetter = {
         avatar_url: user._json.avatar_url,
         session_id: user._json.session_id,
         code_id: user._json.code_id,
-      })
+      }),
     };
   },
 
-  pressone: user => {
+  pressone: (user) => {
     delete user.proofs;
     return {
       id: user.id,
       name: user.name,
       avatar: user.avatar || DEFAULT_AVATAR,
       bio: user.bio,
-      raw: JSON.stringify(user)
+      raw: JSON.stringify(user),
     };
-  }
+  },
 };

@@ -92,3 +92,97 @@ exports.update = async (userId, data) => {
   })
   return true;
 }
+
+
+exports.countNoPhoneProfile = async () => {
+  const count = await Profile.count({
+    where: {
+      provider: 'mixin',
+      raw: {
+        [Op.and]: {
+          [Op.or]: [{
+              [Op.like]: `%"phone":""%`
+            },
+            {
+              [Op.notLike]: `%"phone":%`
+            },
+          ],
+          [Op.notLike]: `%"no_in_group":%`
+        }
+      }
+    },
+  });
+  return count;
+}
+
+exports.listNoPhoneProfile = async (options = {}) => {
+  const {
+    offset = 0, limit = 10
+  } = options;
+  const profiles = await Profile.findAll({
+    where: {
+      provider: 'mixin',
+      raw: {
+        [Op.and]: {
+          [Op.or]: [{
+              [Op.like]: `%"phone":""%`
+            },
+            {
+              [Op.notLike]: `%"phone":%`
+            },
+          ],
+          [Op.notLike]: `%"no_in_group":%`
+        }
+      }
+    },
+    offset,
+    limit,
+    order: [
+      ['id', 'ASC']
+    ]
+  });
+  return profiles.map(profile => profile.toJSON());
+}
+
+exports.addPhoneToProfile = async (id, phone) => {
+  assert(id, Errors.ERR_IS_REQUIRED('id'));
+  assert(phone, Errors.ERR_IS_REQUIRED('phone'));
+  const profile = await Profile.findOne({
+    where: {
+      id,
+    }
+  });
+  const {
+    raw
+  } = profile.toJSON();
+  const jsonRaw = JSON.parse(raw);
+  jsonRaw.phone = phone;
+  await Profile.update({
+    raw: JSON.stringify(jsonRaw)
+  }, {
+    where: {
+      id
+    }
+  });
+}
+
+exports.addNoInGroupToProfile = async id => {
+  assert(id, Errors.ERR_IS_REQUIRED('id'));
+  const profile = await Profile.findOne({
+    where: {
+      id,
+    }
+  });
+  const {
+    raw
+  } = profile.toJSON();
+  const jsonRaw = JSON.parse(raw);
+  jsonRaw.no_in_group = true;
+  await Profile.update({
+    raw: JSON.stringify(jsonRaw)
+  }, {
+    where: {
+      id
+    }
+  });
+}
