@@ -3,7 +3,11 @@
 const request = require('request-promise');
 const config = require('../config');
 const auth = require('../models/auth');
-const { assert, throws, Errors } = require('../models/validator');
+const {
+  assert,
+  throws,
+  Errors
+} = require('../models/validator');
 const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require('../models/wallet');
@@ -15,7 +19,9 @@ const providers = ['pressone', 'github', 'mixin'];
 const DEFAULT_AVATAR = 'https://static.press.one/pub/avatar.png';
 
 const checkPermission = async (provider, profile) => {
-  const { providerId } = profile;
+  const {
+    providerId
+  } = profile;
   const whitelist = config.auth.whitelist[provider];
   const isInWhiteList = whitelist && [provider].includes(~~providerId);
   if (isInWhiteList) {
@@ -88,8 +94,12 @@ const checkIsPaidUserOfXue = async (githubNickName) => {
 };
 
 exports.oauthLogin = async (ctx) => {
-  const { authenticate } = auth;
-  const { provider } = ctx.params;
+  const {
+    authenticate
+  } = auth;
+  const {
+    provider
+  } = ctx.params;
   assert(
     providers.includes(provider),
     Errors.ERR_IS_INVALID(`provider: ${provider}`)
@@ -108,7 +118,9 @@ exports.oauthLogin = async (ctx) => {
 
 exports.oauthCallback = async (ctx) => {
   try {
-    const { provider } = ctx.params;
+    const {
+      provider
+    } = ctx.params;
 
     let user;
     if (provider === 'pressone') {
@@ -120,6 +132,7 @@ exports.oauthCallback = async (ctx) => {
     assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
     const profile = providerGetter[provider](user);
+
     if (config.settings['permission.isPrivate']) {
       const hasPermission = await checkPermission(provider, profile);
       const noPermission = !hasPermission;
@@ -135,6 +148,15 @@ exports.oauthCallback = async (ctx) => {
         ctx.redirect(`${clientHost}/permissionDeny`);
         return false;
       }
+    } else {
+      try {
+        const hasPermission = await checkPermission(provider, profile);
+        console.log({
+          hasPermission
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     await login(ctx, user, provider, {
@@ -149,7 +171,9 @@ exports.oauthCallback = async (ctx) => {
 };
 
 const handlePressOneCallback = async (ctx, provider) => {
-  const { userAddress } = ctx.query;
+  const {
+    userAddress
+  } = ctx.query;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   const user = await request({
     uri: `https://press.one/api/v2/users/${userAddress}`,
@@ -162,7 +186,9 @@ const handlePressOneCallback = async (ctx, provider) => {
 };
 
 const handleOauthCallback = async (ctx, provider) => {
-  const { authenticate } = auth;
+  const {
+    authenticate
+  } = auth;
   assert(
     authenticate[provider],
     Errors.ERR_IS_INVALID(`provider: ${provider}`)
@@ -198,7 +224,9 @@ const handleOauthCallback = async (ctx, provider) => {
     Errors.ERR_IS_INVALID(`provider mismatch: ${provider}`)
   );
 
-  const { user } = ctx.session.passport;
+  const {
+    user
+  } = ctx.session.passport;
   return user;
 };
 
@@ -233,7 +261,9 @@ const login = async (ctx, user, provider, options = {}) => {
   } else {
     insertedProfile = await Profile.get(provider, profile.id);
     Log.create(insertedProfile.userId, `登录成功`);
-    const { userId } = insertedProfile;
+    const {
+      userId
+    } = insertedProfile;
     const walletExists = await Wallet.exists(userId);
     if (walletExists) {
       Log.create(userId, `钱包已存在，无需初始化`);
