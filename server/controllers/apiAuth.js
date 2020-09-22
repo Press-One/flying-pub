@@ -150,10 +150,12 @@ exports.oauthCallback = async (ctx) => {
       }
     } else {
       try {
-        const hasPermission = await checkPermission(provider, profile);
-        console.log({
-          hasPermission
-        });
+        if (config.auth.boxGroupId) {
+          const hasPermission = await checkPermission(provider, profile);
+          console.log({
+            hasPermission
+          });
+        }
       } catch (err) {
         console.log(err);
       }
