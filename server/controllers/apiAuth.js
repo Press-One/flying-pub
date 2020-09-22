@@ -206,7 +206,7 @@ const login = async (ctx, user, provider, options = {}) => {
   const profile = providerGetter[provider](user);
 
   if (options.phone) {
-    jsonRaw = JSON.parse(profile.raw);
+    const jsonRaw = JSON.parse(profile.raw);
     jsonRaw.phone = options.phone;
     profile.raw = JSON.stringify(jsonRaw);
   }
