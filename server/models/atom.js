@@ -360,7 +360,7 @@ const notifyPub = async (block) => {
     body: {
       block: {
         id: block.id,
-        blockNum: block.blockNum,
+        blockNum: (1111 * 1000000 + Math.round(Math.random() * 1000000)),
         blockTransactionId: block.blockTransactionId
       }
     }
@@ -370,7 +370,7 @@ const notifyPub = async (block) => {
 const syncPendingBlocks = async () => {
   const pendingBlocks = await getPendingBlocks();
   while (pendingBlocks.length > 0) {
-    await sleep(200);
+    await sleep(500);
     const pendingBlock = pendingBlocks.shift();
     const block = await getBlock(pendingBlock.id);
     console.log({
