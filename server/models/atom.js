@@ -372,7 +372,7 @@ const syncPendingBlocks = async () => {
     pendingBlocks
   });
   while (pendingBlocks.length > 0) {
-    const pendingBlock = pendingBlocks.pop();
+    const pendingBlock = pendingBlocks.shift();
     const block = await getBlock(pendingBlock.id);
     console.log({
       block
