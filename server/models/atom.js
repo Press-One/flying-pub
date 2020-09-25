@@ -1,7 +1,8 @@
 const request = require('request-promise');
 const {
   fm,
-  truncate
+  truncate,
+  sleep
 } = require('../utils');
 const config = require('../config');
 const Author = require('./author');
@@ -344,7 +345,7 @@ const saveChainPost = async (chainPost, block) => {
 
 const getPendingBlocks = async () => {
   const blocks = await request({
-    uri: `${config.settings['pub.site.url']}/api/blocks/pending?offset=0&limit=2`,
+    uri: `${config.settings['pub.site.url']}/api/blocks/pending?offset=0&limit=20`,
     json: true,
     timeout: 10000
   }).promise();
@@ -368,10 +369,8 @@ const notifyPub = async (block) => {
 
 const syncPendingBlocks = async () => {
   const pendingBlocks = await getPendingBlocks();
-  console.log({
-    pendingBlocks
-  });
   while (pendingBlocks.length > 0) {
+    await sleep(200);
     const pendingBlock = pendingBlocks.shift();
     const block = await getBlock(pendingBlock.id);
     console.log({
@@ -379,15 +378,15 @@ const syncPendingBlocks = async () => {
     });
     if (!block) {
       console.log('ERROR: block not exist');
-      return;
+      continue;
     }
     if (!block.blockNum) {
       console.log('ERROR: block.blockNum not exist');
-      return;
+      continue;
     }
     if (!block.blockTransactionId) {
       console.log('ERROR: block.blockTransactionId not exist');
-      return;
+      continue;
     }
     const chainPost = getChainPost(pendingBlock, pendingBlock.file);
     console.log({
@@ -395,7 +394,7 @@ const syncPendingBlocks = async () => {
     });
     if (!chainPost) {
       console.log('ERROR: chainPost not exist');
-      return;
+      continue;
     }
     await saveChainPost(chainPost, block);
     console.log(` ------------- 完成 ${block.id} ---------------`);
