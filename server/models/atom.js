@@ -227,6 +227,181 @@ const syncPosts = async (options = {}) => {
   }
 };
 
+const getChainPost = (block, file) => {
+  if (!block) {
+    console.log('ERROR: block not exist');
+    return;
+  }
+  if (!file) {
+    console.log('ERROR: file not exist');
+    return;
+  }
+  const chainPost = {
+    publish_tx_id: block.id,
+    file_hash: JSON.parse(block.data).file_hash,
+    topic: JSON.parse(block.data).topic,
+    updated_tx_id: JSON.parse(block.data).updated_tx_id || '',
+    content: file.content,
+    updated_at: block.createdAt,
+    deleted: false
+  }
+  return chainPost;
+}
+
+const pickPostFromChainPost = async (chainPost, block) => {
+  const rId = chainPost.publish_tx_id;
+  const {
+    title,
+    avatar,
+    authorName,
+    content
+  } = extractFrontMatter(chainPost);
+  const post = {
+    rId,
+    userAddress: block.user_address,
+    title,
+    content,
+    paymentUrl: JSON.parse(block.meta).payment_url,
+    pubDate: new Date(chainPost.updated_at)
+  };
+  const author = {
+    address: block.user_address,
+    name: authorName,
+    avatar,
+  };
+  const deleted = chainPost.deleted;
+  const updatedRId = chainPost.updated_tx_id;
+  return {
+    author,
+    post,
+    deleted,
+    updatedRId
+  };
+};
+
+const saveChainPost = async (chainPost, block) => {
+  console.log(` ------------- saveChainPost ---------------`);
+  const pickedPost = await pickPostFromChainPost(chainPost, block);
+  console.log({
+    pickedPost
+  });
+  const {
+    author,
+    post,
+    deleted,
+    updatedRId
+  } = pickedPost;
+  const insertPost = await Post.getByRId(post.rId, {
+    ignoreDeleted: true,
+    includeAuthor: false
+  });
+  if (insertPost) {
+    console.log('ERROR: insertPost already exist');
+    await notifyPub(block);
+    return;
+  }
+
+  if (deleted) {
+    const exists = await Post.getByRId(post.rId);
+    if (exists) {
+      await Post.delete(post.rId);
+      Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+    }
+    return;
+  }
+
+  // const insertedAuthor = await Author.getByAddress(author.address);
+  // if (!insertedAuthor) {
+  //   return;
+  // }
+  await Author.upsert(author.address, {
+    name: author.name,
+    avatar: author.avatar,
+    status: 'allow'
+  });
+  Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
+
+  await Post.create(post);
+  Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+
+  if (updatedRId) {
+    const updatedFile = await Post.getByRId(updatedRId, {
+      ignoreDeleted: true,
+    });
+    await Post.delete(updatedFile.rId);
+    Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
+    await replacePost(updatedRId, post.rId);
+    Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+  } else {
+    await notifySubscribers({
+      address: author.address,
+      name: author.name,
+      post
+    });
+  }
+  await notifyPub(block);
+}
+
+const getPendingBlocks = async () => {
+  const blocks = await request({
+    uri: `${config.settings['pub.site.url']}/api/blocks/pending?offset=0&limit=2`,
+    json: true,
+    timeout: 10000
+  }).promise();
+  return blocks;
+}
+
+const notifyPub = async (block) => {
+  await request({
+    uri: `${config.settings['pub.site.url']}/api/webhook/medium`,
+    method: 'POST',
+    json: true,
+    body: {
+      block: {
+        id: block.id,
+        blockNum: block.blockNum,
+        blockTransactionId: block.blockTransactionId
+      }
+    }
+  }).promise();
+}
+
+const syncPendingBlocks = async () => {
+  const pendingBlocks = await getPendingBlocks();
+  console.log({
+    pendingBlocks
+  });
+  while (pendingBlocks.length > 0) {
+    const pendingBlock = pendingBlocks.pop();
+    const block = await getBlock(pendingBlock.id);
+    console.log({
+      block
+    });
+    if (!block) {
+      console.log('ERROR: block not exist');
+      return;
+    }
+    if (!block.blockNum) {
+      console.log('ERROR: block.blockNum not exist');
+      return;
+    }
+    if (!block.blockTransactionId) {
+      console.log('ERROR: block.blockTransactionId not exist');
+      return;
+    }
+    const chainPost = getChainPost(pendingBlock, pendingBlock.file);
+    console.log({
+      chainPost
+    });
+    if (!chainPost) {
+      console.log('ERROR: chainPost not exist');
+      return;
+    }
+    await saveChainPost(chainPost, block);
+    console.log(` ------------- 完成 ${block.id} ---------------`);
+  }
+}
+
 const notifySubscribers = async (options = {}) => {
   const {
     address,
@@ -249,14 +424,26 @@ exports.sync = async () => {
   if (!config.atom) {
     return;
   }
-  // 同步所有 authors
-  const syncAuthorsDone = await syncAuthors({
-    step: 50
-  });
-  if (syncAuthorsDone) {
-    // 同步所有 posts
-    await syncPosts({
-      step: 10
+
+  if (config.shouldSyncPendingBlocks) {
+    console.log(` ------------- 使用阅读站快捷同步 ---------------`);
+    try {
+      await syncPendingBlocks();
+    } catch (err) {
+      console.log({
+        err
+      });
+    }
+  } else {
+    // 同步所有 authors
+    const syncAuthorsDone = await syncAuthors({
+      step: 50
     });
+    if (syncAuthorsDone) {
+      // 同步所有 posts
+      await syncPosts({
+        step: 10
+      });
+    }
   }
 };
