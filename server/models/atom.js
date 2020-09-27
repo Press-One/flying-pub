@@ -361,7 +361,7 @@ const notifyPub = async (block) => {
       block: {
         id: block.id,
         blockNum: (1111 * 1000000 + Math.round(Math.random() * 1000000)),
-        blockTransactionId: block.blockTransactionId
+        blockTransactionId: block.hash
       }
     }
   }).promise();
@@ -382,11 +382,11 @@ const syncPendingBlocks = async () => {
     }
     if (!block.blockNum) {
       console.log('ERROR: block.blockNum not exist');
-      continue;
+      // continue;
     }
     if (!block.blockTransactionId) {
       console.log('ERROR: block.blockTransactionId not exist');
-      continue;
+      // continue;
     }
     const chainPost = getChainPost(pendingBlock, pendingBlock.file);
     console.log({
