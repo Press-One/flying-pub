@@ -2,7 +2,7 @@ const Conversation = require('./sequelize/conversation');
 const {
   Joi,
   attempt,
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const packConversation = conversation => {
   delete conversation.raw;

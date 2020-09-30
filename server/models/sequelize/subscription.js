@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 const Author = require('./author');
 
 const Subscription = sequelize.define('subscriptions', {
@@ -23,8 +23,6 @@ const Subscription = sequelize.define('subscriptions', {
     fields: ['authorAddress']
   }]
 });
-
-Subscription.sync();
 
 Subscription.belongsTo(Author, {
   foreignKey: 'authorAddress',

@@ -15,6 +15,7 @@ interface IState {
 }
 
 export default class ButtonProgress extends React.Component<IProps, IState> {
+  private isShowDoneTimer = 0;
   constructor(props: any) {
     super(props);
     this.state = {
@@ -26,10 +27,14 @@ export default class ButtonProgress extends React.Component<IProps, IState> {
     const isDoneChangedFromFalseToTrue = !this.props.isDone && nextProps.isDone;
     if (isDoneChangedFromFalseToTrue) {
       this.setState({ isShowDone: true });
-      setTimeout(() => {
+      this.isShowDoneTimer = window.setTimeout(() => {
         this.setState({ isShowDone: false });
       }, 1500);
     }
+  }
+  
+  componentWillUnmount() {
+    window.clearTimeout(this.isShowDoneTimer);
   }
 
   render() {

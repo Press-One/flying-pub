@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 import { currencyIconMap } from 'components/WalletModal/Wallet/utils';
 
 export default (props: any) => {
@@ -26,14 +27,16 @@ export default (props: any) => {
         >
           {users.map((user: any) => {
             return (
-              <div className="px-1 mb-2" key={user.id}>
-                <img
-                  className="rounded-sm w-10 h-10"
-                  src={user.avatar}
-                  alt={user.name}
-                  key={user.id}
-                />
-              </div>
+              <Link to={`/authors/${user.address}`}>
+                <div className="px-1 mb-2" key={user.id}>
+                  <img
+                    className="rounded-sm w-10 h-10"
+                    src={user.avatar}
+                    alt={user.nickname}
+                    key={user.id}
+                  />
+                </div>
+              </Link>
             );
           })}
         </div>

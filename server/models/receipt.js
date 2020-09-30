@@ -1,4 +1,5 @@
 const Receipt = require('./sequelize/receipt');
+const File = require("./sequelize/file");
 const uuidV1 = require("uuid/v1");
 const mathjs = require("mathjs");
 const {
@@ -6,7 +7,7 @@ const {
   assert,
   attempt,
   Errors
-} = require("./validator");
+} = require("../utils/validator");
 
 const transferTypes = new Set(["REWARD", "WITHDRAW", "RECHARGE"]);
 
@@ -155,7 +156,11 @@ exports.list = async (options = {}) => {
     where,
     offset,
     limit,
-    order
+    order,
+    include: [{
+      model: File,
+      attributes: ['title']
+    }]
   });
   const result = receipts.map((receipt) => {
     return packReceipt(receipt);

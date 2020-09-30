@@ -4,7 +4,7 @@ const Log = require('../models/log');
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;

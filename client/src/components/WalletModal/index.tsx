@@ -11,9 +11,6 @@ import { isMobile } from 'utils';
 import css from 'styled-jsx/css';
 
 const styles = css`
-  .wallet-modal {
-    width: ${isMobile ? 'auto' : '860px'};
-  }
   .wallet-modal-content,
   :global(.wallet-content) {
     height: ${isMobile ? 'auto' : '600px'};
@@ -32,7 +29,12 @@ export default observer(() => {
 
   const renderMain = () => {
     return (
-      <div className="wallet-modal max-h-screen overflow-auto">
+      <div
+        className="wallet-modal max-h-screen overflow-auto"
+        style={{
+          width: isMobile ? 'auto' : walletStore.rewardOnly ? '620px' : '860px',
+        }}
+      >
         <div className="wallet-modal-content relative">
           <Wallet />
           {returnInfo && isBalanceEnough && walletStore.isCustomPinExist && (

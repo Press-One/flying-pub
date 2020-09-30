@@ -1,8 +1,6 @@
 const request = require('request-promise');
 const {
-  fm,
-  truncate,
-  sleep
+  fm
 } = require('../utils');
 const config = require('../config');
 const Author = require('./author');
@@ -14,9 +12,7 @@ const Comment = require('./comment');
 const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
-const Mixin = require('./mixin');
 const type = `${config.serviceKey}_SYNC_ATOM`;
-const Subscription = require('./subscription');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
@@ -27,6 +23,7 @@ const syncAuthors = async (options = {}) => {
         step = 50
       } = options;
       const key = 'AUTHORS_OFFSET';
+      const lastUpdatedAtKey = 'AUTHORS_LAST_UPDATED_AT';
       const cachedOffset = Number(await Cache.pGet(type, key));
       const offset = cachedOffset > 0 ? cachedOffset : 0;
       const uri = `${config.atom.authorsUrl}?topic=${
@@ -43,9 +40,14 @@ const syncAuthors = async (options = {}) => {
         return;
       }
       for (const author of authors) {
-        await Author.upsert(author.user_address, {
-          status: author.status
-        });
+        const cachedLastUpdatedAt = await Cache.pGet(type, lastUpdatedAtKey);
+        const isNew = !cachedLastUpdatedAt || new Date(author.updated_at) > new Date(cachedLastUpdatedAt);
+        if (isNew) {
+          await Author.upsert(author.user_address, {
+            status: author.status
+          });
+          await Cache.pSet(type, lastUpdatedAtKey, author.updated_at);
+        }
       }
       let offsetIncrement = 0;
       if (length < step) {
@@ -70,12 +72,14 @@ const syncAuthors = async (options = {}) => {
   return done;
 };
 
-const extractFrontMatter = rawPost => {
-  const result = fm(rawPost.content);
+const extractFrontMatter = chainPost => {
+  const result = fm(chainPost.content);
   return {
     title: result.attributes.title,
     authorName: result.attributes.author,
     avatar: result.attributes.avatar,
+    bio: result.attributes.bio,
+    published: result.attributes.published,
     content: result.body
   };
 };
@@ -90,30 +94,33 @@ const getBlock = async rId => {
   return block;
 };
 
-const pickPost = async rawPost => {
-  const rId = rawPost.publish_tx_id;
+const pickPost = async chainPost => {
+  const rId = chainPost.publish_tx_id;
   const block = await getBlock(rId);
   const {
     title,
     avatar,
     authorName,
+    bio,
+    published,
     content
-  } = extractFrontMatter(rawPost);
+  } = extractFrontMatter(chainPost);
   const post = {
     rId,
     userAddress: block.user_address,
     title,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(rawPost.updated_at)
+    pubDate: new Date(published)
   };
   const author = {
     address: block.user_address,
     name: authorName,
-    avatar
+    avatar,
+    bio
   };
-  const deleted = rawPost.deleted;
-  const updatedRId = rawPost.updated_tx_id;
+  const deleted = chainPost.deleted;
+  const updatedRId = chainPost.updated_tx_id;
   return {
     author,
     post,
@@ -140,6 +147,69 @@ const replacePost = async (rId, newRId) => {
   return true;
 };
 
+const saveChainPost = async (chainPost, options = {}) => {
+  const pickedPost = await pickPost(chainPost);
+  console.log({
+    pickedPost
+  });
+  const {
+    author,
+    post,
+    deleted,
+    updatedRId
+  } = pickedPost;
+  const insertPost = await Post.getByRId(post.rId, {
+    ignoreDeleted: true,
+    ignoreInvisibility: true,
+    includeAuthor: false
+  });
+
+  if (insertPost) {
+    if (options.fromAtomSync && (!insertPost.status || insertPost.status === 'pending')) {
+      await Post.updateByRId(post.rId, {
+        status: 'finished'
+      });
+      Log.createAnonymity('Atom 同步文章，状态改为 finished', `${post.rId} ${post.title}`);
+    }
+    return;
+  }
+
+  if (deleted) {
+    const exists = await Post.getByRId(post.rId);
+    if (exists) {
+      await Post.delete(post.rId);
+      Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+    }
+    return;
+  }
+
+  await Author.upsert(author.address, {
+    name: author.name,
+    avatar: author.avatar,
+    bio: author.bio,
+  });
+  Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
+
+  if (options.fromAtomSync) {
+    post.status = 'finished';
+  } else if (options.fromPublish) {
+    post.status = 'pending';
+  }
+  await Post.create(post);
+  Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+
+  if (updatedRId) {
+    const updatedFile = await Post.getByRId(updatedRId, {
+      ignoreDeleted: true,
+    });
+    await Post.delete(updatedFile.rId);
+    Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
+    await replacePost(updatedRId, post.rId);
+    Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+  }
+}
+exports.saveChainPost = saveChainPost;
+
 const syncPosts = async (options = {}) => {
   let stop = false;
   while (!stop) {
@@ -148,62 +218,29 @@ const syncPosts = async (options = {}) => {
         step = 20
       } = options;
       const key = 'POSTS_OFFSET';
+      const lastUpdatedAtKey = 'POSTS_LAST_UPDATED_AT';
       const cachedOffset = Number(await Cache.pGet(type, key));
       const offset = cachedOffset > 0 ? cachedOffset : 0;
       const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
-      const rawPosts = await request({
+      const chainPosts = await request({
         uri,
         json: true,
         timeout: 10000
       }).promise();
-      const length = rawPosts.length;
+      const length = chainPosts.length;
       if (offset === 0 && length === 0) {
         stop = true;
         continue;
       }
-      const pickedPosts = await Promise.all(rawPosts.map(pickPost));
-      for (const index of pickedPosts.keys()) {
-        const {
-          author,
-          post,
-          deleted,
-          updatedRId
-        } = pickedPosts[index];
-        if (deleted) {
-          const exists = await Post.getByRId(post.rId);
-          if (exists) {
-            await Post.delete(post.rId);
-            Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
-          }
-          continue;
-        }
-        const insertedAuthor = await Author.getByAddress(author.address);
-        if (!insertedAuthor) {
-          continue;
-        }
-        const exists = await Post.getByRId(post.rId, {
-          ignoreDeleted: true,
-          includeAuthor: false
-        });
-        if (exists) {
-          continue;
-        }
-        await Author.upsert(author.address, {
-          name: author.name,
-          avatar: author.avatar
-        });
-        Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
-        await Post.create(post);
-        Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
-        if (updatedRId) {
-          await replacePost(updatedRId, post.rId);
-          Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
-        } else {
-          await notifySubscribers({
-            address: author.address,
-            name: author.name,
-            post
+      while (chainPosts.length > 0) {
+        const chainPost = chainPosts.shift();
+        const cachedLastUpdatedAt = await Cache.pGet(type, lastUpdatedAtKey);
+        const isNew = !cachedLastUpdatedAt || new Date(chainPost.updated_at) > new Date(cachedLastUpdatedAt);
+        if (isNew) {
+          await saveChainPost(chainPost, {
+            fromAtomSync: true
           });
+          await Cache.pSet(type, lastUpdatedAtKey, chainPost.updated_at);
         }
       }
       let offsetIncrement = 0;
@@ -228,212 +265,12 @@ const syncPosts = async (options = {}) => {
   }
 };
 
-const getChainPost = (block, file) => {
-  if (!block) {
-    console.log('ERROR: block not exist');
-    return;
-  }
-  if (!file) {
-    console.log('ERROR: file not exist');
-    return;
-  }
-  const chainPost = {
-    publish_tx_id: block.id,
-    file_hash: JSON.parse(block.data).file_hash,
-    topic: JSON.parse(block.data).topic,
-    updated_tx_id: JSON.parse(block.data).updated_tx_id || '',
-    content: file.content,
-    updated_at: block.createdAt,
-    deleted: false
-  }
-  return chainPost;
-}
-
-const pickPostFromChainPost = async (chainPost, block) => {
-  const rId = chainPost.publish_tx_id;
-  const {
-    title,
-    avatar,
-    authorName,
-    content
-  } = extractFrontMatter(chainPost);
-  const post = {
-    rId,
-    userAddress: block.user_address,
-    title,
-    content,
-    paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(chainPost.updated_at)
-  };
-  const author = {
-    address: block.user_address,
-    name: authorName,
-    avatar,
-  };
-  const deleted = chainPost.deleted;
-  const updatedRId = chainPost.updated_tx_id;
-  return {
-    author,
-    post,
-    deleted,
-    updatedRId
-  };
-};
-
-const saveChainPost = async (chainPost, block) => {
-  console.log(` ------------- saveChainPost ---------------`);
-  const pickedPost = await pickPostFromChainPost(chainPost, block);
-  console.log({
-    pickedPost
-  });
-  const {
-    author,
-    post,
-    deleted,
-    updatedRId
-  } = pickedPost;
-  const insertPost = await Post.getByRId(post.rId, {
-    ignoreDeleted: true,
-    includeAuthor: false
-  });
-  if (insertPost) {
-    console.log('ERROR: insertPost already exist');
-    await notifyPub(block);
-    return;
-  }
-
-  if (deleted) {
-    const exists = await Post.getByRId(post.rId);
-    if (exists) {
-      await Post.delete(post.rId);
-      Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
-    }
-    return;
-  }
-
-  // const insertedAuthor = await Author.getByAddress(author.address);
-  // if (!insertedAuthor) {
-  //   return;
-  // }
-  await Author.upsert(author.address, {
-    name: author.name,
-    avatar: author.avatar,
-    status: 'allow'
-  });
-  Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
-
-  await Post.create(post);
-  Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
-
-  if (updatedRId) {
-    const updatedFile = await Post.getByRId(updatedRId, {
-      ignoreDeleted: true,
-    });
-    await Post.delete(updatedFile.rId);
-    Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
-    await replacePost(updatedRId, post.rId);
-    Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
-  } else {
-    await notifySubscribers({
-      address: author.address,
-      name: author.name,
-      post
-    });
-  }
-  await notifyPub(block);
-}
-
-const getPendingBlocks = async () => {
-  const blocks = await request({
-    uri: `${config.settings['pub.site.url']}/api/blocks/pending?offset=0&limit=20`,
-    json: true,
-    timeout: 10000
-  }).promise();
-  return blocks;
-}
-
-const notifyPub = async (block) => {
-  await request({
-    uri: `${config.settings['pub.site.url']}/api/webhook/medium`,
-    method: 'POST',
-    json: true,
-    body: {
-      block: {
-        id: block.id,
-        blockNum: (1111 * 1000000 + Math.round(Math.random() * 1000000)),
-        blockTransactionId: block.hash
-      }
-    }
-  }).promise();
-}
-
-const syncPendingBlocks = async () => {
-  const pendingBlocks = await getPendingBlocks();
-  while (pendingBlocks.length > 0) {
-    await sleep(500);
-    const pendingBlock = pendingBlocks.shift();
-    const block = await getBlock(pendingBlock.id);
-    console.log({
-      block
-    });
-    if (!block) {
-      console.log('ERROR: block not exist');
-      continue;
-    }
-    if (!block.blockNum) {
-      console.log('ERROR: block.blockNum not exist');
-      // continue;
-    }
-    if (!block.blockTransactionId) {
-      console.log('ERROR: block.blockTransactionId not exist');
-      // continue;
-    }
-    const chainPost = getChainPost(pendingBlock, pendingBlock.file);
-    console.log({
-      chainPost
-    });
-    if (!chainPost) {
-      console.log('ERROR: chainPost not exist');
-      continue;
-    }
-    await saveChainPost(chainPost, block);
-    console.log(` ------------- 完成 ${block.id} ---------------`);
-  }
-}
-
-const notifySubscribers = async (options = {}) => {
-  const {
-    address,
-    name,
-    post
-  } = options;
-  const subscriptions = await Subscription.listSubscribers(address);
-  while (subscriptions.length > 0) {
-    const subscription = subscriptions.shift();
-    const postUrl = `${config.serviceRoot}/posts/${post.rId}`;
-    await Mixin.pushToNotifyQueue({
-      userId: subscription.userId,
-      text: `${truncate(name)} 刚刚发布了《${truncate(post.title, 12)}》`.slice(0, 35),
-      url: postUrl
-    });
-  }
-}
-
 exports.sync = async () => {
   if (!config.atom) {
     return;
   }
 
-  if (config.shouldSyncPendingBlocks) {
-    console.log(` ------------- 使用阅读站快捷同步 ---------------`);
-    try {
-      await syncPendingBlocks();
-    } catch (err) {
-      console.log({
-        err
-      });
-    }
-  } else {
+  if (!config.shouldSyncPendingBlocks) {
     // 同步所有 authors
     const syncAuthorsDone = await syncAuthors({
       step: 50

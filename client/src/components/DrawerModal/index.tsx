@@ -3,7 +3,15 @@ import Drawer from '@material-ui/core/Drawer';
 import Clear from '@material-ui/icons/Clear';
 import classNames from 'classnames';
 
-export default (props: any) => {
+interface Props {
+  open: boolean
+  onClose: () => unknown
+  hideCloseButton?: boolean
+  darkMode?: boolean
+  children: React.ReactNode
+}
+
+export default (props: Props) => {
   const { open, onClose, hideCloseButton, darkMode = false } = props;
   return (
     <Drawer anchor="bottom" open={open} onClose={onClose}>

@@ -1,17 +1,18 @@
 const Author = require('./sequelize/author');
+const Log = require('./log');
 const {
   Joi,
   assert,
   Errors,
   attempt
-} = require('../models/validator');
-
+} = require('../utils/validator');
 
 const packAuthor = author => {
   return {
     address: author.address,
     name: author.name,
-    avatar: author.avatar
+    avatar: author.avatar,
+    bio: author.bio
   };
 }
 exports.packAuthor = packAuthor;
@@ -33,7 +34,8 @@ exports.upsert = async (address, data) => {
   const verifiedData = attempt(data, {
     status: Joi.string().trim().optional(),
     name: Joi.string().trim().optional(),
-    avatar: Joi.string().trim().optional()
+    avatar: Joi.string().trim().optional(),
+    bio: Joi.string().empty('').optional()
   });
   const author = await getByAddress(address);
   if (author) {
@@ -42,11 +44,18 @@ exports.upsert = async (address, data) => {
         address
       }
     });
+    if (data.status) {
+      Log.createAnonymity('更新作者状态', `${address} ${data.status}`);
+    } else {
+      Log.createAnonymity('更新作者资料', `${address}`);
+    }
   } else {
+    verifiedData.status = verifiedData.status || 'allow';
     await Author.create({
       address,
       ...verifiedData
     });
+    Log.createAnonymity('创建作者', `${address}`);
   }
   return true;
 }

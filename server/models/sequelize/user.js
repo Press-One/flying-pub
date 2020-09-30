@@ -1,17 +1,11 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const User = sequelize.define('users', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
     autoIncrement: true
-  },
-  providerId: {
-    type: Sequelize.BIGINT,
-  },
-  provider: {
-    type: Sequelize.STRING,
   },
   address: {
     type: Sequelize.STRING,
@@ -26,6 +20,21 @@ const User = sequelize.define('users', {
   mixinAccountRaw: {
     type: Sequelize.TEXT,
     allowNull: true
+  },
+  nickname: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
+  avatar: {
+    type: Sequelize.TEXT,
+  },
+  bio: {
+    type: Sequelize.TEXT,
+    allowNull: true,
+  },
+  version: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   }
 }, {
   timestamps: true,
@@ -39,7 +48,5 @@ const User = sequelize.define('users', {
     fields: ['address']
   }]
 });
-
-User.sync();
 
 module.exports = User;

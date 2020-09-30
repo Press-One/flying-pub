@@ -1,7 +1,9 @@
 export function createWalletStore() {
   return {
+    canSpendBalance: false,
+    filterType: 'READER',
     isFetchedBalance: false,
-    balance: {},
+    balance: {} as Record<string, any>,
     isFetchedReceipts: false,
     receipts: [],
     hasMoreReceipt: true,
@@ -10,6 +12,15 @@ export function createWalletStore() {
     isCustomPinExist: false,
     get hasBalance() {
       return Object.values(this.balance).some((amount: any) => amount > 0);
+    },
+    get rewardOnly() {
+      return this.filterType === 'READER';
+    },
+    setCanSpendBalance(status: boolean) {
+      this.canSpendBalance = status;
+    },
+    setFilterType(filterType: string) {
+      this.filterType = filterType;
     },
     setIsFetchedBalance(status: boolean) {
       this.isFetchedBalance = status;

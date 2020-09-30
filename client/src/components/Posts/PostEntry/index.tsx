@@ -66,7 +66,7 @@ export default (props: any) => {
           )}
           <Link to={`/posts/${encodeURIComponent(postId)}`}>
             <div>
-              <h2 className="tracking-wide md:tracking-normal text-base font-semibold md:text-lg md:font-bold">
+              <h2 className="tracking-wide md:tracking-normal text-base font-bold">
                 <div className="title leading-snug md:leading-normal">
                   {styleStickyEnabled && post.sticky && (
                     <span className="bg-red-600 text-white px-1 md:px-2 rounded-sm text-xs md:text-sm round leading-none mr-2 font-normal sticky">
@@ -111,6 +111,7 @@ export default (props: any) => {
             padding-bottom: 1px;
           }
           .title {
+            font-size: ${isMobile ? '16px' : '1.125rem'};
             color: #333;
             display: -webkit-box;
             -webkit-line-clamp: 2;

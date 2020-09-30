@@ -1,0 +1,112 @@
+.p-dashboard-main {
+  align-self: center;
+  width: 100%;
+
+  &-head {
+    padding: 0 24px;
+    height: 84px;
+
+    &-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+  }
+
+  &-table-container {
+    box-sizing: border-box;
+    max-height: calc(100vh - 84px);
+    padding: 0 24px 24px;
+    overflow: scroll;
+
+    .title {
+      max-width: 360px;
+      word-break: break-word;
+    }
+
+    span.draft {
+      display: inline-block;
+      padding: 2px 5px;
+      color: #ad26b4;
+      background: rgba(173, 38, 180, .2);
+      border-radius: 3px;
+      min-width: 10px;
+      font-size: 13px;
+    }
+
+    span.published,
+    span.pending {
+      display: inline-block;
+      padding: 2px 5px;
+      background-color: #aed452;
+      color: #fff;
+      border-radius: 3px;
+      min-width: 10px;
+      font-size: 13px;
+    }
+
+    span.public-off {
+      display: inline-block;
+      padding: 2px 5px;
+      background: #e5eff5;
+      color: #738a94;
+      border-radius: 3px;
+      min-width: 10px;
+      font-size: 13px;
+    }
+
+    .edit-button {
+      background-color: 2495DC;
+      margin-right: 20px;
+      color: #fff;
+
+      &:hover {
+        background-color: 2495DC;
+      }
+    }
+
+    .redirect-button {
+      background-color: 93b719;
+      margin-right: 20px;
+      color: #fff;
+    }
+
+    .delete-button {
+      background-color: #f50057;
+      margin-right: 20px;
+      color: #fff;
+
+      &:hover {
+        background-color: #f50057;
+      }
+    }
+
+    &-button {
+      background: linear-gradient(#aed452, 93b719);
+      font-weight: 500;
+      color: white !important;
+    }
+
+    .MuiPaginationItem-page {
+      color: #888888;
+
+      &.Mui-selected,
+      &.Mui-selected:hover {
+        background: #63b3ed;
+        color: #fff;
+        border-color: #63b3ed;
+      }
+
+      &:hover {
+        background: none;
+        color: #63b3ed;
+        border-color: #63b3ed;
+      }
+    }
+  }
+}
+
+#dashboard-post-menu {
+  .MuiListItem-root {
+    min-height: auto;
+  }
+}

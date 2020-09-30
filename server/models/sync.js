@@ -4,7 +4,7 @@ const Comment = require('./comment');
 const {
   assert,
   Errors
-} = require('./validator');
+} = require('../utils/validator');
 
 const syncCommentVote = async (objectId, upVotesCount, options = {}) => {
   const {

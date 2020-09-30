@@ -2,10 +2,12 @@ const Mixin = require('mixin-node');
 const image2base64 = require('image-to-base64');
 const util = require('../utils');
 const config = require('../config');
-const walletConfig = require('../config.wallet');
+const Log = require('./log');
+const walletConfig = require('../SSO/config.pub.wallet');
 const Wallet = require('./sequelize/wallet');
-const User = require('./user');
 const Cache = require('./cache');
+const SSO_User = require('../models_sso/user');
+const SSOConfig = require("../SSO/config.pub");
 const {
   aesCrypto,
   aesDecrypt
@@ -14,15 +16,15 @@ const {
   assert,
   assertFault,
   Errors
-} = require('./validator')
+} = require('../utils/validator')
 const aesKey256 = walletConfig.encryption.aesKey256;
 
 const mixin = new Mixin({
-  client_id: config.provider.mixin.clientId,
-  aeskey: config.provider.mixin.aesKey,
-  pin: config.provider.mixin.pinCode,
-  session_id: config.provider.mixin.sessionId,
-  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
+  client_id: SSOConfig.provider.mixin.clientId,
+  aeskey: SSOConfig.provider.mixin.aesKey,
+  pin: SSOConfig.provider.mixin.pinCode,
+  session_id: SSOConfig.provider.mixin.sessionId,
+  privatekey: Buffer.from(SSOConfig.provider.mixin.privateKey, 'utf8')
 });
 
 const getNumberByMixinClientId = mixinClientId => {
@@ -68,14 +70,9 @@ const getBase64Image = async (url) => {
   return base64;
 }
 
-const generateWallet = async userId => {
-  assertFault(userId, Errors.ERR_IS_REQUIRED(userId));
-  const user = await User.get(userId, {
-    withProfile: true
-  });
-  assertFault(user, Errors.ERR_NOT_FOUND(user));
-  assertFault(user.name, Errors.ERR_NOT_FOUND('user.name'))
-  let mxRaw = await mixin.account.createUser(user.name);
+const generateWallet = async nickname => {
+  assertFault(nickname, Errors.ERR_IS_REQUIRED('nickname'))
+  let mxRaw = await mixin.account.createUser(nickname);
   assertFault(
     mxRaw && mxRaw.data && mxRaw.publickey && mxRaw.privatekey,
     Errors.ERR_WALLET_FAIL_TO_CREATE_WALLET
@@ -133,34 +130,49 @@ const getByUserId = async userId => {
 }
 
 exports.exists = async userId => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   const wallet = await getByUserId(userId);
   return !!wallet;
 }
 
 exports.getMixinClientIdByUserId = async userId => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   const wallet = await getByUserId(userId);
   return wallet ? wallet.mixinClientId : null;
 }
 
 const getCustomPinByUserId = async userId => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   const wallet = await getByUserId(userId);
   return wallet ? wallet.customPin : null;
 }
 exports.getCustomPinByUserId = getCustomPinByUserId;
 
 exports.getRawByUserId = async userId => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   const wallet = await getByUserId(userId);
   return wallet ? aesDecryptWallet(wallet) : null;
 }
 
-exports.tryCreateWallet = async (userId) => {
+exports.tryCreateWallet = async user => {
+  assertFault(user, Errors.ERR_IS_REQUIRED(user));
+  let userId;
+  if (user.version === 1) {
+    userId = user.id;
+  } else {
+    userId = await SSO_User.tryGetUserIdByReaderUserId(user.id);
+  }
   const existedWallet = await getByUserId(userId);
 
   if (existedWallet) {
     return true;
   }
 
-  const walletData = await generateWallet(userId);
+  if (user.version !== 1) {
+    Log.createAnonymity('钱包创建异常', `${user.id} ${user.nickname} version 为 0，竟然不存在钱包 ！！！`);
+  }
+
+  const walletData = await generateWallet(user.nickname);
   const wallet = await Wallet.create({
     userId,
     ...walletData
@@ -170,6 +182,7 @@ exports.tryCreateWallet = async (userId) => {
 };
 
 exports.updateCustomPin = async (userId, pinCode, options = {}) => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
   const customPin = await getCustomPinByUserId(userId);
@@ -193,6 +206,7 @@ exports.updateCustomPin = async (userId, pinCode, options = {}) => {
 }
 
 exports.validatePin = async (userId, pinCode) => {
+  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
   assert(userId, Errors.ERR_IS_REQUIRED('userId'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
   const customPin = await getCustomPinByUserId(userId);

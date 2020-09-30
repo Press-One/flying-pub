@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Profile = sequelize.define('profiles', {
   id: {
@@ -27,6 +27,10 @@ const Profile = sequelize.define('profiles', {
     type: Sequelize.TEXT,
     allowNull: true,
   },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
   raw: {
     type: Sequelize.TEXT,
     allowNull: true
@@ -43,7 +47,5 @@ const Profile = sequelize.define('profiles', {
     fields: ['providerId']
   }]
 });
-
-Profile.sync();
 
 module.exports = Profile;
