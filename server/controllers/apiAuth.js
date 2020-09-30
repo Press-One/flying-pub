@@ -304,9 +304,6 @@ const login = async (ctx, user, provider) => {
   const cookieOptions = {
     expires: new Date('2100-01-01')
   }
-  if (config.settings['SSO.enabled']) {
-    cookieOptions.domain = config.auth.SSOTokenDomain;
-  }
   ctx.cookies.set(config.auth.tokenKey, token, cookieOptions);
 }
 

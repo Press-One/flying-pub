@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { RouteChildrenProps, Route } from 'react-router';
-import { Tooltip } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import AccountCircle from '@material-ui/icons/AccountCircle';
@@ -10,8 +9,6 @@ import VerticalAlignTop from '@material-ui/icons/VerticalAlignTop';
 import CreateIcon from '@material-ui/icons/Create';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Settings from '@material-ui/icons/Settings';
-import ChromeReaderMode from '@material-ui/icons/ChromeReaderMode';
-import Help from '@material-ui/icons/Help';
 import Fade from '@material-ui/core/Fade';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
@@ -72,55 +69,14 @@ export default observer((props: RouteChildrenProps) => {
               'pt-4 w-full',
             )}
           >
-            {!settingsStore.settings['SSO.enabled'] && (
-              <div>
-                <div className="px-4 flex items-center">
-                  <div className="w-10 h-10">
-                    <img
-                      className="w-10 h-10"
-                      src="https://img-cdn.xue.cn/1124-logo.png"
-                      alt="logo"
-                    />
-                  </div>
-                  {settings['site.shortTitle'] && (
-                    <span className="text-base font-bold ml-4 text-gray-700 flex items-center">
-                      {settings['site.shortTitle']}
-                      <Tooltip placement="right" title="写文章，一键发布到区块链">
-                        <Help className="ml-1 text-gray-600" />
-                      </Tooltip>
-                    </span>
-                  )}
-                </div>
-                <div className="mt-8 mx-2 pl-8 flex items-center leading-none">
-                  <a
-                    href={settingsStore.settings['site.url']}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Tooltip placement="right" title="已发布的文章，会在阅读站显示">
-                      <div className="text-xl text-gray-600 py-2 flex items-center">
-                        <ChromeReaderMode />
-                        <span className="text-sm ml-2">阅读站</span>
-                      </div>
-                    </Tooltip>
-                  </a>
-                </div>
+            <div className="px-4 flex items-center">
+              <div className="w-10 h-10">
+                <img className="w-10 h-10" src={settings['site.logo']} alt="logo" />
               </div>
-            )}
-            {settingsStore.settings['SSO.enabled'] && (
-              <div className="px-4 flex items-center">
-                <div className="w-10 h-10">
-                  <img
-                    className="w-10 h-10"
-                    src="https://img-cdn.xue.cn/1124-logo.png"
-                    alt="logo"
-                  />
-                </div>
-                <div className="text-base font-bold ml-4 text-gray-700 flex items-center justify-center tracking-wide">
-                  创作文章
-                </div>
+              <div className="text-base font-bold ml-4 text-gray-700 flex items-center justify-center tracking-wide">
+                创作文章
               </div>
-            )}
+            </div>
             <ul className="p-manage-layout-nav-ul">
               <li className="px-5 mt-8 p-manage-layout-nav-ul-title p-manage-layout-nav-li text-sm text-gray-700 font-bold">
                 管理
