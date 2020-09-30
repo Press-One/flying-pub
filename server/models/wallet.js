@@ -38,7 +38,7 @@ const getNumberByMixinClientId = mixinClientId => {
 }
 
 const aesCryptoWallet = data => {
-  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt;
+  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt;
   data.mixinAesKey = aesCrypto(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesCrypto(data.mixinSessionId, aesKey256, counterInitialValue);
   data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, aesKey256, counterInitialValue);
@@ -50,7 +50,7 @@ const aesDecryptWallet = data => {
   if (!data.mixinAccount) {
     return data;
   }
-  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt : 5;
+  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt : 5;
   data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, aesKey256, counterInitialValue);
   data.mixinAesKey = aesDecrypt(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesDecrypt(data.mixinSessionId, aesKey256, counterInitialValue);
