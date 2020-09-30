@@ -13,6 +13,7 @@ import Editor from './pages/Editor';
 import LoginModal from 'components/LoginModal';
 import PhoneLoginModal from 'components/PhoneLoginModal';
 import WalletModal from 'components/WalletModal';
+import ReaderWalletModal from 'components/ReaderWalletModal';
 import NotificationSocket from 'components/NotificationSocket';
 import SnackBar from 'components/SnackBar';
 import SettingsModal from 'components/SettingsModal';
@@ -75,6 +76,7 @@ const AppRouter = () => {
               <PublishDialog />
             </div>
           )}
+          <Route path="/readerWallet" exact component={ReaderWalletModal} />
 
           <LoginModal />
           <PhoneLoginModal />

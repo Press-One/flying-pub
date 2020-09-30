@@ -1,4 +1,4 @@
-const config = require('../../../SSO/config.pub.wallet');
+const config = require('../../../config.wallet');
 const {
   init
 } = require('../../../utils/db');
