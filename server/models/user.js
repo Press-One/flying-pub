@@ -5,7 +5,7 @@ const util = require("../utils");
 const config = require("../config");
 const Wallet = require("./wallet");
 const Author = require("./author");
-const SSO_User = require('../models_sso/user');
+const SSO_User = require('../models_SSO/user');
 
 const {
   assert,

@@ -6,7 +6,7 @@ const Log = require('./log');
 const SSOWalletConfig = require('../SSO/config.pub.wallet');
 const Wallet = require('./sequelize/wallet');
 const Cache = require('./cache');
-const SSO_User = require('../models_sso/user');
+const SSO_User = require('../models_SSO/user');
 const SSOConfig = require("../SSO/config.pub");
 const {
   aesCrypto,
