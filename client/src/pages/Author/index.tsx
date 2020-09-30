@@ -50,6 +50,7 @@ export default observer((props: any) => {
   const { author, subscribed, posts, hasMore } = authorStore;
   const { isLogin } = userStore;
   const { address } = props.match.params;
+  const isMyself = isLogin && userStore.user.address === address;
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -170,7 +171,8 @@ export default observer((props: any) => {
             subscribe,
             unsubscribe,
             subscribed,
-            showSubscription: settings['subscriptions.enabled'],
+            showSubscription: settings['subscriptions.enabled'] && !isMyself,
+            isMyself,
           })}
         </div>
         <div className="py-10">
