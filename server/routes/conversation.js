@@ -7,7 +7,7 @@ const {
 const {
   assert,
   Errors,
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const checkApiAccessKey = () => {
   return async (ctx, next) => {

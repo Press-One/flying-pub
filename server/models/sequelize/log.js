@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Log = sequelize.define('logs', {
   id: {
@@ -20,7 +20,5 @@ const Log = sequelize.define('logs', {
     fields: ['userId']
   }]
 });
-
-Log.sync();
 
 module.exports = Log;

@@ -1,0 +1,54 @@
+.msg-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.msg-title {
+  .from-user-name {
+    color: #4a4a4a;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .msg-head {
+    font-size: 12px;
+    color: #9b9b9b;
+  }
+}
+
+.msg-at-me {
+  color: rgb(155, 155, 155);
+  font-size: 15px;
+}
+
+.msg-link {
+  font-size: 13px;
+}
+
+.msg-comment-me,
+.msg-like-me,
+.msg-reward-me,
+.msg-at-me {
+  color: #4a4a4a;
+}
+
+.msg-like-comment {
+  font-size: 12px;
+  color: #9b9b9b;
+  border-color: #d8d8d8;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msg-foot {
+  font-size: 12px;
+  color: #afafaf;
+
+  .msg-link:hover {
+    color: #227daa;
+    text-decoration: underline;
+  }
+}

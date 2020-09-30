@@ -34,7 +34,7 @@ ul {
 }
 
 /************************************** SVG STYLES **************************************/
-.MuiSvgIcon-root {
+.MuiSvgIcon-root:not(.MuiSelect-icon) {
   font-size: inherit !important;
 }
 
@@ -91,4 +91,139 @@ ul {
 .MJXc-display {
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+/************************************** WIDTH STYLES **************************************/
+.max-w-1200 {
+  box-sizing: border-box;
+  max-width: 1200px;
+}
+
+/************************************** COLOR EXTEND STYLES **************************************/
+.gray-light-color {
+  color: #999;
+}
+
+.gray-lighter-color {
+  color: #F7F9FC;
+}
+
+.gray-lighter-color1 {
+  color: #bdbdbd;
+}
+
+.gray-lighter-color2 {
+  color: #d8d8d8;
+}
+
+.gray-color {
+  color: #888888;
+}
+
+.gray-darker-color {
+  color: #6d6d6d;
+}
+
+.dark-color {
+  color: #4a4a4a;
+}
+
+.white-color {
+  color: white;
+}
+
+.black-color {
+  color: black;
+}
+
+.green-light-color {
+  color: #aed452;
+}
+
+.red-color {
+  color: #f50057;
+}
+
+.orange-color {
+  color: #996c52;
+}
+
+.headline-color {
+  color: #468f9d;
+}
+
+.navbar-color {
+  color: #4b9eae;
+}
+
+.light-box-color {
+  color: #7fb5bf;
+}
+
+.dark-bg-color {
+  color: #2f2f2f;
+}
+
+.primary-color {
+  color: #3a6789;
+}
+
+.blue-color {
+  color: #2495DC;
+}
+
+.green-color {
+  color: #93b719;
+}
+
+.hover-green-color {
+  color: #9BC61B;
+}
+
+.link-color {
+  color: #227daa;
+}
+
+.greyblue-color {
+  color: #58c2c1;
+}
+
+.nice-blue-color {
+  color: #1880b8;
+}
+
+.orangey-yellow-color {
+  color: #f5a623;
+}
+
+.border-color {
+  color: #85e1e0;
+}
+
+.title-color {
+  color: #16b3b3;
+}
+
+.dark-peach-color {
+  color: #de7b56;
+}
+
+.title-color {
+  color: #707070;
+}
+
+.accent-color {
+  color: #ff687b;
+}
+
+.pig-pink-color {
+  color: #e27b88;
+}
+
+.page-bg {
+  color: #f7f7f7;
+}
+
+.help-color {
+  color: #77a0b2;
 }

@@ -6,7 +6,7 @@ const {
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const packSubscription = (subscription) => {
   delete subscription.authorAddress;

@@ -14,7 +14,7 @@ const {
   assert,
   Errors,
   attempt
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const packPost = async (post, options = {}) => {
   assert(post, Errors.ERR_NOT_FOUND('post'));
@@ -58,12 +58,17 @@ const getByRId = async (rId, options = {}) => {
   const query = {
     where: {
       rId,
-      deleted: false
+      deleted: false,
+      invisibility: false
     }
   };
   const {
-    ignoreDeleted
+    ignoreDeleted,
+    ignoreInvisibility
   } = options;
+  if (ignoreInvisibility) {
+    delete query.where.invisibility;
+  }
   if (ignoreDeleted) {
     delete query.where.deleted;
   }
@@ -89,7 +94,9 @@ const updateByRId = async (rId, data) => {
     commentsCount: Joi.number().optional(),
     latestRId: Joi.any().optional(),
     deleted: Joi.boolean().optional(),
-    sticky: Joi.boolean().optional()
+    sticky: Joi.boolean().optional(),
+    status: Joi.string().optional(),
+    invisibility: Joi.bool().optional()
   });
   await Post.update(data, {
     where: {
@@ -132,7 +139,8 @@ exports.list = async (options = {}) => {
     filterSticky = false
   } = options;
   const where = {
-    deleted: false
+    deleted: false,
+    invisibility: false
   };
   const byAddress = addresses && addresses.length > 0;
   if (byAddress) {
@@ -180,7 +188,8 @@ exports.create = async data => {
     title: Joi.string().trim(),
     content: Joi.string().trim(),
     paymentUrl: Joi.optional(),
-    pubDate: Joi.date()
+    pubDate: Joi.date(),
+    status: Joi.string().trim(),
   });
   await Post.create(verifiedData);
   return true;
@@ -193,3 +202,15 @@ exports.delete = async rId => {
   });
   return true;
 };
+exports.getPostCountByAuthor = async (address) => {
+  assert(address, Errors.ERR_IS_REQUIRED('address'))
+  const query = {
+    where: {
+      userAddress: address,
+      deleted: false,
+      invisibility: false
+    }
+  };
+  const count = await Post.count(query);
+  return count ? count : 0;
+}

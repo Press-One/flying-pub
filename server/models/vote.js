@@ -1,7 +1,7 @@
 const {
   assert,
   Errors
-} = require('./validator');
+} = require('../utils/validator');
 const Vote = require('./sequelize/vote');
 
 exports.create = async (userId, data) => {

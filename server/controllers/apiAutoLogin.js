@@ -3,7 +3,7 @@ const config = require('../config');
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const type = `${config.serviceKey}_AUTO_LOGIN`;
 const key = 'URL';

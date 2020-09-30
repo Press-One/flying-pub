@@ -1,7 +1,7 @@
 const {
   assert,
   Errors
-} = require("./validator");
+} = require("../utils/validator");
 const Comment = require("./sequelize/comment");
 const User = require("./user");
 const Vote = require("./vote");
@@ -13,9 +13,7 @@ const packComment = async (comment, options = {}) => {
   } = options;
   assert(comment, Errors.ERR_NOT_FOUND("comment"));
   const commentJson = comment.toJSON();
-  const user = await User.get(commentJson.userId, {
-    withProfile: true
-  });
+  const user = await User.get(commentJson.userId);
   commentJson.user = user;
   const voted = !!userId && (await Vote.isVoted(userId, "comments", comment.id));
   commentJson.voted = voted;

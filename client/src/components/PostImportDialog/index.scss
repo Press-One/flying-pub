@@ -1,0 +1,28 @@
+$namespace: 'import-dialog';
+
+.import-dialog {
+  .#{$namespace}-confirm-button {
+    position: relative;
+
+    &.loading {
+      opacity: 0.6;
+    }
+  }
+
+  .#{$namespace}-confirm-content {
+    &.hide {
+      opacity: 0;
+    }
+  }
+
+  .#{$namespace}-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    &.hide {
+      opacity: 0;
+    }
+  }
+}

@@ -1,67 +1,39 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
-import QRCode from 'qrcode.react';
-import { isMobile, isWeChat } from 'utils';
-import { useStore } from 'store';
+import DrawerModal from 'components/DrawerModal';
+import Notification from './Notification';
+import { isMobile } from 'utils';
 
-export default observer(() => {
-  const { modalStore, settingsStore } = useStore();
-  const { settings } = settingsStore;
-
-  const renderMain = () => {
-    if (!settings.extra['notification.mixinClientId']) {
-      return null;
-    }
-    const botUrl = `https://mixin.one/apps/${settings.extra['notification.mixinClientId']}`;
-    return (
-      <div>
-        <div>
-          <div className="p-12 px-16 bg-white md:rounded text-center main">
-            <div className="text-lg font-bold text-gray-700 leading-none">通知设置</div>
-            <div className="mt-6 text-gray-600">
-              {isWeChat && (
-                <div>
-                  在 Mixin 中打开：
-                  <span className="font-bold">{settings.extra['notification.mixinId']}</span>
-                </div>
-              )}
-              {isMobile && !isWeChat && (
-                <div>
-                  在 Mixin 中打开：
-                  <a href={botUrl} className="font-bold text-blue-400">
-                    {settings.extra['notification.mixinId']}
-                  </a>
-                </div>
-              )}
-              {!isMobile && (
-                <div className="flex flex-col items-center mt-2">
-                  <QRCode value={botUrl} />
-                  <div className="mt-5">使用 Mixin 扫码添加机器人</div>
-                </div>
-              )}
-              <div className="mt-3">点击发消息图标</div>
-              <div className="mt-3">和机器人打声招呼</div>
-              <div className="mt-3">收到成功提示，开通成功！</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+export default observer((props: any) => {
+  const { open, close } = props;
 
   if (isMobile) {
     return (
-      <DrawerModal open={modalStore.notification.open} onClose={modalStore.closeNotification}>
-        {renderMain()}
+      <DrawerModal open={open} onClose={close}>
+        <div className="notification-drawer-content bg-white rounded-sm pt-1 box-border">
+          <Notification />
+          <style jsx>{`
+            .notification-drawer-content {
+              height: 95vh;
+            }
+          `}</style>
+        </div>
       </DrawerModal>
     );
   }
 
   return (
-    <Modal open={modalStore.notification.open} onClose={modalStore.closeNotification}>
-      {renderMain()}
+    <Modal open={open} onClose={close}>
+      <div className="notification-modal-content bg-white rounded-sm">
+        <Notification />
+        <style jsx>{`
+          .notification-modal-content {
+            width: 700px;
+            height: ${window.innerHeight > 700 + 100 ? '700px' : '90vh'};
+          }
+        `}</style>
+      </div>
     </Modal>
   );
 });

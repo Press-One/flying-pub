@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Conversation = sequelize.define('conversations', {
   id: {
@@ -29,7 +29,5 @@ const Conversation = sequelize.define('conversations', {
     fields: ['userId']
   }]
 });
-
-Conversation.sync();
 
 module.exports = Conversation;

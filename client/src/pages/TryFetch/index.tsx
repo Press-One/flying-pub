@@ -1,13 +1,19 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
-import ConfirmDialog from 'components/ConfirmDialog';
-import { sleep, isMobile, isWeChat, getQuery, removeQuery, isProduction } from 'utils';
+import { sleep, isMobile, isWeChat, getQuery } from 'utils';
 import Api from 'api';
 
 export default observer((props: any) => {
-  const { preloadStore, userStore, feedStore, socketStore, modalStore, settingsStore } = useStore();
-  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
+  const {
+    preloadStore,
+    userStore,
+    feedStore,
+    socketStore,
+    modalStore,
+    settingsStore,
+    confirmDialogStore,
+  } = useStore();
 
   React.useEffect(() => {
     const { ready } = preloadStore;
@@ -41,6 +47,7 @@ export default observer((props: any) => {
     const fetchSettings = async () => {
       const settings = await Api.fetchSettings();
       settingsStore.setSettings(settings);
+      modalStore.setAuthProviders(settings['auth.providers'] || []);
       const filterEnabled = settings['filter.enabled'];
       if (filterEnabled) {
         initFilter(settings);
@@ -52,22 +59,23 @@ export default observer((props: any) => {
       try {
         const user = await Api.fetchUser();
         userStore.setUser(user);
-        socketStore.init(user.id);
+        Api.fetchProfiles().then((profiles) => {
+          userStore.setProfiles(profiles);
+        });
 
-        // 提前请求 pub 的 user 接口，创建 pub 用户，减少进入 pub 时等待的时间
-        if (isProduction && settings['SSO.enabled']) {
-          setTimeout(() => {
-            Api.tryInitPubUser(`${settings['pub.site.url']}`);
-          }, 2000);
-        }
+        socketStore.init(user.id);
       } catch (err) {
+        if (getQuery('action') === 'PERMISSION_DENY') {
+          return;
+        }
         if (settings['permission.isPrivate']) {
-          setShowConfirmDialog(true);
+          confirmDialogStore.show({
+            content: '阅读文章之前请登录一下哦',
+            cancelDisabled: true,
+            okText: '前往登录',
+            ok: () => modalStore.openLogin(),
+          });
           return false;
-        } else if (getQuery('action') === 'login') {
-          await sleep(500);
-          modalStore.openLogin();
-          removeQuery('action');
         }
         if (isMobile && !isWeChat) {
           const { url } = await Api.getAutoLoginUrl();
@@ -89,17 +97,16 @@ export default observer((props: any) => {
       }
       await sleep(200);
     })();
-  }, [userStore, feedStore, preloadStore, socketStore, settingsStore, modalStore, props]);
+  }, [
+    userStore,
+    feedStore,
+    preloadStore,
+    socketStore,
+    settingsStore,
+    modalStore,
+    confirmDialogStore,
+    props,
+  ]);
 
-  return (
-    <div>
-      <ConfirmDialog
-        content="阅读文章之前要先登录一下哦"
-        open={showConfirmDialog}
-        okText="前往登录"
-        cancel={() => {}}
-        ok={modalStore.openLogin}
-      />
-    </div>
-  );
+  return null;
 });

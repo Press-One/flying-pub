@@ -9,12 +9,10 @@ const {
 
 exports.create = async (userId, message) => {
   const userDevice = await Cache.pGet('USER_DEVICE', String(userId));
-  const user = await User.get(userId, {
-    withProfile: true
-  });
+  const user = await User.get(userId);
   const data = {
     userId,
-    message: `【${config.serviceKey} ${userDevice}】${user.name}：${message}`,
+    message: `【${config.serviceKey} ${userDevice}】${user.nickname}：${message}`,
   };
   await Log.create(data);
   if (config.bot && config.bot.enabled) {

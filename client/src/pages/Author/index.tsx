@@ -23,6 +23,9 @@ const authorView = (props: any = {}) => {
         }}
       />
       <div className="font-bold mt-3 text-base text-center px-8">{author.name}</div>
+      {author.bio && (
+        <div className="mt-2 text-gray-600 text-sm px-8 text-center pb-1">{author.bio}</div>
+      )}
       {showSubscription && (
         <div className="mt-3 h-8">
           {subscribed ? (
@@ -177,6 +180,9 @@ export default observer((props: any) => {
             hideAuthor
             authorPageEnabled={settings['author.page.enabled']}
           />
+          {!pending && posts.length === 0 && (
+            <div className="pt-20 text-center text-gray-500">Ta 还没有发布过文章</div>
+          )}
         </div>
         {!pending && hasMore && (
           <div className="mt-10">

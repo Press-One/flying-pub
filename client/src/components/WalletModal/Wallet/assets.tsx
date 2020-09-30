@@ -7,7 +7,7 @@ import Info from '@material-ui/icons/Info';
 import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
 import { currencyIconMap } from './utils';
-import { sleep, isMobile } from 'utils';
+import { sleep, isMobile, getApiEndpoint } from 'utils';
 import Api from './api';
 
 const Asset = (props: any) => {
@@ -45,12 +45,14 @@ const Asset = (props: any) => {
         </div>
       </div>
       <div className="flex items-center font-bold md:font-normal">
-        <span
-          className="text-blue-400 text-sm mr-2 cursor-pointer p-1"
-          onClick={() => props.onRecharge(asset)}
-        >
-          转入
-        </span>
+        {walletStore.canSpendBalance && (
+          <span
+            className="text-blue-400 text-sm mr-2 cursor-pointer p-1"
+            onClick={() => props.onRecharge(asset)}
+          >
+            转入
+          </span>
+        )}
         <span
           className="text-blue-400 text-sm cursor-pointer p-1"
           onClick={() => onWithdraw(asset)}
@@ -63,7 +65,7 @@ const Asset = (props: any) => {
 };
 
 export default observer((props: any) => {
-  const { userStore, walletStore, snackbarStore, settingsStore } = useStore();
+  const { userStore, walletStore, snackbarStore, settingsStore, confirmDialogStore } = useStore();
   const { settings } = settingsStore;
   const [currency, setCurrency] = React.useState('');
   const [openRechargeModal, setOpenRechargeModal] = React.useState(false);
@@ -81,6 +83,20 @@ export default observer((props: any) => {
   }, [walletStore]);
 
   const onWithdraw = (currency: string) => {
+    if (!userStore.user.mixinAccount) {
+      confirmDialogStore.show({
+        contentClassName: 'text-left',
+        content: `请先绑定一下 ${settings['mixinApp.name']} 的账户，提现的币将转入该账号`,
+        okText: '去绑定',
+        ok: async () => {
+          confirmDialogStore.setLoading(true);
+          window.location.href = `${getApiEndpoint()}/api/auth/mixin/bind?redirect=${encodeURIComponent(
+            window.location.href,
+          )}`;
+        },
+      });
+      return;
+    }
     setCurrency(currency);
     setOpenWithdrawModal(true);
   };
@@ -148,9 +164,7 @@ export default observer((props: any) => {
               <span className="flex items-center mr-1 text-lg">
                 <Info />
               </span>
-              <span className="hidden md:block">
-                再去设置一下支付密码，你就可以使用余额支付和提现啦
-              </span>
+              <span className="hidden md:block">再去设置一下支付密码，你就可以提现余额啦</span>
               <span className="md:hidden">尚未设置支付密码</span>
             </div>
             <span

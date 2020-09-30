@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Vote = sequelize.define('votes', {
   id: {
@@ -32,7 +32,5 @@ const Vote = sequelize.define('votes', {
     fields: ['type']
   }]
 });
-
-Vote.sync();
 
 module.exports = Vote;

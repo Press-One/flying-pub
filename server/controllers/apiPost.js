@@ -1,10 +1,13 @@
 const Post = require('../models/post');
+const {
+  saveChainPost
+} = require('../models/atom');
 const Subscription = require('../models/subscription');
 const {
   assert,
   Errors,
   throws
-} = require('../models/validator');
+} = require('../utils/validator');
 
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
@@ -26,6 +29,20 @@ exports.get = async ctx => {
   }
   if (!includeDeleted && post.deleted && !post.latestRId) {
     throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
+  }
+  if (post.author && post.author.address) {
+    const postCount = await Post.getPostCountByAuthor(post.author.address);
+    post.author.postCount = postCount;
+    if (!!userId) {
+      try {
+        const subscription = await Subscription.get(userId, post.author.address);
+        if (subscription) {
+          post.author.subscribed = true;
+        }
+      } catch (e) {
+        post.author.subscribed = false;
+      }
+    }
   }
   ctx.body = post;
 }
@@ -76,12 +93,4 @@ exports.listBySubscriptions = async ctx => {
   ctx.body = {
     posts
   };
-}
-
-exports.update = async ctx => {
-  const rId = ctx.params.id;
-  const data = ctx.request.body.payload;
-  assert(data, Errors.ERR_IS_REQUIRED('payload'));
-  await Post.updateByRId(rId, data);
-  ctx.body = true;
 }

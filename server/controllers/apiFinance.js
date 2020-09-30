@@ -1,12 +1,12 @@
+const User = require('../models/user');
 const Finance = require('../models/finance');
 const Wallet = require('../models/wallet');
 const Post = require('../models/post')
-const User = require('../models/user')
 const Log = require('../models/log')
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 const {
   pSet,
   pTryLock,
@@ -85,9 +85,10 @@ exports.getReceipts = async ctx => {
     user
   } = ctx.verification;
   const {
-    offset = 0, limit
+    offset = 0, limit, filterType
   } = ctx.query;
-  const receipts = await Finance.getReceiptsByUserAddress(user.address, {
+  const receipts = await Finance.getReceiptsByUserId(user.id, {
+    filterType,
     offset,
     limit: Math.min(~~limit || 10, 100),
     status: 'SUCCESS'
@@ -167,24 +168,22 @@ exports.rechargeThenReward = async ctx => {
   } = ctx.params;
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('payload'));
-  const {
-    user
-  } = ctx.verification;
-  const key = `RECHARGE_${user.id}`;
+  const userId = ctx.verification.user.id;
+  const key = `RECHARGE_${userId}`;
   try {
     await assertTooManyRequests(key);
     const {
       uuid,
       paymentUrl
     } = await Finance.recharge({
-      userId: user.id,
+      userId,
       currency: data.currency,
       amount: data.amount,
       memo: data.memo
     });
     await pSet(`COMBO`, uuid, {
       meta: {
-        userId: user.id,
+        userId,
         fileRId
       },
       data
@@ -193,6 +192,7 @@ exports.rechargeThenReward = async ctx => {
       paymentUrl
     });
   } catch (err) {
+    console.log(err);
     ctx.er(err);
   } finally {
     pUnLock(key);
@@ -211,12 +211,10 @@ exports.getRewardSummary = async ctx => {
     userAddressSet.add(receipt.fromAddress);
   }
   const userAddressArr = Array.from(userAddressSet)
-  const tasks = userAddressArr.map(address => User.getByAddress(address, {
-    withProfile: true
-  }));
+  const tasks = userAddressArr.map(address => User.getByAddress(address));
   const users = await Promise.all(tasks)
   ctx.ok({
     amountMap: summary,
-    users
+    users: users
   });
 }

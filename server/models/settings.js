@@ -2,7 +2,7 @@ const Settings = require('./sequelize/settings');
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 
 const packSettings = settings => {
   const json = settings.toJSON();

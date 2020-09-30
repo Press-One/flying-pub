@@ -3,12 +3,15 @@ import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
-import { currencyIconMap, getPostsSiteDomain } from './utils';
+import { currencyIconMap } from './utils';
 import FinanceApi from './api';
-import { sleep, isMobile } from 'utils';
+import { sleep, isMobile, isPc } from 'utils';
 import { useStore } from 'store';
 
-const getTypeName = (type: string) => {
+const getTypeName = (type: string, isIncome: boolean) => {
+  if (isIncome && type === 'REWARD') {
+    return '收到打赏';
+  }
   const map: any = {
     RECHARGE: '充值',
     WITHDRAW: '提现',
@@ -17,14 +20,21 @@ const getTypeName = (type: string) => {
   return map[type];
 };
 
-const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) => {
+const Receipt = (receipt: any, mixinWalletClientId: string, showType = false) => {
   if (receipt.type === 'RECHARGE' && receipt.memo.includes('打赏文章')) {
     return null;
   }
+  const isIncome = mixinWalletClientId === receipt.toProviderUserId;
+  const isOutcome = mixinWalletClientId === receipt.fromProviderUserId;
   return (
-    <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none">
-      <div className="flex items-center text-gray-700 text-sm md:w-8/12">
-        <div className="mr-4">
+    <div className="border-b border-gray-300 flex justify-between items-center py-3 px-2 leading-none -mx-2 md:mx-0">
+      <div className="flex items-center text-gray-700 text-sm w-9/12 md:w-9/12">
+        <div
+          className={classNames({
+            'mr-4': showType,
+            'mr-2 pr-1': !showType,
+          })}
+        >
           <div className="w-10 h-10">
             <img
               className="w-10 h-10"
@@ -33,16 +43,22 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
             />
           </div>
         </div>
-        {getTypeName(receipt.type)}
+        {showType && getTypeName(receipt.type, isIncome)}
         {receipt.type === 'REWARD' && (
           <a
-            href={`${getPostsSiteDomain()}/posts/${receipt.objectRId}`}
-            className="text-blue-400 ml-2 truncate w-6/12 hidden md:block"
+            href={`/posts/${receipt.objectRId}`}
+            className={classNames(
+              {
+                'ml-2 md:w-8/12 hidden md:block': showType,
+                'w-9/12': !showType,
+              },
+              'text-blue-400 truncate',
+            )}
             target="_blank"
             rel="noopener noreferrer"
-            title={(postMap[receipt.objectRId] || {}).title}
+            title={(receipt.file || {}).title}
           >
-            {(postMap[receipt.objectRId] || {}).title}
+            {(receipt.file || {}).title}
           </a>
         )}
       </div>
@@ -50,14 +66,14 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
         <span
           className={classNames(
             {
-              'text-green-400': mixinWalletClientId === receipt.toProviderUserId,
-              'text-red-400': mixinWalletClientId === receipt.fromProviderUserId,
+              'text-green-400': isIncome,
+              'text-red-400': isOutcome,
             },
             'font-bold text-lg mr-1',
           )}
         >
-          {mixinWalletClientId === receipt.toProviderUserId && '+'}
-          {mixinWalletClientId === receipt.fromProviderUserId && '-'}
+          {isIncome && '+'}
+          {isOutcome && '-'}
           {parseFloat(receipt.amount)}
         </span>
         <span className="text-xs font-bold">{receipt.currency}</span>
@@ -69,7 +85,7 @@ const Receipt = (receipt: any, postMap: any = {}, mixinWalletClientId: string) =
 export default observer(() => {
   const page = React.useRef(1);
   const [loading, setLoading] = React.useState(false);
-  const { userStore, walletStore, feedStore } = useStore();
+  const { userStore, walletStore } = useStore();
   const { mixinWalletClientId } = userStore.user;
   const { isFetchedReceipts, receipts, receiptLimit, hasMoreReceipt } = walletStore;
 
@@ -79,6 +95,7 @@ export default observer(() => {
         const receipts = await FinanceApi.getReceipts({
           offset: 0,
           limit: receiptLimit,
+          filterType: walletStore.filterType,
         });
         page.current += 1;
         await sleep(500);
@@ -94,6 +111,7 @@ export default observer(() => {
       const newReceipts = await FinanceApi.getReceipts({
         offset: (page.current - 1) * receiptLimit,
         limit: receiptLimit,
+        filterType: walletStore.filterType,
       });
       page.current += 1;
       await sleep(500);
@@ -110,7 +128,7 @@ export default observer(() => {
         </div>
         <style jsx>{`
           .root {
-            height: ${isMobile ? '65vh' : 'auto'};
+            height: ${isMobile ? '70vh' : 'auto'};
           }
         `}</style>
       </div>
@@ -121,7 +139,9 @@ export default observer(() => {
     <Fade in={true} timeout={500}>
       <div className="root">
         {receipts.map((receipt: any) => (
-          <div key={receipt.id}>{Receipt(receipt, feedStore.postMap, mixinWalletClientId)}</div>
+          <div key={receipt.id}>
+            {Receipt(receipt, mixinWalletClientId, walletStore.canSpendBalance || isPc)}
+          </div>
         ))}
         {/* 用解决定位，解决移动端无法点击的问题 */}
         {hasMoreReceipt && (
@@ -134,15 +154,17 @@ export default observer(() => {
             {loading && <Loading />}
           </div>
         )}
-        {receipts.length > 0 && !hasMoreReceipt && (
+        {receipts.length > 10 && !hasMoreReceipt && (
           <div className="text-gray-500 py-8 md:pb-2 text-center text-sm">没有更多了</div>
         )}
         {receipts.length === 0 && (
-          <div className="text-gray-500 mt-32 text-center text-sm">暂时没有交易记录</div>
+          <div className="text-gray-500 pt-32 text-center text-sm">
+            暂时没有{walletStore.rewardOnly ? '打赏' : '交易'}记录
+          </div>
         )}
         <style jsx>{`
           .root {
-            height: ${isMobile ? '65vh' : 'auto'};
+            height: ${isMobile ? '70vh' : 'auto'};
           }
         `}</style>
       </div>

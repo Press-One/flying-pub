@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
-const Author = sequelize.define('author', {
+const Author = sequelize.define('authors', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -21,6 +21,10 @@ const Author = sequelize.define('author', {
   },
   avatar: {
     type: Sequelize.STRING
+  },
+  bio: {
+    type: Sequelize.TEXT,
+    allowNull: true
   }
 }, {
   timestamps: true,
@@ -29,7 +33,5 @@ const Author = sequelize.define('author', {
     fields: ['status']
   }]
 });
-
-Author.sync();
 
 module.exports = Author;

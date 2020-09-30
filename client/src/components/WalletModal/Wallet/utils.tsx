@@ -8,10 +8,6 @@ export const currencyIconMap: any = {
   XIN: 'https://img-cdn.xue.cn/1024-xin.png',
 };
 
-export const getPostsSiteDomain = () => {
-  return '';
-};
-
 const maxAmount: any = {
   CNB: 1000000,
   BTC: 0.01,

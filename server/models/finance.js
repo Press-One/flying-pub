@@ -1,14 +1,23 @@
 const mathjs = require("mathjs");
 const Mixin = require("mixin-node");
+const rfc3339nano = require('rfc3339nano');
 const config = require("../config");
-const User = require("./user");
+const SSOConfig = require("../SSO/config.pub");
 const Wallet = require("./wallet");
+const File = require("./file");
 const Post = require("./post");
 const socketIo = require("./socketIo");
 const Cache = require("./cache");
+const User = require("./user");
 const Log = require("./log");
 const Receipt = require("./receipt");
 const Sequelize = require("sequelize");
+const {
+  notifyArticleReward,
+} = require("../models/notify");
+const {
+  pushToNotifyQueue
+} = require('../models/mixin');
 const Op = Sequelize.Op;
 const {
   Joi,
@@ -16,9 +25,10 @@ const {
   attempt,
   Errors,
   assertFault
-} = require("./validator");
+} = require("../utils/validator");
 const {
-  log
+  log,
+  sleep
 } = require('../utils');
 const {
   parseAmount,
@@ -34,11 +44,11 @@ const bigFormat = bignumber => {
 const balanceCacheKey = `${config.serviceKey}_BALANCE_CACHE_KEY`;
 
 const mixin = new Mixin({
-  client_id: config.provider.mixin.clientId,
-  aeskey: config.provider.mixin.aesKey,
-  pin: config.provider.mixin.pinCode,
-  session_id: config.provider.mixin.sessionId,
-  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
+  client_id: SSOConfig.provider.mixin.clientId,
+  aeskey: SSOConfig.provider.mixin.aesKey,
+  pin: SSOConfig.provider.mixin.pinCode,
+  session_id: SSOConfig.provider.mixin.sessionId,
+  privatekey: Buffer.from(SSOConfig.provider.mixin.privateKey, 'utf8')
 });
 
 const getViewToken = snapshotId => {
@@ -82,11 +92,9 @@ exports.recharge = async (data = {}) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
   assert(currency, Errors.ERR_IS_REQUIRED("currency"));
   assert(amount, Errors.ERR_IS_REQUIRED("amount"));
-  const mixinClientId = await Wallet.getMixinClientIdByUserId(userId);
+  const user = await User.get(userId);
+  const mixinClientId = await Wallet.getMixinClientIdByUserId(user.id);
   assertFault(mixinClientId, Errors.ERR_WALLET_STATUS);
-  const user = await User.get(userId, {
-    withProfile: true
-  });
   const receipt = await Receipt.create({
     fromAddress: user.address,
     toAddress: user.address,
@@ -124,8 +132,9 @@ exports.withdraw = async (data = {}) => {
     memo = "飞帖提现"
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
-  const wallet = await Wallet.getRawByUserId(userId);
-  Log.create(userId, `钱包版本 ${wallet.version}`);
+  const user = await User.get(userId);
+  const wallet = await Wallet.getRawByUserId(user.id);
+  Log.create(user.id, `钱包版本 ${wallet.version}`);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
   const asset = await getAsset({
@@ -141,9 +150,6 @@ exports.withdraw = async (data = {}) => {
     Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
     402
   );
-  const user = await User.get(userId, {
-    withProfile: true
-  });
   const toMixinClientId = user.mixinAccount.user_id;
   assert(toMixinClientId, Errors.ERR_NOT_FOUND("toMixinClientId"));
   const receipt = await Receipt.create({
@@ -253,6 +259,7 @@ const transfer = async (data = {}) => {
 const getBalanceByUserId = async (userId, currency) => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
   const wallet = await Wallet.getRawByUserId(userId);
+  assert(wallet, Errors.ERR_IS_REQUIRED("wallet"));
   const resp = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -362,9 +369,7 @@ const payForFile = async (data = {}) => {
     memo,
     toMixinClientId
   } = data;
-  const user = await User.get(userId, {
-    withProfile: true
-  });
+  const user = await User.get(userId);
   const fromAddress = user.address;
   await transferToUser({
     userId,
@@ -394,9 +399,10 @@ const reward = async (fileRId, data = {}, options = {}) => {
   const mixinClientId = post.paymentUrl ? post.paymentUrl.split('/').pop() : '';
   assert(address, Errors.ERR_IS_REQUIRED('address'));
   assert(mixinClientId, Errors.ERR_IS_REQUIRED('mixinClientId'));
-  Log.create(userId, `开始打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId} ${mixinClientId}`);
+  const user = await User.get(userId);
+  Log.create(user.id, `开始打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId} ${mixinClientId}`);
   await payForFile({
-    userId,
+    userId: user.id,
     toAddress: address,
     fileRId,
     currency: data.currency,
@@ -404,7 +410,7 @@ const reward = async (fileRId, data = {}, options = {}) => {
     memo: `${data.memo || '打赏文章'} | rId: ${fileRId}`,
     toMixinClientId: mixinClientId,
   });
-  Log.create(userId, `完成打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId}`);
+  Log.create(user.id, `完成打赏 ${data.amount} ${data.currency} ${data.memo || '打赏文章'} ${fileRId}`);
 }
 exports.reward = reward;
 
@@ -436,12 +442,17 @@ const updateReceiptByUuid = async (uuid, data) => {
   assert(uuid, Errors.ERR_IS_REQUIRED("uuid"));
   const receipt = await Receipt.getByUuid(uuid);
   if (receipt.status === "SUCCESS") {
-    return null;
+    if (data.raw && receipt.raw) {
+      return null;
+    }
+    if (data.toRaw && receipt.toRaw) {
+      return null;
+    }
   }
   if (receipt.viewToken) {
     delete data.viewToken;
   }
-  const lockKey = `${config.serviceKey}_UPDATE_RECEIPT_${uuid}`;
+  const lockKey = `${config.serviceKey}_UPDATE_RECEIPT_${data.raw ? 'WITH_RAW' : 'WITH_TO_RAW'}_${uuid}`;
   const locked = await Cache.pTryLock(lockKey, 10); // 10s
   if (locked) {
     return null;
@@ -449,24 +460,71 @@ const updateReceiptByUuid = async (uuid, data) => {
   await Receipt.updateByUuid(uuid, data);
   Cache.pUnLock(lockKey);
   const updatedReceipt = await Receipt.getByUuid(uuid);
-  Log.createAnonymity(
-    "更新收据",
-    updatedReceipt.id
-  );
-  const user = await User.getByAddress(updatedReceipt.fromAddress);
-  if (updatedReceipt.type === "RECHARGE") {
-    socketIo.sendToUser(user.id, "recharge", {
-      receipt: updatedReceipt
-    });
-    const did = await tryCombo(updatedReceipt.uuid);
-    if (did) {
-      socketIo.sendToUser(user.id, "recharge_then_reward", {
-        did
+  // 收到打赏
+  if (updatedReceipt.type === 'REWARD' && updatedReceipt.toRaw) {
+    await sleep(2000);
+    Log.createAnonymity(
+      `更新 REWARD TO_RAW 收据`,
+      updatedReceipt.id
+    );
+    const user = await User.getByAddress(updatedReceipt.toAddress);
+    const userId = user.id;
+    assert(userId, Errors.ERR_NOT_FOUND("userId"));
+    const {
+      fromProviderUserId,
+      toProviderUserId,
+    } = updatedReceipt;
+    Log.create(userId, '收到打赏' + ` ${fromProviderUserId} -> ${toProviderUserId}`);
+    Log.create(userId, '更新余额缓存');
+    await clearCachedBalance(userId);
+    refreshCachedBalance(userId);
+    try {
+      const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${updatedReceipt.objectRId}`;
+      await pushToNotifyQueue({
+        userId,
+        text: `收到打赏 ${parseFloat(updatedReceipt.amount)} ${updatedReceipt.currency}`,
+        url: originUrl
       });
+      const fromUser = await User.getByAddress(updatedReceipt.fromAddress);
+      const file = await File.getByRId(updatedReceipt.objectRId);
+      await notifyArticleReward({
+        fromUserName: fromUser.address,
+        fromNickName: fromUser.nickname,
+        fromUserAvatar: fromUser.avatar,
+        originUrl,
+        toUserName: user.address,
+        toNickName: user.nickname,
+        fromArticleId: file.rId,
+        fromArticleTitle: file.title,
+        amount: parseFloat(updatedReceipt.amount),
+        currency: updatedReceipt.currency,
+      });
+    } catch (e) {
+      console.log(e);
     }
+  } else {
+    // 充值、打赏、提现
+    Log.createAnonymity(
+      `更新 ${updatedReceipt.type} ${data.raw ? 'RAW' : 'TO_RAW'} 收据`,
+      updatedReceipt.id
+    );
+    const user = await User.getByAddress(updatedReceipt.fromAddress);
+    const userId = user.id;
+    if (updatedReceipt.type === "RECHARGE") {
+      socketIo.sendToUser(userId, "recharge", {
+        receipt: updatedReceipt
+      });
+      const did = await tryCombo(updatedReceipt.uuid);
+      if (did) {
+        socketIo.sendToUser(userId, "recharge_then_reward", {
+          did
+        });
+      }
+    }
+    Log.create(userId, '更新余额缓存');
+    await clearCachedBalance(userId);
+    refreshCachedBalance(userId);
   }
-  await clearCachedBalance(user.id);
-  refreshCachedBalance(user.id);
   return updatedReceipt;
 };
 
@@ -480,39 +538,120 @@ const saveSnapshots = async (snapshots) => {
 };
 
 const saveSnapshot = async (snapshot) => {
-  let updatedReceipt = null;
-  if (
-    snapshot &&
-    snapshot.type === "snapshot" &&
-    snapshot.source === "TRANSFER_INITIALIZED"
-  ) {
-    const receipt = {
-      status: "SUCCESS"
-    };
-    const amount = Number(snapshot.amount);
-    if (amount > 0) {
-      // receive
-      receipt.toRaw = JSON.stringify(snapshot);
-      receipt.toSnapshotId = snapshot.snapshot_id;
-      receipt.fromProviderUserId = snapshot.opponent_id;
-      receipt.toProviderUserId = snapshot.user_id;
-    } else if (amount < 0) {
-      // pay
-      receipt.raw = JSON.stringify(snapshot);
-      receipt.snapshotId = snapshot.snapshot_id;
-      receipt.fromProviderUserId = snapshot.user_id;
-      receipt.toProviderUserId = snapshot.opponent_id;
-    }
+  try {
 
-    receipt.viewToken = getViewToken(snapshot.snapshot_id);
+    let updatedReceipt = null;
+    if (
+      snapshot &&
+      snapshot.type === "snapshot" &&
+      snapshot.source === "TRANSFER_INITIALIZED"
+    ) {
+      const receipt = {
+        status: "SUCCESS"
+      };
+      const amount = Number(snapshot.amount);
+      if (amount > 0) {
+        // receive
+        receipt.toRaw = JSON.stringify(snapshot);
+        receipt.toSnapshotId = snapshot.snapshot_id;
+        receipt.fromProviderUserId = snapshot.opponent_id;
+        receipt.toProviderUserId = snapshot.user_id;
+      } else if (amount < 0) {
+        // pay
+        receipt.raw = JSON.stringify(snapshot);
+        receipt.snapshotId = snapshot.snapshot_id;
+        receipt.fromProviderUserId = snapshot.user_id;
+        receipt.toProviderUserId = snapshot.opponent_id;
+      }
 
-    try {
-      updatedReceipt = await updateReceiptByUuid(snapshot.trace_id, receipt);
-    } catch (e) {
-      log(e);
+      receipt.viewToken = getViewToken(snapshot.snapshot_id);
+
+      try {
+        updatedReceipt = await updateReceiptByUuid(snapshot.trace_id, receipt);
+      } catch (e) {
+        console.log(e);
+      }
     }
+    return updatedReceipt;
+  } catch (e) {
+    console.log(e);
   }
-  return updatedReceipt;
+};
+
+exports.syncMixinSnapshots = () => {
+  const syncKey = `${config.serviceKey}_SYNC_MIXIN_SNAPSHOTS`;
+  const lockKey = `${syncKey}_LOCK`;
+  return new Promise(resolve => {
+    (async () => {
+      const isLock = await Cache.pTryLock(lockKey, 5); // 15s
+      if (isLock) {
+        resolve();
+        return;
+      }
+      const timerId = setTimeout(() => {
+        try {
+          Cache.pUnLock(lockKey);
+        } catch (err) {}
+        resolve();
+        stop = true;
+      }, 10 * 1000);
+      let stop = false;
+      try {
+        let session = {};
+        const sessionString = await Cache.pGet(syncKey, 'session');
+        const currencies = Object.keys(currencyMapAsset);
+        if (sessionString) {
+          session = JSON.parse(sessionString);
+        } else {
+          session = {};
+          const current = new Date();
+          for (const currency of currencies) {
+            session[currency] = {
+              offset: current.toISOString()
+            };
+          }
+          await Cache.pSet(syncKey, 'session', JSON.stringify(session));
+        }
+        const snapshots = [];
+        const tasks = currencies.map(async currency => {
+          try {
+            const result = await mixin.readSnapshots(
+              rfc3339nano.adjustRfc3339ByNano(session[currency].offset, 1),
+              currencyMapAsset[currency],
+              '100',
+              'ASC'
+            );
+            const {
+              data
+            } = result;
+            for (const i in data) {
+              session[currency].offset = data[i].created_at;
+              if (data[i].user_id) {
+                snapshots.push(data[i]);
+              }
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        });
+        await Promise.all(tasks);
+        await saveSnapshots(snapshots);
+        await Cache.pSet(syncKey, 'session', JSON.stringify(session));
+      } catch (err) {
+        console.log(err);
+      }
+      clearTimeout(timerId);
+      if (stop) {
+        return;
+      }
+      try {
+        Cache.pUnLock(lockKey);
+      } catch (err) {
+        console.log(err);
+      }
+      resolve();
+    })();
+  });
 };
 
 const syncReceiptLog = message => {
@@ -561,7 +700,7 @@ const syncInitializedReceipt = async receipt => {
       if (updatedReceipt && updatedReceipt.status === "SUCCESS") {
         Log.createAnonymity(
           "同步初始化收据",
-          `INITIALIZED -> SUCCESS ${updatedReceipt.id}`
+          `INITIALIZED -> SUCCESS，${updatedReceipt.type} ${updatedReceipt.id}`
         );
       }
     }
@@ -618,22 +757,46 @@ exports.syncInitializedReceipts = async () => {
   });
 };
 
-exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
-  assert(userAddress, Errors.ERR_IS_REQUIRED("userAddress"));
+exports.getReceiptsByUserId = async (userId, options = {}) => {
+  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
+  const user = await User.get(userId);
+  assert(user, Errors.ERR_NOT_FOUND("user"));
+  assert(user.address, Errors.ERR_NOT_FOUND("user.address"));
   const {
     offset = 0, limit, status
   } = options;
-  const receipts = await Receipt.list({
-    where: {
+  let where = {
+    status
+  };
+  if (options.filterType === 'READER') {
+    where = {
+      fromAddress: user.address,
+      type: 'REWARD',
+      ...where,
+    }
+  } else if (options.filterType === 'AUTHOR') {
+    where = {
+      toAddress: user.address,
+      type: {
+        [Op.in]: ['WITHDRAW', 'REWARD']
+      },
+      ...where
+    }
+  } else {
+    where = {
       [Op.or]: [{
-          fromAddress: userAddress
+          fromAddress: user.address
         },
         {
-          toAddress: userAddress
+          toAddress: user.address
         }
       ],
-      status
-    },
+      ...where
+    }
+  }
+
+  const receipts = await Receipt.list({
+    where,
     offset,
     limit,
     order: [
