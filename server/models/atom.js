@@ -196,7 +196,7 @@ const saveChainPost = async (chainPost, options = {}) => {
     post.status = 'pending';
   }
   await Post.create(post);
-  Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+  Log.createAnonymity('同步文章', `${config.settings['site.url'] || config.serviceRoot}/posts/${post.rId} ${post.title}`);
 
   if (updatedRId) {
     const updatedFile = await Post.getByRId(updatedRId, {
