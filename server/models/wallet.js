@@ -3,7 +3,7 @@ const image2base64 = require('image-to-base64');
 const util = require('../utils');
 const config = require('../config');
 const Log = require('./log');
-const walletConfig = require('../SSO/config.pub.wallet');
+const SSOWalletConfig = require('../SSO/config.pub.wallet');
 const Wallet = require('./sequelize/wallet');
 const Cache = require('./cache');
 const SSO_User = require('../models_sso/user');
@@ -17,7 +17,7 @@ const {
   assertFault,
   Errors
 } = require('../utils/validator')
-const aesKey256 = walletConfig.encryption.aesKey256;
+const aesKey256 = SSOWalletConfig.encryption.aesKey256;
 
 const mixin = new Mixin({
   client_id: SSOConfig.provider.mixin.clientId,
