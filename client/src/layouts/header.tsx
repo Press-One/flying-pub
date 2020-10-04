@@ -289,12 +289,11 @@ export default observer((props: any) => {
               <Link to="/">
                 <div className="flex items-center">
                   <img
-                    src="https://img-cdn.xue.cn/1111-fly-pub.png"
+                    src={settings['site.logo'] || 'https://img-cdn.xue.cn/17-flying-pub.png'}
                     alt="logo"
                     width="36"
                     height="36"
                   />
-                  <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
                 </div>
               </Link>
             )}
@@ -341,14 +340,13 @@ export default observer((props: any) => {
             <div className="container mx-auto">
               <div className="w-7/12 mx-auto flex justify-between items-center">
                 <Link to="/">
-                  <div className="flex items-center -ml-2">
+                  <div className="flex items-center">
                     <img
-                      src="https://img-cdn.xue.cn/1111-fly-pub.png"
+                      src={settings['site.logo'] || 'https://img-cdn.xue.cn/17-flying-pub.png'}
                       alt="logo"
                       width="36"
                       height="36"
                     />
-                    <span className="text-lg font-bold text-gray-700 ml-2">飞帖</span>
                   </div>
                 </Link>
                 {!userStore.isLogin && (
