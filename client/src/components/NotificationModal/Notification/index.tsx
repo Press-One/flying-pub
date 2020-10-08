@@ -89,7 +89,7 @@ export default observer(() => {
       <div className="m-auto border-b border-gray-300 notification-header relative">
         {isPc && mixinProfile && !userStore.user.notificationEnabled && (
           <div
-            className="absolute top-0 right-0 p-4 mr-2 text-blue-400 cursor-pointer z-10 flex items-center"
+            className="absolute top-0 right-0 p-4 mr-2 text-blue-400 cursor-pointer z-10 flex items-center mt-12"
             onClick={() => {
               modalStore.openMixinNotification();
             }}

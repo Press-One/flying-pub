@@ -56,6 +56,9 @@ export default observer(() => {
             className="text-blue-400 font-bold msg-link"
             href={msg.notification.extras.originUrl}
             target={isMobile ? '_self' : '_blank'}
+            onClick={() => {
+              isMobile && modalStore.openPageLoading();
+            }}
             rel="noopener noreferrer"
           >
             {msg.notification.extras.fromArticleTitle}
@@ -78,7 +81,10 @@ export default observer(() => {
         <a
           className="text-blue-400 font-bold msg-link"
           href={msg.notification.extras.originUrl}
-          target="_blank"
+          target={isMobile ? '_self' : '_blank'}
+          onClick={() => {
+            isMobile && modalStore.openPageLoading();
+          }}
           rel="noopener noreferrer"
         >
           {msg.notification.extras.fromArticleTitle}
@@ -190,24 +196,18 @@ export default observer(() => {
                 <span className="msg-timestamp mr-5">
                   {formatDateTime(msg.notification.created_at)}
                 </span>
-                {msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME && (
+                {(msg.notification.sub_type === NotificationSubType.ARTICLE_COMMENT ||
+                  msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) && (
                   <a
                     className="msg-link"
                     href={msg.notification.extras.originUrl}
-                    target="_blank"
+                    target={isMobile ? '_self' : '_blank'}
+                    onClick={() => {
+                      isMobile && modalStore.openPageLoading();
+                    }}
                     rel="noopener noreferrer"
                   >
                     去回复
-                  </a>
-                )}
-                {msg.notification.sub_type === NotificationSubType.LIKE && (
-                  <a
-                    className="msg-link"
-                    href={msg.notification.extras.originUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    去看看
                   </a>
                 )}
               </div>
