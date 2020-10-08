@@ -378,10 +378,8 @@ export default observer((props: any) => {
                   {
                     'bg-blue-400 border-blue-400 text-white': payment.enabled,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
-                    'px-20': !openingMixinSchema,
-                    'px-16': openingMixinSchema,
                   },
-                  'flex justify-center items-center text-center border rounded md:px-12 p-3 mt-3 leading-none cursor-pointer',
+                  'flex justify-center items-center text-center border rounded py-3 mt-3 leading-none cursor-pointer payment-button',
                 )}
                 onClick={() => {
                   if (payment.enabled) {
@@ -410,7 +408,9 @@ export default observer((props: any) => {
                   {payment.name}
                 </span>
                 {payment.method === 'mixin' && openingMixinSchema && (
-                  <ButtonProgress isDoing={true} />
+                  <div className="-ml-1">
+                    <ButtonProgress isDoing={true} />
+                  </div>
                 )}
               </div>
               {!payment.enabled && (
@@ -457,29 +457,38 @@ export default observer((props: any) => {
                   )}
                 </div>
               )}
+              <style jsx>{`
+                .payment-button {
+                  width: 180px;
+                }
+              `}</style>
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-5 text-sm md:text-xs text-blue-400">
+        <div className="flex justify-center mt-4 text-sm md:text-xs text-blue-400">
           {walletStore.canSpendBalance && (
             <div className="cursor-pointer" onClick={() => setStep(2)}>
               返回
             </div>
           )}
           {!walletStore.canSpendBalance && (
-            <div className="flex justify-center items-center text-gray-500 text-xs">
-              <span className="flex items-center text-lg mr-1">
-                <Info />
-              </span>
-              手机还没有安装 {settings['mixinApp.name']} ？
-              <a
-                className="text-blue-400"
-                href={settings['mixinApp.downloadUrl']}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                前往下载
-              </a>
+            <div className="text-xs">
+              <div className="flex justify-center items-center text-gray-500">
+                <span className="flex items-center text-lg mr-1">
+                  <Info />
+                </span>
+                手机还没有安装 {settings['mixinApp.name']} ？
+              </div>
+              <div className="text-center mt-1">
+                <a
+                  className="text-blue-400"
+                  href={settings['mixinApp.downloadUrl']}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  前往下载
+                </a>
+              </div>
             </div>
           )}
         </div>

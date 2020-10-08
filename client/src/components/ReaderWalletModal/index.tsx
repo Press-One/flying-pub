@@ -19,12 +19,10 @@ const styles = css`
 `;
 
 export default observer(() => {
-  const { modalStore, readerWalletStore } = useStore();
-  const { returnInfo } = modalStore.wallet.data;
-  let isBalanceEnough = false;
-  if (returnInfo) {
-    const { requiredCurrency, requiredAmount } = returnInfo;
-    isBalanceEnough = Number(readerWalletStore.balance[requiredCurrency]) >= Number(requiredAmount);
+  const { preloadStore, readerWalletStore } = useStore();
+
+  if (!preloadStore.ready) {
+    return null;
   }
 
   const renderMain = () => {
@@ -37,18 +35,6 @@ export default observer(() => {
       >
         <div className="wallet-modal-content relative">
           <Wallet />
-          {returnInfo && isBalanceEnough && readerWalletStore.isCustomPinExist && (
-            <Fade in={true} timeout={500}>
-              <div className="absolute bottom-0 right-0 m-5">
-                <Button onClick={modalStore.closeWallet}>
-                  <div className="flex items-center">
-                    <ArrowBackIos />
-                    <span className="ml-1">{returnInfo.text}</span>
-                  </div>
-                </Button>
-              </div>
-            </Fade>
-          )}
         </div>
 
         <style jsx>{styles}</style>

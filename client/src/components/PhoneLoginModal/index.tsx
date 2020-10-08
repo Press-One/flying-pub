@@ -334,7 +334,14 @@ export default observer(() => {
                   }
                 >
                   <div className="-mt-3 md:mt-0 flex justify-center">
-                    <a href={getLoginUrl()}>
+                    <a
+                      href={getLoginUrl()}
+                      className="block"
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                      }}
+                    >
                       <img
                         className="rounded-md cursor-pointer border border-gray-300"
                         src={settings['mixinApp.logo']}

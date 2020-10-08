@@ -98,6 +98,7 @@ export default observer((props: any) => {
         setPost(post);
         initMathJax(document.getElementById('post-content'));
       } catch (err) {
+        modalStore.closePageLoading();
         setIsBan(err.message === 'Post has been deleted');
         console.log(err);
       }
