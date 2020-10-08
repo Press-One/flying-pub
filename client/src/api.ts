@@ -5,7 +5,7 @@ import request from './request';
 export interface TopicPermissionResult {
   count: number;
   users: Array<{
-    id: string;
+    address: string;
     nickname: string;
     avatar: string;
   }>;
@@ -248,11 +248,11 @@ export default {
   fetchTopicDeniedUsers(p: { offset: number; limit: number }) {
     return request(`/api/topics/deny?${qs.stringify(p)}`) as Promise<TopicPermissionResult>;
   },
-  allowTopicUser(userId: string) {
-    return request(`/api/topics/allow/${userId}`, { method: 'POST' });
+  allowTopicUser(userAddress: string) {
+    return request(`/api/topics/allow/${userAddress}`, { method: 'POST' });
   },
-  denyTopicUser(userId: string) {
-    return request(`/api/topics/deny/${userId}`, { method: 'POST' });
+  denyTopicUser(userAddress: string) {
+    return request(`/api/topics/deny/${userAddress}`, { method: 'POST' });
   },
   getXuePhoneCode(phone: string) {
     return request('/api/auth/xuecn/send_code', {

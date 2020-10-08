@@ -6,6 +6,7 @@ import { createUserStore } from './user';
 import { createFeedStore } from './feed';
 import { createCacheStore } from './cache';
 import { createWalletStore } from './wallet';
+import { createReaderWalletStore } from './readerWallet';
 import { createSnackbarStore } from './snackbar';
 import { createSocketStore } from './socket';
 import { createCommentStore } from './comment';
@@ -31,6 +32,7 @@ const useCreateStore = () => ({
   feedStore: useLocalStore(createFeedStore),
   cacheStore: useLocalStore(createCacheStore),
   walletStore: useLocalStore(createWalletStore),
+  readerWalletStore: useLocalStore(createReaderWalletStore),
   snackbarStore: useLocalStore(createSnackbarStore),
   socketStore: useLocalStore(createSocketStore),
   commentStore: useLocalStore(createCommentStore),

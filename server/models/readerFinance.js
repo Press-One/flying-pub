@@ -3,8 +3,11 @@ const Mixin = require("mixin-node");
 const config = require("../config");
 const Wallet = require("./readerWallet");
 const User = require("./user");
+const Cache = require("./cache");
 const Log = require("./log");
-const Receipt = require("./receipt");
+const Receipt = require("./readerReceipt");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 const {
   Joi,
   assert,
@@ -36,15 +39,15 @@ exports.withdraw = async (data = {}) => {
   data.memo = data.memo || `飞帖提现（${config.settings['site.name']}）`;
   const {
     userId,
+    userAddress,
     currency,
     amount,
     memo = "飞帖提现"
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
-  const user = await User.get(userId);
-  const wallet = await Wallet.getRawByUserId(user.id);
-  Log.create(user.id, `钱包版本 ${wallet.version}`);
+  const wallet = await Wallet.getRawByUserAddress(userAddress);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
+  Log.create(userId, `钱包版本 ${wallet.version}`);
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
   const asset = await getAsset({
     currency,
@@ -59,11 +62,13 @@ exports.withdraw = async (data = {}) => {
     Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
     402
   );
-  const toMixinClientId = user.mixinAccount.user_id;
+  const mixinAccount = await User.getMixinAccount(userId);
+  assert(mixinAccount, Errors.ERR_NOT_FOUND("user mixinAccount"));
+  const toMixinClientId = mixinAccount.user_id;
   assert(toMixinClientId, Errors.ERR_NOT_FOUND("toMixinClientId"));
   const receipt = await Receipt.create({
-    fromAddress: user.address,
-    toAddress: user.address,
+    fromAddress: userAddress,
+    toAddress: userAddress,
     type: "WITHDRAW",
     currency: currency,
     amount: amount,
@@ -197,10 +202,9 @@ const transfer = async (data = {}) => {
   return result.data;
 };
 
-const getBalanceByUserId = async (userId, currency) => {
-  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
-  const wallet = await Wallet.getRawByUserId(userId);
-  assert(wallet, Errors.ERR_IS_REQUIRED("wallet"));
+const getBalanceByUserAddress = async (userAddress, currency) => {
+  const wallet = await Wallet.getRawByUserAddress(userAddress);
+  assert(wallet, Errors.ERR_NOT_FOUND("wallet"));
   const resp = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -242,9 +246,9 @@ const getAsset = async (data = {}) => {
   };
 };
 
-exports.getBalanceMap = async userId => {
+exports.getBalanceMap = async address => {
   const tasks = Object.keys(currencyMapAsset).map(async currency => {
-    const balance = await getBalanceByUserId(userId, currency);
+    const balance = await getBalanceByUserAddress(address, currency);
     return {
       currency,
       balance
@@ -258,9 +262,35 @@ exports.getBalanceMap = async userId => {
   return balanceMap;
 };
 
-exports.getWalletMixinClientId = async (userId) => {
-  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
-  const wallet = await Wallet.getRawByUserId(userId);
+exports.getWalletMixinClientId = async address => {
+  assert(address, Errors.ERR_IS_REQUIRED("address"));
+  const wallet = await Wallet.getRawByUserAddress(address);
   assert(wallet, Errors.ERR_IS_REQUIRED("wallet"));
   return wallet.mixinClientId
+};
+
+
+exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED("userAddress"));
+  const {
+    offset = 0, limit, status
+  } = options;
+  const receipts = await Receipt.list({
+    where: {
+      [Op.or]: [{
+          fromAddress: userAddress
+        },
+        {
+          toAddress: userAddress
+        }
+      ],
+      status
+    },
+    offset,
+    limit,
+    order: [
+      ["updatedAt", "DESC"]
+    ]
+  });
+  return receipts;
 };

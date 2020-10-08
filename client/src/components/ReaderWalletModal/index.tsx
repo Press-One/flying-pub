@@ -19,12 +19,12 @@ const styles = css`
 `;
 
 export default observer(() => {
-  const { modalStore, walletStore } = useStore();
+  const { modalStore, readerWalletStore } = useStore();
   const { returnInfo } = modalStore.wallet.data;
   let isBalanceEnough = false;
   if (returnInfo) {
     const { requiredCurrency, requiredAmount } = returnInfo;
-    isBalanceEnough = Number(walletStore.balance[requiredCurrency]) >= Number(requiredAmount);
+    isBalanceEnough = Number(readerWalletStore.balance[requiredCurrency]) >= Number(requiredAmount);
   }
 
   const renderMain = () => {
@@ -32,12 +32,12 @@ export default observer(() => {
       <div
         className="wallet-modal max-h-screen overflow-auto"
         style={{
-          width: isMobile ? 'auto' : walletStore.rewardOnly ? '620px' : '860px',
+          width: isMobile ? 'auto' : readerWalletStore.rewardOnly ? '620px' : '860px',
         }}
       >
         <div className="wallet-modal-content relative">
           <Wallet />
-          {returnInfo && isBalanceEnough && walletStore.isCustomPinExist && (
+          {returnInfo && isBalanceEnough && readerWalletStore.isCustomPinExist && (
             <Fade in={true} timeout={500}>
               <div className="absolute bottom-0 right-0 m-5">
                 <Button onClick={modalStore.closeWallet}>
@@ -58,14 +58,24 @@ export default observer(() => {
 
   if (isMobile) {
     return (
-      <DrawerModal open={true} onClose={() => {}}>
+      <DrawerModal
+        open={true}
+        onClose={() => {
+          window.location.href = '/';
+        }}
+      >
         {renderMain()}
       </DrawerModal>
     );
   }
 
   return (
-    <Modal open={true} onClose={() => {}}>
+    <Modal
+      open={true}
+      onClose={() => {
+        window.location.href = '/';
+      }}
+    >
       <div className="bg-white rounded">{renderMain()}</div>
     </Modal>
   );

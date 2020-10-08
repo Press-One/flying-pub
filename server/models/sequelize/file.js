@@ -7,6 +7,10 @@ const File = sequelize.define('files', {
     primaryKey: true,
     autoIncrement: true
   },
+  userAddress: {
+    type: Sequelize.STRING
+  },
+  // 即将废弃 userId
   userId: {
     type: Sequelize.BIGINT,
   },
@@ -57,6 +61,8 @@ const File = sequelize.define('files', {
     fields: ['deleted']
   }, {
     fields: ['visibility']
+  }, {
+    fields: ['address']
   }]
 });
 

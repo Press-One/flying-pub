@@ -53,6 +53,7 @@ const getBlock = (rId) => {
   return request({
     uri: `https://press.one/api/v2/blocks/${rId}`,
     json: true,
+    timeout: 10000,
     headers: {
       accept: 'application/json'
     },

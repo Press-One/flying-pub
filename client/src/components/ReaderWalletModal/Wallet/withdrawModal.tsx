@@ -23,9 +23,9 @@ export default (props: any) => {
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
-  const { snackbarStore, walletStore, settingsStore } = useStore();
+  const { snackbarStore, readerWalletStore, settingsStore } = useStore();
   const { settings } = settingsStore;
-  const { balance } = walletStore;
+  const { balance } = readerWalletStore;
 
   if (!mixinAccount) {
     return null;
@@ -117,7 +117,9 @@ export default (props: any) => {
       setPin('');
       setTimeout(async () => {
         try {
-          const isValid = true;
+          const isValid = await Api.validatePin({
+            pinCode: value,
+          });
           if (isValid) {
             await Api.withdraw({
               currency,

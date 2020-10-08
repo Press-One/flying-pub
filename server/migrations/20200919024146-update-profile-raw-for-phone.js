@@ -7,8 +7,9 @@ module.exports = {
       name: 'uq_idx_profiles_provider_providerid',
     });
     const profiles = await queryInterface.sequelize.query(
-      `select id, name from profiles where provider = 'phone'`,
-      {type: Sequelize.QueryTypes.SELECT}
+      `select id, name from profiles where provider = 'phone'`, {
+        type: Sequelize.QueryTypes.SELECT
+      }
     );
     if (profiles.length === 0) {
       return null;
@@ -16,7 +17,9 @@ module.exports = {
 
     const update_profiles = [];
     for (const p of profiles) {
-      const raw = JSON.stringify({name: p.name});
+      const raw = JSON.stringify({
+        name: p.name
+      });
       let now = new Date();
       now = now.toISOString();
       await queryInterface.sequelize.query(

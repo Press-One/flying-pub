@@ -3,8 +3,8 @@ const Profile = require("./profile");
 const PrsUtil = require("prs-utility");
 const util = require("../utils");
 const config = require("../config");
-const Wallet = require("./wallet");
 const Author = require("./author");
+const Wallet = require("./wallet");
 const SSO_User = require('../models_SSO/user');
 
 const {
@@ -30,12 +30,34 @@ const packUser = async (user, options = {}) => {
     version: user.version || 0
   };
 
+  // 旧用户，需要使用 pub user 的一些数据
+  let foundPubUser = false;
+  if (isSharedWithPubUser) {
+    const pubUser = await SSO_User.getByReaderUserId(user.id, {
+      withKeys
+    });
+    if (pubUser) {
+      foundPubUser = true;
+      derivedUser.address = pubUser.address;
+      if (withKeys) {
+        derivedUser.privateKey = pubUser.privateKey;
+      }
+      derivedUser.SSO = {
+        reader: {
+          id: user.id,
+          address: user.address
+        },
+        pub: {
+          id: pubUser.id,
+          address: pubUser.address
+        }
+      }
+    }
+  }
+
   // 新用户
-  if (isNewVersionUser) {
+  if (isNewVersionUser || !foundPubUser) {
     derivedUser.address = user.address;
-    derivedUser.mixinWalletClientId = await Wallet.getMixinClientIdByUserId(
-      user.id
-    );
     if (withKeys) {
       derivedUser.privateKey = util.crypto.aesDecrypt(
         user.aesEncryptedHexOfPrivateKey,
@@ -44,30 +66,18 @@ const packUser = async (user, options = {}) => {
     }
   }
 
-  // 旧用户，需要使用 pub user 的一些数据
-  if (isSharedWithPubUser) {
-    const pubUser = await SSO_User.getByReaderUserId(user.id, {
-      withKeys
-    });
-    assert(pubUser, Errors.ERR_NOT_FOUND("pubUser"));
-    derivedUser.address = pubUser.address;
-    derivedUser.mixinWalletClientId = await Wallet.getMixinClientIdByUserId(
-      user.id
-    );
-    if (withKeys) {
-      derivedUser.privateKey = pubUser.privateKey;
-    }
-  }
-
-  const mixinProfile = await Profile.getByUserIdAndProvider(user.id, "mixin");
-  if (mixinProfile) {
-    derivedUser.mixinAccount = packMixinAccount(mixinProfile.raw);
-  } else {
-    derivedUser.mixinAccount = null;
-  }
-
   return derivedUser;
 };
+
+exports.getMixinAccount = async userId => {
+  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
+  const mixinProfile = await Profile.getByUserIdAndProvider(userId, "mixin");
+  if (mixinProfile) {
+    return packMixinAccount(mixinProfile.raw);
+  } else {
+    return null;
+  }
+}
 
 const packMixinAccount = (mixinAccountRaw) => {
   const json = JSON.parse(mixinAccountRaw);
@@ -78,6 +88,7 @@ const packMixinAccount = (mixinAccountRaw) => {
     identity_number: json.identity_number,
   };
 };
+
 const generateKey = () => {
   const {
     privateKey,
@@ -151,6 +162,9 @@ exports.update = async (userId, data) => {
       avatar: user.avatar || '',
       bio: user.bio || '',
     });
+    if (data.nickname) {
+      await Wallet.updateNickname(user.address, user.nickname);
+    }
   } catch (err) {
     console.log(err);
   }
@@ -167,7 +181,7 @@ exports.get = async (id, options) => {
 };
 
 exports.getByAddress = async (address, options) => {
-  const userId = await SSO_User.getReaderIdByAddress(address);
+  const userId = await SSO_User.tryGetReaderIdByAddress(address);
   if (userId) {
     return await get({
       id: userId,

@@ -1,6 +1,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.createTable('subscriptions', {
+    await queryInterface.createTable('subscriptions', {
       id: {
         type: Sequelize.BIGINT,
         primaryKey: true,
@@ -34,6 +34,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('subscriptions');
+    await queryInterface.dropTable('subscriptions');
   }
 };

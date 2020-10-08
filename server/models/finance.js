@@ -93,7 +93,7 @@ exports.recharge = async (data = {}) => {
   assert(currency, Errors.ERR_IS_REQUIRED("currency"));
   assert(amount, Errors.ERR_IS_REQUIRED("amount"));
   const user = await User.get(userId);
-  const mixinClientId = await Wallet.getMixinClientIdByUserId(user.id);
+  const mixinClientId = await Wallet.getMixinClientIdByUserAddress(user.address);
   assertFault(mixinClientId, Errors.ERR_WALLET_STATUS);
   const receipt = await Receipt.create({
     fromAddress: user.address,
@@ -133,7 +133,7 @@ exports.withdraw = async (data = {}) => {
   } = data;
   assert(amount, Errors.ERR_IS_INVALID("amount"));
   const user = await User.get(userId);
-  const wallet = await Wallet.getRawByUserId(user.id);
+  const wallet = await Wallet.getRawByUserAddress(user.address);
   Log.create(user.id, `钱包版本 ${wallet.version}`);
   assert(wallet, Errors.ERR_NOT_FOUND("user wallet"));
   assertFault(wallet.mixinClientId, Errors.ERR_WALLET_STATUS);
@@ -150,7 +150,9 @@ exports.withdraw = async (data = {}) => {
     Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
     402
   );
-  const toMixinClientId = user.mixinAccount.user_id;
+  const mixinAccount = await User.getMixinAccount(user.id);
+  assert(mixinAccount, Errors.ERR_NOT_FOUND("user mixinAccount"));
+  const toMixinClientId = mixinAccount.user_id;
   assert(toMixinClientId, Errors.ERR_NOT_FOUND("toMixinClientId"));
   const receipt = await Receipt.create({
     fromAddress: user.address,
@@ -256,10 +258,10 @@ const transfer = async (data = {}) => {
   return result.data;
 };
 
-const getBalanceByUserId = async (userId, currency) => {
-  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
-  const wallet = await Wallet.getRawByUserId(userId);
-  assert(wallet, Errors.ERR_IS_REQUIRED("wallet"));
+const getBalanceByUserAddress = async (address, currency) => {
+  assert(address, Errors.ERR_IS_REQUIRED("address"));
+  const wallet = await Wallet.getRawByUserAddress(address);
+  assert(wallet, Errors.ERR_NOT_FOUND("wallet"));
   const resp = await getAsset({
     currency,
     clientId: wallet.mixinClientId,
@@ -301,9 +303,9 @@ const getAsset = async (data = {}) => {
   };
 };
 
-const getBalanceMap = async userId => {
+const getBalanceMap = async address => {
   const tasks = Object.keys(currencyMapAsset).map(async currency => {
-    const balance = await getBalanceByUserId(userId, currency);
+    const balance = await getBalanceByUserAddress(address, currency);
     return {
       currency,
       balance
@@ -317,22 +319,22 @@ const getBalanceMap = async userId => {
   return balanceMap;
 };
 
-const clearCachedBalance = async userId => {
-  await Cache.pSet(balanceCacheKey, userId, null);
+const clearCachedBalance = async address => {
+  await Cache.pSet(balanceCacheKey, address, null);
 };
 
-const refreshCachedBalance = async userId => {
-  const balanceMap = await getBalanceMap(userId);
-  await Cache.pSet(balanceCacheKey, userId, balanceMap);
+const refreshCachedBalance = async address => {
+  const balanceMap = await getBalanceMap(address);
+  await Cache.pSet(balanceCacheKey, address, balanceMap);
   return balanceMap;
 };
 
-exports.getBalanceMap = async userId => {
-  const cachedBalance = await Cache.pGet(balanceCacheKey, userId);
+exports.getBalanceMap = async address => {
+  const cachedBalance = await Cache.pGet(balanceCacheKey, address);
   if (cachedBalance) {
     return cachedBalance;
   }
-  const balanceMap = await refreshCachedBalance(userId);
+  const balanceMap = await refreshCachedBalance(address);
   return balanceMap;
 };
 
@@ -476,8 +478,8 @@ const updateReceiptByUuid = async (uuid, data) => {
     } = updatedReceipt;
     Log.create(userId, '收到打赏' + ` ${fromProviderUserId} -> ${toProviderUserId}`);
     Log.create(userId, '更新余额缓存');
-    await clearCachedBalance(userId);
-    refreshCachedBalance(userId);
+    await clearCachedBalance(updatedReceipt.toAddress);
+    refreshCachedBalance(updatedReceipt.toAddress);
     try {
       const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${updatedReceipt.objectRId}`;
       await pushToNotifyQueue({
@@ -522,8 +524,8 @@ const updateReceiptByUuid = async (uuid, data) => {
       }
     }
     Log.create(userId, '更新余额缓存');
-    await clearCachedBalance(userId);
-    refreshCachedBalance(userId);
+    await clearCachedBalance(updatedReceipt.fromAddress);
+    refreshCachedBalance(updatedReceipt.fromAddress);
   }
   return updatedReceipt;
 };
@@ -757,11 +759,8 @@ exports.syncInitializedReceipts = async () => {
   });
 };
 
-exports.getReceiptsByUserId = async (userId, options = {}) => {
-  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
-  const user = await User.get(userId);
-  assert(user, Errors.ERR_NOT_FOUND("user"));
-  assert(user.address, Errors.ERR_NOT_FOUND("user.address"));
+exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED("userAddress"));
   const {
     offset = 0, limit, status
   } = options;
@@ -770,13 +769,13 @@ exports.getReceiptsByUserId = async (userId, options = {}) => {
   };
   if (options.filterType === 'READER') {
     where = {
-      fromAddress: user.address,
+      fromAddress: userAddress,
       type: 'REWARD',
       ...where,
     }
   } else if (options.filterType === 'AUTHOR') {
     where = {
-      toAddress: user.address,
+      toAddress: userAddress,
       type: {
         [Op.in]: ['WITHDRAW', 'REWARD']
       },
@@ -785,10 +784,10 @@ exports.getReceiptsByUserId = async (userId, options = {}) => {
   } else {
     where = {
       [Op.or]: [{
-          fromAddress: user.address
+          fromAddress: userAddress
         },
         {
-          toAddress: user.address
+          toAddress: userAddress
         }
       ],
       ...where
@@ -832,7 +831,8 @@ const transferToUser = async (data = {}) => {
     memo,
     toMixinClientId
   } = data;
-  const wallet = await Wallet.getRawByUserId(userId);
+  const user = await User.get(userId);
+  const wallet = await Wallet.getRawByUserAddress(user.address);
   Log.create(userId, `钱包版本 ${wallet.version}`);
   const tfRaw = await transfer({
     currency,
@@ -898,13 +898,14 @@ const createRewardReceipt = async (data = {}) => {
     memo,
     toMixinClientId
   } = data;
-  const balance = await getBalanceByUserId(userId, currency);
+  const user = await User.get(userId);
+  const balance = await getBalanceByUserAddress(user.address, currency);
   assert(
     mathjs.larger(balance, amount) || mathjs.equal(balance, amount),
     Errors.ERR_WALLET_NOT_ENOUGH_AMOUNT,
     402
   );
-  const mixinClientId = await Wallet.getMixinClientIdByUserId(userId);
+  const mixinClientId = await Wallet.getMixinClientIdByUserAddress(user.address);
   const receipt = await Receipt.create({
     fromAddress: fromAddress,
     toAddress: toAddress,

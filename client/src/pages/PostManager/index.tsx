@@ -57,7 +57,7 @@ export default () => {
 
   const tryDenyPost = (rId: string) => {
     confirmDialogStore.show({
-      content: '禁止之后，阅读站将不再显示这篇文章',
+      content: '禁止之后，将不再显示这篇文章',
       ok: async () => {
         confirmDialogStore.setLoading(true);
         await confirm(rId, 'deny');
@@ -69,7 +69,7 @@ export default () => {
 
   const tryAllowPost = (rId: string) => {
     confirmDialogStore.show({
-      content: '阅读站将恢复显示这篇文章',
+      content: '将恢复显示这篇文章',
       ok: async () => {
         confirmDialogStore.setLoading(true);
         await confirm(rId, 'allow');

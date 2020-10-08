@@ -3,16 +3,25 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
+import Info from '@material-ui/icons/Info';
 import WithdrawModal from './withdrawModal';
 import { currencyIconMap } from './utils';
 import { sleep, isMobile, getApiEndpoint } from 'utils';
 import Api from './api';
 
 const Asset = (props: any) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, readerWalletStore } = useStore();
+  const { isCustomPinExist } = readerWalletStore;
   const { asset, amount } = props;
 
   const onWithdraw = (currency: string) => {
+    if (!isCustomPinExist) {
+      snackbarStore.show({
+        message: '请先设置支付密码',
+        type: 'error',
+      });
+      return;
+    }
     if (Number(amount) === 0) {
       snackbarStore.show({
         message: '没有余额可以提现哦',
@@ -47,7 +56,7 @@ const Asset = (props: any) => {
 };
 
 export default observer((props: any) => {
-  const { userStore, walletStore, snackbarStore, settingsStore, confirmDialogStore } = useStore();
+  const { userStore, readerWalletStore, snackbarStore, settingsStore, confirmDialogStore } = useStore();
   const { settings } = settingsStore;
   const [currency, setCurrency] = React.useState('');
   const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);
@@ -56,12 +65,12 @@ export default observer((props: any) => {
     (async () => {
       try {
         const balance = await Api.getBalance();
-        walletStore.setBalance(balance);
+        readerWalletStore.setBalance(balance);
       } catch (err) {}
       await sleep(500);
-      walletStore.setIsFetchedBalance(true);
+      readerWalletStore.setIsFetchedBalance(true);
     })();
-  }, [walletStore]);
+  }, [readerWalletStore]);
 
   const onWithdraw = (currency: string) => {
     if (!userStore.user.mixinAccount) {
@@ -84,10 +93,10 @@ export default observer((props: any) => {
 
   const fetchBalance = async () => {
     try {
-      walletStore.setIsFetchedBalance(false);
+      readerWalletStore.setIsFetchedBalance(false);
       const balance = await Api.getBalance();
-      walletStore.setBalance(balance);
-      walletStore.setIsFetchedBalance(true);
+      readerWalletStore.setBalance(balance);
+      readerWalletStore.setIsFetchedBalance(true);
     } catch (err) {}
   };
 
@@ -103,7 +112,7 @@ export default observer((props: any) => {
     }
   };
 
-  if (!walletStore.isFetchedBalance) {
+  if (!readerWalletStore.isFetchedBalance) {
     return (
       <div className="root">
         <div className="py-32">
@@ -118,11 +127,28 @@ export default observer((props: any) => {
     );
   }
 
-  const { balance } = walletStore;
+  const { balance, hasBalance, isCustomPinExist } = readerWalletStore;
 
   return (
     <Fade in={true} timeout={500}>
       <div className="root">
+        {hasBalance && !isCustomPinExist && (
+          <div className="flex justify-between p-3 border border-blue-400 text-blue-400 bg-blue-100 flex items-center rounded mb-2 text-sm">
+            <div className="flex items-center">
+              <span className="flex items-center mr-1 text-lg">
+                <Info />
+              </span>
+              <span className="hidden md:block">再去设置一下支付密码，你就可以提现余额啦</span>
+              <span className="md:hidden">尚未设置支付密码</span>
+            </div>
+            <span
+              className="text-blue-400 cursor-pointer font-bold pr-2"
+              onClick={() => props.setTab('settings')}
+            >
+              去设置
+            </span>
+          </div>
+        )}
         {settings['wallet.currencies'].map((asset: any) => {
           return (
             <div key={asset}>

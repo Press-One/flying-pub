@@ -255,7 +255,7 @@ const login = async (ctx, user, provider) => {
       userId: user.id,
       profile,
     });
-    await Wallet.tryCreateWallet(user);
+    await Wallet.tryCreateWallet(user.address, user.nickname);
     Log.create(user.id, `我被创建了`);
     Log.create(user.id, `钱包不存在，初始化成功`);
   } else {
@@ -264,12 +264,15 @@ const login = async (ctx, user, provider) => {
     const {
       userId
     } = insertedProfile;
-    const walletExists = await Wallet.exists(userId);
+    const user = await User.get(userId);
+    const walletExists = await Wallet.exists(user.address);
     if (walletExists) {
       Log.create(userId, `钱包已存在，无需初始化`);
     } else {
-      const user = await User.get(userId);
-      await Wallet.tryCreateWallet(user);
+      await Wallet.tryCreateWallet(user.address, user.nickname);
+      if (user.version !== 1) {
+        Log.create(userId, `version 为 0，钱包不存在 ！！！`);
+      }
       Log.create(userId, `钱包不存在，初始化成功`);
     }
   }
@@ -280,7 +283,7 @@ const login = async (ctx, user, provider) => {
 
   if (topicAddress && !allowBlock) {
     await Permission.setPermission({
-      userId: insertedUser.id,
+      userAddress: insertedUser.address,
       topicAddress,
       type: 'allow',
     })
@@ -303,6 +306,9 @@ const login = async (ctx, user, provider) => {
 
   const cookieOptions = {
     expires: new Date('2100-01-01')
+  }
+  if (config.auth.tokenDomain) {
+    cookieOptions.domain = config.auth.tokenDomain;
   }
   ctx.cookies.set(config.auth.tokenKey, token, cookieOptions);
 }

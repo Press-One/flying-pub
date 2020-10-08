@@ -7,9 +7,13 @@ const Wallet = sequelize.define('wallets', {
     primaryKey: true,
     autoIncrement: true
   },
-  userId: {
-    type: Sequelize.BIGINT,
+  userAddress: {
+    type: Sequelize.STRING,
     unique: true
+  },
+  // 即将废弃 userId
+  userId: {
+    type: Sequelize.BIGINT
   },
   customPin: {
     type: Sequelize.STRING,
@@ -38,13 +42,7 @@ const Wallet = sequelize.define('wallets', {
   },
 }, {
   timestamps: true,
-  charset: 'utf8mb4',
-  indexes: [{
-    unique: true,
-    fields: ['userId']
-  }]
+  charset: 'utf8mb4'
 });
-
-Wallet.sync();
 
 module.exports = Wallet;

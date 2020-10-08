@@ -4,21 +4,23 @@ const {
   list,
   listBySubscriptions,
   get,
+  update
 } = require('../controllers/apiPost');
 
 const {
   ensureAuthorization,
+  ensureAdmin,
 } = require('../middleware/api');
 
 const isPrivate = config.settings['permission.isPrivate'];
 
 router.get('/', ensureAuthorization({
   strict: isPrivate,
-  allowApiAccessKey: true
 }), list);
 router.get('/subscription', ensureAuthorization(), listBySubscriptions);
 router.get('/:id', ensureAuthorization({
   strict: isPrivate
 }), get);
+router.put('/:id', ensureAuthorization(), ensureAdmin(), update);
 
 module.exports = router;

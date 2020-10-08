@@ -3,8 +3,7 @@ const {
   allow,
   deny,
   getAllowPermissionList,
-  getDenyPermissionList,
-  updatescript,
+  getDenyPermissionList
 } = require('../controllers/apiTopic');
 const {
   ensureAuthorization,
@@ -13,8 +12,7 @@ const {
 
 router.get('/allow', ensureAuthorization(), ensureAdmin(), getAllowPermissionList);
 router.get('/deny', ensureAuthorization(), ensureAdmin(), getDenyPermissionList);
-router.post('/allow/:userid', ensureAuthorization(), ensureAdmin(), allow);
-router.post('/deny/:userid', ensureAuthorization(), ensureAdmin(), deny);
-router.get('/updatescript', ensureAuthorization(), ensureAdmin(), updatescript);
+router.post('/allow/:userAddress', ensureAuthorization(), ensureAdmin(), allow);
+router.post('/deny/:userAddress', ensureAuthorization(), ensureAdmin(), deny);
 
 module.exports = router;

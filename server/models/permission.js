@@ -4,18 +4,12 @@ const {
   Errors
 } = require('../utils/validator');
 const User = require('../models/user');
-const SSO_User = require('../models_SSO/user');
 
 const packPermission = async permission => {
   assert(permission, Errors.ERR_NOT_FOUND('permission'));
-  const pubUserId = await SSO_User.tryGetReaderIdByUserId(permission.userId);
-  if (pubUserId) {
-    permission.userId = pubUserId;
-  } else {
-    const user = await User.get(permission.userId);
-    assert(user, Errors.ERR_NOT_FOUND('user'));
-    assert(user.version === 1, Errors.ERR_IS_INVALID(`user.version do not match permission user id, ${permission.rId}`));
-  }
+  delete permission.userAddress;
+  const user = await User.getByAddress(permission.userAddress);
+  assert(user, Errors.ERR_NOT_FOUND('user'));
   return permission;
 }
 
@@ -62,30 +56,27 @@ exports.getPermissionList = async (option) => {
 
 /**
  * @param {object} option
- * @param {number} option.userId
+ * @param {number} option.userAddress
  * @param {string} option.topicAddress
  * @param {'allow' | 'deny'} option.type
  */
 exports.setPermission = async (option) => {
   const {
+    userAddress,
     topicAddress,
     type
-  } = option
-  let {
-    userId
   } = option;
-  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
-  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   assert(topicAddress, Errors.ERR_IS_REQUIRED('topicAddress'));
   assert(type, Errors.ERR_IS_REQUIRED('type'));
 
   const [permissionItem] = await Permission.findOrCreate({
     where: {
-      userId,
+      userAddress,
       topicAddress,
     },
     defaults: {
-      userId,
+      userAddress,
       topicAddress,
       permission: type,
     },

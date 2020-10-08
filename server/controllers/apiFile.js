@@ -1,4 +1,5 @@
 const File = require("../models/file");
+const User = require("../models/user");
 const config = require('../config');
 const {
   assert,
@@ -12,12 +13,14 @@ exports.list = async ctx => {
   const {
     offset = 0, limit = 10
   } = ctx.query;
-  const userId = ctx.verification.user.id;
-  const files = await File.list(userId, {
+  const {
+    user
+  } = ctx.verification;
+  const files = await File.list(user.address, {
     offset,
     limit: Math.min(~~limit, 50),
   });
-  const total = await File.count(userId);
+  const total = await File.count(user.address);
   ctx.body = {
     total,
     files
@@ -48,7 +51,7 @@ const createFile = async (user, data, options = {}) => {
   } = options;
   const shouldPushToChain = !isDraft;
   const derivedData = tryAppendFrontMatter(user, data.title, data);
-  let file = await File.create(user.id, derivedData);
+  let file = await File.create(user.address, derivedData);
   if (shouldPushToChain) {
     const fileToChain = await File.get(file.id, {
       withRawContent: true
@@ -58,6 +61,7 @@ const createFile = async (user, data, options = {}) => {
       origin
     } = options;
     const block = await Chain.pushFile(fileToChain, {
+      user,
       updatedFile,
       origin
     });
@@ -74,9 +78,10 @@ const createFile = async (user, data, options = {}) => {
 exports.createFile = createFile;
 
 exports.create = async ctx => {
-  const {
-    user
-  } = ctx.verification;
+  const userId = ctx.verification.user.id;
+  const user = await User.get(userId, {
+    withKeys: true
+  });
   const data = ctx.request.body.payload;
   const isDraft = ctx.query.type === "DRAFT";
   assert(data, Errors.ERR_IS_REQUIRED("data"));
@@ -88,58 +93,65 @@ exports.create = async ctx => {
 };
 
 exports.hide = async ctx => {
-  const userId = ctx.verification.user.id;
+  const {
+    user
+  } = ctx.verification;
   const id = ~~ctx.params.id;
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
-  assert(file.userId === userId, Errors.ERR_NO_PERMISSION);
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   await Post.updateByRId(file.rId, {
     invisibility: true
   });
   await File.hide(id);
-  Log.create(file.userId, `隐藏文章 ${file.title} ${file.id}`);
+  Log.create(user.id, `隐藏文章 ${file.title} ${file.id}`);
   ctx.body = true;
 };
 
 exports.show = async ctx => {
-  const userId = ctx.verification.user.id;
+  const {
+    user
+  } = ctx.verification;
   const id = ~~ctx.params.id;
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
-  assert(file.userId === userId, Errors.ERR_NO_PERMISSION);
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   await Post.updateByRId(file.rId, {
     invisibility: false
   });
   await File.show(id);
-  Log.create(file.userId, `显示文章 ${file.title} ${file.id}`);
+  Log.create(user.id, `显示文章 ${file.title} ${file.id}`);
   ctx.body = true;
 };
 
 exports.remove = async ctx => {
-  const userId = ctx.verification.user.id;
+  const {
+    user
+  } = ctx.verification;
   const id = ~~ctx.params.id;
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
-  assert(file.userId === userId, Errors.ERR_NO_PERMISSION);
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   if (file.rId) {
     await Post.updateByRId(file.rId, {
       invisibility: true
     });
   }
   await File.delete(id);
-  Log.create(file.userId, `删除文章 ${file.title} ${file.id}`);
+  Log.create(user.id, `删除文章 ${file.title} ${file.id}`);
   ctx.body = true;
 };
 
 exports.update = async ctx => {
-  const {
-    user
-  } = ctx.verification;
+  const userId = ctx.verification.user.id;
+  const user = await User.get(userId, {
+    withKeys: true
+  });
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED("data"));
   const id = ~~ctx.params.id;
   const file = await File.get(id);
-  assert(file.userId === user.id, Errors.ERR_NO_PERMISSION);
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   const {
     rId
   } = file;
@@ -157,6 +169,7 @@ exports.update = async ctx => {
         withRawContent: true
       });
       const block = await Chain.pushFile(fileToChain, {
+        user,
         origin: ctx.request.body.origin
       });
       const rId = block.id;
@@ -164,7 +177,7 @@ exports.update = async ctx => {
         rId
       });
       updatedFile = await File.get(updatedFile.id);
-      Log.create(file.userId, `发布草稿 ${block.id}`);
+      Log.create(user.id, `发布草稿 ${block.id}`);
     }
     ctx.body = {
       updatedFile
@@ -175,11 +188,11 @@ exports.update = async ctx => {
     });
     await File.delete(file.id);
     Log.create(
-      file.userId,
+      user.id,
       `更新后的文章 ${newFile.title}，id ${newFile.id}`
     );
     Log.create(
-      file.userId,
+      user.id,
       `被替换的文章 ${file.title}，id ${file.id}`
     );
     ctx.body = {
@@ -196,6 +209,6 @@ exports.get = async ctx => {
   const id = ~~ctx.params.id;
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
-  assert(file.userId === user.id, Errors.ERR_NO_PERMISSION);
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   ctx.body = file;
 };

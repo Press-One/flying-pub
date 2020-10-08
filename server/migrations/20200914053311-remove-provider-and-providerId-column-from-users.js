@@ -2,25 +2,23 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return Promise.all([
+    await Promise.all([
       queryInterface.removeColumn('users', 'provider'),
       queryInterface.removeColumn('users', 'providerId'),
     ]);
   },
 
   down: async (queryInterface, Sequelize) => {
-    return Promise.all([
+    await Promise.all([
       queryInterface.addColumn(
         'users',
-        'provider',
-        {
+        'provider', {
           type: Sequelize.STRING,
         },
       ),
       queryInterface.addColumn(
         'users',
-        'providerId',
-        {
+        'providerId', {
           type: Sequelize.BIGINT,
         },
       ),

@@ -7,8 +7,6 @@ const File = require('./sequelize/file');
 const Block = require('./block');
 const config = require('../config');
 const ase256cbcCrypto = require('../utils/ase256cbcCrypto');
-const User = require('./user');
-const SSO_User = require('../models_SSO/user');
 
 const FILE_STATUS = {
   DRAFT: 'draft',
@@ -24,14 +22,7 @@ const removeFrontMatter = (content = '') => {
 
 const packFile = async (file, options = {}) => {
   assert(file, Errors.ERR_NOT_FOUND('file'));
-  const pubUserId = await SSO_User.tryGetReaderIdByUserId(file.userId);
-  if (pubUserId) {
-    file.userId = pubUserId;
-  } else {
-    const user = await User.get(file.userId);
-    assert(user, Errors.ERR_NOT_FOUND('user'));
-    assert(user.version === 1, Errors.ERR_IS_INVALID(`user.version do not match file user id, ${file.rId}`));
-  }
+  delete file.userId;
   const fileJson = file.toJSON();
   const {
     rId
@@ -98,9 +89,8 @@ const verifyData = (data, options = {}) => {
   }
 };
 
-exports.create = async (userId, data) => {
-  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
-  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+exports.create = async (userAddress, data) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   verifyData(data);
   const msghash = prsUtil.sha256(data.content);
   const maybeExistedFile = await exports.getByMsghash(msghash);
@@ -109,7 +99,7 @@ exports.create = async (userId, data) => {
   data.content = Buffer.from(data.content, 'utf8');
   const payload = {
     ...data,
-    userId,
+    userAddress,
     msghash,
     topicAddress: config.topic.address,
     encryptedContent
@@ -119,16 +109,15 @@ exports.create = async (userId, data) => {
   return derivedFile;
 };
 
-exports.list = async (userId, options = {}) => {
-  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
+exports.list = async (userAddress, options = {}) => {
   const {
     offset,
     limit,
   } = options;
-  assert(userId, Errors.ERR_IS_REQUIRED('userId'));
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   const files = await File.findAll({
     where: {
-      userId,
+      userAddress,
       deleted: false,
       topicAddress: config.topic.address
     },
@@ -146,12 +135,11 @@ exports.list = async (userId, options = {}) => {
   return list;
 };
 
-exports.count = async userId => {
-  userId = await SSO_User.tryGetUserIdByReaderUserId(userId);
-  assert(userId, Errors.ERR_IS_REQUIRED("userId"));
+exports.count = async userAddress => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED("userAddress"));
   const count = await File.count({
     where: {
-      userId,
+      userAddress,
       deleted: false,
       topicAddress: config.topic.address
     },

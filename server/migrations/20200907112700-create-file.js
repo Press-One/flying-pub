@@ -1,6 +1,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.createTable('files', {
+    await queryInterface.createTable('files', {
       id: {
         type: Sequelize.BIGINT,
         primaryKey: true,
@@ -65,6 +65,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('files');
+    await queryInterface.dropTable('files');
   }
 };

@@ -94,3 +94,12 @@ exports.listBySubscriptions = async ctx => {
     posts
   };
 }
+
+
+exports.update = async ctx => {
+  const rId = ctx.params.id;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED('payload'));
+  await Post.updateByRId(rId, data);
+  ctx.body = true;
+}

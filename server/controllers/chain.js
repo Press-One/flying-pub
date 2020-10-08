@@ -5,7 +5,7 @@ const {
   mimeTypes
 } = require('../utils');
 const config = require('../config');
-const User = require('../models/user');
+const Wallet = require('../models/wallet');
 const {
   assert,
   Errors
@@ -24,6 +24,7 @@ const signBlock = data => {
     method: 'post',
     uri: SIGN_URL,
     json: true,
+    timeout: 10000,
     headers: {
       accept: 'application/json'
     },
@@ -53,7 +54,7 @@ const getFileUrl = (file, origin) => {
   }/api/storage/${name}.${postfix}`;
 };
 
-const getFilePayload = ({
+const getFilePayload = async ({
   file,
   user,
   topic
@@ -78,9 +79,12 @@ const getFilePayload = ({
     data.updated_tx_id = rId;
   }
 
+  const mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
+    user.address
+  );
   assert(
-    user.mixinWalletClientId,
-    Errors.ERR_NOT_FOUND('user.mixinWalletClientId')
+    mixinWalletClientId,
+    Errors.ERR_NOT_FOUND('user mixinWalletClientId')
   );
 
   const payload = {
@@ -90,7 +94,7 @@ const getFilePayload = ({
       uris: [getFileUrl(file, origin)],
       mime: `${file.mimeType};charset=UTF-8`,
       encryption: 'aes-256-cbc',
-      payment_url: `mixin://transfer/${user.mixinWalletClientId}`,
+      payment_url: `mixin://transfer/${mixinWalletClientId}`,
       hash_alg: HASH_ALG
     },
     data,
@@ -135,14 +139,12 @@ const packBlock = block => {
 };
 
 exports.pushFile = async (file, options = {}) => {
-  const user = await User.get(file.userId, {
-    withKeys: true
-  });
   const {
+    user,
     updatedFile,
     origin
   } = options;
-  const payload = getFilePayload({
+  const payload = await getFilePayload({
     file,
     user,
     topic: config.topic.address

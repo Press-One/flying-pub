@@ -6,6 +6,8 @@ const {
 } = require('../utils/validator');
 const User = require('../models/user');
 const Profile = require('../models/profile');
+const Wallet = require("../models/wallet");
+const ReaderWallet = require("../models/readerWallet");
 const {
   verifySmsCode
 } = require('../models/verifycode');
@@ -17,12 +19,39 @@ exports.get = async ctx => {
   const {
     user
   } = ctx.verification;
+  user.mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
+    user.address
+  );
+  if (user.SSO) {
+    user.SSO.reader.mixinWalletClientId = await ReaderWallet.getMixinClientIdByUserAddress(
+      user.SSO.reader.address
+    );
+    user.SSO.pub.mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
+      user.SSO.pub.address
+    );
+  }
+  user.mixinAccount = await User.getMixinAccount(user.id);
   const conversation = await Conversation.get(user.id);
   const notificationEnabled = !!conversation;
   ctx.body = {
     ...user,
     notificationEnabled
   };
+};
+
+exports.getPublicUser = async ctx => {
+  const userId = ctx.params.id;
+  const user = await User.get(userId);
+  assert(user, Errors.ERR_NOT_FOUND('user'));
+  if (user.SSO) {
+    user.SSO.reader.mixinWalletClientId = await ReaderWallet.getMixinClientIdByUserAddress(
+      user.SSO.reader.address
+    );
+    user.SSO.pub.mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
+      user.SSO.pub.address
+    );
+  }
+  ctx.body = user;
 };
 
 // update nickname or avatar or bio

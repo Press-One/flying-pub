@@ -1,6 +1,7 @@
 var router = require('koa-router')();
 const {
   get,
+  getPublicUser,
   put,
   setPassword,
 } = require('../controllers/apiUser');
@@ -9,6 +10,7 @@ const {
 } = require('../middleware/api');
 
 router.get('/', ensureAuthorization(), get);
+router.get('/:id', getPublicUser);
 router.put('/', ensureAuthorization(), put);
 router.put('/password', ensureAuthorization(), setPassword);
 

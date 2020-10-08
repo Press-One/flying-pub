@@ -28,7 +28,7 @@ interface RenderUserListProps {
 }
 
 interface ConfirmDialogData {
-  userId: string;
+  userAddress: string;
   userName: string;
   type: 'allow' | 'deny';
 }
@@ -53,7 +53,7 @@ const renderUserList = (renderUserListProps: RenderUserListProps) => {
   ) : (
     <>
       {users.map((userItem) => (
-        <div key={userItem.id} className="user-list-item flex items-center">
+        <div key={userItem.address} className="user-list-item flex items-center">
           <div className="w-10 h-10 rounded-full overflow-hidden">
             <img className="w-10 h-10" src={userItem.avatar} alt={userItem.nickname} />
           </div>
@@ -181,9 +181,9 @@ export default observer(() => {
     const userName = confirmDialogData.userName;
     try {
       if (confirmDialogData.type === 'allow') {
-        await Api.allowTopicUser(confirmDialogData.userId);
+        await Api.allowTopicUser(confirmDialogData.userAddress);
       } else {
-        await Api.denyTopicUser(confirmDialogData.userId);
+        await Api.denyTopicUser(confirmDialogData.userAddress);
       }
       confirmDialogStore.hide();
       snackbarStore.show({
@@ -202,11 +202,11 @@ export default observer(() => {
     confirmDialogStore.show({
       content: `确定${{ allow: '允许', deny: '禁止' }[type]} <strong>${
         user.nickname
-      }</strong> 发布文章吗？${type === 'deny' ? '<br />（已发布文章在阅读站将不可见）' : ''}`,
+      }</strong> 发布文章吗？${type === 'deny' ? '<br />（已发布文章将不可见）' : ''}`,
       ok: () => {
         handleConfirmChangeUserPermission({
           type,
-          userId: user.id,
+          userAddress: user.address,
           userName: user.nickname,
         });
       },

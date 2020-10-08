@@ -22,7 +22,7 @@ exports.getBalance = async ctx => {
   const {
     user
   } = ctx.verification;
-  const balanceMap = await Finance.getBalanceMap(user.id);
+  const balanceMap = await Finance.getBalanceMap(user.address);
   ctx.ok(balanceMap);
 }
 
@@ -32,7 +32,7 @@ exports.recharge = async ctx => {
   const {
     user
   } = ctx.verification;
-  const key = `RECHARGE_${user.id}`;
+  const key = `RECHARGE_${user.address}`;
   try {
     await assertTooManyRequests(key);
     const {
@@ -59,7 +59,7 @@ exports.withdraw = async ctx => {
   const {
     user
   } = ctx.verification;
-  const key = `WITHDRAW_${user.id}`;
+  const key = `WITHDRAW_${user.address}`;
   try {
     await assertTooManyRequests(key);
     Log.create(user.id, `开始提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
@@ -87,7 +87,7 @@ exports.getReceipts = async ctx => {
   const {
     offset = 0, limit, filterType
   } = ctx.query;
-  const receipts = await Finance.getReceiptsByUserId(user.id, {
+  const receipts = await Finance.getReceiptsByUserAddress(user.address, {
     filterType,
     offset,
     limit: Math.min(~~limit || 10, 100),
@@ -106,7 +106,7 @@ exports.updateCustomPin = async ctx => {
     pinCode,
     oldPinCode
   } = data;
-  await Wallet.updateCustomPin(user.id, pinCode, {
+  await Wallet.updateCustomPin(user.address, pinCode, {
     oldPinCode
   });
   Log.create(user.id, '更新 pin 成功');
@@ -119,7 +119,7 @@ exports.isCustomPinExist = async ctx => {
   const {
     user
   } = ctx.verification;
-  const customPin = await Wallet.getCustomPinByUserId(user.id);
+  const customPin = await Wallet.getCustomPinByUserAddress(user.address);
   ctx.ok(!!customPin);
 }
 
@@ -132,7 +132,7 @@ exports.validatePin = async ctx => {
   const {
     pinCode
   } = data;
-  const isValid = await Wallet.validatePin(user.id, pinCode);
+  const isValid = await Wallet.validatePin(user.address, pinCode);
   Log.create(user.id, `验证 pin ${isValid ? '成功' : '失败'}`);
   ctx.ok(isValid);
 }
@@ -146,7 +146,7 @@ exports.reward = async ctx => {
   const {
     user
   } = ctx.verification;
-  const key = `REWARD_${user.id}`;
+  const key = `REWARD_${user.address}`;
   try {
     await assertTooManyRequests(key);
     await Finance.reward(fileRId, data, {
@@ -169,7 +169,8 @@ exports.rechargeThenReward = async ctx => {
   const data = ctx.request.body.payload;
   assert(data, Errors.ERR_IS_REQUIRED('payload'));
   const userId = ctx.verification.user.id;
-  const key = `RECHARGE_${userId}`;
+  const userAddress = ctx.verification.user.address;
+  const key = `RECHARGE_${userAddress}`;
   try {
     await assertTooManyRequests(key);
     const {

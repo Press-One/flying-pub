@@ -51,6 +51,7 @@ const errors = {
   ERR_WALLET_WRONG_PIN: 'Error creating new pin for Mixin wallet.',
   ERR_WALLET_FAIL_TO_UPDATE_PIN: 'Error updating pin for Mixin wallet.',
   ERR_WALLET_FAIL_TO_UPDATE_AVATAR: 'Error updating avatar for Mixin wallet.',
+  ERR_WALLET_FAIL_TO_UPDATE_NICKNAME: 'Error updating nickname for Mixin wallet.',
   ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET: 'Error accessing Mixin wallet.',
   ERR_WALLET_STATUS: 'Error wallet status.',
   ERR_WALLET_FETCH_BALANCE: 'Error fetching balance of user.',

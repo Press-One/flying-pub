@@ -26,8 +26,8 @@ export default observer(() => {
           <div className="font-bold flex justify-center">
             《<div className="truncate m-w-56">{file.title}</div>》
           </div>
-          <div className="mt-1">文章发布成功啦！</div>
-          <div className="mt-1">已经推送给关注你的读者</div>
+          <div className="mt-2 text-sm opacity-75">文章发布成功啦！</div>
+          <div className="mt-1 text-sm opacity-75">已经推送给关注你的读者</div>
         </div>
         <div className="mt-8 pb-1">
           <a href={file.url} target="_blank" rel="noopener noreferrer">
