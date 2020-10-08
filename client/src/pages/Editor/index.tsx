@@ -14,7 +14,7 @@ import { Input } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 
 import { useStore } from 'store';
-import { getQueryObject, sleep, getApiEndpoint } from 'utils';
+import { getQueryObject, sleep, getApiEndpoint, setQuery } from 'utils';
 import Api from 'api';
 import config from './config';
 
@@ -202,6 +202,9 @@ export default observer((props: any) => {
         } else {
           const res = await Api.createDraft(param);
           setFile(res);
+          setQuery({
+            id: res.id,
+          });
         }
       } else {
         if (!strict) {

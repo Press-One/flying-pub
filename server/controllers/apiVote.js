@@ -89,10 +89,10 @@ exports.create = async (ctx) => {
           const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${objectId}`;
           const post = await Post.getByRId(data.objectId);
           const authorUser = await User.getByAddress(post.author.address);
-          const isMyself = user.id === authorUser.id;
+          const isMyself = user.address === post.author.address;
           if (!isMyself) {
             await Mixin.pushToNotifyQueue({
-              userId: file.userId,
+              userId: authorUser.id,
               text: `《${truncate(file.title)}》收到了一个赞`,
               url: originUrl
             });

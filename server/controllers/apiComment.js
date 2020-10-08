@@ -63,7 +63,7 @@ exports.create = async (ctx) => {
           const file = await File.getByRId(data.objectId);
           if (file) {
             const authorUser = await User.getByAddress(post.author.address);
-            const isMyself = user.id === authorUser.id;
+            const isMyself = user.address === post.author.address;
             if (!isMyself) {
               await Mixin.pushToNotifyQueue({
                 userId: authorUser.id,
