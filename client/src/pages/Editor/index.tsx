@@ -295,7 +295,7 @@ export default observer((props: any) => {
     }
   };
 
-  const handleClickOpen = () => {
+  const handleClickOpen = async () => {
     const mixinProfile = userStore.profiles.find((v) => v.provider === 'mixin');
     const shouldCheckMixinGroup = (settings['permission.checkingProviders'] || []).includes(
       'mixin',
@@ -312,6 +312,12 @@ export default observer((props: any) => {
           )}`;
         },
       });
+      await sleep(500);
+      if (!isPublished) {
+        handleSave({
+          strict: false,
+        });
+      }
       return;
     }
 
@@ -324,6 +330,12 @@ export default observer((props: any) => {
           window.open(settings['permission.denyActionLink']);
         },
       });
+      await sleep(500);
+      if (!isPublished) {
+        handleSave({
+          strict: false,
+        });
+      }
       return;
     }
 
