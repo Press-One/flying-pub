@@ -32,6 +32,9 @@ const packUser = (user, options = {}) => {
 
 exports.getByReaderUserId = async (readerUserId, options = {}) => {
   const userId = await getUserIdByReaderUserId(readerUserId);
+  if (!userId) {
+    return null;
+  }
   const user = await get({
     id: userId
   }, options);
@@ -56,7 +59,6 @@ exports.tryGetReaderIdByAddress = async address => {
 const getUserIdByReaderUserId = async (readerUserId) => {
   assert(readerUserId, Errors.ERR_NOT_FOUND('readerUserId'))
   const mixinProfile = await ReaderProfile.getByUserIdAndProvider(readerUserId, 'mixin');
-  assert(mixinProfile, Errors.ERR_NOT_FOUND('mixinProfile'))
   if (!mixinProfile) {
     return null;
   }
