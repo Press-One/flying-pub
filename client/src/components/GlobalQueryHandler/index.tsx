@@ -12,6 +12,29 @@ export default observer(() => {
   };
 
   React.useEffect(() => {
+    setTimeout(async () => {
+      const { settings } = settingsStore;
+      const action = getQuery('action');
+      if (action === 'PERMISSION_DENY') {
+        removeQuery('action');
+        confirmDialogStore.show({
+          contentClassName: 'text-left',
+          content: settings['permission.denyText'],
+          okText: settings['permission.denyActionText'],
+          ok: () => {
+            window.open(settings['permission.denyActionLink']);
+          },
+        });
+        return;
+      }
+
+      if (action === 'LOGIN') {
+        await sleep(500);
+        modalStore.openLogin();
+        removeQuery('action');
+      }
+    }, 1000);
+
     if (ready) {
       setTimeout(async () => {
         const { settings } = settingsStore;
@@ -50,24 +73,6 @@ export default observer(() => {
             },
           });
           return;
-        }
-
-        if (action === 'PERMISSION_DENY') {
-          confirmDialogStore.show({
-            contentClassName: 'text-left',
-            content: settings['permission.denyText'],
-            okText: settings['permission.denyActionText'],
-            ok: () => {
-              window.open(settings['permission.denyActionLink']);
-            },
-          });
-          return;
-        }
-
-        if (action === 'LOGIN') {
-          await sleep(500);
-          modalStore.openLogin();
-          removeQuery('action');
         }
       }, 500);
     }
