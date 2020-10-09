@@ -1,0 +1,88 @@
+$namespace: 'p-topic';
+
+.#{$namespace} {
+  align-self: center;
+  width: 100%;
+  flex: 1 1 0;
+  align-items: stretch;
+
+  .#{$namespace}-head {
+    padding: 0 24px;
+    height: 84px;
+
+    .#{$namespace}-head-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+  }
+
+  .#{$namespace}-main {
+    padding: 0 24px 24px 24px;
+    flex: 1 0;
+    flex-basis: 0;
+    align-items: stretch;
+
+    .#{$namespace}-main-inner {
+      background: white;
+      align-items: stretch;
+      flex: 1 0;
+      flex-basis: 0;
+    }
+
+    .#{$namespace}-tab-panel-box {
+      padding: 20px 24px;
+      flex: 1 0;
+      flex-basis: 0;
+      overflow-y: scroll;
+
+      .button-box {
+        margin-top: 20px;
+        color: #4a4a4a;
+
+        .page-button {
+          margin-right: 14px;
+          color: white;
+          background: #bdbdbd;
+
+          &[disabled] {
+            background: lighten(#888888, 30%)
+          }
+        }
+      }
+
+
+      .user-list-item {
+        &+.user-list-item {
+          margin-top: 14px;
+        }
+
+        .user-avatar {
+          height: 50px;
+          width: 50px;
+          background: #ffaa99;
+          border-radius: 100%;
+        }
+
+        .user-name {
+          width: 300px;
+          margin-left: 14px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .user-operation {
+          margin-left: 14px;
+
+          .allow {
+            background: #93b719;
+          }
+
+          .deny {
+            background: #f50057;
+          }
+        }
+      }
+    }
+  }
+}

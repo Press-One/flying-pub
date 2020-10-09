@@ -2,6 +2,8 @@ import qs from 'query-string';
 import moment from 'moment';
 export { initMathJax } from './mathJax';
 
+export { default as Endpoint } from './endpoint';
+
 export const getQueryObject = () => {
   return qs.parse(window.location.search);
 };
@@ -100,6 +102,15 @@ export const sleep = (duration: number) =>
 export const getLoginUrl = () =>
   `${getApiEndpoint()}/api/auth/mixin/login?redirect=${window.location.href}`;
 
+export const getMessageSystemUrl = () => {
+  const host = window.location.host;
+  return host === 'xue.cn' ? 'https://push.xue.cn' : 'https://message.prsdev.club';
+};
+
+export const getTokenUrl = () => {
+  return isDevelopment ? 'https://dev-reader.prsdev.club/api/token' : '/api/token';
+};
+
 let stoppedBodyScroll = false;
 let scrollTop = 0;
 export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
@@ -146,4 +157,17 @@ export const scrollToHere = (top: number) => {
   } catch (err) {
     scrollElement.scrollTop = top;
   }
+};
+
+export const getProtectedPhone = (phone: string) => {
+  return phone
+    .split('')
+    .map((s: string, idx: number) => {
+      if (idx > 2 && idx < 7) {
+        return '*';
+      } else {
+        return s;
+      }
+    })
+    .join('');
 };

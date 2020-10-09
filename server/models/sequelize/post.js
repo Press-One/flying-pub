@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 const Author = require('./author');
 
-const Post = sequelize.define('post', {
+const Post = sequelize.define('posts', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -53,6 +53,13 @@ const Post = sequelize.define('post', {
   sticky: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  status: {
+    type: Sequelize.STRING
+  },
+  invisibility: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,
@@ -66,10 +73,12 @@ const Post = sequelize.define('post', {
     fields: ['deleted']
   }, {
     fields: ['sticky']
+  }, {
+    fields: ['status']
+  }, {
+    fields: ['visibility']
   }]
 });
-
-Post.sync();
 
 Post.belongsTo(Author, {
   foreignKey: 'userAddress',

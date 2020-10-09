@@ -2,7 +2,7 @@ const Author = require('../models/author');
 const {
   assert,
   Errors
-} = require('../models/validator');
+} = require('../utils/validator');
 
 exports.get = async ctx => {
   const address = ctx.params.id;

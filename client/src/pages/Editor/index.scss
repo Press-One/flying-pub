@@ -1,0 +1,85 @@
+.p-editor {
+  &-back {
+    position: absolute;
+    top: 0;
+    left: -20px;
+    box-sizing: border-box;
+    height: 45px;
+    margin-top: 25px;
+    padding-right: 25px;
+    color: #2495DC;
+    cursor: pointer;
+    font-size: 13px;
+    border-right: 1px solid #d8d8d8;
+
+    .MuiSvgIcon-root {
+      width: 30px;
+      height: 30px;
+      font-weight: 200;
+    }
+  }
+
+  &-save {
+    position: absolute;
+    top: 0;
+    right: -15px;
+    z-index: 999;
+  }
+
+  &-input-area {
+    box-sizing: border-box;
+    width: 100vw;
+    max-width: 850px;
+    padding-top: 40px;
+    margin-left: 120px;
+    margin-right: 140px;
+
+    .MuiInput-root {
+      margin-bottom: 20px;
+      font-size: 26px;
+      font-weight: 500;
+    }
+  }
+
+  &-markdown {
+    .editor-toolbar {
+      border: 1px solid #ddd;
+      border-bottom: none;
+    }
+
+    .CodeMirror {
+      font-size: 16px;
+      padding: 16px;
+      line-height: 1.8;
+      height: calc(100vh - 200px);
+    }
+  }
+
+  .MuiInput-underline {
+
+    &:after,
+    &:before {
+      display: none;
+    }
+  }
+}
+
+.publish-dialog {
+  .MuiDialogTitle-root {
+    padding: 24px 32px;
+  }
+
+  .MuiDialogContent-root {
+    padding: 8px 32px;
+  }
+
+  .MuiDialogActions-root {
+    padding: 16px 34px;
+    width: 280px;
+
+    .cancel-publish {
+      height: 40px;
+      line-height: 40px;
+    }
+  }
+}

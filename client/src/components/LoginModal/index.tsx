@@ -11,7 +11,8 @@ import { useStore } from 'store';
 
 export default observer(() => {
   const [directing, setDirecting] = React.useState(false);
-  const { modalStore } = useStore();
+  const { modalStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const isPc = !isMobile;
   const isWeChat = isMobile;
 
@@ -21,10 +22,12 @@ export default observer(() => {
         <div className="p-8 bg-white md:rounded text-center main">
           <div className="text-lg font-bold text-gray-700 leading-none">登录</div>
           <div className="mt-4 text-gray-700">
-            您需要使用 Mixin App 登录
+            您需要使用 {settings['mixinApp.name']} 登录
             <br className="mt-2" />
-            {isPc && '下一步你将跳转到 Mixin 登录页'}
-            {isWeChat && <span className="font-bold">如果你已经安装了 Mixin App</span>}
+            {isPc && `下一步你将跳转到${settings['mixinApp.name']} 登录页`}
+            {isWeChat && (
+              <span className="font-bold">如果你已经安装了 {settings['mixinApp.name']} </span>
+            )}
             {isWeChat && (
               <div className="w-40 m-auto mt-3">
                 <div className="text-gray-700">
@@ -40,7 +43,7 @@ export default observer(() => {
             )}
           </div>
           <div className="mt-5 text-gray-500 text-xs md:px-10">
-            Mixin 是一个全币种数字货币钱包
+            {settings['mixinApp.name']} 是一个全币种数字货币钱包
             <br className="mt-2" />
             只需手机号加 6 位数字密码
             <br className="mt-2" />
@@ -50,11 +53,11 @@ export default observer(() => {
             <span className="flex items-center text-lg mr-1">
               <Info />
             </span>
-            手机还没有安装 Mixin？
+            手机还没有安装 {settings['mixinApp.name']} ？
             {!isWeChat && (
               <a
                 className="text-blue-400"
-                href="https://mixin-www.zeromesh.net/messenger"
+                href={settings['mixinApp.downloadUrl']}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -64,8 +67,8 @@ export default observer(() => {
           </div>
           {isWeChat && (
             <div className="mt-4">
-              <a href="https://mixin-www.zeromesh.net/messenger">
-                <Button>下载 Mixin App</Button>
+              <a href={settings['mixinApp.downloadUrl']}>
+                <Button>下载 {settings['mixinApp.name']} App</Button>
               </a>
             </div>
           )}
@@ -73,7 +76,7 @@ export default observer(() => {
             <div className="mt-4">
               <a href={getLoginUrl()} onClick={() => setDirecting(true)}>
                 <Button>
-                  使用<span className="mx-1"> Mixin </span>
+                  使用<span className="mx-1"> {settings['mixinApp.name']} </span>
                   <span className="hidden md:inline-block">扫码</span>登录
                   <ButtonProgress isDoing={directing} />
                 </Button>

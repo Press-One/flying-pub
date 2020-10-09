@@ -51,6 +51,7 @@ const errors = {
   ERR_WALLET_WRONG_PIN: 'Error creating new pin for Mixin wallet.',
   ERR_WALLET_FAIL_TO_UPDATE_PIN: 'Error updating pin for Mixin wallet.',
   ERR_WALLET_FAIL_TO_UPDATE_AVATAR: 'Error updating avatar for Mixin wallet.',
+  ERR_WALLET_FAIL_TO_UPDATE_NICKNAME: 'Error updating nickname for Mixin wallet.',
   ERR_WALLET_FAIL_TO_ACCESS_MIXIN_WALLET: 'Error accessing Mixin wallet.',
   ERR_WALLET_STATUS: 'Error wallet status.',
   ERR_WALLET_FETCH_BALANCE: 'Error fetching balance of user.',
@@ -60,6 +61,14 @@ const errors = {
   ERR_WALLET_FAIL_TO_CREATE_REWARD_RECEIPT: 'Error creating reward receipt.',
   ERR_WALLET_MISMATCH_PIN: 'Error mismatching pin.',
   ERR_WALLET_GT_MAX_AMOUNT: 'Error greater than max amount.',
+
+  // 评论敏感词检测
+  COMMENT_IS_INVALID() {
+    return {
+      code: 'ERR_IS_INVALID',
+      message: `comment is invalid. reason: comment contains sensitive words.`
+    };
+  },
 };
 
 const codes = Object.keys(errors);

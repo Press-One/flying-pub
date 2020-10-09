@@ -1,8 +1,8 @@
 var router = require('koa-router')();
 const {
-  list,
+  listPending
 } = require('../controllers/apiBlock');
 
-router.get('/', list);
+router.get('/pending', listPending);
 
 module.exports = router;

@@ -1,22 +1,5 @@
-const config = require('../../../config.wallet');
 const Sequelize = require('sequelize');
-const db = config.db;
-
-const sequelize = new Sequelize(db.database, db.user, db.password, {
-  host: db.host,
-  dialect: db.dialect,
-  logging: config.sequelizeLogging
-});
-
-(async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('Wallet database connected successfully.');
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-    process.exit(0);
-  }
-})();
+const sequelize = require('../database/wallet');
 
 const Wallet = sequelize.define('wallets', {
   id: {
@@ -24,9 +7,13 @@ const Wallet = sequelize.define('wallets', {
     primaryKey: true,
     autoIncrement: true
   },
-  userId: {
-    type: Sequelize.BIGINT,
+  userAddress: {
+    type: Sequelize.STRING,
     unique: true
+  },
+  // 即将废弃 userId
+  userId: {
+    type: Sequelize.BIGINT
   },
   customPin: {
     type: Sequelize.STRING,
@@ -55,13 +42,7 @@ const Wallet = sequelize.define('wallets', {
   },
 }, {
   timestamps: true,
-  charset: 'utf8mb4',
-  indexes: [{
-    unique: true,
-    fields: ['userId']
-  }]
+  charset: 'utf8mb4'
 });
-
-Wallet.sync();
 
 module.exports = Wallet;

@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Comment = sequelize.define('comments', {
   id: {
@@ -38,7 +38,5 @@ const Comment = sequelize.define('comments', {
     fields: ['deleted']
   }]
 });
-
-Comment.sync();
 
 module.exports = Comment;

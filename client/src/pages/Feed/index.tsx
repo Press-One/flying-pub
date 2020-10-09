@@ -113,7 +113,7 @@ export default observer(() => {
             {settings['site.title']}
           </h1>
           <div className="mt-2 w-16 m-auto border-b border-gray-500" />
-          <div className="w-56 md:w-full m-auto text-gray-600 text-center mt-3 text-base">
+          <div className="w-64 md:w-full m-auto text-gray-600 text-center mt-3 text-base">
             {settings['site.slogan']}
           </div>
         </div>

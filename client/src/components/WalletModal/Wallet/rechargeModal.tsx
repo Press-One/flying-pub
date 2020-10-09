@@ -13,7 +13,8 @@ import Api from './api';
 import { isMobile, isPc, sleep, isIPhone } from 'utils';
 
 export default (props: any) => {
-  const { userStore, socketStore, snackbarStore } = useStore();
+  const { userStore, socketStore, snackbarStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const { isLogin } = userStore;
   const { open, onClose, currency } = props;
   const [step, setStep] = React.useState(1);
@@ -97,7 +98,8 @@ export default (props: any) => {
     return (
       <div className="px-2">
         <div className="text-lg font-bold text-gray-700">
-          Mixin <span className="hidden md:inline-block">扫码</span>充值
+          {settings['mixinApp.name']}
+          <span className="hidden md:inline-block">扫码</span>充值
         </div>
         {(isPc || (isMobile && !waitingPayment)) && (
           <div>
@@ -171,7 +173,8 @@ export default (props: any) => {
     return (
       <div className="px-10">
         <div className="text-lg font-bold text-gray-700">
-          Mixin <span className="hidden md:inline-block">扫码</span>充值
+          {settings['mixinApp.name']}
+          <span className="hidden md:inline-block">扫码</span>充值
         </div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
@@ -189,7 +192,7 @@ export default (props: any) => {
                     setIframeLoading(false);
                   }, 2000);
                 }}
-                title={`Mixin ${isPc ? '扫码' : ''}充值`}
+                title={`${settings['mixinApp.name']} ${isPc ? '扫码' : ''}充值`}
                 src={paymentUrl}
               ></iframe>
               <style jsx>{`
@@ -212,7 +215,7 @@ export default (props: any) => {
           )}
         </div>
         <div className="mt-3 text-gray-600">
-          请使用 Mixin 扫描二维码
+          请使用 {settings['mixinApp.name']} 扫描二维码
           <br />
           支付成功后页面会自动刷新
           <br />
@@ -222,10 +225,10 @@ export default (props: any) => {
           <span className="flex items-center text-lg mr-1">
             <Info />
           </span>
-          手机还没有安装 Mixin？
+          手机还没有安装 {settings['mixinApp.name']} ?
           <a
             className="text-blue-400"
-            href="https://mixin-www.zeromesh.net/messenger"
+            href={settings['mixinApp.downloadUrl']}
             target="_blank"
             rel="noopener noreferrer"
           >

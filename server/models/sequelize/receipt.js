@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database/pub');
+const File = require('./file');
 
 const Receipt = sequelize.define('receipts', {
   id: {
@@ -94,6 +95,9 @@ const Receipt = sequelize.define('receipts', {
   }]
 });
 
-Receipt.sync();
+Receipt.belongsTo(File, {
+  foreignKey: 'objectRId',
+  targetKey: 'rId'
+});
 
 module.exports = Receipt;

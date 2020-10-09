@@ -9,7 +9,7 @@ export default observer((props: any) => {
   const { prevPath } = pathStore;
 
   return (
-    <div className="absolute top-0 left-0 -ml-32 cursor-pointer">
+    <div className="absolute top-0 left-0 -ml-40 cursor-pointer transform scale-90">
       <div onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}>
         <ButtonOutlined>
           <div className="p-1 flex justify-center items-center">

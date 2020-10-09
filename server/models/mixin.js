@@ -13,15 +13,6 @@ const JOB_ID_PREFIX = 'JOB_';
 let enabled = false;
 let connected = false;
 
-exports.get = async providerId => {
-  const profile = await Profile.findOne({
-    where: {
-      providerId
-    }
-  });
-  return profile ? profile.toJSON() : null;
-}
-
 const mixin = new Mixin({
   client_id: config.provider.mixin.clientId,
   aeskey: config.provider.mixin.aesKey,
@@ -84,12 +75,12 @@ const start = () => {
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
           if (!profile) {
-            await mixin.sendText('飞帖没有查询到你的账户信息，请先到飞帖登录一下', msgObj);
+            await mixin.sendText(`${config.settings['site.name']}没有查询到你的账户信息，请先到${config.settings['site.name']}登录一下`, msgObj);
             return;
           }
           try {
             await tryCreateConversation(profile.userId, msgObj);
-            const text = config.settings['SSO.enabled'] ? '你成功开通了消息提醒。一旦有已关注的作者发布新文章、或者是其他人在评论区 @ 你，或者你的文章发布成功、打赏、评论等消息，我会第一时间通知你' : '你成功开通了消息提醒。一旦有已关注的作者发布新文章、或者是其他人在评论区 @ 你，我会第一时间通知你';
+            const text = '你成功开通了消息提醒。当有人在评论区 @ 你，或者你的文章收到点赞、打赏、评论，我会第一时间通知你';
             await trySendText(profile.userId, text);
           } catch (e) {
             console.log(e);
@@ -163,6 +154,11 @@ const trySendButton = async (userId, text) => {
 }
 
 exports.pushToNotifyQueue = async data => {
+  const conversation = await Conversation.get(data.userId);
+  if (!conversation) {
+    console.log('conversation not found, cancel notification');
+    return;
+  }
   await Cache.pSet(TYPE, `${JOB_ID_PREFIX}${new Date().getTime()}`, JSON.stringify(data));
 }
 

@@ -6,7 +6,7 @@ const {
   assert,
   Errors,
   attempt
-} = require('../models/validator');
+} = require('../utils/validator');
 
 exports.get = async ctx => {
   const providerId = ctx.params.providerId;

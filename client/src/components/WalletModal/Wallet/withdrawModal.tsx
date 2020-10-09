@@ -23,8 +23,13 @@ export default (props: any) => {
   const [pin, setPin] = React.useState('');
   const [paying, setPaying] = React.useState(false);
   const [isPaid, setIsPaid] = React.useState(false);
-  const { snackbarStore, walletStore } = useStore();
+  const { snackbarStore, walletStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
   const { balance } = walletStore;
+
+  if (!mixinAccount) {
+    return null;
+  }
 
   const onCloseModal = (isSuccess: boolean, message?: string) => {
     setStep(1);
@@ -55,7 +60,7 @@ export default (props: any) => {
           <div className="text-sm">
             转给 <span className="font-bold mr-1">{mixinAccount.full_name}</span>
           </div>{' '}
-          <Tooltip placement="right" title="你当前登录的 Mixin 账号">
+          <Tooltip placement="right" title={`你当前登录的${settings['mixinApp.name']} 账号`}>
             <Help className="text-gray-600" />
           </Tooltip>
         </div>
@@ -127,7 +132,7 @@ export default (props: any) => {
             onCloseModal(
               true,
               isPc
-                ? `转出成功，你可以打开 Mixin App 查看已经到账的 ${amount} 个 ${currency}`
+                ? `转出成功，你可以打开${settings['mixinApp.name']} App 查看已经到账的 ${amount} 个 ${currency}`
                 : '转出成功',
             );
           } else {

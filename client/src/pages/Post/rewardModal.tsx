@@ -225,6 +225,7 @@ export default observer((props: any) => {
       const result = checkAmount(amount, currency);
       if (result.ok) {
         const balanceMethodAutoSelected =
+          walletStore.canSpendBalance &&
           isFetchedBalance &&
           isCustomPinExist &&
           Number(assetBalance) >= Number(amount) &&
@@ -324,31 +325,33 @@ export default observer((props: any) => {
       {
         enabled: true,
         method: 'mixin',
-        name: `Mixin ${isPc ? '扫码' : ''}支付`,
+        name: `${settings['mixinApp.name']} ${isPc ? '扫码' : ''}支付`,
       },
     ];
-    if (Number(assetBalance) >= Number(amount)) {
-      if (isCustomPinExist) {
-        payments.unshift({
-          enabled: true,
-          method: 'balance',
-          name: '余额支付',
-        });
+    if (walletStore.canSpendBalance) {
+      if (Number(assetBalance) >= Number(amount)) {
+        if (isCustomPinExist) {
+          payments.unshift({
+            enabled: true,
+            method: 'balance',
+            name: '余额支付',
+          });
+        } else {
+          payments.push({
+            enabled: false,
+            disabledReason: 'PIN_NOT_EXIST',
+            method: 'balance',
+            name: '余额支付',
+          });
+        }
       } else {
         payments.push({
           enabled: false,
-          disabledReason: 'PIN_NOT_EXIST',
+          disabledReason: 'NO_ENOUGH_BALANCE',
           method: 'balance',
           name: '余额支付',
         });
       }
-    } else {
-      payments.push({
-        enabled: false,
-        disabledReason: 'NO_ENOUGH_BALANCE',
-        method: 'balance',
-        name: '余额支付',
-      });
     }
 
     return (
@@ -359,7 +362,15 @@ export default observer((props: any) => {
             <div className="hidden" />
           </Tooltip>
         )}
-        <div className="mt-6 mx-2 md:mx-4">
+        <div
+          className={classNames(
+            {
+              'mt-10 pb-5': !walletStore.canSpendBalance,
+              'mt-6': walletStore.canSpendBalance,
+            },
+            'mx-2 md:mx-4',
+          )}
+        >
           {payments.map((payment: any) => (
             <div key={payment.method}>
               <div
@@ -367,10 +378,8 @@ export default observer((props: any) => {
                   {
                     'bg-blue-400 border-blue-400 text-white': payment.enabled,
                     'opacity-75 border-gray-400 text-gray-500 cursor-not-allowed': !payment.enabled,
-                    'px-20': !openingMixinSchema,
-                    'px-16': openingMixinSchema,
                   },
-                  'flex justify-center items-center text-center border rounded md:px-12 p-3 mt-3 leading-none cursor-pointer',
+                  'flex justify-center items-center text-center border rounded py-3 mt-3 leading-none cursor-pointer payment-button',
                 )}
                 onClick={() => {
                   if (payment.enabled) {
@@ -399,7 +408,9 @@ export default observer((props: any) => {
                   {payment.name}
                 </span>
                 {payment.method === 'mixin' && openingMixinSchema && (
-                  <ButtonProgress isDoing={true} />
+                  <div className="-ml-1">
+                    <ButtonProgress isDoing={true} />
+                  </div>
                 )}
               </div>
               {!payment.enabled && (
@@ -446,13 +457,40 @@ export default observer((props: any) => {
                   )}
                 </div>
               )}
+              <style jsx>{`
+                .payment-button {
+                  width: 180px;
+                }
+              `}</style>
             </div>
           ))}
         </div>
-        <div className="flex justify-center mt-5 text-sm md:text-xs text-blue-400">
-          <div className="cursor-pointer" onClick={() => setStep(2)}>
-            返回
-          </div>
+        <div className="flex justify-center mt-4 text-sm md:text-xs text-blue-400">
+          {walletStore.canSpendBalance && (
+            <div className="cursor-pointer" onClick={() => setStep(2)}>
+              返回
+            </div>
+          )}
+          {!walletStore.canSpendBalance && (
+            <div className="text-xs">
+              <div className="flex justify-center items-center text-gray-500">
+                <span className="flex items-center text-lg mr-1">
+                  <Info />
+                </span>
+                手机还没有安装 {settings['mixinApp.name']} ？
+              </div>
+              <div className="text-center mt-1">
+                <a
+                  className="text-blue-400"
+                  href={settings['mixinApp.downloadUrl']}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  前往下载
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -506,7 +544,7 @@ export default observer((props: any) => {
     return (
       <div className="px-10">
         <div className="text-lg font-bold text-gray-700">
-          Mixin <span className="hidden md:inline-block">扫码</span>支付
+          {settings['mixinApp.name']} <span className="hidden md:inline-block">扫码</span>支付
         </div>
         <div className="w-64 h-64 relative overflow-hidden">
           {paymentUrl && (
@@ -524,7 +562,7 @@ export default observer((props: any) => {
                     setIframeLoading(false);
                   }, 2000);
                 }}
-                title="Mixin"
+                title={settings['mixinApp.name']}
                 src={paymentUrl}
               ></iframe>
               <style jsx>{`
@@ -547,7 +585,7 @@ export default observer((props: any) => {
           )}
         </div>
         <div className="mt-3 text-gray-600">
-          请使用 Mixin 扫描二维码
+          请使用 {settings['mixinApp.name']} 扫描二维码
           <br />
           支付成功后页面会自动刷新
           <br />
@@ -557,10 +595,10 @@ export default observer((props: any) => {
           <span className="flex items-center text-lg mr-1">
             <Info />
           </span>
-          手机还没有安装 Mixin？
+          手机还没有安装 {settings['mixinApp.name']} ？
           <a
             className="text-blue-400"
-            href="https://mixin-www.zeromesh.net/messenger"
+            href={settings['mixinApp.downloadUrl']}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -574,7 +612,7 @@ export default observer((props: any) => {
   const step6 = () => {
     return (
       <div>
-        <div className="text-lg font-bold text-gray-700">Mixin 支付</div>
+        <div className="text-lg font-bold text-gray-700"> {settings['mixinApp.name']} 支付</div>
         {isMobile && (
           <div className="pt-10 text-center">
             <Loading />

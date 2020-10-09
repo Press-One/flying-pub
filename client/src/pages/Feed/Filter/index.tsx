@@ -12,7 +12,7 @@ import Api from 'api';
 let filterTopPosition = 0;
 
 export default observer((props: any) => {
-  const { feedStore, settingsStore } = useStore();
+  const { userStore, feedStore, settingsStore } = useStore();
   const selectorId = 'feed-filter';
   const { filterType: type, filterDayRange: dayRange } = feedStore;
   const { settings } = settingsStore;
@@ -88,7 +88,9 @@ export default observer((props: any) => {
       if (filter.type === 'POPULARITY') {
         settings['filter.dayRange'] = filter.dayRange;
       }
-      await Api.saveSettings(settings);
+      if (userStore.isLogin) {
+        await Api.saveSettings(settings);
+      }
     } catch (err) {}
     try {
       const { filterType, optionsForFetching, limit, length } = feedStore;

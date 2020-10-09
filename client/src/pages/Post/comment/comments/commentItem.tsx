@@ -1,5 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 import { ago, isMobile } from 'utils';
 import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
 import ClearOutlined from '@material-ui/icons/ClearOutlined';
@@ -31,16 +32,23 @@ export default class CommentItem extends React.Component<any, any> {
         id={`comment_${comment.id}`}
       >
         <div className="avatar mr-3 md:mr-4 rounded">
-          <img src={comment.user.avatar} width="36px" height="36px" alt="avatar" />
+          <Link to={`/authors/${comment.user.address}`}>
+            <img src={comment.user.avatar} width="36px" height="36px" alt="avatar" />
+          </Link>
         </div>
         <div className="w-full">
           <div className="flex justify-between items-center">
             <div className="flex items-center leading-none">
-              <span
-                className={classNames({ 'name-max-width': isMobile }, 'mr-3 text-sm gray truncate')}
-              >
-                {comment.user.name}
-              </span>
+              <Link to={`/authors/${comment.user.address}`}>
+                <span
+                  className={classNames(
+                    { 'name-max-width': isMobile },
+                    'mr-3 text-sm gray truncate',
+                  )}
+                >
+                  {comment.user.nickname}
+                </span>
+              </Link>
               <span className="hidden md:block gray text-xs">{ago(comment.createdAt)}</span>
             </div>
             <div className="relative">

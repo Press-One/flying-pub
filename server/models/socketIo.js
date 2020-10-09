@@ -7,7 +7,7 @@ const config = require('../config');
 const {
   assert,
   Errors
-} = require('./validator');
+} = require('../utils/validator');
 const {
   log
 } = require('../utils');

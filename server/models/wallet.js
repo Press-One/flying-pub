@@ -2,10 +2,10 @@ const Mixin = require('mixin-node');
 const image2base64 = require('image-to-base64');
 const util = require('../utils');
 const config = require('../config');
-const walletConfig = require('../config.wallet');
+const SSOWalletConfig = require('../SSO/config.pub.wallet');
 const Wallet = require('./sequelize/wallet');
-const User = require('./user');
 const Cache = require('./cache');
+const SSOConfig = require("../SSO/config.pub");
 const {
   aesCrypto,
   aesDecrypt
@@ -14,15 +14,15 @@ const {
   assert,
   assertFault,
   Errors
-} = require('./validator')
-const aesKey256 = walletConfig.encryption.aesKey256;
+} = require('../utils/validator')
+const aesKey256 = SSOWalletConfig.encryption.aesKey256;
 
 const mixin = new Mixin({
-  client_id: config.provider.mixin.clientId,
-  aeskey: config.provider.mixin.aesKey,
-  pin: config.provider.mixin.pinCode,
-  session_id: config.provider.mixin.sessionId,
-  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
+  client_id: SSOConfig.provider.mixin.clientId,
+  aeskey: SSOConfig.provider.mixin.aesKey,
+  pin: SSOConfig.provider.mixin.pinCode,
+  session_id: SSOConfig.provider.mixin.sessionId,
+  privatekey: Buffer.from(SSOConfig.provider.mixin.privateKey, 'utf8')
 });
 
 const getNumberByMixinClientId = mixinClientId => {
@@ -36,7 +36,7 @@ const getNumberByMixinClientId = mixinClientId => {
 }
 
 const aesCryptoWallet = data => {
-  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt;
+  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt;
   data.mixinAesKey = aesCrypto(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesCrypto(data.mixinSessionId, aesKey256, counterInitialValue);
   data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, aesKey256, counterInitialValue);
@@ -48,7 +48,7 @@ const aesDecryptWallet = data => {
   if (!data.mixinAccount) {
     return data;
   }
-  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt : 5;
+  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt : 5;
   data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, aesKey256, counterInitialValue);
   data.mixinAesKey = aesDecrypt(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesDecrypt(data.mixinSessionId, aesKey256, counterInitialValue);
@@ -68,14 +68,9 @@ const getBase64Image = async (url) => {
   return base64;
 }
 
-const generateWallet = async userId => {
-  assertFault(userId, Errors.ERR_IS_REQUIRED(userId));
-  const user = await User.get(userId, {
-    withProfile: true
-  });
-  assertFault(user, Errors.ERR_NOT_FOUND(user));
-  assertFault(user.name, Errors.ERR_NOT_FOUND('user.name'))
-  let mxRaw = await mixin.account.createUser(user.name);
+const generateWallet = async nickname => {
+  assertFault(nickname, Errors.ERR_IS_REQUIRED('nickname'))
+  let mxRaw = await mixin.account.createUser(nickname);
   assertFault(
     mxRaw && mxRaw.data && mxRaw.publickey && mxRaw.privatekey,
     Errors.ERR_WALLET_FAIL_TO_CREATE_WALLET
@@ -118,10 +113,26 @@ const generateWallet = async userId => {
   return aesCryptoWallet(wallet);
 };
 
-const getByUserId = async userId => {
+exports.updateNickname = async (userAddress, nickname) => {
+  assertFault(userAddress, Errors.ERR_IS_REQUIRED('userAddress'))
+  assertFault(nickname, Errors.ERR_IS_REQUIRED('nickname'))
+  const wallet = await exports.getRawByUserAddress(userAddress);
+  assertFault(wallet, Errors.ERR_IS_REQUIRED('wallet'))
+  const updateOptions = {
+    client_id: wallet.mixinClientId,
+    session_id: wallet.mixinSessionId,
+    privatekey: wallet.mixinPrivateKey
+  };
+  const mxProfileRaw = await mixin.account.updateProfile({
+    full_name: nickname
+  }, updateOptions);
+  assertFault(mxProfileRaw, Errors.ERR_WALLET_FAIL_TO_UPDATE_NICKNAME);
+}
+
+const getByUserAddress = async userAddress => {
   const wallet = await Wallet.findOne({
     where: {
-      userId
+      userAddress
     }
   });
   if (!wallet) {
@@ -132,47 +143,52 @@ const getByUserId = async userId => {
   return walletJson;
 }
 
-exports.exists = async userId => {
-  const wallet = await getByUserId(userId);
+exports.exists = async userAddress => {
+  const wallet = await getByUserAddress(userAddress);
   return !!wallet;
 }
 
-exports.getMixinClientIdByUserId = async userId => {
-  const wallet = await getByUserId(userId);
+exports.getMixinClientIdByUserAddress = async userAddress => {
+  const wallet = await getByUserAddress(userAddress);
   return wallet ? wallet.mixinClientId : null;
 }
 
-const getCustomPinByUserId = async userId => {
-  const wallet = await getByUserId(userId);
+const getCustomPinByUserAddress = async userAddress => {
+  const wallet = await getByUserAddress(userAddress);
   return wallet ? wallet.customPin : null;
 }
-exports.getCustomPinByUserId = getCustomPinByUserId;
+exports.getCustomPinByUserAddress = getCustomPinByUserAddress;
 
-exports.getRawByUserId = async userId => {
-  const wallet = await getByUserId(userId);
+exports.getRawByUserAddress = async userAddress => {
+  const wallet = await getByUserAddress(userAddress);
   return wallet ? aesDecryptWallet(wallet) : null;
 }
 
-exports.tryCreateWallet = async (userId) => {
-  const existedWallet = await getByUserId(userId);
+exports.tryCreateWallet = async (userAddress, userNickName) => {
+  assertFault(userAddress, Errors.ERR_IS_REQUIRED(userAddress));
+  const existedWallet = await getByUserAddress(userAddress);
 
   if (existedWallet) {
     return true;
   }
 
-  const walletData = await generateWallet(userId);
+  const walletData = await generateWallet(userNickName);
   const wallet = await Wallet.create({
-    userId,
+    userAddress,
     ...walletData
   });
 
   return wallet;
 };
 
-exports.updateCustomPin = async (userId, pinCode, options = {}) => {
-  assert(userId, Errors.ERR_IS_REQUIRED('userId'))
+exports.updateCustomPin = async (userAddress, pinCode, options = {}) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
-  const customPin = await getCustomPinByUserId(userId);
+  const wallet = await getByUserAddress(userAddress);
+  assert(wallet, Errors.ERR_NOT_FOUND('wallet'));
+  const {
+    customPin
+  } = wallet;
   if (customPin) {
     const {
       oldPinCode
@@ -186,16 +202,20 @@ exports.updateCustomPin = async (userId, pinCode, options = {}) => {
     customPin: cryptoPin,
   }, {
     where: {
-      userId
+      userAddress
     }
   });
   return true;
 }
 
-exports.validatePin = async (userId, pinCode) => {
-  assert(userId, Errors.ERR_IS_REQUIRED('userId'))
+exports.validatePin = async (userAddress, pinCode) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'))
   assert(pinCode, Errors.ERR_IS_REQUIRED('pinCode'))
-  const customPin = await getCustomPinByUserId(userId);
+  const wallet = await getByUserAddress(userAddress);
+  assert(wallet, Errors.ERR_NOT_FOUND('wallet'));
+  const {
+    customPin
+  } = wallet;
   if (customPin) {
     const cryptoPin = aesCrypto(pinCode, aesKey256);
     return customPin === cryptoPin;

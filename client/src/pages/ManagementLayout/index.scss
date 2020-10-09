@@ -1,0 +1,133 @@
+.p-manage-layout {
+  min-width: 850px;
+
+  &-nav {
+    width: 267px;
+    min-height: 100vh;
+
+    &-ul {
+      padding: 0;
+
+      &-title {
+        font-size: 12px;
+      }
+    }
+
+    &-li {
+      list-style: none;
+
+      &-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+      }
+    }
+
+    &-link {
+      padding: 6px 32px;
+      color: #16b3b3;
+      transition: none;
+      margin: 5px;
+      user-select: none;
+      cursor: pointer;
+
+      &.active,
+      &:hover {
+        background-color: #F7F9FC;
+      }
+
+      .MuiSvgIcon-root {
+        width: 14px;
+        height: 14px;
+
+        .MuiPaper-elevation1 {
+          border-radius: 5px;
+          box-shadow: 0 0 1px rgba(0, 0, 0, .12), 0 1px 6px rgba(0, 0, 0, .03), 0 6px 10px -8px rgba(0, 0, 0, .1);
+          overflow: hidden;
+        }
+      }
+    }
+
+    &-button {
+      box-sizing: content-box !important;
+      height: 36px !important;
+      padding: 10px 15px 10px 20px !important;
+      margin: 12px 5px 24px !important;
+      text-transform: none !important;
+    }
+
+    &-img {
+      height: 34px;
+      border-radius: 100%;
+      margin-right: 8px;
+      border: 1px solid #F7F9FC;
+    }
+
+    &-info {
+      width: 160px;
+      font-weight: 600;
+
+      &-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      &-icon {
+        width: 20px !important;
+        height: 20px !important;
+      }
+
+      .MuiSvgIcon-root {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  &-main {
+    background-color: #F2F4F7;
+    width: 150px;
+    height: 100vh;
+    flex-grow: 1;
+    align-items: stretch;
+
+    &>* {
+      flex: 0 0 auto;
+    }
+  }
+
+  &-popover {
+    .MuiPaper-root {
+      width: 235px;
+    }
+  }
+
+  .MuiPaper-elevation1 {
+    border-radius: 5px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, .12), 0 1px 6px rgba(0, 0, 0, .03), 0 6px 10px -8px rgba(0, 0, 0, .1);
+  }
+
+  .MuiTableRow-head {
+    background-color: #F8FAFC;
+  }
+
+  .MuiTableCell-root {
+    border-bottom-color: #e5eff5;
+    padding: 12px 40px 12px 25px;
+
+    &:last-child {
+      padding-right: 25px;
+    }
+  }
+
+  .MuiTableCell-head {
+    padding: 12px 40px 12px 25px;
+  }
+
+  .MuiTableRow-root {
+    &.MuiTableRow-hover:hover {
+      background: #f8fafc;
+    }
+  }
+}

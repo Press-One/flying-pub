@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./');
+const sequelize = require('./database');
 
 const Settings = sequelize.define('settings', {
   id: {
@@ -21,7 +21,5 @@ const Settings = sequelize.define('settings', {
     fields: ['userId']
   }]
 });
-
-Settings.sync();
 
 module.exports = Settings;

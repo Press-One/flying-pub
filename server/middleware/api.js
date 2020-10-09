@@ -5,23 +5,15 @@ const {
   assert,
   Errors,
   throws,
-} = require('../models/validator');
+} = require('../utils/validator');
 const User = require('../models/user');
 const Cache = require('../models/cache');
 
 exports.ensureAuthorization = (options = {}) => {
   const {
-    strict = true,
-      checkApiAccessKey = false,
+    strict = true
   } = options;
   return async (ctx, next) => {
-    if (strict && checkApiAccessKey) {
-      const apiAccessKey = config.auth.apiAccessKey;
-      if (apiAccessKey === ctx.headers['x-api-access-key']) {
-        await next();
-        return;
-      }
-    }
     const token = ctx.cookies.get(config.auth.tokenKey);
     if (!token && !strict) {
       await next();
@@ -45,15 +37,22 @@ exports.ensureAuthorization = (options = {}) => {
     }
     const {
       data: {
-        userId
+        userId,
+        provider,
+        providerId
       }
     } = decodedToken;
     assert(userId, Errors.ERR_NOT_FOUND('userId'));
-    const user = await User.get(userId, {
-      withProfile: true,
-    });
-    ctx.verification.user = user;
+    const user = await User.get(userId);
     assert(user, Errors.ERR_NOT_FOUND('user'));
+    const providerAdminList = config.auth.adminList ? config.auth.adminList[provider] : [];
+    const isAdmin = (providerAdminList || []).includes(parseInt(providerId));
+    user.isAdmin = isAdmin;
+    ctx.verification.user = user;
+    ctx.verification.profile = {
+      provider,
+      providerId
+    }
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       ctx.headers['user-agent'],
     );
@@ -62,11 +61,19 @@ exports.ensureAuthorization = (options = {}) => {
   }
 }
 
+exports.ensureAdmin = () => {
+  return async (ctx, next) => {
+    const user = ctx.verification.user;
+    assert(user.isAdmin, Errors.ERR_NO_PERMISSION, 401);
+    await next();
+  };
+};
+
 exports.errorHandler = async (ctx, next) => {
   try {
     await next();
   } catch (err) {
-    if (err.status != 404) {
+    if (process.env.NODE_ENV !== 'production' || ![400, 404].includes(err.status)) {
       console.log(err);
     }
     if (
