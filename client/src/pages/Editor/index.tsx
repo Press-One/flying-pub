@@ -14,9 +14,10 @@ import { Input } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 
 import { useStore } from 'store';
-import { getQueryObject, sleep, getApiEndpoint, setQuery } from 'utils';
+import { sleep, getApiEndpoint, getQuery, setQuery } from 'utils';
 import Api from 'api';
 import config from './config';
+import * as EditorStorage from './Storage';
 
 import 'easymde/dist/easymde.min.css';
 import './index.scss';
@@ -74,30 +75,35 @@ export default observer((props: any) => {
     }, 0);
   }
 
-  const [file, setFile] = React.useState({ title: '', content: '' } as File);
+  const id = getQuery('id') ? Number(getQuery('id')) : 0;
+  const [file, setFile] = React.useState({
+    title: EditorStorage.get(id, 'TITLE') || '',
+    content: EditorStorage.get(id, 'CONTENT') || '',
+  } as File);
   const [isFetching, setIsFetching] = React.useState(true);
   const [showImgUploader, setShowImgUploader] = React.useState(false);
   const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
   const mdeRef = React.useRef<any>(null);
   const hasPublishPermission = React.useRef(true);
-  const isDirty = React.useRef(false);
-
+  const isDirtyRef = React.useRef(false);
+  const idRef = React.useRef(id);
   const isPublished = file.status === 'published' || file.status === 'pending';
-
-  let id = getQueryObject().id;
 
   React.useEffect(() => {
     (async () => {
       try {
+        const id = getQuery('id');
         if (id) {
           let file = await Api.getFile(id);
+          file.title = EditorStorage.get(id, 'TITLE') || file.title;
+          file.content = EditorStorage.get(id, 'CONTENT') || file.content;
           setFile(file);
         }
       } catch (err) {}
       await sleep(1000);
       setIsFetching(false);
     })();
-  }, [id, snackbarStore]);
+  }, [snackbarStore]);
 
   React.useEffect(() => {
     (async () => {
@@ -147,19 +153,29 @@ export default observer((props: any) => {
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     file.title = event.target.value;
     setFile({ ...file });
+    isDirtyRef.current = true;
+    EditorStorage.set(idRef.current, 'TITLE', event.target.value);
+    if (!isPublished) {
+      debounceSaving(() => {
+        handleSave({
+          strict: false,
+        });
+      });
+    }
   };
 
   const debounceSaving = React.useCallback(
     debounce((save: () => void) => {
       save();
-    }, 5000),
+    }, 3000),
     [],
   );
 
   const handleContentChange = (value: string) => {
     file.content = value;
     setFile({ ...file });
-    isDirty.current = true;
+    isDirtyRef.current = true;
+    EditorStorage.set(idRef.current, 'CONTENT', value);
     if (!isPublished) {
       debounceSaving(() => {
         handleSave({
@@ -170,19 +186,30 @@ export default observer((props: any) => {
   };
 
   const handleBack = async () => {
+    if (isDirtyRef.current && file.title && file.content) {
+      snackbarStore.show({
+        message: '正在保存草稿...',
+        duration: 5000,
+      });
+      await handleSave({
+        strict: false,
+      });
+      await sleep(1500);
+      snackbarStore.close();
+    }
     props.history.push('/dashboard');
   };
 
   const [isSaving, setIsSaving] = React.useState(false);
 
   const handleSave = async (options: any) => {
-    if (!isDirty.current) {
+    if (!isDirtyRef.current) {
       return;
     }
     const { strict = true } = options;
     try {
       if (file.title && file.content) {
-        isDirty.current = false;
+        isDirtyRef.current = false;
         if (file.content.length > MAX_CONTENT_LENGTH) {
           snackbarStore.show({
             message: '内容最多 2 万字',
@@ -195,14 +222,19 @@ export default observer((props: any) => {
           title: file.title,
           content: file.content,
         };
-        const isUpdating = file.hasOwnProperty('id');
+        const isUpdating = !!idRef.current;
         if (isUpdating) {
           const res = await Api.updateFile(file.id, param);
           setFile(res.updatedFile);
           fileStore.updateFile(res.updatedFile);
+          EditorStorage.remove(idRef.current, 'TITLE');
+          EditorStorage.remove(idRef.current, 'CONTENT');
         } else {
           const res = await Api.createDraft(param);
           setFile(res);
+          EditorStorage.remove(idRef.current, 'TITLE');
+          EditorStorage.remove(idRef.current, 'CONTENT');
+          idRef.current = Number(res.id);
           setQuery({
             id: res.id,
           });
@@ -236,15 +268,18 @@ export default observer((props: any) => {
   };
 
   const handlePublish = async () => {
+    if (isSaving) {
+      return;
+    }
     try {
       if (file.title && file.content) {
-        isDirty.current = false;
+        isDirtyRef.current = false;
         confirmDialogStore.setLoading(true);
         let param: File = {
           title: file.title,
           content: file.content,
         };
-        const isUpdating = file.hasOwnProperty('id');
+        const isUpdating = !!idRef.current;
         if (isUpdating) {
           const isDraft = file.status === 'draft';
           const isReplacement = !isDraft;
@@ -271,6 +306,8 @@ export default observer((props: any) => {
             url: `/posts/${res.rId}`,
           });
         }
+        EditorStorage.remove(idRef.current, 'TITLE');
+        EditorStorage.remove(idRef.current, 'CONTENT');
         confirmDialogStore.setLoading(false);
         confirmDialogStore.hide();
         props.history.push('/dashboard');
@@ -359,6 +396,7 @@ export default observer((props: any) => {
     if (file.invisibility) {
       content = '这篇文章目前已隐藏，更新文章将重新发布，并且对所有人可见，确定更新吗？';
     }
+    isDirtyRef.current = false;
     confirmDialogStore.show({
       content,
       okText: isPublished ? '更新' : '发布',
