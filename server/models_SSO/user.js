@@ -70,7 +70,9 @@ const getUserIdByReaderUserId = async (readerUserId) => {
     provider,
     providerId
   });
-  assert(user, Errors.ERR_NOT_FOUND('user'));
+  if (!user) {
+    return null;
+  }
   const userId = user.id;
   return userId;
 }

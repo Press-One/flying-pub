@@ -7,7 +7,6 @@ const User = require('../models/user');
 
 const packPermission = async permission => {
   assert(permission, Errors.ERR_NOT_FOUND('permission'));
-  delete permission.userAddress;
   const user = await User.getByAddress(permission.userAddress);
   assert(user, Errors.ERR_NOT_FOUND('user'));
   return permission;
@@ -43,9 +42,7 @@ exports.getPermissionList = async (option) => {
   });
 
   rows = await Promise.all(
-    rows.map((row) => {
-      return packPermission(row);
-    })
+    rows.map(packPermission)
   )
 
   return {

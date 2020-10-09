@@ -16,8 +16,8 @@ module.exports = {
       await sequelize.authenticate();
       console.log(`已成功连接数据库，准备迁移钱包 userAddress`);
 
-      const readerDbQueryInterface = sequelize.getQueryInterface();
-      const users = await readerDbQueryInterface.sequelize.query(
+      const pubDbQueryInterface = sequelize.getQueryInterface();
+      const users = await pubDbQueryInterface.sequelize.query(
         `select id, address from users`, {
           type: Sequelize.QueryTypes.SELECT
         }

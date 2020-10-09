@@ -30,7 +30,7 @@ const checkPermission = async (provider, profile) => {
     providerId
   } = profile;
   const whitelist = config.auth.whitelist[provider];
-  const isInWhiteList = whitelist && [provider].includes(parseInt(providerId));
+  const isInWhiteList = whitelist && whitelist.includes(parseInt(providerId));
   if (isInWhiteList) {
     return true;
   }
