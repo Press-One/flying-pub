@@ -27,6 +27,7 @@ export default observer((props: RouteChildrenProps) => {
   const { settings } = settingsStore;
 
   if (userStore.isFetched && !userStore.isLogin) {
+    props.history.push('/');
     modalStore.openLogin();
   }
 

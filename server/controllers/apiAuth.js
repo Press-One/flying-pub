@@ -435,14 +435,12 @@ exports.phoneBind = async (ctx) => {
   const phone_user = {
     name: phone,
   };
-  await Profile.createProfile({
+  const insertedProfile = await Profile.createProfile({
     userId,
     profile: providerGetter[provider](phone_user),
   });
 
-  ctx.body = {
-    success: true
-  };
+  ctx.body = insertedProfile;
 
   Log.create(user.id, `绑定手机号`);
 }
