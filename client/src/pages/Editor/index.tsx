@@ -28,6 +28,7 @@ interface File {
   content: string;
   status?: string;
   id?: number;
+  invisibility?: boolean;
 }
 
 const MainEditor = (props: any = {}) => {
@@ -247,6 +248,9 @@ export default observer((props: any) => {
         if (isUpdating) {
           const isDraft = file.status === 'draft';
           const isReplacement = !isDraft;
+          if (file.invisibility) {
+            await Api.showFile(file.id);
+          }
           const res = await Api.updateFile(file.id, param, isDraft);
           if (isDraft) {
             fileStore.updateFile(res.updatedFile);
@@ -339,8 +343,12 @@ export default observer((props: any) => {
       </span>
     `
       : '';
+    let content = `确定${isPublished ? '更新' : '发布'}文章吗？${rulePostLink}`;
+    if (file.invisibility) {
+      content = '这篇文章目前已隐藏，更新文章将重新发布，并且对所有人可见，确定更新吗？';
+    }
     confirmDialogStore.show({
-      content: `确定${isPublished ? '更新' : '发布'}文章吗？${rulePostLink}`,
+      content,
       okText: isPublished ? '更新' : '发布',
       ok: () => {
         handlePublish();

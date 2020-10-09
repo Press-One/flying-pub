@@ -44,11 +44,11 @@ export default observer((props: any) => {
     props.history.push(`/editor?id=${fileId}`);
   };
 
-  const showFile = (rId: string) => {
+  const showFile = (id: number) => {
     (async () => {
       try {
         setShowing(true);
-        await Api.showFile(rId);
+        await Api.showFile(id);
         await sleep(1000);
         handleMenuClose();
         await sleep(300);
@@ -64,11 +64,11 @@ export default observer((props: any) => {
     })();
   };
 
-  const hideFile = (rId: string) => {
+  const hideFile = (id: number) => {
     (async () => {
       try {
         setHiding(true);
-        await Api.hideFile(rId);
+        await Api.hideFile(id);
         await sleep(1000);
         handleMenuClose();
         await sleep(300);

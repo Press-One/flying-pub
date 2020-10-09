@@ -35,7 +35,7 @@ exports.withdraw = async ctx => {
   const key = `WITHDRAW_${userAddress}`;
   try {
     await assertTooManyRequests(key);
-    Log.create(user.id, `开始提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
+    Log.create(user.id, `【Reader 旧钱包】开始提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
     await ReaderFinance.withdraw({
       userId: user.id,
       userAddress,
@@ -43,7 +43,7 @@ exports.withdraw = async ctx => {
       amount: data.amount,
       memo: data.memo,
     });
-    Log.create(user.id, `完成提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
+    Log.create(user.id, `【Reader 旧钱包】完成提现 ${data.amount} ${data.currency} ${data.memo || ''}`);
     ctx.ok({
       success: true
     });
@@ -86,7 +86,7 @@ exports.updateCustomPin = async ctx => {
   await ReaderWallet.updateCustomPin(userAddress, pinCode, {
     oldPinCode
   });
-  Log.create(user.id, '更新 pin 成功');
+  Log.create(user.id, '【Reader 旧钱包】更新 pin 成功');
   ctx.ok({
     success: true
   });
@@ -112,6 +112,6 @@ exports.validatePin = async ctx => {
   } = data;
   const userAddress = user.SSO.reader.address;
   const isValid = await ReaderWallet.validatePin(userAddress, pinCode);
-  Log.create(user.id, `验证 pin ${isValid ? '成功' : '失败'}`);
+  Log.create(user.id, `【Reader 旧钱包】验证 pin ${isValid ? '成功' : '失败'}`);
   ctx.ok(isValid);
 }

@@ -104,7 +104,7 @@ export default observer((props: any) => {
       }
       setPending(false);
     })();
-  }, [ready, rId, setPost]);
+  }, [ready, rId, setPost, modalStore]);
 
   React.useEffect(() => {
     (async () => {

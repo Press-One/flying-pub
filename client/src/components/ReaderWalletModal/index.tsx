@@ -1,10 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
-import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
-import Fade from '@material-ui/core/Fade';
 import Wallet from './Wallet';
 import { useStore } from 'store';
 import { isMobile } from 'utils';

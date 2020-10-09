@@ -227,13 +227,13 @@ export default {
       method: 'DELETE',
     });
   },
-  hideFile(rId: string) {
-    return request(`/api/files/hide/${rId}`, {
+  hideFile(id: number | undefined) {
+    return request(`/api/files/hide/${id}`, {
       method: 'PUT',
     });
   },
-  showFile(rId: string) {
-    return request(`/api/files/show/${rId}`, {
+  showFile(id: number | undefined) {
+    return request(`/api/files/show/${id}`, {
       method: 'PUT',
     });
   },
