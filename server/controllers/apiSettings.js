@@ -11,7 +11,8 @@ exports.get = async ctx => {
   const settings = userId ? await Settings.getByUserId(userId) : {};
   const extra = {
     'notification.mixinClientId': config.provider.mixin.clientId,
-    'notification.mixinId': config.provider.mixin.id
+    'notification.mixinId': config.provider.mixin.id,
+    'messageSystem.project': config.messageSystem.project
   }
   ctx.body = {
     ...config.settings,

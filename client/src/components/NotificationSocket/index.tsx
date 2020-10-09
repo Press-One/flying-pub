@@ -24,7 +24,7 @@ const sleep = (duration: number) =>
 let socket: any = null;
 
 export default observer(() => {
-  const { userStore, notificationStore } = useStore();
+  const { settingsStore, userStore, notificationStore } = useStore();
   if (!userStore.isFetched || !userStore.isLogin) {
     return null;
   }
@@ -56,7 +56,7 @@ export default observer(() => {
       .join(';');
     const authData = {
       username: userStore.user.address,
-      project: 'flyingpub_dev',
+      project: settingsStore.settings.extra['messageSystem.project'],
       third_party_cookie: tokenStr,
     };
     socket.emit('authenticate', authData);
