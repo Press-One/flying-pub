@@ -330,7 +330,7 @@ exports.getPermission = async ctx => {
     assert(passed, Errors.ERR_NO_PERMISSION);
   }
 
-  if (config.settings['permission.isPrivate']) {
+  if (config.settings['permission.isOnlyPubPrivate']) {
     const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
     assert(mixinProfile, Errors.ERR_NO_PERMISSION);
     const hasProviderPermission = await checkPermission('mixin', mixinProfile);
