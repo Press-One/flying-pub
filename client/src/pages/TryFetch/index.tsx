@@ -75,7 +75,6 @@ export default observer((props: any) => {
             okText: '前往登录',
             ok: () => modalStore.openLogin(),
           });
-          props.history.push('/');
           return false;
         }
         if (isMobile && !isWeChat) {
