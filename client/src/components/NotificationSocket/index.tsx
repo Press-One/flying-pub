@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import io from 'socket.io-client';
 import { useStore } from '../../store';
-import { getMessageSystemUrl, getTokenUrl } from '../../utils';
+import { getTokenUrl } from '../../utils';
 import { NotificationSubType, Notification, NotificationStatus } from '../../store/notification';
 
 let checkingTimer: any = 0;
@@ -46,7 +46,7 @@ export default observer(() => {
     }
   };
 
-  socket = io(String(getMessageSystemUrl()));
+  socket = io(String(settingsStore.settings.extra['messageSystem.endpoint']));
   socket.on('connect', async () => {
     log('connect', '连接成功');
     const tokenRes = await fetch(getTokenUrl(), { credentials: 'include' });

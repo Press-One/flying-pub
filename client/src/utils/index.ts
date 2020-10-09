@@ -102,11 +102,6 @@ export const sleep = (duration: number) =>
 export const getLoginUrl = () =>
   `${getApiEndpoint()}/api/auth/mixin/login?redirect=${window.location.href}`;
 
-export const getMessageSystemUrl = () => {
-  const host = window.location.host;
-  return host === 'xue.cn' ? 'https://push.xue.cn' : 'https://message.prsdev.club';
-};
-
 export const getTokenUrl = () => {
   return isDevelopment ? 'https://dev-reader.prsdev.club/api/token' : '/api/token';
 };

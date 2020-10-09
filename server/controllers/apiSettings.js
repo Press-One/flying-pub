@@ -12,7 +12,8 @@ exports.get = async ctx => {
   const extra = {
     'notification.mixinClientId': config.provider.mixin.clientId,
     'notification.mixinId': config.provider.mixin.id,
-    'messageSystem.project': config.messageSystem.project
+    'messageSystem.project': config.messageSystem.project,
+    'messageSystem.endpoint': config.messageSystem.url.split('/').slice(0, 3).join('/')
   }
   ctx.body = {
     ...config.settings,
