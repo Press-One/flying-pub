@@ -37,7 +37,6 @@ export default observer(() => {
 
     if (ready) {
       setTimeout(async () => {
-        const { settings } = settingsStore;
         const action = getQuery('action');
         const provider: any = getQuery('provider') || 'mixin';
 
