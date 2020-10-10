@@ -84,7 +84,7 @@ export default observer((props: any) => {
   const [showImgUploader, setShowImgUploader] = React.useState(false);
   const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
   const mdeRef = React.useRef<any>(null);
-  const hasPublishPermission = React.useRef(true);
+  const hasPublishPermission = React.useRef(false);
   const isDirtyRef = React.useRef(false);
   const idRef = React.useRef(id);
   const isPublished = file.status === 'published' || file.status === 'pending';

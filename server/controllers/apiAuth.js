@@ -277,25 +277,6 @@ const login = async (ctx, user, provider) => {
     }
   }
 
-  const topicAddress = config.topic.address;
-  const insertedUser = await User.get(insertedProfile.userId);
-  const allowBlock = await Block.getAllowBlock(topicAddress, insertedUser.address);
-
-  if (topicAddress && !allowBlock) {
-    await Permission.setPermission({
-      userAddress: insertedUser.address,
-      topicAddress,
-      type: 'allow',
-    })
-
-    const block = await Chain.pushTopic({
-      userAddress: insertedUser.address,
-      topicAddress,
-      type: 'allow',
-    });
-    Log.create(insertedProfile.userId, `提交 allow 区块, blockId ${block.id}`);
-  }
-
   assert(profile.raw, Errors.ERR_IS_REQUIRED('profile.raw'));
   const token = await Token.create({
     userId: insertedProfile.userId,
@@ -318,23 +299,46 @@ exports.getPermission = async ctx => {
     user
   } = ctx.verification;
 
-  if (config.settings['permission.allowedProviders']) {
-    const allowedProviders = config.settings['permission.allowedProviders'];
-    const profiles = await Profile.getByUserId(user.id);
-    let passed = false;
-    for (const profile of profiles) {
-      if (allowedProviders.includes(profile.provider)) {
-        passed = true;
+  try {
+    
+    if (config.settings['permission.allowedProviders']) {
+      const allowedProviders = config.settings['permission.allowedProviders'];
+      const profiles = await Profile.getByUserId(user.id);
+      let passed = false;
+      for (const profile of profiles) {
+        if (allowedProviders.includes(profile.provider)) {
+          passed = true;
+        }
       }
+      assert(passed, Errors.ERR_NO_PERMISSION);
     }
-    assert(passed, Errors.ERR_NO_PERMISSION);
-  }
 
-  if (config.settings['permission.isOnlyPubPrivate']) {
-    const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
-    assert(mixinProfile, Errors.ERR_NO_PERMISSION);
-    const hasProviderPermission = await checkPermission('mixin', mixinProfile);
-    assert(hasProviderPermission, Errors.ERR_NO_PERMISSION);
+    if (config.settings['permission.isOnlyPubPrivate']) {
+      const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
+      assert(mixinProfile, Errors.ERR_NO_PERMISSION);
+      const hasProviderPermission = await checkPermission('mixin', mixinProfile);
+      assert(hasProviderPermission, Errors.ERR_NO_PERMISSION);
+    }
+
+    const topicAddress = config.topic.address;
+    const allowBlock = await Block.getAllowBlock(topicAddress, user.address);
+
+    if (topicAddress && !allowBlock) {
+      await Permission.setPermission({
+        userAddress: user.address,
+        topicAddress,
+        type: 'allow',
+      })
+
+      const block = await Chain.pushTopic({
+        userAddress: user.address,
+        topicAddress,
+        type: 'allow',
+      });
+      Log.create(user.id, `提交 allow 区块, blockId ${block.id}`);
+    }
+  } catch (err) {
+    console.log({ err });
   }
 
   ctx.body = {
