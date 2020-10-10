@@ -201,8 +201,8 @@ export default observer((props: any) => {
               )}
               <MenuItem
                 onClick={async () => {
-                  window.location.href = logoutUrl;
                   modalStore.openPageLoading();
+                  window.location.href = logoutUrl;
                 }}
               >
                 退出账号

@@ -10,6 +10,7 @@ import {
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
+import { isIPhone } from 'utils';
 
 export default observer(() => {
   const { confirmDialogStore } = useStore();
@@ -27,6 +28,15 @@ export default observer(() => {
 
   return (
     <Dialog
+      transitionDuration={
+        isIPhone
+          ? 0
+          : {
+              appear: 500,
+              enter: 300,
+              exit: 500,
+            }
+      }
       open={open}
       onClose={() => confirmDialogStore.hide()}
       className="flex justify-center items-center"
