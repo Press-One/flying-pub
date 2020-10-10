@@ -294,3 +294,20 @@ exports.getReceiptsByUserAddress = async (userAddress, options = {}) => {
   });
   return receipts;
 };
+
+const getReceiptsByFileRId = async (fileRId, options = {}) => {
+  assert(fileRId, Errors.ERR_IS_REQUIRED("fileRId"));
+  const {
+    offset = 0, limit
+  } = options;
+  const receipts = await Receipt.list({
+    where: {
+      objectRId: fileRId,
+      status: "SUCCESS"
+    },
+    offset,
+    limit
+  });
+  return receipts;
+};
+exports.getReceiptsByFileRId = getReceiptsByFileRId;

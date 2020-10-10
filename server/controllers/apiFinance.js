@@ -12,6 +12,7 @@ const {
   pTryLock,
   pUnLock
 } = require('../models/cache');
+const ReaderFinance = require('../models/readerFinance');
 
 const assertTooManyRequests = async (lockKey) => {
   const locked = await pTryLock(lockKey, 10);
@@ -206,7 +207,9 @@ exports.getRewardSummary = async ctx => {
   } = ctx.params;
   const post = await Post.getByRId(fileRId);
   const summary = post && post.rewardSummary ? JSON.parse(post.rewardSummary) : {};
-  const receipts = await Finance.getReceiptsByFileRId(fileRId);
+  const pubReceipts = await Finance.getReceiptsByFileRId(fileRId);
+  const readerReceipts = await ReaderFinance.getReceiptsByFileRId(fileRId);
+  const receipts = [...pubReceipts, ...readerReceipts];
   const userAddressSet = new Set();
   for (const receipt of receipts) {
     userAddressSet.add(receipt.fromAddress);
