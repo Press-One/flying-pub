@@ -6,6 +6,7 @@ const {
   Errors
 } = require('../utils/validator');
 const {generateSignature} = require('./signature');
+const Log = require('./log');
 
 const checkPhoneNumber = (phone) => {
   assert(phone, Errors.ERR_IS_REQUIRED('phone'))
@@ -27,6 +28,8 @@ exports.sendSmsCode = async (phone) => {
     json: true,
     body: payload,
   }).promise();
+
+  Log.createAnonymity('验证码', '发送成功');
 }
 
 // check sms verification code
@@ -47,7 +50,9 @@ exports.verifySmsCode = async (phone, code) => {
       json: true,
       body: payload,
     }).promise();
+    Log.createAnonymity('验证码', '验证通过');
   } catch (err) {
     throws(Errors.ERR_IS_INVALID('code'));
+    Log.createAnonymity('验证码', '验证失败');
   }
 }
