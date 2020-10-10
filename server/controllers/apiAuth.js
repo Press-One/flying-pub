@@ -34,15 +34,15 @@ const checkPermission = async (provider, profile) => {
   if (isInWhiteList) {
     return true;
   }
-  const hasProviderPermission = await providerPermissionChecker[provider](profile);
-  return hasProviderPermission;
+  const checkResult = await providerPermissionChecker[provider](profile);
+  return checkResult;
 }
 
 const providerPermissionChecker = {
   mixin: async profile => {
     const rawJson = JSON.parse(profile.raw);
-    const IsInMixinBoxGroup = await checkIsInMixinBoxGroup(rawJson.user_id);
-    return IsInMixinBoxGroup;
+    const mixinGroupUser = await getMixinBoxGroupUser(rawJson.user_id);
+    return mixinGroupUser;
   },
   github: async profile => {
     const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
@@ -56,7 +56,7 @@ const providerPermissionChecker = {
   },
 };
 
-const checkIsInMixinBoxGroup = async mixinUuid => {
+const getMixinBoxGroupUser = async mixinUuid => {
   try {
     const res = await request({
       uri: `${config.auth.boxGroupAuthBaseApi}/${mixinUuid}`,
@@ -66,11 +66,10 @@ const checkIsInMixinBoxGroup = async mixinUuid => {
         Authorization: `Bearer ${config.auth.boxGroupToken}`
       },
     }).promise();
-    const isValid = res.user_id === mixinUuid;
-    return isValid;
+    return res.user_id === mixinUuid && res;
   } catch (err) {
     console.log(err);
-    return false;
+    return null;
   }
 }
 
@@ -133,20 +132,48 @@ exports.oauthCallback = async ctx => {
     assert(oauthType, Errors.ERR_IS_REQUIRED('oauthType'));
 
     if (oauthType === 'login') {
-      if (config.settings['permission.isPrivate']) {
-        const hasPermission = await checkPermission(provider, profile);
-        const noPermission = !hasPermission;
-        if (noPermission) {
-          Log.createAnonymity(
-            profile.providerId,
-            `没有 ${provider} 权限，raw ${profile.raw}`
-          );
-          const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
-          ctx.redirect(`${clientHost}?action=PERMISSION_DENY`);
-          return false;
+      if (config.settings['permission.isPrivate'] || config.settings['permission.isOnlyPubPrivate']) {
+        const mixinGroupUser = await checkPermission(provider, profile);
+
+        if (config.settings['permission.isPrivate']) {
+          const noPermission = !mixinGroupUser;
+          if (noPermission) {
+            Log.createAnonymity(
+              profile.providerId,
+              `没有 ${provider} 权限，raw ${profile.raw}`
+            );
+            const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
+            ctx.redirect(`${clientHost}?action=PERMISSION_DENY`);
+            return false;
+          }
         }
+
+        const insertedUser = await login(ctx, user, provider);
+
+        try {
+          if (mixinGroupUser && mixinGroupUser.phone_number) {
+            const providerId = parseInt(mixinGroupUser.phone_number);
+            const insertedProfile = await Profile.get('phone', providerId);
+            if (!insertedProfile) {
+              await Profile.createProfile({
+                userId: insertedUser.id,
+                profile: {
+                  provider: 'phone',
+                  providerId,
+                  name: providerId.toString(),
+                  avatar: DEFAULT_AVATAR,
+                  raw: '{}'
+                }
+              });
+              Log.create(insertedUser.id, `创建对应的手机账户`);
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        await login(ctx, user, provider);
       }
-      await login(ctx, user, provider);
     } else if (oauthType === 'bind') {
       assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
       const queryStart = ctx.session.auth.redirect.includes('?') ? '&' : '?';
@@ -240,6 +267,7 @@ const login = async (ctx, user, provider) => {
 
   const profile = providerGetter[provider](user);
   const isNewUser = !(await Profile.isExist(provider, profile.providerId));
+  let insertedUser;
   let insertedProfile = {};
   if (isNewUser) {
     const userData = {
@@ -251,6 +279,7 @@ const login = async (ctx, user, provider) => {
       userData.mixinAccountRaw = profile.raw;
     }
     const user = await User.create(userData);
+    insertedUser = user;
     insertedProfile = await Profile.createProfile({
       userId: user.id,
       profile,
@@ -265,6 +294,7 @@ const login = async (ctx, user, provider) => {
       userId
     } = insertedProfile;
     const user = await User.get(userId);
+    insertedUser = user;
     const walletExists = await Wallet.exists(user.address);
     if (walletExists) {
       Log.create(userId, `钱包已存在，无需初始化`);
@@ -292,6 +322,8 @@ const login = async (ctx, user, provider) => {
     cookieOptions.domain = config.auth.tokenDomain;
   }
   ctx.cookies.set(config.auth.tokenKey, token, cookieOptions);
+
+  return insertedUser;
 }
 
 exports.getPermission = async ctx => {
@@ -316,8 +348,8 @@ exports.getPermission = async ctx => {
     if (config.settings['permission.isOnlyPubPrivate']) {
       const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
       assert(mixinProfile, Errors.ERR_NO_PERMISSION);
-      const hasProviderPermission = await checkPermission('mixin', mixinProfile);
-      assert(hasProviderPermission, Errors.ERR_NO_PERMISSION);
+      const mixinGroupUser = await checkPermission('mixin', mixinProfile);
+      assert(mixinGroupUser, Errors.ERR_NO_PERMISSION);
     }
 
     const topicAddress = config.topic.address;
