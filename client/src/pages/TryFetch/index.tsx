@@ -69,6 +69,7 @@ export default observer((props: any) => {
           return;
         }
         if (settings['permission.isPrivate']) {
+          userStore.setShouldLogin();
           confirmDialogStore.show({
             content: '阅读文章之前请登录一下哦',
             cancelDisabled: true,
@@ -107,6 +108,18 @@ export default observer((props: any) => {
     confirmDialogStore,
     props,
   ]);
+
+  if (userStore.shouldLogin) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30">
+          <span onClick={() => modalStore.openLogin()} className="text-blue-400 text-lg">
+            阅读文章之前请登录一下哦
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return null;
 });

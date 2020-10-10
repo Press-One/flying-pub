@@ -10,7 +10,7 @@ import { isMobile, sleep } from 'utils';
 import Api from 'api';
 
 export default observer(() => {
-  const { preloadStore, feedStore, settingsStore } = useStore();
+  const { preloadStore, feedStore, settingsStore, userStore } = useStore();
   const { ready } = preloadStore;
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
   const [pagePending, setPagePending] = React.useState(false);
@@ -90,6 +90,10 @@ export default observer(() => {
       setEnableFilterScroll(false);
     };
   }, [ready, feedStore, isFetched, hasMore]);
+
+  if (userStore.shouldLogin) {
+    return null;
+  }
 
   if (!ready || !feedStore.isFetched || pagePending) {
     return (

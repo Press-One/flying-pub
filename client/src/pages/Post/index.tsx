@@ -153,6 +153,10 @@ export default observer((props: any) => {
     };
   }, [ready]);
 
+  if (userStore.shouldLogin) {
+    return null;
+  }
+
   if (!ready || pending) {
     return (
       <div className="h-screen flex justify-center items-center">

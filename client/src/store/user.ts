@@ -2,6 +2,7 @@ export function createUserStore() {
   return {
     isFetched: false,
     isLogin: false,
+    shouldLogin: false,
     user: {
       mixinAccount: {},
     } as Record<string, any>,
@@ -19,5 +20,8 @@ export function createUserStore() {
     setIsFetched(status: boolean) {
       this.isFetched = status;
     },
+    setShouldLogin() {
+      this.shouldLogin = true;
+    }
   };
 }
