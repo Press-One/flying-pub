@@ -7,9 +7,9 @@ const {
 
 exports.get = async ctx => {
   const address = ctx.params.id;
+  const authorUser = await User.getByAddress(address);
   const author = await Author.getByAddress(address);
   assert(author, Errors.ERR_NOT_FOUND('author'))
-  const authorUser = await User.getByAddress(address);
   if (authorUser) {
     author.avatar = author.avatar || authorUser.avatar;
     author.name = author.name || authorUser.nickname;

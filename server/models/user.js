@@ -5,6 +5,7 @@ const util = require("../utils");
 const config = require("../config");
 const Author = require("./author");
 const Wallet = require("./wallet");
+const Log = require('./log');
 const SSO_User = require('../models_SSO/user');
 
 const {
@@ -64,6 +65,24 @@ const packUser = async (user, options = {}) => {
         config.encryption.aesKey256
       );
     }
+  }
+
+  try {
+    // 检查 author 是否创建
+    const author = await Author.getByAddress(derivedUser.address);
+    if (!author) {
+      // 还没有创建对应的 author，那么根据 user 创建一个
+      await Author.upsert(derivedUser.address, {
+        // 默认是 deny，提交 allow block 之后就会设置成 allow
+        status: 'deny',
+        name: derivedUser.nickname || '',
+        avatar: derivedUser.avatar || '',
+        bio: derivedUser.bio || '',
+      });
+      Log.create(derivedUser.id, 'author 缺失，已创建对应的 author');
+    }
+  } catch (err) {
+    console.log(err);
   }
 
   return derivedUser;
@@ -142,6 +161,17 @@ exports.create = async (data) => {
     version: 1
   });
 
+  try {
+    await Author.upsert(address, {
+      status: 'deny',
+      name: nickname || '',
+      avatar: avatar || '',
+      bio: bio || '',
+    });
+  } catch (err) {
+    console.log(err)
+  }
+
   return packUser(user.toJSON());
 };
 
@@ -157,7 +187,7 @@ exports.update = async (userId, data) => {
 
   try {
     const user = await exports.get(userId);
-    Author.upsert(user.address, {
+    await Author.upsert(user.address, {
       name: user.nickname || '',
       avatar: user.avatar || '',
       bio: user.bio || '',
