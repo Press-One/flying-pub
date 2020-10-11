@@ -7,7 +7,11 @@ const {
 } = require("../utils/validator");
 const Log = require("../models/log");
 const Post = require("../models/post");
+const Mixin = require("../models/mixin");
 const Chain = require("./chain");
+const {
+  truncate
+} = require("../utils");
 
 exports.list = async ctx => {
   const {
@@ -69,8 +73,23 @@ const createFile = async (user, data, options = {}) => {
     file = await File.update(file.id, {
       rId
     });
-    const postUrl = `${config.settings['site.url']}/posts/${rId}`;
-    Log.create(user.id, `发布文章 ${postUrl}`);
+    const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+    if (updatedFile) {
+      Log.create(user.id, `发布更新的文章《${file.title}》 ${postUrl}`);
+    } else {
+      Log.create(user.id, `发布文章《${file.title}》 ${postUrl}`);
+      (async () => {
+        try {
+          await Mixin.pushToNotifyQueue({
+            userId: user.id,
+            text: `《${truncate(file.title)}》已发布`,
+            url: postUrl
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      })();
+    }
   }
   Log.create(user.id, `创建文章 ${file.title} ${file.id}`);
   return file;
@@ -177,7 +196,19 @@ exports.update = async ctx => {
         rId
       });
       updatedFile = await File.get(updatedFile.id);
-      Log.create(user.id, `发布草稿 ${block.id}`);
+      const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+      Log.create(user.id, `发布草稿《${file.title}》 ${postUrl}`);
+      (async () => {
+        try {
+          await Mixin.pushToNotifyQueue({
+            userId: user.id,
+            text: `《${truncate(file.title)}》已发布`,
+            url: postUrl
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      })();
     }
     ctx.body = {
       updatedFile

@@ -120,7 +120,7 @@ const trySendToUser = async (userId, text, options = {}) => {
   } else {
     await trySendText(userId, text);
   }
-  Log.create(userId, `通知：${text} ${url || ''}`);
+  Log.create(userId, `收到 Mixin 通知：${text}`);
 }
 
 const trySendText = async (userId, text) => {

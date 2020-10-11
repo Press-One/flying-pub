@@ -186,7 +186,7 @@ export default observer((props: any) => {
   };
 
   const handleBack = async () => {
-    if (isDirtyRef.current && file.title && file.content) {
+    if (!isPublished && isDirtyRef.current && file.title && file.content) {
       snackbarStore.show({
         message: '正在保存草稿...',
         duration: 5000,
