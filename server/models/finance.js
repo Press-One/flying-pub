@@ -66,7 +66,7 @@ const getMixinPaymentUrl = (options = {}) => {
     memo
   } = options;
   return (
-    "https://mixin.one/pay" +
+    `${SSOConfig.provider.mixin.domain || 'https://mixin.one'}/pay` +
     "?recipient=" +
     encodeURIComponent(toMixinClientId) +
     "&asset=" +
