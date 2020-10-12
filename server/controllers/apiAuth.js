@@ -14,6 +14,7 @@ const Wallet = require('../models/wallet');
 const Token = require('../models/token');
 const Block = require('../models/block');
 const Permission = require('../models/permission');
+const Author = require('../models/author');
 const Chain = require('./chain');
 const Log = require('../models/log');
 const {
@@ -368,6 +369,16 @@ exports.getPermission = async ctx => {
         type: 'allow',
       });
       Log.create(user.id, `提交 allow 区块, blockId ${block.id}`);
+    }
+
+    if (topicAddress && allowBlock) {
+      const author = await Author.getByAddress(user.address);
+      if (author.status !== 'allow') {
+        await Author.upsert(user.address, {
+          status: 'allow'
+        });
+      }
+      Log.create(user.id, `allow 区块存在，但 author status 为 deny, 将 status 改为 allow`);
     }
   } catch (err) {
     console.log({ err });
