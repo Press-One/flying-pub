@@ -9,6 +9,7 @@ const {
 
 const packAuthor = author => {
   return {
+    status: author.status,
     address: author.address,
     name: author.name,
     avatar: author.avatar,

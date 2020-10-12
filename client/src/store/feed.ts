@@ -28,7 +28,7 @@ export function createFeedStore() {
     postMap,
     filterType: '',
     filterDayRange: 3,
-    limit: 20,
+    limit: 10,
     pending: false,
     hasMore: false,
     get post() {

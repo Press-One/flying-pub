@@ -49,7 +49,7 @@ exports.get = async ctx => {
 
 exports.list = async ctx => {
   const offset = ~~ctx.query.offset || 0;
-  const limit = Math.min(~~ctx.query.limit || 20, 50);
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
   const order = ctx.query.order || 'PUB_DATE';
   const address = ctx.query.address;
   const dayRange = ctx.query.dayRange;
@@ -75,7 +75,7 @@ exports.list = async ctx => {
 
 exports.listBySubscriptions = async ctx => {
   const offset = ~~ctx.query.offset || 0;
-  const limit = Math.min(~~ctx.query.limit || 20, 50);
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
   const userId = ctx.verification.user.id;
   const subscriptions = await Subscription.list(userId);
   if (subscriptions.length === 0) {

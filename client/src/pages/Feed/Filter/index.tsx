@@ -167,7 +167,7 @@ export default observer((props: any) => {
         id={selectorId}
         className={classNames(
           {
-            'fixed top-0 left-0 w-full mt-0': fixed,
+            'fixed top-0 left-0 w-full mt-0 z-50': fixed,
           },
           'bg-white',
         )}

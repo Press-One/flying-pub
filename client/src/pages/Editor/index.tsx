@@ -8,7 +8,6 @@ import Help from '@material-ui/icons/Help';
 import MarkdownCheatSheetDialog from './MarkdownCheatSheetDialog';
 import ImgUploader from './ImgUploader';
 import Fade from '@material-ui/core/Fade';
-import debounce from 'lodash.debounce';
 
 import { Input } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
@@ -98,6 +97,18 @@ export default observer((props: any) => {
           file.title = EditorStorage.get(id, 'TITLE') || file.title;
           file.content = EditorStorage.get(id, 'CONTENT') || file.content;
           setFile(file);
+        } else {
+          const hasCachedContent =
+            EditorStorage.get(id, 'TITLE') || EditorStorage.get(id, 'CONTENT');
+          if (hasCachedContent) {
+            isDirtyRef.current = true;
+            setTimeout(() => {
+              snackbarStore.show({
+                message: '已为你恢复上次未保存的内容...',
+                duration: 3000,
+              });
+            }, 2000);
+          }
         }
       } catch (err) {}
       await sleep(1000);
@@ -155,34 +166,13 @@ export default observer((props: any) => {
     setFile({ ...file });
     isDirtyRef.current = true;
     EditorStorage.set(idRef.current, 'TITLE', event.target.value);
-    if (!isPublished) {
-      debounceSaving(() => {
-        handleSave({
-          strict: false,
-        });
-      });
-    }
   };
-
-  const debounceSaving = React.useCallback(
-    debounce((save: () => void) => {
-      save();
-    }, 3000),
-    [],
-  );
 
   const handleContentChange = (value: string) => {
     file.content = value;
     setFile({ ...file });
     isDirtyRef.current = true;
     EditorStorage.set(idRef.current, 'CONTENT', value);
-    if (!isPublished) {
-      debounceSaving(() => {
-        handleSave({
-          strict: false,
-        });
-      });
-    }
   };
 
   const handleBack = async () => {
