@@ -373,12 +373,12 @@ exports.getPermission = async ctx => {
 
     if (topicAddress && allowBlock) {
       const author = await Author.getByAddress(user.address);
-      if (author.status !== 'allow') {
+      if (!author || author.status !== 'allow') {
         await Author.upsert(user.address, {
           status: 'allow'
         });
+        Log.create(user.id, `allow 区块存在，但 author status 为 deny, 将 status 改为 allow`);
       }
-      Log.create(user.id, `allow 区块存在，但 author status 为 deny, 将 status 改为 allow`);
     }
   } catch (err) {
     console.log({ err });
