@@ -140,8 +140,7 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
 
 export const onlyForLogin = () => false;
 
-export const generateAvatar = (name: string) =>
-  `https://ui-avatars.com/api/?name=${name.slice(0, 1)}`;
+export const getDefaultAvatar = () => 'https://static.press.one/pub/avatar.png';
 
 export const scrollToHere = (top: number) => {
   const scrollElement = document.scrollingElement || document.documentElement;

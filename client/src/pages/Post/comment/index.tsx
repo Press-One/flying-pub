@@ -5,7 +5,6 @@ import ThumbUp from '@material-ui/icons/ThumbUp';
 import CommentIcon from '@material-ui/icons/Comment';
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
-import Loading from 'components/Loading';
 import DrawerModal from 'components/DrawerModal';
 import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
@@ -42,7 +41,7 @@ export default observer((props: IProps) => {
     modalStore,
     confirmDialogStore,
   } = useStore();
-  const { total, comments, isFetched } = commentStore;
+  const { total, comments } = commentStore;
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
@@ -54,9 +53,8 @@ export default observer((props: IProps) => {
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [openCommentEntry, setOpenCommentEntry] = React.useState(false);
   const [isVoting, setIsVoting] = React.useState(false);
-  const { alwaysShowCommentEntry } = props;
+  const { fileRId, alwaysShowCommentEntry } = props;
   const [selectedCommentId, setSelectedCommentId] = React.useState(getQuery('commentId') || '0');
-  const isFetchedComments = commentStore.isFetched;
 
   React.useEffect(() => {
     const scrollCallBack = debounce(() => {
@@ -75,31 +73,15 @@ export default observer((props: IProps) => {
   }, []);
 
   React.useEffect(() => {
-    const fetchComments = async () => {
-      const { fileRId } = props;
-      let res;
-      const pagination = {
-        offset: 0,
-        limit: '1000',
-      };
-      res = await CommentApi.list(fileRId, pagination);
-      commentStore.setTotal(res['total']);
-      commentStore.setComments(res['comments']);
-      commentStore.setIsFetched(true);
-      initMathJax(document.getElementById('comments'));
-    };
-    fetchComments();
-  }, [commentStore, props]);
+    initMathJax(document.getElementById('comments'));
+  }, []);
 
   React.useEffect(() => {
-    if (!isFetchedComments) {
-      return;
-    }
     if (!selectedCommentId) {
       return;
     }
     (async () => {
-      await sleep(1000);
+      await sleep(500);
       const commentEle: any = document.querySelector(`#comment_${selectedCommentId}`);
       if (commentEle) {
         scrollToHere(commentEle.offsetTop);
@@ -111,7 +93,7 @@ export default observer((props: IProps) => {
         modalStore.closePageLoading();
       }
     })();
-  }, [isFetchedComments, selectedCommentId, modalStore]);
+  }, [selectedCommentId, modalStore]);
 
   const reply = async () => {
     if (isCreatingComment || isDrawerCreatingComment) {
@@ -135,7 +117,7 @@ export default observer((props: IProps) => {
     try {
       const comment = {
         content: _value,
-        objectId: props.fileRId,
+        objectId: fileRId,
         objectType: 'post',
       };
       const mentionsUserIds = getMentionUserIds(_value, commentStore.comments);
@@ -270,7 +252,7 @@ export default observer((props: IProps) => {
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
           <img
             className="hidden md:block mr-3 rounded"
-            src={user && user.avatar ? user.avatar : 'https://static.press.one/avatar.png'}
+            src={user && user.avatar ? user.avatar : 'https://static.press.one/pub/avatar.png'}
             width="36px"
             height="36px"
             alt="avatar"
@@ -338,14 +320,6 @@ export default observer((props: IProps) => {
     setTimeout(() => {
       setDrawerReplyValue(appendReplyUser(drawerReplyValue, user.nickname));
     }, 400);
-  };
-
-  const renderLoading = () => {
-    return (
-      <div className="py-20">
-        <Loading />
-      </div>
-    );
   };
 
   const renderFixedCommentEntry = () => {
@@ -488,5 +462,5 @@ export default observer((props: IProps) => {
     );
   };
 
-  return isFetched ? renderMain() : renderLoading();
+  return renderMain();
 });

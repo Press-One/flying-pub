@@ -17,10 +17,11 @@ import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 
+import CommentApi from './comment/api';
 import Comment from './comment';
 import { Post } from 'store/feed';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, initMathJax, generateAvatar, getQuery } from 'utils';
+import { ago, isPc, isMobile, sleep, initMathJax, getDefaultAvatar, getQuery } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
@@ -45,11 +46,11 @@ export default observer((props: any) => {
     commentStore,
     confirmDialogStore,
   } = useStore();
-  const { total, isFetched } = commentStore;
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
   const { isLogin, user } = userStore;
-  const [pending, setPending] = React.useState(true);
+  const [minPending, setMinPending] = React.useState(true);
+  const [isFetchedPost, setIsFetchedPost] = React.useState(false);
   const [showExtra, setShowExtra] = React.useState(false);
   const [voting, setVoting] = React.useState(false);
   const [showImage, setShowImage] = React.useState(false);
@@ -57,19 +58,30 @@ export default observer((props: any) => {
   const [openRewardModal, setOpenRewardModal] = React.useState(false);
   const [isFetchedReward, setIsFetchedReward] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
+  const [isFetchedComments, setIsFetchedComments] = React.useState(false);
   const [isBan, setIsBan] = React.useState(false);
   const noReward = rewardSummary.users.length === 0;
   const { rId } = props.match.params;
   const [anchorEl, setAnchorEl] = React.useState(null as any);
 
   React.useEffect(() => {
-    if (!pending) {
+    if (!minPending) {
+      return;
+    }
+    (async () => {
+      await sleep(500);
+      setMinPending(false);
+    })();
+  }, [minPending]);
+
+  React.useEffect(() => {
+    if (!minPending) {
       (async () => {
         await sleep(300);
         setShowExtra(true);
       })();
     }
-  }, [pending]);
+  }, [minPending]);
 
   React.useEffect(() => {
     const commentId = getQuery('commentId');
@@ -79,15 +91,11 @@ export default observer((props: any) => {
   }, [modalStore]);
 
   React.useEffect(() => {
-    commentStore.setIsFetched(false);
     setRewardSummary({ amountMap: {}, users: [] });
   }, [rId, commentStore]);
 
   React.useEffect(() => {
     (async () => {
-      if (!ready) {
-        return;
-      }
       try {
         const post: Post = await Api.fetchPost(rId);
         if (post.latestRId) {
@@ -100,29 +108,22 @@ export default observer((props: any) => {
       } catch (err) {
         modalStore.closePageLoading();
         setIsBan(err.message === 'Post has been deleted');
-        console.log(err);
       }
-      setPending(false);
+      setIsFetchedPost(true);
     })();
-  }, [ready, rId, setPost, modalStore]);
+  }, [rId, setPost, modalStore]);
 
   React.useEffect(() => {
     (async () => {
-      if (!ready) {
-        return;
-      }
       try {
         const rewardSummary = await FeedApi.getRewardSummary(rId);
         setRewardSummary(rewardSummary);
       } catch (err) {}
       setIsFetchedReward(true);
     })();
-  }, [ready, rId]);
+  }, [rId]);
 
   React.useEffect(() => {
-    if (!ready) {
-      return;
-    }
     window.scrollTo(0, 0);
     const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
@@ -151,13 +152,30 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, [ready]);
+  }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const pagination = {
+          offset: 0,
+          limit: '1000',
+        };
+        const res = await CommentApi.list(rId, pagination);
+        commentStore.setTotal(res['total']);
+        commentStore.setComments(res['comments']);
+        setIsFetchedComments(true);
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, [commentStore, rId]);
 
   if (userStore.shouldLogin) {
     return null;
   }
 
-  if (!ready || pending) {
+  if (!ready || !isFetchedPost || minPending) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -176,6 +194,14 @@ export default observer((props: any) => {
       </div>
     );
   }
+
+  const renderLoading = () => {
+    return (
+      <div className="py-20">
+        <Loading />
+      </div>
+    );
+  };
 
   const onCloseRewardModal = async (isSuccess: boolean) => {
     setOpenRewardModal(false);
@@ -219,13 +245,6 @@ export default observer((props: any) => {
   };
 
   const RewardView = () => {
-    if (!isFetchedReward) {
-      return (
-        <div className="py-24">
-          <Loading />
-        </div>
-      );
-    }
     return (
       <div>
         <div className="text-center pb-6 md:pb-8 mt-5 md:mt-8">
@@ -303,7 +322,7 @@ export default observer((props: any) => {
               src={author.avatar}
               alt={author.name}
               onError={(e: any) => {
-                e.target.src = generateAvatar(author.name);
+                e.target.src = getDefaultAvatar();
               }}
             />
           </Link>
@@ -362,9 +381,6 @@ export default observer((props: any) => {
   };
 
   const CommentView = () => {
-    if (!isFetchedReward) {
-      return null;
-    }
     return (
       <div className="pb-10">
         <Comment
@@ -459,7 +475,7 @@ export default observer((props: any) => {
         className={classNames(
           {
             'mt-6': isPc,
-            'badge-visible': Number(total) > 0,
+            'badge-visible': Number(commentStore.total) > 0,
           },
           'border-gray-400 w-10 h-10 rounded-full border flex justify-center items-center badge small-icon-badge cursor-pointer relative',
         )}
@@ -471,7 +487,10 @@ export default observer((props: any) => {
           }
         }}
       >
-        <Badge badgeContent={Number(total) || 0} invisible={!isFetched || !Number(total)}>
+        <Badge
+          badgeContent={Number(commentStore.total) || 0}
+          invisible={!isFetchedComments || !Number(commentStore.total)}
+        >
           <div className={classNames('text-gray-600 flex items-center text-xl')}>
             <CommentIcon />
           </div>
@@ -549,7 +568,7 @@ export default observer((props: any) => {
                   src={post.author.avatar}
                   alt={post.author.name}
                   onError={(e: any) => {
-                    e.target.src = generateAvatar(post.author.name);
+                    e.target.src = getDefaultAvatar();
                   }}
                 />
               </div>
@@ -581,23 +600,28 @@ export default observer((props: any) => {
             }
           </div>
         )}
-        <div
-          className={classNames({
-            invisible: !showExtra,
-          })}
-        >
-          {post.paymentUrl && RewardView()}
-          {!post.paymentUrl && <div className="pt-6" />}
-          {post && post.author && AuthorInfoView(post.author)}
-          {CommentView()}
-        </div>
-        <RewardModal
-          open={openRewardModal}
-          onClose={onCloseRewardModal}
-          toAddress={post.author.address}
-          toAuthor={post.author.name}
-          fileRId={post.rId}
-        />
+        {isFetchedReward && isFetchedComments && (
+          <div>
+            <div
+              className={classNames({
+                invisible: !showExtra,
+              })}
+            >
+              {post.paymentUrl && RewardView()}
+              {!post.paymentUrl && <div className="pt-6" />}
+              {post && post.author && AuthorInfoView(post.author)}
+              {CommentView()}
+            </div>
+            <RewardModal
+              open={openRewardModal}
+              onClose={onCloseRewardModal}
+              toAddress={post.author.address}
+              toAuthor={post.author.name}
+              fileRId={post.rId}
+            />
+          </div>
+        )}
+        {(!isFetchedReward || !isFetchedComments) && renderLoading()}
         <Viewer
           onMaskClick={() => setShowImage(false)}
           noNavbar={true}

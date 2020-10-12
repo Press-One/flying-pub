@@ -4,7 +4,7 @@ import ThumbUpAlt from '@material-ui/icons/ThumbUpAlt';
 import Comment from '@material-ui/icons/Comment';
 import classNames from 'classnames';
 import Tooltip from '@material-ui/core/Tooltip';
-import { isMobile, ago, generateAvatar } from 'utils';
+import { isMobile, ago, getDefaultAvatar } from 'utils';
 
 export default (props: any) => {
   const {
@@ -27,7 +27,7 @@ export default (props: any) => {
             src={post.author.avatar}
             alt={post.author.name}
             onError={(e: any) => {
-              e.target.src = generateAvatar(post.author.avatar);
+              e.target.src = getDefaultAvatar();
             }}
           />
         </div>

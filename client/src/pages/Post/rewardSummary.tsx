@@ -27,7 +27,7 @@ export default (props: any) => {
         >
           {users.map((user: any) => {
             return (
-              <Link to={`/authors/${user.address}`}>
+              <Link to={`/authors/${user.address}`} key={user.id}>
                 <div className="px-1 mb-2" key={user.id}>
                   <img
                     className="rounded-sm w-10 h-10"

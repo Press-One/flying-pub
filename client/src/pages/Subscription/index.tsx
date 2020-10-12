@@ -5,7 +5,7 @@ import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import Loading from 'components/Loading';
 import BackButton from 'components/BackButton';
-import { isMobile, generateAvatar } from 'utils';
+import { isMobile, getDefaultAvatar } from 'utils';
 import Api from 'api';
 
 const authorView = (author: any) => {
@@ -17,7 +17,7 @@ const authorView = (author: any) => {
           src={author.avatar}
           alt={author.name}
           onError={(e: any) => {
-            e.target.src = generateAvatar(author.name);
+            e.target.src = getDefaultAvatar();
           }}
         />
         <div className="ml-3 author-name text-gray-700 truncate w-4/5">{author.name}</div>

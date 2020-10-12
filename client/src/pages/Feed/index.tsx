@@ -13,6 +13,7 @@ export default observer(() => {
   const { preloadStore, feedStore, settingsStore, userStore } = useStore();
   const { ready } = preloadStore;
   const [enableFilterScroll, setEnableFilterScroll] = React.useState(false);
+  const [minPending, setMinPending] = React.useState(false);
   const [pagePending, setPagePending] = React.useState(false);
 
   const { isFetched, hasMore, posts, filterType, pending, stickyEnabled, stickyPosts } = feedStore;
@@ -25,10 +26,18 @@ export default observer(() => {
   }, [settings]);
 
   React.useEffect(() => {
+    if (isFetched) {
+      return;
+    }
     (async () => {
-      if (!ready) {
-        return;
-      }
+      setMinPending(true);
+      await sleep(500);
+      setMinPending(false);
+    })();
+  }, [isFetched, minPending]);
+
+  React.useEffect(() => {
+    (async () => {
       if (isFetched) {
         return;
       }
@@ -45,16 +54,13 @@ export default observer(() => {
         ]);
         feedStore.addStickyPosts(stickyPosts);
         feedStore.addPosts(posts);
-        await sleep(500);
         setPagePending(false);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     })();
-  }, [ready, isFetched, feedStore]);
+  }, [isFetched, feedStore]);
 
   React.useEffect(() => {
-    if (!ready || !isFetched) {
+    if (!isFetched) {
       return;
     }
     const loadMore = async () => {
@@ -89,13 +95,13 @@ export default observer(() => {
       window.removeEventListener('scroll', debounceScroll);
       setEnableFilterScroll(false);
     };
-  }, [ready, feedStore, isFetched, hasMore]);
+  }, [feedStore, isFetched, hasMore]);
 
   if (userStore.shouldLogin) {
     return null;
   }
 
-  if (!ready || !feedStore.isFetched || pagePending) {
+  if (!ready || !feedStore.isFetched || pagePending || minPending) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
