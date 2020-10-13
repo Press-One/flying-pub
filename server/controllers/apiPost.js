@@ -1,8 +1,7 @@
 const Post = require('../models/post');
-const {
-  saveChainPost
-} = require('../models/atom');
+const Settings = require('../models/settings');
 const Subscription = require('../models/subscription');
+const config = require('../config');
 const {
   assert,
   Errors,
@@ -48,11 +47,12 @@ exports.get = async ctx => {
 }
 
 exports.list = async ctx => {
+  const options = await getUserOptions(ctx);
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
-  const order = ctx.query.order || 'PUB_DATE';
+  const order = options.order;
   const address = ctx.query.address;
-  const dayRange = ctx.query.dayRange;
+  const dayRange = options.dayRange;
   const filterBan = ctx.query.filterBan;
   const filterSticky = ctx.query.filterSticky;
   const query = {
@@ -71,6 +71,45 @@ exports.list = async ctx => {
   ctx.body = {
     posts: result
   };
+}
+
+const getUserOptions = async ctx => {
+  const query = ctx.query;
+  const options = { order: 'PUB_DATE' };
+  if (query.order && query.dayRange) {
+    options.order = query.order;
+    options.dayRange = query.dayRange;
+    return options;
+  }
+  const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
+  const userSettings = userId ? await Settings.getByUserId(userId) : {};
+  const settings = { ...config.settings, ...userSettings };
+  const type = settings['filter.type'];
+  const popularityDisabled = !settings['filter.popularity.enabled'];
+  if (popularityDisabled) {
+    const validType = type === 'POPULARITY' ? 'PUB_DATE' : type;
+    options.order = validType;
+    return options;
+  }
+  if (query.order === 'POPULARITY') {
+    options.order = 'POPULARITY';
+    if (query.dayRange) {
+      options.dayRange = query.dayRange;
+    }
+  } else if (query.order === 'PUB_DATE') {
+    options.order = 'PUB_DATE';
+  }
+  if (!query.order && !query.dayRange) {
+    if (type === 'POPULARITY') {
+      const dayRange = settings['filter.dayRange'];
+      const dayRangeOptions = settings['filter.dayRangeOptions'];
+      const isValidDayRange = dayRange && dayRangeOptions.includes(dayRange);
+      const validDayRange = isValidDayRange ? dayRange : dayRangeOptions[0];
+      options.order = 'POPULARITY';
+      options.dayRange = validDayRange;
+    }
+  }
+  return options;
 }
 
 exports.listBySubscriptions = async ctx => {
