@@ -50,7 +50,7 @@ exports.list = async ctx => {
   const options = await getUserOptions(ctx);
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
-  const order = options.order;
+  const order = options.order || 'PUB_DATE';
   const address = ctx.query.address;
   const dayRange = options.dayRange;
   const filterBan = ctx.query.filterBan;
@@ -76,10 +76,11 @@ exports.list = async ctx => {
 const getUserOptions = async ctx => {
   const query = ctx.query;
   const options = { order: 'PUB_DATE' };
+  if (query.filterBan || query.filterSticky) {
+    return query;
+  }
   if (query.order && query.dayRange) {
-    options.order = query.order;
-    options.dayRange = query.dayRange;
-    return options;
+    return query;
   }
   const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
   const userSettings = userId ? await Settings.getByUserId(userId) : {};
