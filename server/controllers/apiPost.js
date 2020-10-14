@@ -76,7 +76,7 @@ exports.list = async ctx => {
 const getUserOptions = async ctx => {
   const query = ctx.query;
   const options = { order: 'PUB_DATE' };
-  if (query.filterBan || query.filterSticky) {
+  if (query.address || query.filterBan || query.filterSticky) {
     return query;
   }
   if (query.order && query.dayRange) {
