@@ -17,7 +17,7 @@ import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
-import { isMobile, getLoginUrl, sleep } from 'utils';
+import { isMobile, getLoginUrl, sleep, isWeChat } from 'utils';
 import Api from 'api';
 import ArrowDropUp from '@material-ui/icons/ArrowDropUp';
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -302,74 +302,76 @@ export default observer(() => {
           </Button>
         </div>
 
-        <div className="w-full mt-6">
-          <span className="cursor-pointer text-blue-400" onClick={toggleLoginExpand}>
-            {state.loginExpand ? (
-              <div className="flex items-center">
-                使用手机登录
-                <span className="flex items-center ml-1 text-2xl">
-                  <ArrowDropUp />
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                使用 {settings['mixinApp.name']} 登录
-                <span className="flex items-center ml-1 text-2xl">
-                  <ArrowDropDown />
-                </span>
+        {!isWeChat && (
+          <div className="w-full mt-6">
+            <span className="cursor-pointer text-blue-400" onClick={toggleLoginExpand}>
+              {state.loginExpand ? (
+                <div className="flex items-center">
+                  使用手机登录
+                  <span className="flex items-center ml-1 text-2xl">
+                    <ArrowDropUp />
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  使用 {settings['mixinApp.name']} 登录
+                  <span className="flex items-center ml-1 text-2xl">
+                    <ArrowDropDown />
+                  </span>
+                </div>
+              )}
+            </span>
+            {state.loginExpand && (
+              <div>
+                <div className="pt-16 md:pt-10 flex justify-center">
+                  <Tooltip
+                    open={state.showAppIconActionTooltip}
+                    arrow
+                    placement="top"
+                    title={
+                      isMobile
+                        ? `点击图标，使用 ${settings['mixinApp.name']} 登录`
+                        : `点击图标，使用 ${settings['mixinApp.name']} 扫码登录`
+                    }
+                  >
+                    <div className="-mt-3 md:mt-0 flex justify-center">
+                      <a
+                        href={getLoginUrl()}
+                        className="block"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                        }}
+                      >
+                        <img
+                          className="rounded-md cursor-pointer border border-gray-300"
+                          src={settings['mixinApp.logo']}
+                          width="60"
+                          height="60"
+                          alt="XueXi"
+                        />
+                      </a>
+                    </div>
+                  </Tooltip>
+                </div>
+                <div className="flex justify-center items-center text-gray-500 text-xs mt-6">
+                  <span className="flex items-center text-lg mr-1">
+                    <Info />
+                  </span>
+                  手机还没有安装 {settings['mixinApp.name']} ？
+                  <a
+                    className="text-blue-400"
+                    href={settings['mixinApp.downloadUrl']}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    前往下载
+                  </a>
+                </div>
               </div>
             )}
-          </span>
-          {state.loginExpand && (
-            <div>
-              <div className="pt-16 md:pt-10 flex justify-center">
-                <Tooltip
-                  open={state.showAppIconActionTooltip}
-                  arrow
-                  placement="top"
-                  title={
-                    isMobile
-                      ? `点击图标，使用 ${settings['mixinApp.name']} 登录`
-                      : `点击图标，使用 ${settings['mixinApp.name']} 扫码登录`
-                  }
-                >
-                  <div className="-mt-3 md:mt-0 flex justify-center">
-                    <a
-                      href={getLoginUrl()}
-                      className="block"
-                      style={{
-                        width: '60px',
-                        height: '60px',
-                      }}
-                    >
-                      <img
-                        className="rounded-md cursor-pointer border border-gray-300"
-                        src={settings['mixinApp.logo']}
-                        width="60"
-                        height="60"
-                        alt="XueXi"
-                      />
-                    </a>
-                  </div>
-                </Tooltip>
-              </div>
-              <div className="flex justify-center items-center text-gray-500 text-xs mt-6">
-                <span className="flex items-center text-lg mr-1">
-                  <Info />
-                </span>
-                手机还没有安装 {settings['mixinApp.name']} ？
-                <a
-                  className="text-blue-400"
-                  href={settings['mixinApp.downloadUrl']}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  前往下载
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </ModalComponent>
   );
