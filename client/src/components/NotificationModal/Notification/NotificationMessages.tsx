@@ -196,6 +196,20 @@ export default observer(() => {
                 <span className="msg-timestamp mr-5">
                   {formatDateTime(msg.notification.created_at)}
                 </span>
+                {msg.notification.type === NotificationType.COMMENT &&
+                  msg.notification.sub_type === NotificationSubType.LIKE && (
+                    <a
+                      className="msg-link"
+                      href={msg.notification.extras.originUrl}
+                      target={isMobile ? '_self' : '_blank'}
+                      onClick={() => {
+                        isMobile && modalStore.openPageLoading();
+                      }}
+                      rel="noopener noreferrer"
+                    >
+                      去看看
+                    </a>
+                  )}
                 {(msg.notification.sub_type === NotificationSubType.ARTICLE_COMMENT ||
                   msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) && (
                   <a
