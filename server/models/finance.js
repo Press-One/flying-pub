@@ -12,6 +12,7 @@ const User = require("./user");
 const Log = require("./log");
 const Receipt = require("./receipt");
 const Sequelize = require("sequelize");
+const moment = require('moment');
 const {
   notifyArticleReward,
 } = require("../models/notify");
@@ -583,6 +584,7 @@ const saveSnapshot = async (snapshot) => {
 exports.syncMixinSnapshots = () => {
   const syncKey = `${config.serviceKey}_SYNC_MIXIN_SNAPSHOTS`;
   const lockKey = `${syncKey}_LOCK`;
+  const sessionLogNotificationKey = `${syncKey}_SESSION_LOG_NOTIFICATION`
   return new Promise(resolve => {
     (async () => {
       const isLock = await Cache.pTryLock(lockKey, 5); // 15s
@@ -639,6 +641,21 @@ exports.syncMixinSnapshots = () => {
         await Promise.all(tasks);
         await saveSnapshots(snapshots);
         await Cache.pSet(syncKey, 'session', JSON.stringify(session));
+        try {
+          if (process.env.NODE_ENV === 'production') {
+            const sessionLogNotificationDate = await Cache.pGet(sessionLogNotificationKey, 'date');
+            const today = moment().format('YYYY-MM-DD');
+            if (sessionLogNotificationDate !== today) {
+              const hours = moment().format('HH');
+              if (hours === 10) {
+                await Cache.pSet(sessionLogNotificationKey, 'date', today);
+                Log.createAnonymity('SYNC_MIXIN_SNAPSHOTS_SESSION', JSON.stringify(session));
+              }
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
       } catch (err) {
         console.log(err);
       }
