@@ -332,27 +332,26 @@ exports.getPermission = async ctx => {
     user
   } = ctx.verification;
 
-  try {
-    
-    if (config.settings['permission.allowedProviders']) {
-      const allowedProviders = config.settings['permission.allowedProviders'];
-      const profiles = await Profile.getByUserId(user.id);
-      let passed = false;
-      for (const profile of profiles) {
-        if (allowedProviders.includes(profile.provider)) {
-          passed = true;
-        }
+  if (config.settings['permission.allowedProviders']) {
+    const allowedProviders = config.settings['permission.allowedProviders'];
+    const profiles = await Profile.getByUserId(user.id);
+    let passed = false;
+    for (const profile of profiles) {
+      if (allowedProviders.includes(profile.provider)) {
+        passed = true;
       }
-      assert(passed, Errors.ERR_NO_PERMISSION);
     }
+    assert(passed, Errors.ERR_NO_PERMISSION);
+  }
 
-    if (config.settings['permission.isOnlyPubPrivate']) {
-      const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
-      assert(mixinProfile, Errors.ERR_NO_PERMISSION);
-      const mixinGroupUser = await checkPermission('mixin', mixinProfile);
-      assert(mixinGroupUser, Errors.ERR_NO_PERMISSION);
-    }
+  if (config.settings['permission.isOnlyPubPrivate']) {
+    const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
+    assert(mixinProfile, Errors.ERR_NO_PERMISSION);
+    const mixinGroupUser = await checkPermission('mixin', mixinProfile);
+    assert(mixinGroupUser, Errors.ERR_NO_PERMISSION);
+  }
 
+  try {
     const topicAddress = config.topic.address;
     const allowBlock = await Block.getAllowBlock(topicAddress, user.address);
 
@@ -381,7 +380,7 @@ exports.getPermission = async ctx => {
       }
     }
   } catch (err) {
-    console.log({ err });
+    console.log(err);
   }
 
   ctx.body = {
