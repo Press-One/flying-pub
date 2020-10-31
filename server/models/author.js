@@ -86,6 +86,12 @@ exports.listRecommended = async (options = {}) => {
       'address', 'nickname', 'avatar', 'cover', 'bio',
       [Sequelize.literal('(SELECT SUM("posts"."upVotesCount") + SUM("posts"."commentsCount") * 0.6 FROM "posts" WHERE "posts"."userAddress" = "authors"."address")'), '"countSum"'],
     ],
+    where: {
+      status: 'allow',
+      nickname: {
+        [Sequelize.Op.not]: null
+      }
+    },
     order: [[Sequelize.literal('"countSum"'), 'DESC NULLS LAST']],
     limit
   });

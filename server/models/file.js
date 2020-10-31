@@ -38,10 +38,14 @@ const packFile = async (file, options = {}) => {
   }
   fileJson.content = fileJson.content.toString('utf8');
   const {
-    withRawContent
+    withRawContent,
+    dropContent
   } = options;
   if (!withRawContent) {
     fileJson.content = removeFrontMatter(fileJson.content);
+  }
+  if (dropContent) {
+    delete fileJson.content;
   }
   delete fileJson.deleted;
   return fileJson;
@@ -130,7 +134,9 @@ exports.list = async (userAddress, options = {}) => {
   });
   const list = await Promise.all(
     files.map((file) => {
-      return packFile(file);
+      return packFile(file, {
+        dropContent: true
+      });
     })
   )
   return list;

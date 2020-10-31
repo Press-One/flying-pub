@@ -13,6 +13,7 @@ interface tab {
 }
 
 interface IProps {
+  provider: string;
   tabs: tab[];
   type: string;
   showPopularity?: boolean;
@@ -84,9 +85,12 @@ export default observer((props: IProps) => {
     return (
       <div
         id={selectorId}
-        className={classNames({
-          'fixed left-0 w-full mt-0 z-50 duration-500 ease-in-out transition-all': fixed,
-        })}
+        className={classNames(
+          {
+            'fixed left-0 w-full mt-0 z-50 duration-500 ease-in-out transition-all': fixed,
+          },
+          `${props.provider}-filter`,
+        )}
       >
         <div
           className={classNames({
@@ -129,7 +133,7 @@ export default observer((props: IProps) => {
           #feed-filter.fixed {
             top: 0;
           }
-          .filter :global(.tab) {
+          :global(.${props.provider}-filter .tab) {
             width: ${types.length === 2 ? '50%' : '33.333333%'};
             max-width: 100%;
             font-weight: bold;

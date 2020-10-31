@@ -213,6 +213,7 @@ export default observer(() => {
           <div className="bg-white md:px-5 pb-8 rounded-12">
             {filterEnabled && (
               <Filter
+                provider="feed"
                 dayRange={feedStore.filterDayRange}
                 type={feedStore.filterType}
                 enableScroll={state.enableFilterScroll}

@@ -373,7 +373,12 @@ export default observer((props: any) => {
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
             <div className="bg-white md:px-5 pb-8 md:rounded-12 h-screen md:h-auto">
-              <Filter onChange={handleFilterChange} type={feedStore.filterType} tabs={tabs} />
+              <Filter
+                provider="topic"
+                onChange={handleFilterChange}
+                type={feedStore.filterType}
+                tabs={tabs}
+              />
               {feedStore.filterType !== 'OTHERS' && (
                 <div className="posts-container" ref={infiniteRef}>
                   <div className="mt-2" />
