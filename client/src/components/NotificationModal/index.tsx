@@ -30,7 +30,7 @@ export default observer((props: any) => {
         <style jsx>{`
           .notification-modal-content {
             width: 700px;
-            height: ${window.innerHeight > 700 + 100 ? '700px' : '90vh'};
+            height: 90vh;
           }
         `}</style>
       </div>

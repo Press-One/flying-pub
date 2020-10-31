@@ -50,10 +50,10 @@ exports.upsert = async (address, data) => {
   assert(address, Errors.ERR_IS_REQUIRED('address'))
   assert(data, Errors.ERR_IS_REQUIRED('data'))
   const verifiedData = attempt(data, {
-    status: Joi.string().trim().optional(),
-    nickname: Joi.string().trim().optional(),
-    avatar: Joi.string().trim().optional(),
-    cover: Joi.string().trim().optional(),
+    status: Joi.string().empty('').optional(),
+    nickname: Joi.string().empty('').optional(),
+    avatar: Joi.string().empty('').optional(),
+    cover: Joi.string().empty('').optional(),
     bio: Joi.string().empty('').optional()
   });
   const author = await getByAddress(address);
