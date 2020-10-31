@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
 import Modal from 'components/Modal';
-import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import { checkAmount } from './utils';
 import Api from './api';
@@ -140,8 +139,8 @@ export default (props: any) => {
               />
             </div>
             <div className="mt-5" onClick={() => tryRecharge(currency, amount, memo)}>
-              <Button fullWidth={isMobile}>
-                确定 <ButtonProgress isDoing={openingMixinSchema} />
+              <Button fullWidth={isMobile} isDoing={openingMixinSchema}>
+                确定
               </Button>
             </div>
           </div>
@@ -246,7 +245,7 @@ export default (props: any) => {
           {
             'fixed-scroll': isIPhone && step === 1 && !waitingPayment,
           },
-          'p-8 bg-white rounded text-center mx-5',
+          'p-8 bg-white rounded-12 text-center mx-5',
         )}
       >
         {step === 1 && step1()}

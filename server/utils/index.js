@@ -17,12 +17,16 @@ exports.sleep = (duration) =>
     setTimeout(resolve, duration);
   });
 
+exports.immediatePromise = () =>
+  new Promise((resolve) => {
+    resolve();
+  });
+
 exports.truncate = (text, max = 8) => {
   const truncatedText = text.slice(0, max);
   const postfix = text.length > truncatedText.length ? '...' : '';
   return `${truncatedText}${postfix}`;
 }
-
 
 exports.removeEmpty = (obj) => {
   for (const key of Object.keys(obj)) {
@@ -32,3 +36,5 @@ exports.removeEmpty = (obj) => {
   }
   return obj
 }
+
+exports.listToJSON = list => list.map(item => item.toJSON())

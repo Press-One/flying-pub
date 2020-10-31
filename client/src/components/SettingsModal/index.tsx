@@ -31,7 +31,7 @@ export default observer(() => {
     <>
       {tab === 'profile' && (
         <TabContent>
-          <div className="font-bold flex items-center text-xl justify-center md:justify-start">
+          <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
               <AccountCircle />
             </span>
@@ -45,7 +45,7 @@ export default observer(() => {
 
       {tab === 'password' && (
         <TabContent>
-          <div className="font-bold flex items-center text-xl justify-center md:justify-start">
+          <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
               <Lock />
             </span>
@@ -59,7 +59,7 @@ export default observer(() => {
 
       {tab === 'bind' && (
         <TabContent>
-          <div className="font-bold flex items-center text-xl justify-center md:justify-start">
+          <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
               <Link />
             </span>

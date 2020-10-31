@@ -19,7 +19,6 @@ import { Visibility, VisibilityOff } from '@material-ui/icons';
 import { getProtectedPhone, isMobile } from 'utils';
 
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import Api from 'api';
 
@@ -296,9 +295,14 @@ export const PhoneChangePassword = observer(() => {
             'mt-8 mb-4',
           )}
         >
-          <Button fullWidth={isMobile} disabled={!state.formValid} onClick={handleSubmit}>
+          <Button
+            fullWidth={isMobile}
+            disabled={!state.formValid}
+            onClick={handleSubmit}
+            isDoing={state.phoneBinding}
+            isDone={state.phoneBindingDone}
+          >
             <span>{state.tab === 'reset' ? '重置密码' : '修改密码'}</span>
-            <ButtonProgress isDoing={state.phoneBinding} isDone={state.phoneBindingDone} />
           </Button>
         </div>
       </div>

@@ -244,7 +244,7 @@ export default observer(() => {
               {
                 'fixed-scroll': isIPhone && !pending && !isVerified,
               },
-              'p-8 bg-white rounded text-center mx-5',
+              'p-8 bg-white rounded-12 text-center mx-5',
             )}
           >
             <div className="text-lg font-bold text-gray-700 pb-5">

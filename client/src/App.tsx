@@ -9,6 +9,7 @@ import Subscription from './pages/Subscription';
 import TryFetch from './pages/TryFetch';
 import ManagementLayout from './pages/ManagementLayout';
 import Editor from './pages/Editor';
+import Topic from './pages/Topic';
 
 import LoginModal from 'components/LoginModal';
 import PhoneLoginModal from 'components/PhoneLoginModal';
@@ -20,11 +21,12 @@ import SettingsModal from 'components/SettingsModal';
 import PageLoading from './components/PageLoading';
 import Contact from './components/Contact';
 import MixinNotificationModal from 'components/MixinNotificationModal';
-import PublishDialog from './components/PublishDialog';
 import ConfirmDialog from './components/ConfirmDialog';
+import UserListModal from './components/UserListModal';
+import TopicListModal from './components/TopicListModal';
 import GlobalQueryHandler from './components/GlobalQueryHandler';
 
-import { isIPhone, isPc } from 'utils';
+import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
 
 import { StoreProvider } from './store';
 
@@ -36,12 +38,36 @@ const Reader = () => {
   return (
     <div>
       <Route path="/" component={Header} />
-      <div className={`container m-auto pt-5 md:pt-8`}>
-        <Route path="/" exact component={Feed} />
-        <Route path="/posts/:rId" exact component={Post} />
-        <Route path="/authors/:address" exact component={Author} />
-        <Route path="/subscriptions" exact component={Subscription} />
-      </div>
+      <Route
+        path={['/', '/authors/:address', '/topics/:address', '/subscriptions']}
+        exact
+        component={() => (
+          <div>
+            <div className="gray-bg">
+              <div className={`container m-auto pt-2 min-h-screen`}>
+                <Route path="/" exact component={Feed} />
+                <Route path="/authors/:address" exact component={Author} />
+                <Route path="/topics/:uuid" exact component={Topic} />
+                <Route path="/subscriptions" exact component={Subscription} />
+              </div>
+            </div>
+          </div>
+        )}
+      />
+      <Route
+        path={['/posts/:address']}
+        exact
+        component={() => (
+          <div className={`container m-auto pt-4 min-h-screen`}>
+            <Route path="/posts/:rId" exact component={Post} />
+          </div>
+        )}
+      />
+      <style jsx>{`
+        .gray-bg {
+          background-color: #eff3f6;
+        }
+      `}</style>
     </div>
   );
 };
@@ -51,7 +77,7 @@ const Pub = () => {
     <div>
       <Route path="/editor" exact component={Editor} />
       <Route
-        path={['/dashboard', '/topic', '/postManager', '/sticky']}
+        path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
         exact
         component={ManagementLayout}
       />
@@ -66,14 +92,13 @@ const AppRouter = () => {
         <div>
           <Route path="/" component={TryFetch} />
           <Route
-            path={['/', '/posts/:rId', '/authors/:address', '/subscriptions']}
+            path={['/', '/posts/:rId', '/authors/:address', '/topics/:address', '/subscriptions']}
             exact
             component={Reader}
           />
           {isPc && (
             <div>
               <Pub />
-              <PublishDialog />
             </div>
           )}
           <Route path="/readerWallet" exact component={ReaderWalletModal} />
@@ -82,12 +107,14 @@ const AppRouter = () => {
           <PhoneLoginModal />
           <WalletModal />
           <SnackBar />
-          <NotificationSocket />
+          {(isFirefox || isProduction) && <NotificationSocket />}
           <PageLoading />
           <SettingsModal />
           <MixinNotificationModal />
           <ConfirmDialog />
           <GlobalQueryHandler />
+          <UserListModal />
+          <TopicListModal />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

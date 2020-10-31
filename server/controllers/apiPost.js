@@ -1,6 +1,7 @@
 const Post = require('../models/post');
+const Author = require('../models/author');
+const Topic = require('../models/topic');
 const Settings = require('../models/settings');
-const Subscription = require('../models/subscription');
 const config = require('../config');
 const {
   assert,
@@ -12,10 +13,11 @@ exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
   const rId = ctx.params.id;
   const includeDeleted = ctx.query.includeDeleted;
+  const dropContent = ctx.query.dropContent || false;
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
-    withContent: true,
+    withContent: !dropContent,
     withPaymentUrl: true,
     ignoreDeleted: true
   });
@@ -30,48 +32,81 @@ exports.get = async ctx => {
     throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
   }
   if (post.author && post.author.address) {
-    const postCount = await Post.getPostCountByAuthor(post.author.address);
-    post.author.postCount = postCount;
-    if (!!userId) {
-      try {
-        const subscription = await Subscription.get(userId, post.author.address);
-        if (subscription) {
-          post.author.subscribed = true;
+    const sequelizeAuthor = await Author.getByAddress(post.author.address, {
+      raw: true
+    });
+    const [
+      followerCount,
+      postCount
+    ] = await Promise.all([
+      sequelizeAuthor.countFollowers(),
+      sequelizeAuthor.countPosts({
+        where: {
+          deleted: false,
+          invisibility: false
         }
-      } catch (e) {
-        post.author.subscribed = false;
+      })
+    ]);    
+    post.author.summary = {
+      post: {
+        count: postCount
+      },
+      follower: {
+        count: followerCount
+      }
+    }
+    if (!!userId) {
+      const user = ctx.verification && ctx.verification.sequelizeUser;
+      const count = await user.countFollowingAuthors({
+        where: {
+          address: post.author.address
+        }
+      });
+      if (count > 0) {
+        post.author.following = count > 0;
       }
     }
   }
   ctx.body = post;
 }
 
-exports.list = async ctx => {
-  const options = await getUserOptions(ctx);
-  const offset = ~~ctx.query.offset || 0;
-  const limit = Math.min(~~ctx.query.limit || 10, 50);
-  const order = options.order || 'PUB_DATE';
-  const address = ctx.query.address;
-  const dayRange = options.dayRange;
-  const filterBan = ctx.query.filterBan;
-  const filterSticky = ctx.query.filterSticky;
-  const query = {
-    offset,
-    limit,
-    order,
-    dropAuthor: !!address,
-    dayRange,
-    filterBan,
-    filterSticky
-  };
-  if (address) {
-    query.addresses = [address];
+const getListController = (listOptions = {}) => {
+  return async ctx => {
+    let options = ctx.query;
+    if (listOptions.withUserOptions) {
+      options = await getUserOptions(ctx);
+      if (options.order === 'SUBSCRIPTION') {
+        await exports.listBySubscriptions(ctx);
+        return;
+      }
+    }
+    const offset = ~~ctx.query.offset || 0;
+    const limit = Math.min(~~ctx.query.limit || 10, 50);
+    const order = options.order || 'PUB_DATE';
+    const address = ctx.query.address;
+    const dayRange = options.dayRange;
+    const filterBan = ctx.query.filterBan;
+    const filterSticky = ctx.query.filterSticky;
+    const query = {
+      offset,
+      limit,
+      order,
+      dropAuthor: !!address,
+      dayRange,
+      filterBan,
+      filterSticky
+    };
+    if (address) {
+      query.addresses = [address];
+    }
+    const result = await Post.list(query);
+    ctx.body = {
+      total: result.total,
+      posts: result.posts,
+    };
   }
-  const result = await Post.list(query);
-  ctx.body = {
-    posts: result
-  };
 }
+exports.list = getListController();
 
 const getUserOptions = async ctx => {
   const query = ctx.query;
@@ -86,6 +121,9 @@ const getUserOptions = async ctx => {
   const userSettings = userId ? await Settings.getByUserId(userId) : {};
   const settings = { ...config.settings, ...userSettings };
   const type = settings['filter.type'];
+  if (type === 'SUBSCRIPTION') {
+    return { order: 'SUBSCRIPTION' }
+  }
   const popularityDisabled = !settings['filter.popularity.enabled'];
   if (popularityDisabled) {
     const validType = type === 'POPULARITY' ? 'PUB_DATE' : type;
@@ -116,25 +154,44 @@ const getUserOptions = async ctx => {
 exports.listBySubscriptions = async ctx => {
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
-  const userId = ctx.verification.user.id;
-  const subscriptions = await Subscription.list(userId);
-  if (subscriptions.length === 0) {
-    ctx.body = {
-      posts: []
-    };
-    return;
-  }
-  const authorAddresses = subscriptions.map(subscription => subscription.author.address);
-  const posts = await Post.list({
-    addresses: authorAddresses,
+  const user = ctx.verification.sequelizeUser;
+  const followingAuthors = await user.getFollowingAuthors({
+    attributes: ['address'],
+    joinTableAttributes: []
+  });
+  const followingAuthorAddresses = followingAuthors.map(author => author.address);
+  const followingTopics = await user.getFollowingTopics({
+    where: {
+      deleted: false
+    },
+    attributes: ['uuid'],
+    joinTableAttributes: []
+  });
+  const followingTopicUuids = followingTopics.map(topics => topics.uuid);
+  const result = await Post.list({
+    addresses: followingAuthorAddresses,
+    topicUuids: followingTopicUuids,
     offset,
     limit
   });
   ctx.body = {
-    posts
+    total: result.total,
+    posts: result.posts,
   };
 }
 
+exports.listByUserSettings = async ctx => {
+  const userId = ctx.verification && ctx.verification.user.id;
+  if (userId) {
+    const list = getListController({
+      withUserOptions: true
+    });
+    await list(ctx);
+  } else {
+    const list = getListController();
+    await list(ctx);
+  }
+}
 
 exports.update = async ctx => {
   const rId = ctx.params.id;
@@ -142,4 +199,26 @@ exports.update = async ctx => {
   assert(data, Errors.ERR_IS_REQUIRED('payload'));
   await Post.updateByRId(rId, data);
   ctx.body = true;
+}
+
+exports.listTopics = async ctx => {
+  const rId = ctx.params.id;
+  const post = await Post.getByRId(rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND('post'));
+  const topics = await post.getTopics({
+    where: {
+      deleted: false,
+    },
+    ...Topic.getTopicOrderQuery(),
+    joinTableAttributes: []
+  });
+  const derivedTopics = await Promise.all(topics.map(async topic => {
+    return await Topic.pickTopic(topic);
+  }));
+  ctx.body = {
+    total: derivedTopics.length,
+    topics: derivedTopics
+  }
 }

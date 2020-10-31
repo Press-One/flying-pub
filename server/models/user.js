@@ -13,7 +13,7 @@ const {
   Errors
 } = require("../utils/validator");
 
-const DEFAULT_AVATAR = "https://static.press.one/pub/avatar.png";
+const DEFAULT_AVATAR = "https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f";
 const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED("user"));
 
@@ -27,9 +27,13 @@ const packUser = async (user, options = {}) => {
     id: user.id,
     nickname: user.nickname,
     avatar: user.avatar,
+    cover: user.cover,
     bio: user.bio,
-    version: user.version || 0
   };
+
+  if (options.withSSO) {
+    derivedUser.version = user.version || 0;
+  }
 
   // 旧用户，需要使用 pub user 的一些数据
   let foundPubUser = false;
@@ -43,14 +47,16 @@ const packUser = async (user, options = {}) => {
       if (withKeys) {
         derivedUser.privateKey = pubUser.privateKey;
       }
-      derivedUser.SSO = {
-        reader: {
-          id: user.id,
-          address: user.address
-        },
-        pub: {
-          id: pubUser.id,
-          address: pubUser.address
+      if (options.withSSO) {
+        derivedUser.SSO = {
+          reader: {
+            id: user.id,
+            address: user.address
+          },
+          pub: {
+            id: pubUser.id,
+            address: pubUser.address
+          }
         }
       }
     }
@@ -75,8 +81,9 @@ const packUser = async (user, options = {}) => {
       await Author.upsert(derivedUser.address, {
         // 默认是 deny，提交 allow block 之后就会设置成 allow
         status: 'deny',
-        name: derivedUser.nickname || '',
+        nickname: derivedUser.nickname || '',
         avatar: derivedUser.avatar || '',
+        cover: derivedUser.cover || '',
         bio: derivedUser.bio || '',
       });
       Log.create(derivedUser.id, 'author 缺失，已创建对应的 author');
@@ -87,6 +94,7 @@ const packUser = async (user, options = {}) => {
 
   return derivedUser;
 };
+exports.packUser = packUser;
 
 exports.getMixinAccount = async userId => {
   assert(userId, Errors.ERR_IS_REQUIRED("userId"));
@@ -164,7 +172,7 @@ exports.create = async (data) => {
   try {
     await Author.upsert(address, {
       status: 'deny',
-      name: nickname || '',
+      nickname: nickname || '',
       avatar: avatar || '',
       bio: bio || '',
     });
@@ -188,8 +196,9 @@ exports.update = async (userId, data) => {
   try {
     const user = await exports.get(userId);
     await Author.upsert(user.address, {
-      name: user.nickname || '',
+      nickname: user.nickname || '',
       avatar: user.avatar || '',
+      cover: user.cover || '',
       bio: user.bio || '',
     });
     if (data.nickname) {
@@ -224,7 +233,10 @@ exports.getByAddress = async (address, options) => {
 
 const get = async (query = {}, options = {}) => {
   const {
-    withKeys
+    raw,
+    withKeys,
+    withSSO,
+    returnRaw
   } = options;
   const user = await User.findOne({
     where: query,
@@ -232,8 +244,19 @@ const get = async (query = {}, options = {}) => {
   if (!user) {
     return null;
   }
+
+  if (raw) {
+    return user;
+  }
+
   const derivedUser = await packUser(user.toJSON(), {
     withKeys,
+    withSSO
   });
+
+  if (returnRaw) {
+    return { sequelizeUser: user, user: derivedUser }
+  }
+
   return derivedUser;
 };

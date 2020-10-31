@@ -1,11 +1,11 @@
 import React from 'react';
 import { TextField, Tabs, Tab } from '@material-ui/core';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import Api from 'api';
+import { resizeImage } from 'utils';
 
 export default () => {
   const [value, setValue] = React.useState('');
@@ -123,9 +123,8 @@ export default () => {
             variant="outlined"
           />
           <div className="ml-4 mt-1">
-            <Button onClick={search}>
+            <Button onClick={search} isDoing={isSearching}>
               搜索
-              <ButtonProgress isDoing={isSearching} />
             </Button>
           </div>
         </div>
@@ -139,10 +138,10 @@ export default () => {
       <div className="flex items-center">
         <img
           className="w-10 h-10 rounded-full border border-gray-300"
-          src={post.author.avatar}
-          alt={post.author.name}
+          src={resizeImage(post.author.avatar)}
+          alt={post.author.nickname}
         />
-        <span className="ml-2 text-gray-800 w-16 truncate">{post.author.name}</span>
+        <span className="ml-2 text-gray-800 w-16 truncate">{post.author.nickname}</span>
       </div>
       <div className="ml-4 text-black font-bold title truncate">{post.title}</div>
       <div className="ml-4">

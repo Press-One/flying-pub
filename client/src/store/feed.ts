@@ -1,36 +1,35 @@
-export interface Post {
-  rId: string;
-  author: {
-    address: string;
-    name: string;
-    avatar: string;
-  };
-  title: string;
-  content?: string;
-  paymentUrl?: string;
-  pubDate: string;
-  rewardSummary: string;
-  upVotesCount: number;
-  commentsCount: number;
-  voted: boolean;
-  latestRId?: string;
-}
+import { IPost } from 'apis/post';
+import { IAuthor } from 'apis/author';
+import { ITopic } from 'apis/topic';
 
 export function createFeedStore() {
   const postMap: any = {};
   const rIdsSet = new Set();
   const stickyRIdsSet = new Set();
   return {
-    isFetched: false,
+    provider: '',
     postRId: '',
     rIdsSet,
     stickyRIdsSet,
     postMap,
-    filterType: '',
+    filterType: '' as string,
     filterDayRange: 3,
-    limit: 10,
+    limit: 15,
     pending: false,
     hasMore: false,
+    total: 0,
+    page: 0,
+    isFetching: false,
+    isFetched: false,
+    isNew: true,
+    willLoadingPage: false,
+    belongedAuthor: ({} as IAuthor),
+    belongedTopic: ({} as ITopic),
+    hasMorePosts: false,
+    syncedFromSettings: false,
+    get hasPosts() {
+      return this.posts.length > 0;
+    },
     get post() {
       return this.postMap[this.postRId];
     },
@@ -53,16 +52,16 @@ export function createFeedStore() {
     get rIds(): any {
       return Array.from(this.rIdsSet);
     },
-    get posts(): Post[] {
+    get posts(): IPost[] {
       return this.rIds.map((rId: string) => this.postMap[rId]);
     },
     get stickyRIds(): any {
       return Array.from(this.stickyRIdsSet);
     },
-    get stickyPosts(): Post[] {
+    get stickyPosts(): IPost[] {
       return this.stickyRIds.map((rId: string) => this.postMap[rId]);
     },
-    addStickyPosts(posts: Post[]) {
+    addStickyPosts(posts: IPost[]) {
       for (const post of posts) {
         if (!this.stickyRIdsSet.has(post.rId)) {
           this.postMap[post.rId] = post;
@@ -70,17 +69,36 @@ export function createFeedStore() {
         }
       }
     },
-    addPosts(posts: Post[]) {
+    setIsFetching(status: boolean) {
+      this.isFetching = status;
+      if (!status) {
+        this.willLoadingPage = false;
+      }
+    },
+    setIsFetched(status: boolean) {
+      this.isFetched = status;
+    },
+    setPage(page: number) {
+      if (page === 0) {
+        this.rIdsSet.clear();
+      }
+      this.willLoadingPage = true;
+      this.page = page;
+    },
+    setTotal(total: number) {
+      this.total = total;
+    },
+    addPosts(posts: IPost[]) {
+      this.isNew = false;
+      this.hasMorePosts = posts.length === this.limit;
       for (const post of posts) {
         if (!this.rIdsSet.has(post.rId)) {
           this.postMap[post.rId] = post;
           this.rIdsSet.add(post.rId);
         }
       }
-      this.hasMore = posts.length === this.limit;
-      this.isFetched = true;
     },
-    setPost(post: Post) {
+    setPost(post: IPost) {
       this.postMap[post.rId] = post;
       this.postRId = post.rId;
     },
@@ -92,11 +110,37 @@ export function createFeedStore() {
     setPending(status: boolean) {
       this.pending = status;
     },
+    setFilterType(type: string) {
+      this.filterType = type;
+    },
     setFilter(options: any = {}) {
       const { type, dayRange } = options;
       this.filterType = type;
       this.filterDayRange = dayRange;
-      this.rIdsSet.clear();
     },
+    clear() {
+      this.rIdsSet.clear();
+      this.belongedAuthor = {} as IAuthor;
+      this.belongedTopic = {} as ITopic;
+      this.isNew = true;
+      this.isFetched = false;
+      this.page = 0;
+      this.total = 0;
+      this.hasMore = false;
+      this.willLoadingPage = false;
+      this.filterType = '';
+    },
+    setProvider(provider: string) {
+      this.provider = provider;
+    },
+    setBelongedAuthor(author: IAuthor) {
+      this.belongedAuthor = author
+    },
+    setBelongedTopic(Topic: ITopic) {
+      this.belongedTopic = Topic
+    },
+    markSyncedFromSettings() {
+      this.syncedFromSettings = true;
+    }
   };
 }

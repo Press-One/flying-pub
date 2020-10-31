@@ -2,21 +2,23 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import SimpleMDE from 'react-simplemde-editor';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import Loading from 'components/Loading';
 import Help from '@material-ui/icons/Help';
 import MarkdownCheatSheetDialog from './MarkdownCheatSheetDialog';
 import ImgUploader from './ImgUploader';
+import CoverUploader from './CoverUploader';
 import Fade from '@material-ui/core/Fade';
 
-import { Input } from '@material-ui/core';
+import { Input, Tooltip } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 
 import { useStore } from 'store';
-import { sleep, getApiEndpoint, getQuery, setQuery } from 'utils';
-import Api from 'api';
+import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery } from 'utils';
+import fileApi from 'apis/file';
+import authApi from 'apis/auth';
 import config from './config';
 import * as EditorStorage from './Storage';
+import { resizeImage } from 'utils';
 
 import 'easymde/dist/easymde.min.css';
 import './index.scss';
@@ -26,6 +28,7 @@ const MAX_CONTENT_LENGTH = 20000;
 interface File {
   title: string;
   content: string;
+  cover?: string;
   status?: string;
   id?: number;
   invisibility?: boolean;
@@ -34,7 +37,7 @@ interface File {
 const MainEditor = (props: any = {}) => {
   const { title, handleTitleChange, content, handleContentChange, config } = props;
   return (
-    <div>
+    <div className="-mt-2">
       <Input
         autoFocus={!title}
         fullWidth
@@ -48,7 +51,7 @@ const MainEditor = (props: any = {}) => {
       />
 
       <SimpleMDE
-        className="p-editor-markdown mt-2"
+        className="p-editor-markdown"
         value={content}
         onChange={handleContentChange}
         options={config}
@@ -78,10 +81,13 @@ export default observer((props: any) => {
   const [file, setFile] = React.useState({
     title: EditorStorage.get(id, 'TITLE') || '',
     content: EditorStorage.get(id, 'CONTENT') || '',
+    cover: EditorStorage.get(id, 'COVER') || '',
   } as File);
   const [isFetching, setIsFetching] = React.useState(true);
   const [showImgUploader, setShowImgUploader] = React.useState(false);
+  const [showCoverUploader, setShowCoverUploader] = React.useState(false);
   const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
+  const [isFetchingPermission, setIsFetchingPermission] = React.useState(false);
   const mdeRef = React.useRef<any>(null);
   const hasPublishPermission = React.useRef(false);
   const isDirtyRef = React.useRef(false);
@@ -91,15 +97,28 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       try {
+        const rId = getQuery('rId');
+        if (rId) {
+          const file = await fileApi.getFileByRId(rId);
+          removeQuery('rId');
+          setQuery({
+            id: file.id,
+          });
+          idRef.current = file.id;
+        } else {
+        }
         const id = getQuery('id');
         if (id) {
-          let file = await Api.getFile(id);
+          let file = await fileApi.getFile(id);
           file.title = EditorStorage.get(id, 'TITLE') || file.title;
           file.content = EditorStorage.get(id, 'CONTENT') || file.content;
+          file.cover = EditorStorage.get(id, 'COVER') || file.cover;
           setFile(file);
         } else {
           const hasCachedContent =
-            EditorStorage.get(id, 'TITLE') || EditorStorage.get(id, 'CONTENT');
+            EditorStorage.get(id, 'TITLE') ||
+            EditorStorage.get(id, 'CONTENT') ||
+            EditorStorage.get(id, 'COVER');
           if (hasCachedContent) {
             isDirtyRef.current = true;
             setTimeout(() => {
@@ -111,19 +130,20 @@ export default observer((props: any) => {
           }
         }
       } catch (err) {}
-      await sleep(1000);
       setIsFetching(false);
     })();
   }, [snackbarStore]);
 
   React.useEffect(() => {
     (async () => {
+      setIsFetchingPermission(true);
       try {
-        await Api.checkPermission();
+        await authApi.checkPermission();
         hasPublishPermission.current = true;
       } catch (err) {
         hasPublishPermission.current = false;
       }
+      setIsFetchingPermission(false);
     })();
   }, []);
 
@@ -140,7 +160,10 @@ export default observer((props: any) => {
     mdeRef.current.codemirror.setSelection(pos, pos);
     const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
     mdeRef.current.codemirror.replaceSelection(
-      breakLinePrefix + imgs.map((img: any) => `![${img.filename}](${img.url})`).join('\n'),
+      breakLinePrefix +
+        imgs
+          .map((img: any) => `![${img.filename}](${img.url}?image=&action=resize:w_750)`)
+          .join('\n'),
     );
     setShowImgUploader(false);
   };
@@ -184,7 +207,6 @@ export default observer((props: any) => {
       await handleSave({
         strict: false,
       });
-      await sleep(1500);
       snackbarStore.close();
     }
     props.history.push('/dashboard');
@@ -211,19 +233,22 @@ export default observer((props: any) => {
         let param: File = {
           title: file.title,
           content: file.content,
+          cover: file.cover,
         };
         const isUpdating = !!idRef.current;
         if (isUpdating) {
-          const res = await Api.updateFile(file.id, param);
+          const res = await fileApi.updateFile(file.id, param);
           setFile(res.updatedFile);
           fileStore.updateFile(res.updatedFile);
           EditorStorage.remove(idRef.current, 'TITLE');
           EditorStorage.remove(idRef.current, 'CONTENT');
+          EditorStorage.remove(idRef.current, 'COVER');
         } else {
-          const res = await Api.createDraft(param);
+          const res = await fileApi.createDraft(param);
           setFile(res);
           EditorStorage.remove(idRef.current, 'TITLE');
           EditorStorage.remove(idRef.current, 'CONTENT');
+          EditorStorage.remove(idRef.current, 'COVER');
           idRef.current = Number(res.id);
           setQuery({
             id: res.id,
@@ -268,21 +293,19 @@ export default observer((props: any) => {
         let param: File = {
           title: file.title,
           content: file.content,
+          cover: file.cover,
         };
         const isUpdating = !!idRef.current;
         if (isUpdating) {
           const isDraft = file.status === 'draft';
           const isReplacement = !isDraft;
           if (file.invisibility) {
-            await Api.showFile(file.id);
+            await fileApi.showFile(file.id);
           }
-          const res = await Api.updateFile(file.id, param, isDraft);
+          const res = await fileApi.updateFile(file.id, param, isDraft);
           if (isDraft) {
             fileStore.updateFile(res.updatedFile);
-            publishDialogStore.show({
-              title: res.updatedFile.title,
-              url: `/posts/${res.updatedFile.rId}`,
-            });
+            publishDialogStore.show(res.updatedFile);
           } else if (isReplacement) {
             snackbarStore.show({
               message: '文章已更新',
@@ -290,14 +313,12 @@ export default observer((props: any) => {
             });
           }
         } else {
-          const res = await Api.createFile(param);
-          publishDialogStore.show({
-            title: res.title,
-            url: `/posts/${res.rId}`,
-          });
+          const res = await fileApi.createFile(param);
+          publishDialogStore.show(res);
         }
         EditorStorage.remove(idRef.current, 'TITLE');
         EditorStorage.remove(idRef.current, 'CONTENT');
+        EditorStorage.remove(idRef.current, 'COVER');
         confirmDialogStore.setLoading(false);
         confirmDialogStore.hide();
         props.history.push('/dashboard');
@@ -323,6 +344,9 @@ export default observer((props: any) => {
   };
 
   const handleClickOpen = async () => {
+    if (isFetchingPermission) {
+      return;
+    }
     const mixinProfile = userStore.profiles.find((v) => v.provider === 'mixin');
     const shouldCheckMixinGroup = (settings['permission.checkingProviders'] || []).includes(
       'mixin',
@@ -427,9 +451,8 @@ export default observer((props: any) => {
             <div className="p-editor-save pt-5 flex">
               {!isPublished && (
                 <div onClick={handleSave}>
-                  <Button outline className="mr-5">
+                  <Button outline className="mr-5" isDoing={isSaving} isDone={!isSaving}>
                     保存草稿
-                    <ButtonProgress isDoing={isSaving} isDone={!isSaving} color="text-blue-400" />
                   </Button>
                 </div>
               )}
@@ -444,13 +467,13 @@ export default observer((props: any) => {
         {isFetching && (
           <div className="h-screen flex justify-center items-center">
             <div className="-mt-20">
-              <Loading size={40} />
+              <Loading />
             </div>
           </div>
         )}
 
         {!isFetching && (
-          <div className="p-editor-input-area">
+          <div className="p-editor-input-area relative">
             <MainEditor
               title={file.title}
               handleTitleChange={handleTitleChange}
@@ -458,6 +481,22 @@ export default observer((props: any) => {
               handleContentChange={handleContentChange}
               config={config}
             />
+            <div
+              className="text-blue-400 absolute top-0 right-0 mt-24 pt-2 pb-2 px-4 text-14 cursor-pointer"
+              onClick={() => setShowCoverUploader(true)}
+            >
+              <div className="flex items-center pt-1 h-8">
+                {file.cover && (
+                  <Tooltip
+                    title={<img src={resizeImage(file.cover, 250)} alt="封面" width="250" />}
+                    placement="left"
+                  >
+                    <img className="rounded mr-2" width="55px" src={file.cover} alt="封面" />
+                  </Tooltip>
+                )}
+                {file.cover ? '更换封面' : '上传封面'}
+              </div>
+            </div>
             <div className="flex justify-between">
               <div />
               <div
@@ -478,6 +517,17 @@ export default observer((props: any) => {
           open={showImgUploader}
           close={() => setShowImgUploader(false)}
           uploadCallback={uploadCallback}
+        />
+
+        <CoverUploader
+          open={showCoverUploader}
+          close={() => setShowCoverUploader(false)}
+          cover={file.cover}
+          setCover={(url: string) => {
+            file.cover = url;
+            EditorStorage.set(idRef.current, 'COVER', url);
+            setShowCoverUploader(false);
+          }}
         />
       </div>
     </Fade>

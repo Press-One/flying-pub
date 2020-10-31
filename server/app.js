@@ -21,10 +21,11 @@ const post = require('./routes/post');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
 const settings = require('./routes/settings');
-const subscription = require('./routes/subscription');
 const conversation = require('./routes/conversation');
+const subscription = require('./routes/subscription');
 const file = require('./routes/file');
 const topic = require('./routes/topic');
+const blockTopic = require('./routes/blockTopic');
 const storage = require('./routes/storage');
 const webhook = require('./routes/webhook');
 const importRoute = require('./routes/import');
@@ -87,10 +88,11 @@ router.use('/api/votes', ensureAuthorization(), vote.routes(), vote.allowedMetho
 router.use('/api/settings', ensureAuthorization({
   strict: false
 }), settings.routes(), settings.allowedMethods());
-router.use('/api/subscriptions', ensureAuthorization(), subscription.routes(), subscription.allowedMethods());
 router.use('/api/conversations', conversation.routes(), conversation.allowedMethods());
+router.use('/api/subscriptions', subscription.routes(), subscription.allowedMethods());
 router.use('/api/files', file.routes(), file.allowedMethods());
 router.use('/api/topics', topic.routes(), topic.allowedMethods());
+router.use('/api/block_topics', blockTopic.routes(), blockTopic.allowedMethods());
 router.use('/api/storage', storage.routes(), storage.allowedMethods());
 router.use('/api/webhook', webhook.routes(), webhook.allowedMethods());
 router.use('/api/import', importRoute.routes(), importRoute.allowedMethods());

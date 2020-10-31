@@ -1,268 +1,537 @@
-import React, { useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import classNames from 'classnames';
-import { Tabs, Tab, Button } from '@material-ui/core';
-import NavigateBefore from '@material-ui/icons/NavigateBefore';
-import NavigateNext from '@material-ui/icons/NavigateNext';
-import Loading from 'components/Loading';
-
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { observer, useLocalStore } from 'mobx-react-lite';
+import Fade from '@material-ui/core/Fade';
+import Button from 'components/Button';
+import Posts from 'components/Posts';
+import Filter from 'components/PostsFilter';
+import FolderGrid from 'components/FolderGrid';
+import { isMobile, isPc, sleep } from 'utils';
 import { useStore } from 'store';
-import Api, { TopicPermissionResult } from 'api';
-import './index.scss';
+import TopicContributionModal from './TopicContributionModal';
+import TopicPostManagerModal from './TopicPostManagerModal';
+import TopicEditorModal from 'components/TopicEditorModal';
+import Loading from 'components/Loading';
+import topicApi, { ITopic } from 'apis/topic';
+import { FilterType } from 'apis/post';
+import _ from 'lodash';
+import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
+import marked from 'marked';
+import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
+import TopicIntroductionModal from './TopicIntroductionModal';
+import TopicManagerEntry from './TopicManagerEntry';
+import Settings from '@material-ui/icons/Settings';
+import { toJS } from 'mobx';
+import { resizeImage } from 'utils';
 
-interface PermissionListState {
-  count: number;
-  users: TopicPermissionResult['users'];
-}
+const TopView = observer(
+  (props: {
+    isMyself: boolean;
+    topic: ITopic;
+    subscribe: () => Promise<void>;
+    unsubscribe: () => Promise<void>;
+    openTopicManagerEntryModal: () => void;
+  }) => {
+    const { userStore, modalStore } = useStore();
+    const state = useLocalStore(() => ({
+      showTopicContributionModal: false,
+      showTopicIntroductionModal: false,
+    }));
+    const topic = props.topic;
 
-type UserItem = TopicPermissionResult['users'][0];
+    const Buttons = () => (
+      <div className="flex items-start">
+        <Button
+          className="mr-5"
+          onClick={() => {
+            if (!userStore.isLogin) {
+              modalStore.openLogin();
+              return;
+            }
+            state.showTopicContributionModal = true;
+          }}
+          size={isMobile ? 'small' : 'normal'}
+          color="green"
+        >
+          {props.isMyself ? '收录' : '投稿'}
+        </Button>
+        {topic.following ? (
+          <Button
+            outline
+            color={isMobile ? 'white' : 'primary'}
+            size={isMobile ? 'small' : 'normal'}
+            onClick={props.unsubscribe}
+          >
+            已关注
+          </Button>
+        ) : (
+          <Button onClick={props.subscribe} size={isMobile ? 'small' : 'normal'}>
+            关注
+          </Button>
+        )}
+      </div>
+    );
 
-interface RenderUserListProps {
-  users: PermissionListState['users'];
-  buttonType: 'allow' | 'deny';
-  onItemClick: (user: UserItem) => unknown;
-  page: number;
-  totalPage: number;
-  pageLoading: boolean;
-  onPageChange: (page: number) => unknown;
-}
-
-interface ConfirmDialogData {
-  userAddress: string;
-  userName: string;
-  type: 'allow' | 'deny';
-}
-
-const TabPanel = (props: any) => {
-  const { show, ...restProps } = props;
-  return !show ? null : <div {...restProps}>{props.children}</div>;
-};
-
-const renderUserList = (renderUserListProps: RenderUserListProps) => {
-  const {
-    users,
-    onItemClick,
-    buttonType,
-    page,
-    onPageChange,
-    pageLoading,
-    totalPage,
-  } = renderUserListProps;
-  return !users.length ? (
-    <div className="py-2">暂无用户</div>
-  ) : (
-    <>
-      {users.map((userItem) => (
-        <div key={userItem.address} className="user-list-item flex items-center">
-          <div className="w-10 h-10 rounded-full overflow-hidden">
-            <img className="w-10 h-10" src={userItem.avatar} alt={userItem.nickname} />
+    return (
+      <div className="flex items-stretch overflow-hidden relative pb-4 md:rounded-12 bg-white">
+        <div
+          className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center cover md:rounded-12"
+          style={{
+            backgroundImage: `url('${resizeImage(topic.cover, 240)}')`,
+          }}
+        >
+          <div className="absolute top-0 left-0 right-0 bottom-0 blur-layer md:rounded-12" />
+        </div>
+        <div className="z-10 w-full">
+          <div className="flex justify-between w-full box-border pt-8 md:pt-24 md:mt-6 px-5 pb-3 md:pb-0 md:px-16 text-black">
+            <div className="flex items-start md:items-end">
+              <img
+                className="rounded-12 avatar md:border-4 border-white bg-white"
+                src={resizeImage(topic.cover, 240)}
+                alt={topic.name}
+              />
+              <div className="ml-5">
+                <div className="font-bold text-18 md:text-24 leading-none text-white md:text-gray-4a">
+                  {topic.name}
+                </div>
+                <div className="mt-2 text-14 md:text-15 flex items-center text-white md:text-gray-9b pb-2">
+                  <span>
+                    <span className="text-14 md:text-15 font-bold">{topic.summary.post.count}</span>{' '}
+                    篇文章
+                  </span>
+                  {topic.summary.following.count > 0 && <span className="opacity-70 mx-2">·</span>}
+                  {topic.summary.following.count > 0 ? (
+                    <span>
+                      <span className="text-14 md:text-15 font-bold">
+                        {topic.summary.following.count}
+                      </span>{' '}
+                      人关注
+                    </span>
+                  ) : (
+                    ''
+                  )}
+                </div>
+                {isMobile && <div className="mt-1">{Buttons()}</div>}
+              </div>
+            </div>
+            {isPc && (
+              <div className="pt-2 mt-16 mr-3">
+                {(topic.contributionEnabled || props.isMyself) && Buttons()}
+              </div>
+            )}
+            {isMobile && props.isMyself && (
+              <div
+                className="settings-btn text-24 absolute top-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"
+                onClick={() => props.openTopicManagerEntryModal()}
+              >
+                <Settings />
+              </div>
+            )}
           </div>
-          <div className="user-name" title={userItem.nickname}>
-            {userItem.nickname}
-          </div>
-          <div className="user-operation">
-            <Button
-              className={classNames({
-                [buttonType]: true,
-              })}
-              onClick={() => onItemClick(userItem)}
-              variant="contained"
-              color="primary"
+          {isMobile && (
+            <div
+              className="flex py-2 relative text-white text-opacity-75 text-13 px-5"
+              onClick={() => {
+                state.showTopicIntroductionModal = true;
+              }}
             >
-              {{ allow: '允许', deny: '禁止' }[buttonType]}
-            </Button>
-          </div>
+              <div className="truncate pr-1">{topic.description}</div>
+              <div className="flex items-center text-13">
+                <ArrowForwardIos />
+              </div>
+            </div>
+          )}
         </div>
-      ))}
-      {totalPage > 1 && (
-        <div className="button-box flex items-center">
-          <Button
-            onClick={() => onPageChange(page - 1)}
-            disabled={pageLoading || page === 0}
-            className="page-button"
-          >
-            <NavigateBefore></NavigateBefore>
-            上一页
-          </Button>
-          <Button
-            onClick={() => onPageChange(page + 1)}
-            disabled={pageLoading || page + 1 >= totalPage}
-            className="page-button"
-          >
-            下一页
-            <NavigateNext></NavigateNext>
-          </Button>
-          <span>
-            第 {page + 1} / {totalPage} 页
-          </span>
-        </div>
-      )}
-    </>
+        <TopicContributionModal
+          isMyself={props.isMyself}
+          topicUuid={topic.uuid}
+          open={state.showTopicContributionModal}
+          close={() => {
+            state.showTopicContributionModal = false;
+          }}
+        />
+        {isMobile && (
+          <TopicIntroductionModal
+            topic={props.topic}
+            open={state.showTopicIntroductionModal}
+            close={() => {
+              state.showTopicIntroductionModal = false;
+            }}
+          />
+        )}
+        <style jsx>{`
+          .cover {
+            height: ${isMobile ? 184 : 160}px;
+          }
+          .avatar {
+            width: ${isMobile ? 90 : 120}px;
+            height: ${isMobile ? 90 : 120}px;
+          }
+          .blur-layer {
+            background: -webkit-linear-gradient(
+              rgba(32, 32, 32, 0) 14%,
+              rgba(32, 32, 32, 0.56) 100%
+            );
+            background: linear-gradient(rgba(32, 32, 32, 0) 14%, rgba(32, 32, 32, 0.56) 100%);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+          }
+          .settings-btn {
+            margin-top: 95px;
+          }
+        `}</style>
+      </div>
+    );
+  },
+);
+
+export default observer((props: any) => {
+  const state = useLocalStore(() => ({
+    showTopicPostManagerModal: false,
+    showTopicEditorModal: false,
+    topic: {} as ITopic,
+    isFetchedTopic: false,
+    showTopicManagerEntryModal: false,
+    showPosts: false,
+  }));
+  const { snackbarStore, userStore, preloadStore, confirmDialogStore, feedStore } = useStore();
+  const loading = React.useMemo(() => !state.isFetchedTopic || !preloadStore.ready, [
+    state.isFetchedTopic,
+    preloadStore.ready,
+  ]);
+  const isMyself = React.useMemo(
+    () => (state.topic.user && userStore.user.id === Number(state.topic.user!.id)) || false,
+    [state.topic.user, userStore.user.id],
   );
-};
+  const { uuid } = props.match.params;
+  const tabs = [
+    {
+      type: 'POPULARITY',
+      name: '热门',
+    },
+    {
+      type: 'PUB_DATE',
+      name: '最新收录',
+    },
+  ];
 
-export default observer(() => {
-  const { snackbarStore, confirmDialogStore } = useStore();
-  const pageLimit = 10;
-  const [tab, changeTab] = useState(0);
-
-  const [allowLoading, setAllowLoading] = useState(false);
-  const [denyLoading, setDenyLoading] = useState(false);
-
-  const [allowPage, setAllowPage] = useState(0);
-  const [denyPage, setDenyPage] = useState(0);
-
-  const [reloadState, setReloadState] = useState(0);
-  const reloadData = () => setReloadState(reloadState + 1);
-
-  const [allowData, setAllowData] = useState<PermissionListState>({
-    count: 0,
-    users: [],
-  });
-
-  const [denyData, setDenyData] = useState<PermissionListState>({
-    count: 0,
-    users: [],
-  });
-
-  useEffect(() => {
-    (async () => {
-      setAllowLoading(true);
-      try {
-        const result = await Api.fetchTopicAllowedUsers({
-          offset: allowPage * pageLimit,
-          limit: pageLimit,
-        });
-        if (allowPage !== 0 && result.count && !result.users.length) {
-          setAllowPage(0);
-          return;
-        }
-        setAllowData({
-          count: result.count,
-          users: result.users,
-        });
-      } catch (err) {
-        console.log(err);
-      }
-      setAllowLoading(false);
-    })();
-  }, [allowPage, reloadState]);
-
-  useEffect(() => {
-    (async () => {
-      setDenyLoading(true);
-      try {
-        const result = await Api.fetchTopicDeniedUsers({
-          offset: denyPage * pageLimit,
-          limit: pageLimit,
-        });
-        if (denyPage !== 0 && result.count && !result.users.length) {
-          setDenyPage(0);
-          return;
-        }
-        setDenyData({
-          count: result.count,
-          users: result.users,
-        });
-      } catch (err) {
-        console.log(err);
-      }
-      setDenyLoading(false);
-    })();
-  }, [denyPage, reloadState]);
-
-  const handleConfirmChangeUserPermission = async (confirmDialogData: ConfirmDialogData) => {
-    const typeMap = {
-      allow: '允许',
-      deny: '禁止',
-    };
-    confirmDialogStore.setLoading(true);
-    const type = confirmDialogData.type;
-    const userName = confirmDialogData.userName;
-    try {
-      if (confirmDialogData.type === 'allow') {
-        await Api.allowTopicUser(confirmDialogData.userAddress);
-      } else {
-        await Api.denyTopicUser(confirmDialogData.userAddress);
-      }
-      confirmDialogStore.hide();
-      snackbarStore.show({
-        message: `已${typeMap[type]} ${userName}`,
-      });
-      reloadData();
-    } catch (e) {
-      snackbarStore.show({
-        message: `${typeMap[type]} ${userName} 失败`,
-      });
+  React.useEffect(() => {
+    if (feedStore.provider !== `topic:${uuid}`) {
+      feedStore.setProvider(`topic:${uuid}`);
+      feedStore.clear();
+      feedStore.setFilterType(tabs[0].type);
+      window.scrollTo(0, 0);
     }
-    confirmDialogStore.setLoading(false);
+  }, [feedStore, uuid, tabs]);
+
+  React.useEffect(() => {
+    if (state.isFetchedTopic) {
+      (async () => {
+        await sleep(500);
+        state.showPosts = true;
+      })();
+    }
+  }, [state.isFetchedTopic, state]);
+
+  React.useEffect(() => {
+    if (!feedStore.isNew && !feedStore.willLoadingPage) {
+      if (feedStore.belongedTopic && feedStore.belongedTopic.uuid === uuid) {
+        state.topic = feedStore.belongedTopic;
+        state.isFetchedTopic = true;
+        return;
+      }
+    }
+
+    (async () => {
+      try {
+        const topic = await topicApi.get(uuid);
+        state.topic = topic;
+        feedStore.setBelongedTopic(toJS(topic));
+      } catch (err) {}
+      state.isFetchedTopic = true;
+    })();
+  }, [state, uuid, feedStore]);
+
+  React.useEffect(() => {
+    if (!feedStore.filterType) {
+      return;
+    }
+    if (feedStore.isFetching) {
+      return;
+    }
+    if (!feedStore.isNew && !feedStore.willLoadingPage) {
+      return;
+    }
+
+    (async () => {
+      feedStore.setIsFetching(true);
+      try {
+        const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
+          order: feedStore.filterType,
+          offset: feedStore.page * feedStore.limit,
+          limit: feedStore.limit,
+        });
+        feedStore.setTotal(total);
+        feedStore.addPosts(posts);
+      } catch (err) {
+        console.log(err);
+      }
+      feedStore.setIsFetching(false);
+      feedStore.setIsFetched(true);
+    })();
+  }, [state, feedStore.page, feedStore.filterType, uuid, feedStore]);
+
+  const infiniteRef: any = useWindowInfiniteScroll({
+    loading: feedStore.isFetching,
+    hasNextPage: feedStore.hasMorePosts,
+    threshold: 350,
+    onLoadMore: () => {
+      feedStore.setPage(feedStore.page + 1);
+    },
+  });
+
+  const handleFilterChange = (type: string) => {
+    if (feedStore.isFetching) {
+      return;
+    }
+    feedStore.setIsFetched(false);
+    feedStore.setPage(0);
+    feedStore.filterType = type as FilterType;
   };
 
-  const handleShowConfirmDialog = (user: UserItem, type: 'allow' | 'deny') => {
+  const subscribe = async () => {
+    try {
+      await topicApi.subscribe(state.topic.uuid);
+      state.topic.following = true;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const unsubscribe = async () => {
+    try {
+      await topicApi.unsubscribe(state.topic.uuid);
+      state.topic.following = false;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30">
+          <Loading />
+        </div>
+      </div>
+    );
+  }
+
+  if (state.isFetchedTopic && _.isEmpty(state.topic)) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+          抱歉，你访问的专题不存在
+        </div>
+      </div>
+    );
+  }
+
+  const onDelete = () => {
     confirmDialogStore.show({
-      content: `确定${{ allow: '允许', deny: '禁止' }[type]} <strong>${
-        user.nickname
-      }</strong> 发布文章吗？${type === 'deny' ? '<br />（已发布文章将不可见）' : ''}`,
-      ok: () => {
-        handleConfirmChangeUserPermission({
-          type,
-          userAddress: user.address,
-          userName: user.nickname,
-        });
+      content: `专题删除后将无法找回，确定要删除吗？`,
+      okText: '确定',
+      contentClassName: 'text-left',
+      ok: async () => {
+        confirmDialogStore.setLoading(true);
+        try {
+          await topicApi.delete(state.topic.uuid);
+          snackbarStore.show({
+            message: '专题已删除，即将返回你的个人首页',
+            duration: 2000,
+          });
+          await sleep(2000);
+          confirmDialogStore.hide();
+          props.history.push(`/authors/${userStore.user.address}`);
+        } catch (err) {
+          confirmDialogStore.setLoading(false);
+        }
       },
     });
   };
 
-  const readerLoading = () => (
-    <div className="mt-10 flex justify-start ml-32">
-      <Loading size={40} />
-    </div>
-  );
-
   return (
-    <div className="p-topic max-w-1200 flex flex-col">
-      <section className="p-topic-head flex items-center justify-between">
-        <div className="p-topic-head-title">用户权限</div>
-      </section>
-
-      <section className="p-topic-main flex flex-col max-w-1200">
-        <div className="p-topic-main-inner flex flex-col MuiPaper-elevation1">
-          <Tabs className="flex" value={tab} onChange={(_e, v) => changeTab(v)}>
-            <Tab label="允许发布文章的用户" />
-            <Tab label="禁止发布文章的用户" />
-          </Tabs>
-          <div className="p-topic-tab-panel-box">
-            <div className="p-2">
-              <TabPanel show={tab === 0}>
-                {allowLoading && readerLoading()}
-                {!allowLoading &&
-                  renderUserList({
-                    onItemClick: (user) => handleShowConfirmDialog(user, 'deny'),
-                    buttonType: 'deny',
-                    users: allowData.users,
-                    page: allowPage,
-                    totalPage: Math.ceil(allowData.count / pageLimit),
-                    onPageChange: (page) => setAllowPage(page),
-                    pageLoading: allowLoading,
-                  })}
-              </TabPanel>
-              <TabPanel show={tab === 1}>
-                {denyLoading && readerLoading()}
-                {!denyLoading &&
-                  renderUserList({
-                    onItemClick: (user) => handleShowConfirmDialog(user, 'allow'),
-                    buttonType: 'allow',
-                    users: denyData.users,
-                    page: denyPage,
-                    totalPage: Math.ceil(denyData.count / pageLimit),
-                    onPageChange: (page) => setDenyPage(page),
-                    pageLoading: denyLoading,
-                  })}
-              </TabPanel>
+    <Fade in={true} timeout={isMobile ? 0 : 500}>
+      <div className="w-full md:w-916 md:m-auto -mt-2 md:mt-0">
+        <TopView
+          isMyself={isMyself}
+          topic={state.topic}
+          subscribe={subscribe}
+          unsubscribe={unsubscribe}
+          openTopicManagerEntryModal={() => (state.showTopicManagerEntryModal = true)}
+        />
+        <div className="mt-3 md:pb-10 flex justify-between items-start">
+          <div className="w-full md:w-8/12 box-border md:pr-3">
+            <div className="bg-white md:px-5 pb-8 md:rounded-12 h-screen md:h-auto">
+              <Filter onChange={handleFilterChange} type={feedStore.filterType} tabs={tabs} />
+              {feedStore.filterType !== 'OTHERS' && (
+                <div className="posts-container" ref={infiniteRef}>
+                  <div className="mt-2" />
+                  {feedStore.isFetched && state.showPosts && feedStore.hasPosts && (
+                    <Posts posts={feedStore.posts} hideTopics smallCoverSize />
+                  )}
+                  {feedStore.isFetched && state.showPosts && !feedStore.hasPosts && (
+                    <div className="pt-20 pb-16 text-center text-gray-500">还没有收录文章</div>
+                  )}
+                  {(!feedStore.isFetched || !state.showPosts) && (
+                    <div className="pt-20 md:pt-20">
+                      <Loading />
+                    </div>
+                  )}
+                  {feedStore.isFetched && state.showPosts && feedStore.hasMorePosts && (
+                    <div className="mt-10">
+                      <Loading />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
+          {isPc && (
+            <div className="w-4/12">
+              <div className="bg-white rounded-12 pb-2 mb-3 text-gray-4a">
+                <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
+                  专题介绍
+                </div>
+                <div
+                  className="px-5 py-4 markdown-body small"
+                  dangerouslySetInnerHTML={{ __html: marked.parse(state.topic.description) }}
+                ></div>
+              </div>
+
+              <div className="bg-white rounded-12 pb-2 mb-3 text-gray-4a">
+                <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
+                  创建人
+                </div>
+                <div className="px-5 py-4">
+                  <Link to={`/authors/${state.topic.user?.address}`}>
+                    <div className="flex items-center cursor-pointer">
+                      <img
+                        className="w-8 h-8 rounded-full"
+                        src={resizeImage(state.topic.user?.avatar)}
+                        alt={state.topic.user?.nickname}
+                      />
+                      <span className="ml-3">{state.topic.user?.nickname}</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+
+              <FolderGrid
+                folders={[
+                  {
+                    hide: state.topic.summary?.author?.count === 0,
+                    topicUuid: state.topic.uuid,
+                    type: 'TOPIC_AUTHORS',
+                    title: '包含的作者',
+                    content: `${state.topic.summary?.author?.count}个`,
+                    gallery: state.topic.summary?.author?.preview || [],
+                  },
+                  {
+                    hide: state.topic.summary.following.count === 0,
+                    topicUuid: state.topic.uuid,
+                    type: 'TOPIC_FOLLOWERS',
+                    title: '关注的人',
+                    content: `${state.topic.summary.following.count}个`,
+                    gallery: state.topic.summary.following.preview,
+                  },
+                ]}
+              />
+
+              {isMyself && (
+                <div className="bg-white rounded-12 pb-2 mb-3 text-gray-4a">
+                  <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
+                    专题管理
+                  </div>
+                  <div className="px-5 py-4">
+                    <div className="text-13 flex items-center">
+                      <div>
+                        <span
+                          className="text-blue-400 cursor-pointer"
+                          onClick={() => (state.showTopicEditorModal = true)}
+                        >
+                          编辑
+                        </span>
+                      </div>
+                      <span className="opacity-50 mx-2">·</span>
+                      <span className="text-blue-400 cursor-pointer" onClick={onDelete}>
+                        删除
+                      </span>
+                      {feedStore.posts.length > 0 && <span className="opacity-50 mx-2">·</span>}
+                      {feedStore.posts.length > 0 && (
+                        <div>
+                          <span
+                            className="text-blue-400 cursor-pointer"
+                            onClick={() => (state.showTopicPostManagerModal = true)}
+                          >
+                            移除文章
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {isMyself && (
+            <div>
+              <TopicEditorModal
+                open={state.showTopicEditorModal}
+                close={() => (state.showTopicEditorModal = false)}
+                topic={state.topic}
+                onChange={async (topic) => {
+                  if (topic) {
+                    state.topic.cover = topic.cover;
+                    state.topic.name = topic.name;
+                    state.topic.description = topic.description;
+                    state.topic.contributionEnabled = topic.contributionEnabled;
+                    feedStore.setBelongedTopic(toJS(state.topic));
+                    await sleep(400);
+                    snackbarStore.show({
+                      message: '专题已更新',
+                    });
+                  }
+                }}
+              />
+              <TopicPostManagerModal
+                topicUuid={state.topic.uuid}
+                open={state.showTopicPostManagerModal}
+                close={() => {
+                  state.showTopicPostManagerModal = false;
+                }}
+              />
+              {isMobile && (
+                <TopicManagerEntry
+                  topic={props.topic}
+                  open={state.showTopicManagerEntryModal}
+                  close={() => {
+                    state.showTopicManagerEntryModal = false;
+                  }}
+                  onEdit={() => (state.showTopicEditorModal = true)}
+                  onDelete={onDelete}
+                  onRemove={() => (state.showTopicPostManagerModal = true)}
+                />
+              )}
+            </div>
+          )}
+          <style jsx>{`
+            .posts-container {
+              min-height: 90vh;
+            }
+          `}</style>
         </div>
-      </section>
-    </div>
+      </div>
+    </Fade>
   );
 });

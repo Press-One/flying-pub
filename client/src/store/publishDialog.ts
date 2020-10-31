@@ -1,20 +1,12 @@
 import { sleep } from 'utils';
-
-interface File {
-  title: string;
-  url: string;
-}
+import { IFile } from 'apis/file';
 
 export function createPublishDialogStore() {
-  const file: File = {
-    title: '',
-    url: '',
-  };
   return {
     open: false,
-    file,
-    async show(file: File) {
-      await sleep(1500);
+    file: {} as IFile,
+    async show(file: IFile) {
+      await sleep(1000);
       this.file = file;
       this.open = true;
     },

@@ -5,14 +5,16 @@ const File = require("../models/file");
 const User = require("../models/user");
 const Log = require("../models/log");
 const Mixin = require("../models/mixin");
-const sensitiveWords = require("../utils/sensitiveWords.json");
-const FastScanner = require("fastscan");
-const scanner = new FastScanner(sensitiveWords);
+let scanner = null;
+if (process.env.NODE_ENV === 'production') {
+  const sensitiveWords = require("../utils/sensitiveWords.json");
+  const FastScanner = require("fastscan");
+  scanner = new FastScanner(sensitiveWords);
+}
 const {
   truncate
 } = require("../utils");
 const {
-  throws,
   assert,
   Errors
 } = require("../utils/validator");
@@ -35,22 +37,26 @@ exports.create = async (ctx) => {
   delete data.options;
   assert(data, Errors.ERR_IS_REQUIRED("data"));
   assert(data.content, Errors.ERR_IS_REQUIRED("comment"));
-  let offWords = Object.keys(
-    scanner.hits(data.content, {
-      longest: false,
-    })
-  );
-  // 两个词的也暂时不管了，因为误伤率还是太高了 (By Junhong)
-  offWords = offWords.filter(word => word.length > 2);
-  console.log({
-    offWords
-  });
-  if (offWords && offWords.length > 0) {
-    throws(Errors.COMMENT_IS_INVALID());
+  let offWords = [];
+  if (process.env.NODE_ENV === 'production') {
+    offWords = Object.keys(
+      scanner.hits(data.content, {
+        longest: false,
+      })
+    );
   }
+
   const comment = await Comment.create(user.id, data);
   const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?commentId=${comment.id}`;
   const post = await Post.getByRId(data.objectId);
+
+  // 两个词的也暂时不管了，因为误伤率还是太高了 (By Junhong)
+  offWords = offWords.filter(word => word.length > 2);
+  if (offWords && offWords.length > 0) {
+    Log.create(user.id, `评论包含敏感词：${offWords.join('，')} ${originUrl}`, {
+      toMixin: true
+    });
+  }
 
   Log.create(user.id, `评论文章 ${originUrl}`);
   ctx.body = comment;

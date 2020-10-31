@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../../../store';
-import { NotificationSubType } from '../../../store/notification';
+import { NotificationSubType, CombinedNotificationType } from '../../../store/notification';
 import { getNotificationHistory } from '../../NotificationSocket';
 import Loading from 'components/Loading';
 import Tabs from '@material-ui/core/Tabs';
@@ -23,22 +23,30 @@ export default observer(() => {
     NotificationSubType.LIKE,
     NotificationSubType.ARTICLE_COMMENT,
     NotificationSubType.COMMENT_MENTION_ME,
-    NotificationSubType.ARTICLE_REWARD,
+    CombinedNotificationType.OTHERS,
   ];
 
   const tabToTitle: any = {
     [NotificationSubType.ARTICLE_COMMENT]: '评论',
     [NotificationSubType.COMMENT_MENTION_ME]: '@我',
     [NotificationSubType.LIKE]: '赞',
-    [NotificationSubType.ARTICLE_REWARD]: '打赏',
+    [CombinedNotificationType.OTHERS]: '其他',
   };
 
-  const renderTabLabel = (tab: NotificationSubType) => {
+  const renderTabLabel = (tab: string) => {
+    let unread = 0;
+    if (tab === CombinedNotificationType.OTHERS) {
+      for (const type of notificationStore.othersSubTypes) {
+        unread += notificationStore.summary[type] || 0;
+      }
+    } else {
+      unread = notificationStore.summary[tab] || 0;
+    }
     return (
       <div className="relative">
         <div className="absolute top-0 right-0 -mt-2 -mr-2">
           <Badge
-            badgeContent={notificationStore.summary[tab] || 0}
+            badgeContent={unread || 0}
             className="transform scale-75 cursor-pointer"
             color="error"
           />
@@ -54,7 +62,13 @@ export default observer(() => {
     }
     setTabvalue(newValue);
     setPage(0);
-    notificationStore.setSubType(tabs[newValue]);
+    const subTypes: NotificationSubType[] = [];
+    if (tabs[newValue] === CombinedNotificationType.OTHERS) {
+      subTypes.push(...notificationStore.othersSubTypes);
+    } else {
+      subTypes.push(tabs[newValue] as NotificationSubType);
+    }
+    notificationStore.setSubTypes(subTypes);
     notificationStore.setIsFetched(false);
     notificationStore.setMessages([]);
   };
@@ -77,10 +91,10 @@ export default observer(() => {
           return;
         }
       }
-      getNotificationHistory(notificationStore.subType, page, notificationStore);
+      getNotificationHistory(notificationStore.subTypes, page, notificationStore);
     })();
     // eslint-disable-next-line
-  }, [page, notificationStore.subType, notificationStore.connected]);
+  }, [page, notificationStore.subTypes, notificationStore.connected]);
 
   const mixinProfile = userStore.profiles.find((v) => v.provider === 'mixin');
 
@@ -102,9 +116,7 @@ export default observer(() => {
         )}
         <Tabs value={tabValue} onChange={handleTabChange} className="relative">
           {tabs.map((tab: string, idx: number) => {
-            return (
-              <Tab key={idx} label={renderTabLabel(tab as NotificationSubType)} aria-label={tab} />
-            );
+            return <Tab key={idx} label={renderTabLabel(tab as string)} aria-label={tab} />;
           })}
         </Tabs>
         {isMobile && mixinProfile && !userStore.user.notificationEnabled && (

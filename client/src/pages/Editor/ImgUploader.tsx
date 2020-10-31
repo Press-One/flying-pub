@@ -45,7 +45,7 @@ export default observer((props: any) => {
 
   return (
     <Modal open={open} onClose={close} className="flex justify-center items-center">
-      <div className="modal-content bg-white rounded-sm text-center p-8">
+      <div className="modal-content bg-white rounded-12 text-center p-8">
         <div className="w-64 h-56 flex items-center justify-center border-4 border-dashed border-gray-400">
           {loading && (
             <div>

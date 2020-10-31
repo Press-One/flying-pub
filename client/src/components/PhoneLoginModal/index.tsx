@@ -14,7 +14,6 @@ import {
 } from '@material-ui/core';
 import Info from '@material-ui/icons/Info';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
 import { isMobile, getLoginUrl, sleep, isWeChat } from 'utils';
@@ -296,9 +295,13 @@ export default observer(() => {
         )}
 
         <div className="mt-6 w-full">
-          <Button className="w-full" disabled={!state.formValid} onClick={handlePhoneLogin}>
+          <Button
+            className="w-full"
+            disabled={!state.formValid}
+            onClick={handlePhoneLogin}
+            isDoing={state.logining}
+          >
             登录
-            <ButtonProgress isDoing={state.logining} />
           </Button>
         </div>
 

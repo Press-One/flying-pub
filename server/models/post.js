@@ -4,6 +4,7 @@ const {
 } = Sequelize;
 const moment = require('moment');
 const Post = require('./sequelize/post');
+const Topic = require('./sequelize/topic');
 const Author = require('./sequelize/author');
 const {
   packAuthor
@@ -49,6 +50,7 @@ const packPost = async (post, options = {}) => {
   post.commentsCount = ~~post.commentsCount;
   return post;
 }
+exports.packPost = packPost;
 
 const getByRId = async (rId, options = {}) => {
   assert(rId, Errors.ERR_IS_REQUIRED('rId'))
@@ -78,9 +80,19 @@ const getByRId = async (rId, options = {}) => {
       where: {
         status: 'allow'
       }
+    }, {
+      model: Topic,
+      as: 'topics',
+      attributes: ['uuid', 'name', 'deleted'],
+      through: {
+        attributes: []
+      }
     }];
   }
   const post = await Post.findOne(query);
+  if (options.raw) {
+    return post;
+  }
   return post ? await packPost(post.toJSON(), options) : null;
 }
 exports.getByRId = getByRId;
@@ -126,6 +138,7 @@ const getOrder = orderBy => {
   };
   return orderMap[orderBy] || orderMap['PUB_DATE'];
 }
+exports.getOrder = getOrder;
 
 exports.list = async (options = {}) => {
   const {
@@ -136,7 +149,8 @@ exports.list = async (options = {}) => {
     dropAuthor = false,
     dayRange,
     filterBan,
-    filterSticky = false
+    filterSticky = false,
+    topicUuids
   } = options;
   const where = {
     deleted: false,
@@ -158,7 +172,7 @@ exports.list = async (options = {}) => {
   if (filterSticky) {
     where.sticky = true;
   }
-  const posts = await Post.findAll({
+  const queryOptions = {
     where,
     offset,
     limit,
@@ -169,15 +183,47 @@ exports.list = async (options = {}) => {
       }
     }],
     order: [getOrder(order)]
-  });
-  const list = await Promise.all(
+  };
+  const topicOptions = {
+    model: Topic,
+    as: 'topics',
+    attributes: ['uuid', 'name', 'deleted'],
+    through: {
+      attributes: [],
+    }
+  }
+  let countOptions;
+  let findOptions;
+  if (topicUuids) {
+    queryOptions.subQuery = false;
+    queryOptions.where = {
+      [Op.or]: [{
+        ...queryOptions.where
+      }, {
+        '$topics.uuid$': topicUuids,
+        '$topics.deleted$': false
+      }]
+    }
+    queryOptions.include.push(topicOptions)
+    countOptions = queryOptions;
+    findOptions = queryOptions;
+  } else {
+    countOptions = queryOptions;
+    findOptions = { ...queryOptions }
+    findOptions.include = [...queryOptions.include, topicOptions];
+  }
+  const [total, posts] = await Promise.all([
+      Post.count(countOptions),
+      Post.findAll(findOptions)
+  ]);
+  const derivedPosts = await Promise.all(
     posts.map(post => {
       return packPost(post.toJSON(), {
         dropAuthor,
       });
     })
   );
-  return list;
+  return { total, posts: derivedPosts };
 }
 
 exports.create = async data => {
@@ -187,6 +233,7 @@ exports.create = async data => {
     userAddress: Joi.string().trim(),
     title: Joi.string().trim(),
     content: Joi.string().trim(),
+    cover: Joi.string().empty('').optional(),
     paymentUrl: Joi.optional(),
     pubDate: Joi.date(),
     status: Joi.string().trim(),
@@ -202,15 +249,3 @@ exports.delete = async rId => {
   });
   return true;
 };
-exports.getPostCountByAuthor = async (address) => {
-  assert(address, Errors.ERR_IS_REQUIRED('address'))
-  const query = {
-    where: {
-      userAddress: address,
-      deleted: false,
-      invisibility: false
-    }
-  };
-  const count = await Post.count(query);
-  return count ? count : 0;
-}

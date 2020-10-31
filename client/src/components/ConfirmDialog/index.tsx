@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@material-ui/core';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import { isIPhone } from 'utils';
 
@@ -69,9 +68,8 @@ export default observer(() => {
               {cancelText}
             </span>
           )}
-          <Button onClick={() => ok()}>
+          <Button onClick={() => ok()} isDoing={loading}>
             {okText}
-            <ButtonProgress size={12} isDoing={loading} />
           </Button>
         </span>
       </DialogActions>

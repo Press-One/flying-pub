@@ -43,12 +43,16 @@ exports.ensureAuthorization = (options = {}) => {
       }
     } = decodedToken;
     assert(userId, Errors.ERR_NOT_FOUND('userId'));
-    const user = await User.get(userId);
+    const { user, sequelizeUser } = await User.get(userId, {
+      returnRaw: true,
+      withSSO: true
+    });
     assert(user, Errors.ERR_NOT_FOUND('user'));
     const providerAdminList = config.auth.adminList ? config.auth.adminList[provider] : [];
     const isAdmin = (providerAdminList || []).includes(parseInt(providerId));
     user.isAdmin = isAdmin;
     ctx.verification.user = user;
+    ctx.verification.sequelizeUser = sequelizeUser;
     ctx.verification.profile = {
       provider,
       providerId

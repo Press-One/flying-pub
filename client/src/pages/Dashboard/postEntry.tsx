@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 
 import { Menu, MenuItem, TableRow, TableCell, Tooltip } from '@material-ui/core';
@@ -12,11 +13,12 @@ import IconButton from '@material-ui/core/IconButton';
 import Settings from '@material-ui/icons/Settings';
 import CreateIcon from '@material-ui/icons/Create';
 
-import Api from 'api';
+import fileApi from 'apis/file';
 
 import { useStore } from 'store';
 
 import { ago, sleep } from 'utils';
+import { resizeImage } from 'utils';
 
 export const FileStatus: any = {
   published: '已发布',
@@ -25,7 +27,7 @@ export const FileStatus: any = {
 };
 
 export default observer((props: any) => {
-  const { settingsStore, snackbarStore, confirmDialogStore } = useStore();
+  const { settingsStore, snackbarStore, confirmDialogStore, modalStore } = useStore();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [deleting, setDeleting] = React.useState(false);
@@ -48,8 +50,7 @@ export default observer((props: any) => {
     (async () => {
       try {
         setShowing(true);
-        await Api.showFile(id);
-        await sleep(1000);
+        await fileApi.showFile(id);
         handleMenuClose();
         await sleep(300);
         setShowing(false);
@@ -68,8 +69,7 @@ export default observer((props: any) => {
     (async () => {
       try {
         setHiding(true);
-        await Api.hideFile(id);
-        await sleep(1000);
+        await fileApi.hideFile(id);
         handleMenuClose();
         await sleep(300);
         setHiding(false);
@@ -88,8 +88,7 @@ export default observer((props: any) => {
     (async () => {
       try {
         setDeleting(true);
-        await Api.deleteFile(rId);
-        await sleep(1000);
+        await fileApi.deleteFile(rId);
         handleMenuClose();
         await sleep(300);
         setDeleting(false);
@@ -124,6 +123,9 @@ export default observer((props: any) => {
         )}
       </TableCell>
       <TableCell>
+        {file.cover ? <img width="55px" src={resizeImage(file.cover, 120)} alt="封面" /> : ''}
+      </TableCell>
+      <TableCell>
         {!file.invisibility && (
           <span className={`font-bold ${file.status}`}>{FileStatus[file.status]}</span>
         )}
@@ -133,7 +135,7 @@ export default observer((props: any) => {
         <span className="gray-color">{ago(file.updatedAt)}</span>
       </TableCell>
       <TableCell>
-        <div className="flex">
+        <div className="flex items-center">
           <span>
             <Tooltip title="编辑" placement="top">
               <IconButton
@@ -242,8 +244,27 @@ export default observer((props: any) => {
               </a>
             </Tooltip>
           )}
+          {isPublished && !file.invisibility && (
+            <Button
+              size="mini"
+              outline
+              className="ml-2"
+              onClick={() =>
+                modalStore.openContribution({
+                  file,
+                })
+              }
+            >
+              投稿
+            </Button>
+          )}
         </div>
       </TableCell>
+      <style jsx>{`
+        .title {
+          max-width: 16rem;
+        }
+      `}</style>
       <style jsx global>{`
         #dashboard-post-menu .MuiMenuItem-root {
           font-size: 14px !important;

@@ -7,8 +7,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import People from '@material-ui/icons/People';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
-import NotificationModal from '../components/NotificationModal';
+import NotificationModal from 'components/NotificationModal';
+import Button from 'components/Button';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import HomeOutlined from '@material-ui/icons/HomeOutlined';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import { Settings } from '@material-ui/icons';
@@ -18,6 +20,7 @@ import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, isMobile, sleep, stopBodyScroll, isPc } from 'utils';
+import { resizeImage } from 'utils';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -96,34 +99,15 @@ export default observer((props: any) => {
           )}
           {userStore.isLogin && (
             <div>
-              {
-                <MenuItem
-                  onClick={async (e: React.MouseEvent) => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    confirmDialogStore.show({
-                      content: '目前仅支持电脑端写文章哦',
-                      cancelDisabled: true,
-                      okText: '我知道了',
-                      ok: () => {
-                        confirmDialogStore.hide();
-                      },
-                    });
-                  }}
-                >
-                  写文章
-                </MenuItem>
-              }
               <MenuItem
                 onClick={async () => {
                   setOpenDrawer(false);
                   stopBodyScroll(false);
                   await sleep(200);
-                  props.history.push('/subscriptions');
+                  props.history.push(`/authors/${userStore.user.address}`);
                 }}
               >
-                我的关注
+                我的主页
               </MenuItem>
               {walletStore.canSpendBalance && (
                 <MenuItem
@@ -139,6 +123,23 @@ export default observer((props: any) => {
                   我的余额
                 </MenuItem>
               )}
+              <MenuItem
+                onClick={async (e: React.MouseEvent) => {
+                  setOpenDrawer(false);
+                  stopBodyScroll(false);
+                  await sleep(200);
+                  confirmDialogStore.show({
+                    content: '目前仅支持电脑端写文章哦',
+                    cancelDisabled: true,
+                    okText: '我知道了',
+                    ok: () => {
+                      confirmDialogStore.hide();
+                    },
+                  });
+                }}
+              >
+                写文章
+              </MenuItem>
               {walletStore.canSpendBalance && (
                 <MenuItem
                   onClick={async () => {
@@ -175,18 +176,6 @@ export default observer((props: any) => {
               >
                 账号绑定
               </MenuItem>
-              {
-                <MenuItem
-                  onClick={async () => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    modalStore.openSettings('profile');
-                  }}
-                >
-                  修改资料
-                </MenuItem>
-              }
               {supportPhoneBinding && phoneBinded && (
                 <MenuItem
                   onClick={async () => {
@@ -236,24 +225,22 @@ export default observer((props: any) => {
       >
         {userStore.isLogin && (
           <div>
-            {settings['subscriptions.enabled'] && (
-              <Link to="/subscriptions">
-                <div
-                  onClick={() => {
-                    handleClose();
-                  }}
-                >
-                  <MenuItem className="text-gray-700">
-                    <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
-                        <People />
-                      </span>{' '}
-                      我的关注
-                    </div>
-                  </MenuItem>
-                </div>
-              </Link>
-            )}
+            <Link to={`/authors/${user.address}`}>
+              <div
+                onClick={() => {
+                  handleClose();
+                }}
+              >
+                <MenuItem className="text-gray-700">
+                  <div className="py-1 flex items-center">
+                    <span className="flex items-center text-xl mr-2">
+                      <People />
+                    </span>{' '}
+                    我的主页
+                  </div>
+                </MenuItem>
+              </div>
+            </Link>
             <div
               onClick={() => {
                 handleClose();
@@ -326,7 +313,7 @@ export default observer((props: any) => {
   };
 
   return (
-    <Fade in={true} timeout={isMobile ? 500 : 1500}>
+    <Fade in={true} timeout={isMobile ? 400 : 1500}>
       <div>
         <div className="md:hidden">
           <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
@@ -344,11 +331,16 @@ export default observer((props: any) => {
               </Link>
             )}
             {showBack && (
-              <div
-                className="flex items-center text-xl text-gray-700 p-2"
-                onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
-              >
-                <ArrowBackIos />
+              <div className="flex items-center">
+                <div
+                  className="flex items-center text-xl text-gray-700 p-2"
+                  onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
+                >
+                  <ArrowBackIos />
+                </div>
+                <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
+                  <HomeOutlined />
+                </Link>
               </div>
             )}
             <div className="flex items-center">
@@ -407,11 +399,13 @@ export default observer((props: any) => {
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
-                    <Link to="/dashboard">
-                      <span className="block mr-5 text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal">
-                        写文章
-                      </span>
-                    </Link>
+                    {isPc && (
+                      <Link to="/dashboard">
+                        <Button size="small" className="mr-5">
+                          写文章
+                        </Button>
+                      </Link>
+                    )}
                     {settings['notification.enabled'] && (
                       <Badge
                         badgeContent={unread}
@@ -428,7 +422,13 @@ export default observer((props: any) => {
                     )}
                     {isLogin && (
                       <div className="flex items-center pl-1 mr-3">
-                        <img src={user.avatar} className="w-8 h-8 rounded-full" alt="头像" />
+                        <Link to={`/authors/${user.address}`}>
+                          <img
+                            src={resizeImage(user.avatar)}
+                            className="w-8 h-8 rounded-full"
+                            alt="头像"
+                          />
+                        </Link>
                       </div>
                     )}
                     <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>

@@ -3,12 +3,12 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import { sleep, isMobile, isWeChat, getQuery } from 'utils';
 import Api from 'api';
+import settingsApi from 'apis/settings';
 
 export default observer((props: any) => {
   const {
     preloadStore,
     userStore,
-    feedStore,
     socketStore,
     modalStore,
     settingsStore,
@@ -21,37 +21,10 @@ export default observer((props: any) => {
       return;
     }
 
-    const initFilter = (settings: any) => {
-      const type = settings['filter.type'];
-      const popularityDisabled = !settings['filter.popularity.enabled'];
-      if (popularityDisabled) {
-        const validType = type === 'POPULARITY' ? 'PUB_DATE' : type;
-        settings['filter.type'] = validType;
-        feedStore.setFilter({
-          type: validType,
-        });
-      } else {
-        const filter: any = { type };
-        if (type === 'POPULARITY') {
-          const dayRange = settings['filter.dayRange'];
-          const dayRangeOptions = settings['filter.dayRangeOptions'];
-          const isValidDayRange = dayRange && dayRangeOptions.includes(dayRange);
-          const validDayRange = isValidDayRange ? dayRange : dayRangeOptions[0];
-          settings['filter.dayRange'] = validDayRange;
-          filter.dayRange = validDayRange;
-        }
-        feedStore.setFilter(filter);
-      }
-    };
-
     const fetchSettings = async () => {
-      const settings = await Api.fetchSettings();
+      const settings = await settingsApi.fetchSettings();
       settingsStore.setSettings(settings);
       modalStore.setAuthProviders(settings['auth.providers'] || []);
-      const filterEnabled = settings['filter.enabled'];
-      if (filterEnabled) {
-        initFilter(settings);
-      }
       return settings;
     };
 
@@ -98,16 +71,7 @@ export default observer((props: any) => {
       }
       await sleep(200);
     })();
-  }, [
-    userStore,
-    feedStore,
-    preloadStore,
-    socketStore,
-    settingsStore,
-    modalStore,
-    confirmDialogStore,
-    props,
-  ]);
+  }, [userStore, preloadStore, socketStore, settingsStore, modalStore, confirmDialogStore, props]);
 
   if (userStore.shouldLogin) {
     return (

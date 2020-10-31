@@ -39,12 +39,6 @@
       .MuiSvgIcon-root {
         width: 14px;
         height: 14px;
-
-        .MuiPaper-elevation1 {
-          border-radius: 5px;
-          box-shadow: 0 0 1px rgba(0, 0, 0, .12), 0 1px 6px rgba(0, 0, 0, .03), 0 6px 10px -8px rgba(0, 0, 0, .1);
-          overflow: hidden;
-        }
       }
     }
 
@@ -86,7 +80,7 @@
   }
 
   &-main {
-    background-color: #F2F4F7;
+    background-color: #eff3f6;
     width: 150px;
     height: 100vh;
     flex-grow: 1;
@@ -104,8 +98,7 @@
   }
 
   .MuiPaper-elevation1 {
-    border-radius: 5px;
-    box-shadow: 0 0 1px rgba(0, 0, 0, .12), 0 1px 6px rgba(0, 0, 0, .03), 0 6px 10px -8px rgba(0, 0, 0, .1);
+    box-shadow: none;
   }
 
   .MuiTableRow-head {
@@ -114,7 +107,7 @@
 
   .MuiTableCell-root {
     border-bottom-color: #e5eff5;
-    padding: 12px 40px 12px 25px;
+    padding: 12px 20px 12px 25px;
 
     &:last-child {
       padding-right: 25px;

@@ -7,6 +7,7 @@ import Loading from 'components/Loading';
 import BackButton from 'components/BackButton';
 import { isMobile, getDefaultAvatar } from 'utils';
 import Api from 'api';
+import { resizeImage } from 'utils';
 
 const authorView = (author: any) => {
   return (
@@ -14,13 +15,13 @@ const authorView = (author: any) => {
       <div className="flex items-center border-t border-gray-300 py-2 px-4 cursor-pointer">
         <img
           className="w-10 h-10 rounded-full"
-          src={author.avatar}
-          alt={author.name}
+          src={resizeImage(author.avatar)}
+          alt={author.nickname}
           onError={(e: any) => {
             e.target.src = getDefaultAvatar();
           }}
         />
-        <div className="ml-3 author-name text-gray-700 truncate w-4/5">{author.name}</div>
+        <div className="ml-3 author-name text-gray-700 truncate w-4/5">{author.nickname}</div>
       </div>
     </Link>
   );

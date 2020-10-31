@@ -62,6 +62,7 @@ const verifyData = (data, options = {}) => {
     'rId',
     'title',
     'content',
+    'cover',
     'mimeType',
     'description',
     'deleted'

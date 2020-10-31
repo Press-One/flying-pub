@@ -79,6 +79,7 @@ const extractFrontMatter = chainPost => {
     authorName: result.attributes.author,
     avatar: result.attributes.avatar,
     bio: result.attributes.bio,
+    cover: result.attributes.cover,
     published: result.attributes.published,
     content: result.body
   };
@@ -102,6 +103,7 @@ const pickPost = async chainPost => {
     avatar,
     authorName,
     bio,
+    cover,
     published,
     content
   } = extractFrontMatter(chainPost);
@@ -109,13 +111,14 @@ const pickPost = async chainPost => {
     rId,
     userAddress: block.user_address,
     title,
+    cover,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
     pubDate: new Date(published)
   };
   const author = {
     address: block.user_address,
-    name: authorName,
+    nickname: authorName,
     avatar,
     bio
   };
@@ -144,14 +147,28 @@ const replacePost = async (rId, newRId) => {
     latestRId: newRId
   });
   await Post.updateLatestRId(rId, newRId);
+  const [post, newPost] = await Promise.all([
+    Post.getByRId(rId, {
+      ignoreDeleted: true,
+      raw: true
+    }),
+    Post.getByRId(newRId, {
+      ignoreDeleted: true,
+      raw: true
+    }),
+  ]);
+  const topics = await post.getTopics({
+    where: {
+      deleted: false
+    }
+  });
+  await newPost.addTopics(topics);
+  await post.removeTopics(topics);
   return true;
 };
 
 const saveChainPost = async (chainPost, options = {}) => {
   const pickedPost = await pickPost(chainPost);
-  console.log({
-    pickedPost
-  });
   const {
     author,
     post,
@@ -184,28 +201,32 @@ const saveChainPost = async (chainPost, options = {}) => {
   }
 
   await Author.upsert(author.address, {
-    name: author.name,
+    nickname: author.name,
     avatar: author.avatar,
     bio: author.bio,
   });
-  Log.createAnonymity('同步作者资料', `${author.address} ${author.name}`);
 
   if (options.fromAtomSync) {
     post.status = 'finished';
   } else if (options.fromPublish) {
     post.status = 'pending';
   }
-  await Post.create(post);
-  Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
 
   if (updatedRId) {
     const updatedFile = await Post.getByRId(updatedRId, {
       ignoreDeleted: true,
+      raw: true
     });
+    post.pubDate = updatedFile.pubDate;
+    await Post.create(post);
+    Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
     await Post.delete(updatedFile.rId);
     Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
     await replacePost(updatedRId, post.rId);
     Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+  } else {
+    await Post.create(post);
+    Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
   }
 }
 exports.saveChainPost = saveChainPost;

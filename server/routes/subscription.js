@@ -1,14 +1,15 @@
 var router = require('koa-router')();
 const {
-  get,
-  create,
-  destroy,
-  list
+  subscribe,
+  unsubscribe,
+  listFollowing,
+  listFollowers
 } = require('../controllers/apiSubscription');
+const { ensureAuthorization } = require('../middleware/api');
 
-router.get('/', list);
-router.post('/', create);
-router.get('/:id', get);
-router.del('/:id', destroy);
+router.get('/:authorAddress/following', ensureAuthorization({ strict: false }), listFollowing);
+router.get('/:authorAddress/followers', ensureAuthorization({ strict: false }), listFollowers);
+router.post('/:authorAddress', ensureAuthorization(), subscribe);
+router.del('/:authorAddress', ensureAuthorization(), unsubscribe);
 
 module.exports = router;

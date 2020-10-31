@@ -1,3 +1,4 @@
+const Sequelize = require('sequelize');
 const Author = require('./sequelize/author');
 const Log = require('./log');
 const {
@@ -11,21 +12,37 @@ const packAuthor = author => {
   return {
     status: author.status,
     address: author.address,
-    name: author.name,
+    nickname: author.nickname,
     avatar: author.avatar,
+    cover: author.cover,
     bio: author.bio
   };
 }
 exports.packAuthor = packAuthor;
 
-const getByAddress = async (address) => {
+const getByAddress = async (address, options = {}) => {
   assert(address, Errors.ERR_IS_REQUIRED('address'))
   const author = await Author.findOne({
     where: {
       address
     }
   });
-  return author ? packAuthor(author.toJSON()) : null;
+
+  if (!author) {
+    return null;
+  }
+  
+  const derivedAuthor = packAuthor(author.toJSON());
+
+  if (options.raw) {
+    return author;
+  }
+
+  if (options.returnRaw) {
+    return { sequelizeAuthor: author, author: derivedAuthor }
+  }
+
+  return derivedAuthor;
 }
 exports.getByAddress = getByAddress;
 
@@ -34,8 +51,9 @@ exports.upsert = async (address, data) => {
   assert(data, Errors.ERR_IS_REQUIRED('data'))
   const verifiedData = attempt(data, {
     status: Joi.string().trim().optional(),
-    name: Joi.string().trim().optional(),
+    nickname: Joi.string().trim().optional(),
     avatar: Joi.string().trim().optional(),
+    cover: Joi.string().trim().optional(),
     bio: Joi.string().empty('').optional()
   });
   const author = await getByAddress(address);
@@ -59,4 +77,20 @@ exports.upsert = async (address, data) => {
     Log.createAnonymity('创建作者', `${address}`);
   }
   return true;
+}
+
+exports.listRecommended = async (options = {}) => {
+  const { limit } = options;
+  const authors = await Author.findAll({
+    attributes: [
+      'address', 'nickname', 'avatar', 'cover', 'bio',
+      [Sequelize.literal('(SELECT SUM("posts"."upVotesCount") + SUM("posts"."commentsCount") * 0.6 FROM "posts" WHERE "posts"."userAddress" = "authors"."address")'), '"countSum"'],
+    ],
+    order: [[Sequelize.literal('"countSum"'), 'DESC NULLS LAST']],
+    limit
+  });
+
+  const derivedAuthors = await Promise.all(authors.map(author => packAuthor(author.toJSON())));
+
+  return derivedAuthors;
 }

@@ -31,22 +31,23 @@ exports.list = async ctx => {
   };
 };
 
-const getFrontMatter = (user, title) => {
+const getFrontMatter = (user, data) => {
   return `---
-title: ${title}
+title: ${data.title}
 author: ${user.nickname ? user.nickname : ''}
 avatar: ${user.avatar ? user.avatar : ''}
 bio: ${user.bio ? user.bio : ''}
+cover: ${data.cover || ''}
 published: ${new Date().toISOString()}
 ---\n`;
 };
 
-const tryAppendFrontMatter = (user, title, file) => {
-  if (file.content) {
-    file.content = getFrontMatter(user, title) + file.content.trim();
-    file.content = file.content.trim();
+const tryAppendFrontMatter = (user, data) => {
+  if (data.content) {
+    data.content = getFrontMatter(user, data) + data.content.trim();
+    data.content = data.content.trim();
   }
-  return file;
+  return data;
 };
 
 const createFile = async (user, data, options = {}) => {
@@ -54,7 +55,7 @@ const createFile = async (user, data, options = {}) => {
     isDraft
   } = options;
   const shouldPushToChain = !isDraft;
-  const derivedData = tryAppendFrontMatter(user, data.title, data);
+  const derivedData = tryAppendFrontMatter(user, data);
   let file = await File.create(user.address, derivedData);
   if (shouldPushToChain) {
     const fileToChain = await File.get(file.id, {
@@ -178,8 +179,11 @@ exports.update = async ctx => {
   if (isDraft) {
     const derivedData = tryAppendFrontMatter(
       user,
-      data.title || file.title,
-      data
+      {
+        title: data.title || file.title,
+        content: data.content,
+        cover: data.cover || file.cover,
+      },
     );
     let updatedFile = await File.update(file.id, derivedData);
     const shouldPushToChain = ctx.query.action === "PUBLISH";
@@ -239,6 +243,17 @@ exports.get = async ctx => {
   } = ctx.verification;
   const id = ~~ctx.params.id;
   const file = await File.get(id);
+  assert(file, Errors.ERR_NOT_FOUND("file"));
+  assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
+  ctx.body = file;
+};
+
+exports.getByRId = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+  const rId = ctx.params.rId;
+  const file = await File.getByRId(rId);
   assert(file, Errors.ERR_NOT_FOUND("file"));
   assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
   ctx.body = file;

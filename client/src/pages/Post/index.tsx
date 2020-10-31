@@ -7,6 +7,7 @@ import BackButton from 'components/BackButton';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
 import ButtonOutlined from 'components/ButtonOutlined';
+import TopicLabels, { IncludedButton } from 'components/TopicLabels';
 import Fade from '@material-ui/core/Fade';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import ThumbUp from '@material-ui/icons/ThumbUp';
@@ -19,13 +20,16 @@ import RewardModal from './rewardModal';
 
 import CommentApi from './comment/api';
 import Comment from './comment';
-import { Post } from 'store/feed';
+import { IPost } from 'apis/post';
+import postApi from 'apis/post';
+import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
 import { ago, isPc, isMobile, sleep, initMathJax, getDefaultAvatar, getQuery } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
 import QRCode from 'qrcode.react';
+import { resizeImage } from 'utils';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -49,7 +53,6 @@ export default observer((props: any) => {
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
   const { isLogin, user } = userStore;
-  const [minPending, setMinPending] = React.useState(true);
   const [isFetchedPost, setIsFetchedPost] = React.useState(false);
   const [showExtra, setShowExtra] = React.useState(false);
   const [voting, setVoting] = React.useState(false);
@@ -63,25 +66,19 @@ export default observer((props: any) => {
   const noReward = rewardSummary.users.length === 0;
   const { rId } = props.match.params;
   const [anchorEl, setAnchorEl] = React.useState(null as any);
+  const isMyself = React.useMemo(
+    () => post && post.author && user.address === post.author.address,
+    [user.address, post],
+  );
 
   React.useEffect(() => {
-    if (!minPending) {
-      return;
-    }
-    (async () => {
-      await sleep(500);
-      setMinPending(false);
-    })();
-  }, [minPending]);
-
-  React.useEffect(() => {
-    if (!minPending) {
+    if (isFetchedPost) {
       (async () => {
-        await sleep(300);
+        await sleep(200);
         setShowExtra(true);
       })();
     }
-  }, [minPending]);
+  }, [isFetchedPost]);
 
   React.useEffect(() => {
     const commentId = getQuery('commentId');
@@ -97,7 +94,7 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const post: Post = await Api.fetchPost(rId);
+        const post: IPost = await postApi.fetchPost(rId);
         if (post.latestRId) {
           window.location.href = `/posts/${post.latestRId}`;
           return;
@@ -175,7 +172,7 @@ export default observer((props: any) => {
     return null;
   }
 
-  if (!ready || !isFetchedPost || minPending) {
+  if (!ready || !isFetchedPost) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -228,8 +225,6 @@ export default observer((props: any) => {
       modalStore.openLogin();
       return;
     }
-    const isMyself = user.address === post.author.address;
-    console.log({ 'user.address': user.address, 'post.author.address': post.author.address });
     if (isMyself) {
       confirmDialogStore.show({
         content: '你不能打赏给自己哦',
@@ -252,7 +247,9 @@ export default observer((props: any) => {
             <Button onClick={reward}>打赏作者</Button>
           </div>
           {noReward && (
-            <div className="mt-5 text-gray-600 pb-0 md:pb-5">还没有人打赏，来支持一下作者吧！</div>
+            <div className="mt-3 md:mt-5 text-gray-af pb-0 md:pb-5">
+              还没有人打赏，来支持一下作者吧！
+            </div>
           )}
         </div>
         {!noReward && <RewardSummary summary={rewardSummary} />}
@@ -261,13 +258,9 @@ export default observer((props: any) => {
   };
 
   const subscribe = async () => {
-    if (!isLogin) {
-      modalStore.openLogin();
-      return;
-    }
     try {
-      await Api.subscribe(post.author.address);
-      post.author.subscribed = true;
+      await subscriptionApi.subscribe(post.author.address);
+      post.author.following = true;
       setPost(post);
       subscriptionStore.addAuthor(post.author);
     } catch (err) {
@@ -277,8 +270,8 @@ export default observer((props: any) => {
 
   const unsubscribe = async () => {
     try {
-      await Api.unsubscribe(post.author.address);
-      post.author.subscribed = false;
+      await subscriptionApi.unsubscribe(post.author.address);
+      post.author.following = false;
       setPost(post);
       subscriptionStore.removeAuthor(post.author.address);
     } catch (err) {
@@ -288,93 +281,86 @@ export default observer((props: any) => {
 
   const AuthorInfoView = (author: any) => {
     return (
-      <div className="mb-12">
+      <div className="md:mb-12 md:-mt-3">
         <div
-          className={classNames(
-            {
-              'p-5': isPc,
-              'mt-5 p-3': isMobile,
-            },
-            'text-center text-gray-500',
-          )}
-        >
-          ── 关于作者 ──
-        </div>
-        <div
-          style={{ backgroundColor: '#fafafa' }}
           className={classNames(
             {
               'p-5': isPc,
               'p-3': isMobile,
             },
-            'flex justify-between items-center rounded',
+            'flex justify-between bg-gray-f7 rounded-8 border border-gray-d8 border-opacity-75',
           )}
         >
-          <Link to={`/authors/${author.address}`}>
-            <img
-              className={classNames(
-                {
-                  'mr-6': isPc,
-                  'mr-3': isMobile,
-                },
-                'w-12 h-12 rounded-full',
-              )}
-              src={author.avatar}
-              alt={author.name}
-              onError={(e: any) => {
-                e.target.src = getDefaultAvatar();
-              }}
-            />
-          </Link>
-          <div className="w-px flex-grow">
-            <div
-              className={classNames(
-                {
-                  'text-base': isPc,
-                  'flex-col text-sm': isMobile,
-                },
-                'flex whitespace-no-wrap',
-              )}
-            >
-              <Link to={`/authors/${author.address}`}>
-                <span className="text-gray-700 font-bold mr-6 truncate">{author.name}</span>
-              </Link>
-              <span
+          <div className="flex items-center">
+            <Link to={`/authors/${author.address}`}>
+              <img
                 className={classNames(
                   {
-                    'text-xs': isMobile,
+                    'mr-6': isPc,
+                    'mr-3': isMobile,
                   },
-                  'text-gray-600',
+                  'w-12 h-12 rounded-full',
                 )}
-              >
-                共发表{author.postCount}篇文章
-              </span>
-            </div>
-            {author.bio && (
+                src={resizeImage(author.avatar)}
+                alt={author.nickname}
+                onError={(e: any) => {
+                  e.target.src = getDefaultAvatar();
+                }}
+              />
+            </Link>
+            <div className="text-gray-9b">
               <div
                 className={classNames(
                   {
-                    'mt-3': isPc,
-                    truncate: isMobile,
+                    'md:flex-row md:items-center': author.bio,
                   },
-                  'text-gray-600',
+                  'mr-8 flex flex-col',
                 )}
               >
-                {author.bio}
+                <div
+                  className={classNames(
+                    {
+                      'text-base': isPc,
+                    },
+                    'flex whitespace-no-wrap items-center mt-1 md:mt-0',
+                  )}
+                >
+                  <Link to={`/authors/${author.address}`}>
+                    <span className="text-gray-88 font-bold mr-6 md:mr-4 truncate">
+                      {author.nickname}
+                    </span>
+                  </Link>
+                </div>
+                {author.summary && (
+                  <div className="text-13 mt-1 flex items-center">
+                    {author.summary.post.count} 篇文章
+                    {Number(author.summary.follower.count) > 0 && <span className="mx-1">·</span>}
+                    {Number(author.summary.follower.count) > 0 && (
+                      <span>{author.summary.follower.count} 人关注</span>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+              <div>
+                {author.bio && (
+                  <div className="mt-1 truncate hidden md:block w-100">{author.bio}</div>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="ml-3">
-            {author.subscribed ? (
-              <Button onClick={unsubscribe} small={isMobile} color="gray">
-                已关注
-              </Button>
-            ) : (
-              <Button onClick={subscribe} small={isMobile}>
-                关注TA
-              </Button>
-            )}
-          </div>
+          {!isMyself && (
+            <div className="ml-3 mt-3">
+              {author.following ? (
+                <Button onClick={unsubscribe} size="small" outline>
+                  已关注
+                </Button>
+              ) : (
+                <Button onClick={subscribe} size="small">
+                  关注
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -395,24 +381,24 @@ export default observer((props: any) => {
   };
 
   const createVote = async (rId: string) => {
-    if (!isLogin) {
-      modalStore.openLogin();
-      return;
-    }
     if (voting) {
       return;
     }
     setVoting(true);
-    const { author } = post;
-    const { postCount, subscribed } = author;
-    const newPost = await Api.createVote({
-      objectType: 'posts',
-      objectId: rId,
-      type: 'UP',
-    });
-    newPost.author.postCount = postCount;
-    newPost.author.subscribed = subscribed;
-    feedStore.updatePost(post.rId, newPost);
+    try {
+      const { author } = post;
+      const { postCount, following } = author;
+      const newPost = await Api.createVote({
+        objectType: 'posts',
+        objectId: rId,
+        type: 'UP',
+      });
+      newPost.author.postCount = postCount;
+      newPost.author.following = following;
+      feedStore.updatePost(post.rId, newPost);
+    } catch (err) {
+      console.log(err);
+    }
     setVoting(false);
   };
 
@@ -425,19 +411,23 @@ export default observer((props: any) => {
       return;
     }
     setVoting(true);
-    const { author } = post;
-    const { postCount, subscribed } = author;
-    const newPost = await Api.deleteVote({
-      objectType: 'posts',
-      objectId: rId,
-    });
-    newPost.author.postCount = postCount;
-    newPost.author.subscribed = subscribed;
-    feedStore.updatePost(post.rId, newPost);
+    try {
+      const { author } = post;
+      const { postCount, following } = author;
+      const newPost = await Api.deleteVote({
+        objectType: 'posts',
+        objectId: rId,
+      });
+      newPost.author.postCount = postCount;
+      newPost.author.following = following;
+      feedStore.updatePost(post.rId, newPost);
+    } catch (err) {
+      console.log(err);
+    }
     setVoting(false);
   };
 
-  const VoteView = (post: Post, options: any = {}) => {
+  const VoteView = (post: IPost, options: any = {}) => {
     return (
       <div
         className={classNames(
@@ -565,25 +555,49 @@ export default observer((props: any) => {
               <div className="flex items-center w-6 h-6 mr-2">
                 <img
                   className="w-6 h-6 rounded-full border border-gray-300"
-                  src={post.author.avatar}
-                  alt={post.author.name}
+                  src={resizeImage(post.author.avatar)}
+                  alt={post.author.nickname}
                   onError={(e: any) => {
                     e.target.src = getDefaultAvatar();
                   }}
                 />
               </div>
               <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-                {post.author.name}
+                {post.author.nickname}
               </span>
             </div>
           </Link>
           <span className="mr-5">{ago(post.pubDate)}</span>
+          {isMyself && !isMobile && <Link to={`/editor?rId=${post.rId}`}>编辑</Link>}
         </div>
         <div
           id="post-content"
-          className={`mt-6 text-base md:text-lg markdown-body pb-6 px-2 md:px-0 overflow-hidden`}
+          className={`mt-3 md:mt-4 text-base md:text-lg markdown-body pb-6 px-2 md:px-0 overflow-hidden`}
           dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
         />
+        <div className="mt-1 pb-2 px-2 md:px-0">
+          <div className="border-l-4 border-blue-400 pl-3 text-gray-9b mt-2 md:mt-0">
+            {post.topics && post.topics.length > 0 && '被以下专题收录'}
+            <div>
+              {(!post.topics || post.topics.length === 0) && (
+                <div className="flex items-center">
+                  收录到我的专题
+                  <div className="ml-3">
+                    <IncludedButton post={post as IPost} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="pt-2 pb-5 md:pb-0">
+            <TopicLabels
+              topics={post.topics || []}
+              post={post}
+              showContributionButton
+              maxListCount={4}
+            />
+          </div>
+        </div>
         {post.content.length > 100 && (
           <div className="hidden md:block">
             {
@@ -609,14 +623,14 @@ export default observer((props: any) => {
             >
               {post.paymentUrl && RewardView()}
               {!post.paymentUrl && <div className="pt-6" />}
-              {post && post.author && AuthorInfoView(post.author)}
+              {post && post.author && !isMyself && AuthorInfoView(post.author)}
               {CommentView()}
             </div>
             <RewardModal
               open={openRewardModal}
               onClose={onCloseRewardModal}
               toAddress={post.author.address}
-              toAuthor={post.author.name}
+              toAuthor={post.author.nickname}
               fileRId={post.rId}
             />
           </div>

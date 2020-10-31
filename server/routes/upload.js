@@ -11,6 +11,17 @@ const config = require('../config');
 const {
   throws,
 } = require('../utils/validator');
+const {
+  mimeTypes
+} = require('../utils');
+
+const getPostfix = mimetype => {
+  for (const key in mimeTypes) {
+    if (mimeTypes[key] === mimetype) {
+      return key;
+    }
+  }
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -20,10 +31,11 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
-    const fileFormat = (file.originalname).split(".");
+    const { mimetype } = file;
+    const postfix = getPostfix(mimetype);
     const now = new Date();
-    const prefix = now.getMonth() + 1 + '' + now.getDate() + '-';
-    cb(null, prefix + fileFormat[0] + "." + fileFormat[fileFormat.length - 1]);
+    const prefix = now.getMonth() + 1 + '' + now.getDate();
+    cb(null, prefix + "." + postfix);
   }
 });
 
@@ -46,11 +58,11 @@ router.post('/', upload.single('file'), async (ctx) => {
     const hash = crypto.createHash('sha256');
     hash.update(file);
     const fileHash = hash.digest('hex');
-    const res = await pPutObject(folder + fileHash, {
+    const uniqueFileName = fileHash.slice(0, 4) + filename;
+    const res = await pPutObject(folder + uniqueFileName, {
       'Content-Type': mimetype,
       'body': file,
     });
-    console.log('res.url', res.url);
     try {
       await fs.promises.unlink(path);
     } catch (err) {
@@ -60,7 +72,7 @@ router.post('/', upload.single('file'), async (ctx) => {
       throws('fail to upload');
     }
     ctx.body = {
-      filename,
+      filename: uniqueFileName,
       url: `${config.qingCloud.cdn}/${folder}${decodeURIComponent(res.url).split('/').pop()}`
     };
   } catch (err) {

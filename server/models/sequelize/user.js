@@ -28,6 +28,9 @@ const User = sequelize.define('users', {
   avatar: {
     type: Sequelize.TEXT,
   },
+  cover: {
+    type: Sequelize.TEXT,
+  },
   bio: {
     type: Sequelize.TEXT,
     allowNull: true,
@@ -40,10 +43,6 @@ const User = sequelize.define('users', {
   timestamps: true,
   charset: 'utf8mb4',
   indexes: [{
-    fields: ['providerId']
-  }, {
-    fields: ['provider']
-  }, {
     unique: true,
     fields: ['address']
   }]

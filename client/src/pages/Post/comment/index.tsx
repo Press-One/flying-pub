@@ -4,7 +4,6 @@ import TextField from '@material-ui/core/TextField';
 import ThumbUp from '@material-ui/icons/ThumbUp';
 import CommentIcon from '@material-ui/icons/Comment';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import DrawerModal from 'components/DrawerModal';
 import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
@@ -46,6 +45,7 @@ export default observer((props: IProps) => {
 
   const [value, setValue] = React.useState('');
   const [drawerReplyValue, setDrawerReplyValue] = React.useState('');
+  const [replyingComment, setReplyingComment] = React.useState<any>(null);
   const [isCreatingComment, setIsCreatingComment] = React.useState(false);
   const [isCreatedComment, setIsCreatedComment] = React.useState(false);
   const [isDrawerCreatingComment, setIsDrawerCreatingComment] = React.useState(false);
@@ -55,6 +55,10 @@ export default observer((props: IProps) => {
   const [isVoting, setIsVoting] = React.useState(false);
   const { fileRId, alwaysShowCommentEntry } = props;
   const [selectedCommentId, setSelectedCommentId] = React.useState(getQuery('commentId') || '0');
+
+  React.useEffect(() => {
+    setValue(localStorage.getItem('COMMENT_CONTENT') || '');
+  }, []);
 
   React.useEffect(() => {
     const scrollCallBack = debounce(() => {
@@ -99,10 +103,6 @@ export default observer((props: IProps) => {
     if (isCreatingComment || isDrawerCreatingComment) {
       return;
     }
-    if (!isLogin) {
-      modalStore.openLogin();
-      return;
-    }
     const _value = ((openDrawer ? drawerReplyValue : value) || '').trim();
     if (!_value) {
       snackbarStore.show({
@@ -133,11 +133,14 @@ export default observer((props: IProps) => {
       });
       openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
-        setDrawerReplyValue('');
         setOpenDrawer(false);
         stopBodyScroll(false);
-      } else {
-        setValue('');
+      }
+      setDrawerReplyValue('');
+      setValue('');
+      localStorage.removeItem('COMMENT_CONTENT');
+      if (replyingComment) {
+        localStorage.removeItem(`COMMENT_REPLY:${replyingComment.id}_CONTENT`);
       }
       scrollToHere(99999);
     } catch (e) {
@@ -175,10 +178,6 @@ export default observer((props: IProps) => {
     if (isVoting) {
       return;
     }
-    if (!isLogin) {
-      modalStore.openLogin();
-      return;
-    }
     setIsVoting(true);
     try {
       const comment = await Api.createVote({
@@ -193,10 +192,6 @@ export default observer((props: IProps) => {
 
   const resetVote = async (commentId: number) => {
     if (isVoting) {
-      return;
-    }
-    if (!isLogin) {
-      modalStore.openLogin();
       return;
     }
     setIsVoting(true);
@@ -236,6 +231,11 @@ export default observer((props: IProps) => {
 
   const handleEditorChange = (event: any) => {
     openDrawer ? setDrawerReplyValue(event.target.value) : setValue(event.target.value);
+    if (replyingComment) {
+      localStorage.setItem(`COMMENT_REPLY:${replyingComment.id}_CONTENT`, event.target.value);
+    } else {
+      localStorage.setItem('COMMENT_CONTENT', event.target.value);
+    }
   };
 
   const forceBlur = () => {
@@ -252,7 +252,11 @@ export default observer((props: IProps) => {
         <div className="flex items-start mt-5 pb-2 comment-editor-container">
           <img
             className="hidden md:block mr-3 rounded"
-            src={user && user.avatar ? user.avatar : 'https://static.press.one/pub/avatar.png'}
+            src={
+              user && user.avatar
+                ? user.avatar
+                : 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f'
+            }
             width="36px"
             height="36px"
             alt="avatar"
@@ -273,11 +277,6 @@ export default observer((props: IProps) => {
               variant="outlined"
               inputProps={{ maxLength: 1500 }}
             />
-            <style jsx global>{`
-              .textarea .MuiOutlinedInput-input {
-                padding: 0 !important;
-              }
-            `}</style>
             {!isLogin && (
               <div className="text-gray-600 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
                 评论之前请先
@@ -288,9 +287,8 @@ export default observer((props: IProps) => {
             )}
             <div className="mt-1 md:mt-2"></div>
             <div className="text-right">
-              <Button onClick={() => reply()} small={isMobile}>
+              <Button onClick={() => reply()} size="small" isDoing={isDoing} isDone={isDone}>
                 发布
-                <ButtonProgress isDoing={isDoing} isDone={isDone} />
               </Button>
             </div>
           </div>
@@ -303,6 +301,9 @@ export default observer((props: IProps) => {
     if (!value) {
       return `@${name} `;
     }
+    if (value.startsWith(`@${name} `)) {
+      return value;
+    }
     const arr = value.split('@');
     const last = (arr.pop() || '').trim();
     if (last === name) {
@@ -311,14 +312,16 @@ export default observer((props: IProps) => {
     return `${value}@${name} `;
   };
 
-  const replyTo = (user: any) => {
-    if (!isLogin) {
-      modalStore.openLogin();
-      return;
-    }
+  const replyTo = (comment: any) => {
+    const user = comment.user;
+    setReplyingComment(comment);
     setOpenDrawer(true);
     setTimeout(() => {
-      setDrawerReplyValue(appendReplyUser(drawerReplyValue, user.nickname));
+      const cachedContent = localStorage.getItem(`COMMENT_REPLY:${comment.id}_CONTENT`) || '';
+      const replyValue = cachedContent
+        ? cachedContent
+        : appendReplyUser(drawerReplyValue, user.nickname);
+      setDrawerReplyValue(replyValue);
     }, 400);
   };
 
@@ -332,7 +335,7 @@ export default observer((props: IProps) => {
           >
             说点什么...
           </div>
-          <div className="flex items-center py-1 gray-color pr-3">
+          <div className="flex items-center py-1 text-gray-99 pr-3">
             {total > 0 && (
               <div
                 className="text-xl px-4 relative"
@@ -413,6 +416,7 @@ export default observer((props: IProps) => {
           open={openDrawer}
           onClose={() => {
             setDrawerReplyValue('');
+            setReplyingComment(null);
             setOpenDrawer(false);
             stopBodyScroll(false);
           }}
@@ -429,7 +433,7 @@ export default observer((props: IProps) => {
           </div>
         </DrawerModal>
         {hasComments && (
-          <div id="comments" className="overflow-hidden">
+          <div id="comments" className="overflow-hidden -mx-4">
             <Comments
               user={user}
               comments={comments || []}
@@ -449,7 +453,7 @@ export default observer((props: IProps) => {
               onClick={() => {
                 setOpenDrawer(true);
                 stopBodyScroll(true);
-                setDrawerReplyValue('');
+                setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
               }}
             >
               说点什么

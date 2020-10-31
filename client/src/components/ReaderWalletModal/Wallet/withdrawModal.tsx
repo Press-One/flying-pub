@@ -205,7 +205,7 @@ export default (props: any) => {
           {
             'fixed-scroll': isIPhone && !paying && !isPaid,
           },
-          'p-8 bg-white rounded text-center mx-5',
+          'p-8 bg-white rounded-12 text-center mx-5',
         )}
       >
         {step === 1 && step1()}

@@ -14,6 +14,7 @@ const {
 const {
   removeEmpty
 } = require('../utils');
+const config = require('../config');
 
 exports.get = async ctx => {
   const {
@@ -70,7 +71,7 @@ exports.put = async (ctx) => {
   }
 
   const data = removeEmpty(ctx.request.body);
-  const support_fields = ['nickname', 'bio', 'avatar'];
+  const support_fields = ['nickname', 'bio', 'avatar', 'cover'];
   for (const [k, _] of Object.entries(data)) {
     if (!support_fields.includes(k)) {
       throws(Errors.ERR_IS_INVALID(k));
@@ -109,7 +110,13 @@ exports.setPassword = async (ctx) => {
   if (oldPassword) {
     await Profile.updatePasswordWithOldPassword(userId, oldPassword, password, provider);
   } else if (code) {
-    await verifySmsCode(phone, code);
+    if (config.messageSystem.smsHardCode) {
+      if (`${code}` !== config.messageSystem.smsHardCode) {
+        await verifySmsCode(phone, code);
+      }
+    } else {
+      await verifySmsCode(phone, code);
+    }
     await Profile.setPassword(user.id, password, provider);
   }
 

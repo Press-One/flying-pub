@@ -69,13 +69,13 @@ export const ago = (timestamp: string) => {
   if (_week >= 5) {
     result = moment(timestamp).format('YYYY-MM-DD');
   } else if (_week >= 1) {
-    result = Math.floor(_week) + '周前';
+    result = moment(timestamp).format('MM-DD');
   } else if (_day >= 1) {
-    result = Math.floor(_day) + '天前';
+    result = Math.floor(_day) + ' 天前';
   } else if (_hour >= 1) {
-    result = Math.floor(_hour) + '个小时前';
+    result = Math.floor(_hour) + ' 小时前';
   } else if (_min >= 1) {
-    result = Math.floor(_min) + '分钟前';
+    result = Math.floor(_min) + ' 分钟前';
   } else {
     result = '刚刚';
   }
@@ -93,6 +93,12 @@ export const isIPhone = isMobile && !isAndroid;
 export const isPc = !isMobile;
 
 export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+
+export const isFirefox = navigator.userAgent.indexOf("Firefox") > 0;
+
+export const getImageWidth = (width: number) => {
+  return (window.devicePixelRatio || 1) * width
+}
 
 export const sleep = (duration: number) =>
   new Promise((resolve: any) => {
@@ -140,7 +146,7 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
 
 export const onlyForLogin = () => false;
 
-export const getDefaultAvatar = () => 'https://static.press.one/pub/avatar.png';
+export const getDefaultAvatar = () => 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f';
 
 export const scrollToHere = (top: number) => {
   const scrollElement = document.scrollingElement || document.documentElement;
@@ -165,3 +171,23 @@ export const getProtectedPhone = (phone: string) => {
     })
     .join('');
 };
+
+
+export const removeUrlHost = (url: string) => `/${url.split('/').slice(3).join('/')}`
+
+export const resizeImage = (url: any, width: number = 80) => {
+  if (!url) {
+    return url;
+  }
+  return `${url}?image=&action=resize:w_${width}`;
+}
+
+export const resizeFullImage = (url: any) => {
+  if (!url) {
+    return url;
+  }
+  if (isMobile) {
+    return `${url}?image=&action=resize:w_${window.innerWidth * window.devicePixelRatio}`;
+  }
+  return `${url}?image=&action=resize:w_${900 * window.devicePixelRatio}`;
+}

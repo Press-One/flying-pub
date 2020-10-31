@@ -24,6 +24,9 @@ const Post = sequelize.define('posts', {
     type: Sequelize.TEXT,
     allowNull: false
   },
+  cover: {
+    type: Sequelize.TEXT,
+  },
   paymentUrl: {
     type: Sequelize.STRING
   },
@@ -75,14 +78,16 @@ const Post = sequelize.define('posts', {
     fields: ['sticky']
   }, {
     fields: ['status']
-  }, {
-    fields: ['visibility']
   }]
 });
 
 Post.belongsTo(Author, {
   foreignKey: 'userAddress',
   targetKey: 'address'
+});
+Author.hasMany(Post, {
+  sourceKey: 'address',
+  foreignKey: 'userAddress'
 });
 
 module.exports = Post;

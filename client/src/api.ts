@@ -94,29 +94,14 @@ export default {
       },
     });
   },
-  fetchSettings() {
-    return request('/api/settings');
-  },
-  saveSettings(settings: any) {
-    const path = `/api/settings`;
-    return request(path, {
-      method: 'PUT',
-      body: {
-        payload: settings,
-      },
-    });
-  },
   fetchSubscriptions() {
-    return request(`/api/subscriptions`);
-  },
-  fetchAuthor(address: string) {
-    return request(`/api/authors/${address}`);
+    return request(`/api/subscriptions/follower`);
   },
   fetchSubscription(address: string) {
-    return request(`/api/subscriptions/${address}`);
+    return request(`/api/subscriptions/following/${address}`);
   },
   subscribe(address: string) {
-    return request(`/api/subscriptions`, {
+    return request(`/api/subscriptions/following`, {
       method: 'POST',
       body: {
         payload: {
@@ -126,7 +111,7 @@ export default {
     });
   },
   unsubscribe(address: string) {
-    return request(`/api/subscriptions/${address}`, {
+    return request(`/api/subscriptions/following/${address}`, {
       method: 'DELETE',
     });
   },
@@ -185,74 +170,17 @@ export default {
       body: formData,
     });
   },
-
-  checkPermission() {
-    return request('/api/auth/permission');
-  },
-  getFiles(p: { offset: number; limit: number }) {
-    return request(`/api/files?${qs.stringify(p)}`);
-  },
-  createDraft(file: any) {
-    const path = '/api/files?type=DRAFT';
-    file.mimeType = file.mimeType || 'text/markdown';
-    const payload = { payload: file };
-    return request(path, {
-      method: 'POST',
-      body: payload,
-    });
-  },
-  createFile(file: any) {
-    const path = '/api/files';
-    file.mimeType = file.mimeType || 'text/markdown';
-    const payload = { payload: file, origin: window.location.origin };
-    return request(path, {
-      method: 'POST',
-      body: payload,
-    });
-  },
-  getFile(id: any) {
-    return request(`/api/files/${id}`);
-  },
-  updateFile(id: number | undefined, file: any, publish?: boolean) {
-    const path = publish ? `/api/files/${id}?action=PUBLISH` : `/api/files/${id}`;
-    file.mimeType = file.mimeType || 'text/markdown';
-    const payload = { payload: file, origin: window.location.origin };
-    return request(path, {
-      method: 'PUT',
-      body: payload,
-    });
-  },
-  deleteFile(id: any) {
-    return request(`/api/files/${id}`, {
-      method: 'DELETE',
-    });
-  },
-  hideFile(id: number | undefined) {
-    return request(`/api/files/hide/${id}`, {
-      method: 'PUT',
-    });
-  },
-  showFile(id: number | undefined) {
-    return request(`/api/files/show/${id}`, {
-      method: 'PUT',
-    });
-  },
-  importArticle(url: string) {
-    return request(`/api/import/?url=${encodeURIComponent(url)}`, {
-      method: 'POST',
-    });
-  },
   fetchTopicAllowedUsers(p: { offset: number; limit: number }) {
-    return request(`/api/topics/allow?${qs.stringify(p)}`) as Promise<TopicPermissionResult>;
+    return request(`/api/block_topics/allow?${qs.stringify(p)}`) as Promise<TopicPermissionResult>;
   },
   fetchTopicDeniedUsers(p: { offset: number; limit: number }) {
-    return request(`/api/topics/deny?${qs.stringify(p)}`) as Promise<TopicPermissionResult>;
+    return request(`/api/block_topics/deny?${qs.stringify(p)}`) as Promise<TopicPermissionResult>;
   },
   allowTopicUser(userAddress: string) {
-    return request(`/api/topics/allow/${userAddress}`, { method: 'POST' });
+    return request(`/api/block_topics/allow/${userAddress}`, { method: 'POST' });
   },
   denyTopicUser(userAddress: string) {
-    return request(`/api/topics/deny/${userAddress}`, { method: 'POST' });
+    return request(`/api/block_topics/deny/${userAddress}`, { method: 'POST' });
   },
   getXuePhoneCode(phone: string) {
     return request('/api/auth/xuecn/send_code', {

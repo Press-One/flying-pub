@@ -25,7 +25,7 @@ export default observer((props: any) => {
 
   return (
     <Modal open={open} onClose={close}>
-      <div className="notification-modal-content bg-white rounded-sm">
+      <div className="notification-modal-content bg-white rounded-12">
         <Notification />
         <style jsx>{`
           .notification-modal-content {

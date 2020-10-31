@@ -14,7 +14,7 @@ export default (props: IProps) => {
   const renderedContent = React.useMemo(() => (content ? Marked(content) : ''), [content]);
   return (
     <Modal open={open} onClose={() => cancel()} className="flex justify-center items-center">
-      <div className="modal-content bg-white rounded-sm">
+      <div className="modal-content bg-white rounded-12">
         <div className="text-gray-700 pt-6 pb-3 ex-width-500">
           {content && (
             <div

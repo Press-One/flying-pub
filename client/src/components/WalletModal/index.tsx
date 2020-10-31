@@ -36,7 +36,7 @@ export default observer(() => {
         }}
       >
         <div className="wallet-modal-content relative">
-          <Wallet />
+          {modalStore.wallet.open && <Wallet />}
           {returnInfo && isBalanceEnough && walletStore.isCustomPinExist && (
             <Fade in={true} timeout={500}>
               <div className="absolute bottom-0 right-0 m-5">
@@ -66,7 +66,7 @@ export default observer(() => {
 
   return (
     <Modal open={modalStore.wallet.open} onClose={modalStore.closeWallet}>
-      <div className="bg-white rounded">{renderMain()}</div>
+      <div className="bg-white rounded-12">{renderMain()}</div>
     </Modal>
   );
 });

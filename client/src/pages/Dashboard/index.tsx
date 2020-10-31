@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { observer } from 'mobx-react-lite';
+import React from 'react';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import { RouteChildrenProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import Loading from 'components/Loading';
@@ -8,17 +8,15 @@ import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import Badge from '@material-ui/core/Badge';
 import Button from 'components/Button';
 import Pagination from '@material-ui/lab/Pagination';
-
 import { Paper, Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
-
-import { pressOneLinkRegexp, wechatLinkRegexp } from '../../utils/import';
-import PostImportDialog from '../../components/PostImportDialog';
-
-import Api from '../../api';
-import { useStore } from '../../store';
-
-import { sleep } from '../../utils';
-
+import { pressOneLinkRegexp, wechatLinkRegexp } from 'utils/import';
+import PostImportDialog from 'components/PostImportDialog';
+import PublishDialog from 'components/PublishDialog';
+import ContributionModal from 'components/ContributionModal';
+import fileApi from 'apis/file';
+import importApi from 'apis/import';
+import { useStore } from 'store';
+import { isPc } from 'utils';
 import PostEntry from './postEntry';
 
 import './index.scss';
@@ -26,14 +24,17 @@ import './index.scss';
 const useImportDialog = (props: any) => {
   const store = useStore();
   const { snackbarStore } = store;
-  const [importDialogVisible, setImportDialogVisible] = useState(false);
-  const [importDialogLoading, setImportDialogLoading] = useState(false);
-  const handleOpenImportDialog = () => setImportDialogVisible(true);
+  const state = useLocalStore(() => ({
+    importDialogVisible: false,
+    importDialogLoading: false,
+  }));
+  const handleOpenImportDialog = () => (state.importDialogVisible = true);
   const handleImportDialogClose = () => {
-    if (!importDialogLoading) {
-      setImportDialogVisible(false);
+    if (!state.importDialogLoading) {
+      state.importDialogVisible = false;
     }
   };
+
   const handleImportDialogConfirm = (url: string) => {
     const validUrl = [pressOneLinkRegexp.test(url), wechatLinkRegexp.test(url)].some(Boolean);
     if (!validUrl) {
@@ -44,8 +45,9 @@ const useImportDialog = (props: any) => {
       return;
     }
 
-    setImportDialogLoading(true);
-    Api.importArticle(url)
+    state.importDialogLoading = true;
+    importApi
+      .importArticle(url)
       .then(
         (file) => {
           setTimeout(() => {
@@ -64,13 +66,13 @@ const useImportDialog = (props: any) => {
         },
       )
       .finally(() => {
-        setImportDialogLoading(false);
+        state.importDialogLoading = false;
       });
   };
 
   return {
-    importDialogVisible,
-    importDialogLoading,
+    importDialogVisible: state.importDialogVisible,
+    importDialogLoading: state.importDialogLoading,
     handleOpenImportDialog,
     handleImportDialogClose,
     handleImportDialogConfirm,
@@ -81,8 +83,11 @@ const LIMIT = 15;
 
 export default observer((props: RouteChildrenProps) => {
   const { fileStore, settingsStore, notificationStore } = useStore();
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [page, setPage] = React.useState(0);
+  const state = useLocalStore(() => ({
+    page: 0,
+    showNotificationModal: false,
+    showContributionModal: false,
+  }));
   const { isFetching, files, total } = fileStore;
   const { settings } = settingsStore;
   const unread = notificationStore.getUnread() || 0;
@@ -99,11 +104,10 @@ export default observer((props: RouteChildrenProps) => {
     async (page: number) => {
       fileStore.setIsFetching(true);
       try {
-        const { total, files } = await Api.getFiles({
+        const { total, files } = await fileApi.getFiles({
           offset: page * LIMIT,
           limit: LIMIT,
         });
-        await sleep(1000);
         fileStore.setTotal(total);
         fileStore.setFiles(files);
       } catch (err) {}
@@ -113,8 +117,12 @@ export default observer((props: RouteChildrenProps) => {
   );
 
   React.useEffect(() => {
-    fetchFiles(page);
-  }, [fetchFiles, page]);
+    document.title = `${settings['site.title'] || ''}`;
+  }, [settings]);
+
+  React.useEffect(() => {
+    fetchFiles(state.page);
+  }, [fetchFiles, state.page]);
 
   const renderPosts = (files: any) => {
     return (
@@ -124,6 +132,7 @@ export default observer((props: RouteChildrenProps) => {
             <TableHead>
               <TableRow>
                 <TableCell>标题</TableCell>
+                <TableCell>封面</TableCell>
                 <TableCell>状态</TableCell>
                 <TableCell>更新时间</TableCell>
                 <TableCell>操作</TableCell>
@@ -136,7 +145,7 @@ export default observer((props: RouteChildrenProps) => {
                   file={file}
                   history={props.history}
                   key={file.id}
-                  fetchFiles={() => fetchFiles(page)}
+                  fetchFiles={() => fetchFiles(state.page)}
                 />
               ))}
             </TableBody>
@@ -147,17 +156,17 @@ export default observer((props: RouteChildrenProps) => {
   };
 
   const changePage = (e: any, newPage: number) => {
-    setPage(newPage - 1);
+    state.page = newPage - 1;
     window.scrollTo(0, 0);
   };
 
   const PaginationView = () => (
-    <div className="flex justify-center mt-5 pt-2 list-none">
+    <div className="flex justify-center mt-5 pt-2 list-none pb-6">
       <Pagination
         count={Math.ceil(total / LIMIT)}
         variant="outlined"
         shape="rounded"
-        page={page + 1}
+        page={state.page + 1}
         onChange={changePage}
       />
     </div>
@@ -165,7 +174,7 @@ export default observer((props: RouteChildrenProps) => {
 
   const renderNoPosts = () => {
     return (
-      <div className="mt-56 pt-5 text-center text-gray-500 text-base tracking-wider">
+      <div className="py-64 text-center text-gray-500 text-base tracking-wider">
         开始创作你的第一篇文章吧 ~
       </div>
     );
@@ -183,7 +192,7 @@ export default observer((props: RouteChildrenProps) => {
               className="text-gray-700 mr-8 transform scale-90 cursor-pointer"
               color="error"
               onClick={() => {
-                setShowNotificationModal(true);
+                state.showNotificationModal = true;
               }}
             >
               <div className="text-3xl flex items-center icon-btn-color">
@@ -216,12 +225,15 @@ export default observer((props: RouteChildrenProps) => {
           <Loading />
         </div>
       )}
-
-      <div className="p-dashboard-main-table-container max-w-1200">
-        {!isFetching && files.length === 0 && renderNoPosts()}
-        {!isFetching && files.length > 0 && renderPosts(files)}
-        {!isFetching && total > LIMIT && PaginationView()}
-      </div>
+      {!isFetching && (
+        <div className="p-dashboard-main-table-container max-w-1200">
+          <div className="bg-white rounded-12 overflow-hidden">
+            {files.length === 0 && renderNoPosts()}
+            {files.length > 0 && renderPosts(files)}
+            {total > LIMIT && PaginationView()}
+          </div>
+        </div>
+      )}
 
       {settings['import.enabled'] && (
         <PostImportDialog
@@ -233,13 +245,16 @@ export default observer((props: RouteChildrenProps) => {
       )}
       {settings['notification.enabled'] && (
         <NotificationModal
-          open={showNotificationModal}
+          open={state.showNotificationModal}
           close={() => {
-            setShowNotificationModal(false);
+            state.showNotificationModal = false;
             notificationStore.reset();
           }}
         />
       )}
+
+      {isPc && <PublishDialog />}
+      <ContributionModal />
     </div>
   );
 });

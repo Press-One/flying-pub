@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import io from 'socket.io-client';
 import { useStore } from '../../store';
 import { getTokenUrl } from '../../utils';
-import { NotificationSubType, Notification, NotificationStatus } from '../../store/notification';
+import { Notification, NotificationStatus } from '../../store/notification';
 
 let checkingTimer: any = 0;
 
@@ -50,7 +50,12 @@ export default observer(() => {
   socket.on('connect', async () => {
     log('connect', '连接成功');
     const tokenRes = await fetch(getTokenUrl(), { credentials: 'include' });
+    console.log(` ------------- hard code ---------------`);
     const token = await tokenRes.json();
+    // const token: any = {
+    //   FLYING_PUB_DEV_TOKEN_V2:
+    //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDE0NjMzNTIsImp0aSI6IjgyNGVjNjE5LTZjOTMtNDhkMy1iMzZhLWYwNDFhMDQ0YTk1ZiIsImRhdGEiOnsidXNlcklkIjoiMSIsInByb3ZpZGVySWQiOiIzOTIwMjIxMCIsInByb2ZpbGVSYXciOiJ7XCJ1c2VyX2lkXCI6XCI1ZTZiMDI4Yi0zYjZkLTRlNTctYTQ4ZC05NzZmOTBiOWQyZmJcIixcImZ1bGxfbmFtZVwiOlwi5rSX5Ymq5ZC555S16K-dXCIsXCJpZGVudGl0eV9udW1iZXJcIjpcIjM5MjAyMjEwXCIsXCJiaW9ncmFwaHlcIjpcIlwiLFwiYXZhdGFyX3VybFwiOlwiXCIsXCJzZXNzaW9uX2lkXCI6XCI2ZWEyNTJlNC03ODY3LTRhMDItOWJmNC1mYjYyNTczNGM2YzJcIixcImNvZGVfaWRcIjpcIjI3YjU1NjkxLTJlNmEtNDYxZC04ZWU2LTVhMDlkMGM2ZTVhMFwifSIsInByb3ZpZGVyIjoibWl4aW4ifSwiZXhwIjoxNjMyOTk5MzUyfQ.3l2DRuD7tSNVBdlSl2H1puzlagjSpVKvm7CLC1V3ne4',
+    // };
     const tokenStr = Object.keys(token)
       .map((k: string) => `${k}=${token[k]}`)
       .join(';');
@@ -122,20 +127,16 @@ export default observer(() => {
 
 export const getNotificationSocket = () => socket;
 
-export const getNotificationHistory = (
-  subType: NotificationSubType,
-  page: number,
-  notificationStore: any,
-) => {
+export const getNotificationHistory = (subTypes: any[], page: number, notificationStore: any) => {
   if (!socket) return;
   if (notificationStore.loading) return;
   notificationStore.setLoading(true);
   const payload = {
-    sub_types: [subType],
+    sub_types: subTypes,
     page,
     size: notificationStore.limit,
   };
-  log('history', `请求 history: ${subType} page: ${page}`);
+  log('history', `请求 history: ${subTypes} page: ${page}`);
   socket.emit('history', payload);
   checkingTimer = setTimeout(() => {
     if (notificationStore.loading) {

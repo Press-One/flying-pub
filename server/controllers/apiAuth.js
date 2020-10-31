@@ -24,7 +24,7 @@ const {
 
 const providers = ['pressone', 'github', 'mixin', 'phone'];
 
-const DEFAULT_AVATAR = 'https://static.press.one/pub/avatar.png';
+const DEFAULT_AVATAR = 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f';
 
 const checkPermission = async (provider, profile) => {
   const {
@@ -405,7 +405,13 @@ exports.verifySmsCodeHandler = async ctx => {
     code
   } = ctx.request.body || {}
 
-  await verifySmsCode(phone, code);
+  if (config.messageSystem.smsHardCode) {
+    if (`${code}` !== config.messageSystem.smsHardCode) {
+      await verifySmsCode(phone, code);
+    }
+  } else {
+    await verifySmsCode(phone, code);
+  }
 
   try {
     const provider = 'phone';
@@ -477,7 +483,13 @@ exports.phoneBind = async (ctx) => {
     throws(Errors.ERR_IS_DUPLICATED('alread bind phone'));
   }
 
-  await verifySmsCode(phone, code);
+  if (config.messageSystem.smsHardCode) {
+    if (`${code}` !== config.messageSystem.smsHardCode) {
+      await verifySmsCode(phone, code);
+    }
+  } else {
+    await verifySmsCode(phone, code);
+  }
   const phone_user = {
     name: phone,
   };

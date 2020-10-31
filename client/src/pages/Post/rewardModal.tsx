@@ -643,7 +643,7 @@ export default observer((props: any) => {
           {
             'fixed-scroll': isIPhone && (step === 2 || step === 4) && !paying && !isPaid,
           },
-          'p-8 md:px-10 bg-white rounded text-center',
+          'p-8 md:px-10 bg-white rounded-12 text-center',
         )}
       >
         {step === 1 && step1()}

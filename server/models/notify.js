@@ -136,11 +136,72 @@ const notifyArticleLike = async (data) => {
   }
 };
 
+const notifyAuthorNewFollower = async (data) => {
+  const {
+    fromNickName,
+    toUserName
+  } = data;
+  const payload = {
+    type: "AUTHOR_SUBSCRIPTION",
+    sub_type: "AUTHOR_NEW_FOLLOWER",
+    title: "有人关注了你",
+    message: `${fromNickName}关注了你`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  try {
+    await notify(payload);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const notifyTopicRejectedContribution = async (data) => {
+  const {
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_CONTRIBUTION",
+    sub_type: "TOPIC_REJECTED_CONTRIBUTION",
+    title: "你有一篇文章被移除了专题",
+    message: `你有一篇文章被移除了专题`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  try {
+    await notify(payload);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const notifyTopicReceivedContribution = async (data) => {
+  const {
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_CONTRIBUTION",
+    sub_type: "TOPIC_RECEIVED_CONTRIBUTION",
+    title: "有一篇文章投稿到了你的专题",
+    message: `有一篇文章投稿到了你的专题`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  try {
+    await notify(payload);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 module.exports = {
   notify,
   notifyCommentMention,
   notifyCommentLike,
   notifyArticleReward,
   notifyArticleLike,
-  notifyArticleComment
+  notifyArticleComment,
+  notifyAuthorNewFollower,
+  notifyTopicRejectedContribution,
+  notifyTopicReceivedContribution
 };

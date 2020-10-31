@@ -7,9 +7,11 @@ const {
   log
 } = require('../utils');
 
-exports.create = async (userId, message) => {
+exports.create = async (userId, message, options = {}) => {
   const userDevice = await Cache.pGet('USER_DEVICE', String(userId));
-  const user = await User.get(userId);
+  const user = await User.get(userId, {
+    withSSO: true
+  });
   const version = user.version ? `(v${user.version})` : '';
   const SSO_FLAG = user.SSO ? ' SSO' : '';
   const data = {
@@ -19,7 +21,9 @@ exports.create = async (userId, message) => {
   await Log.create(data);
   if (config.bot && config.bot.enabled) {
     try {
-      sendToBot(data);
+      sendToBot(data, {
+        toMixin: options.toMixin
+      });
     } catch (e) {
       log(e);
     }
@@ -41,7 +45,7 @@ exports.createAnonymity = async (identity, message) => {
   }
 }
 
-const sendToBot = async data => {
+const sendToBot = async (data, options = {}) => {
   await request({
     uri: config.bot.url,
     method: 'post',
@@ -50,4 +54,15 @@ const sendToBot = async data => {
       payload: data
     }
   }).promise();
+
+  if (options.toMixin && config.bot.mixin) {
+    await request({
+      uri: config.bot.mixin.url,
+      method: 'post',
+      json: true,
+      body: {
+        payload: data
+      }
+    }).promise();
+  }
 };

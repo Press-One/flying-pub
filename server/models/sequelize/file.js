@@ -24,6 +24,9 @@ const File = sequelize.define('files', {
   content: {
     type: Sequelize.TEXT
   },
+  cover: {
+    type: Sequelize.TEXT,
+  },
   encryptedContent: {
     type: Sequelize.TEXT
   },

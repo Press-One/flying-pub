@@ -3,24 +3,26 @@ export enum NotificationType {
   COMMENT = 'COMMENT',
 }
 
+export enum CombinedNotificationType {
+  OTHERS = 'OTHERS',
+}
+
 export enum NotificationSubType {
   // @ 、回复、点赞、打赏
   COMMENT_MENTION_ME = 'COMMENT_MENTION_ME',
   LIKE = 'LIKE',
   ARTICLE_COMMENT = 'ARTICLE_COMMENT',
   ARTICLE_REWARD = 'ARTICLE_REWARD',
+  AUTHOR_NEW_FOLLOWER = 'AUTHOR_NEW_FOLLOWER',
+  TOPIC_REJECTED_CONTRIBUTION = 'TOPIC_REJECTED_CONTRIBUTION',
+  TOPIC_RECEIVED_CONTRIBUTION = 'TOPIC_RECEIVED_CONTRIBUTION',
+  OTHERS = 'OTHERS'
 }
 
 export enum NotificationStatus {
   READ = 'READ',
   SENT = 'SENT',
   PEND = 'PEND',
-}
-interface NotificationSummary {
-  [NotificationSubType.COMMENT_MENTION_ME]?: number;
-  [NotificationSubType.LIKE]?: number;
-  [NotificationSubType.ARTICLE_COMMENT]?: number;
-  [NotificationSubType.ARTICLE_REWARD]?: number;
 }
 
 interface NotificationExtra {
@@ -54,10 +56,16 @@ export function createNotificationStore() {
     limit: 15,
     loading: false,
     messages: [] as Notification[],
-    summary: {} as NotificationSummary,
+    summary: {} as any,
     isFetched: false,
     hasMore: false,
-    subType: NotificationSubType.LIKE,
+    subTypes: [NotificationSubType.LIKE] as NotificationSubType[],
+    othersSubTypes: [
+      NotificationSubType.ARTICLE_REWARD,
+      NotificationSubType.AUTHOR_NEW_FOLLOWER,
+      NotificationSubType.TOPIC_RECEIVED_CONTRIBUTION,
+      NotificationSubType.TOPIC_REJECTED_CONTRIBUTION,
+    ],
     setConnected(connected: boolean) {
       this.connected = connected;
     },
@@ -73,7 +81,7 @@ export function createNotificationStore() {
     appendMessages(messages: Notification[], snackbarStore: any = null) {
       const hasIds = this.messages.map((m: Notification) => m.notification.id);
       messages.forEach((m: Notification, idx: number) => {
-        if (m.notification.sub_type !== this.subType) {
+        if (!this.subTypes.includes(m.notification.sub_type)) {
           return;
         }
         if (m.status === 'READ' && this.lastReadMsgId === 0) {
@@ -94,7 +102,7 @@ export function createNotificationStore() {
       });
       this.setMessages(this.messages);
     },
-    setSummary(summary: NotificationSummary) {
+    setSummary(summary: any) {
       this.summary = summary;
     },
     setLoading(loading: boolean) {
@@ -103,18 +111,18 @@ export function createNotificationStore() {
     setHasMore(hasMore: boolean) {
       this.hasMore = hasMore;
     },
-    setSubType(subType: NotificationSubType) {
-      this.subType = subType;
+    setSubTypes(subTypes: NotificationSubType[]) {
+      this.subTypes = subTypes;
       // clean messages when tab switched
       this.messages = [];
       this.lastReadMsgId = 0;
     },
     getUnread() {
-      return Object.values(this.summary).reduce((a, b) => a + b, 0);
+      return Object.values(this.summary).reduce((a: any, b: any) => a + b, 0) as number;
     },
     reset() {
       this.messages = [];
-      this.subType = NotificationSubType.LIKE;
+      this.subTypes = [NotificationSubType.LIKE];
       this.isFetched = false;
     },
   };

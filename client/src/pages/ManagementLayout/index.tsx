@@ -12,12 +12,13 @@ import Settings from '@material-ui/icons/Settings';
 import Fade from '@material-ui/core/Fade';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
+import { resizeImage } from 'utils';
 
 import { useStore } from '../../store';
 
 import './index.scss';
 import Dashboard from '../Dashboard';
-import Topic from '../Topic';
+import BlockTopic from '../BlockTopic';
 import PostManager from '../PostManager';
 import Sticky from '../Sticky';
 
@@ -41,7 +42,7 @@ export default observer((props: RouteChildrenProps) => {
     {
       text: '【管理后台】用户权限',
       icon: AccountCircle,
-      path: '/topic',
+      path: '/blockTopic',
       show: user.isAdmin,
     },
     {
@@ -105,10 +106,16 @@ export default observer((props: RouteChildrenProps) => {
           {
             <div className="w-full absolute bottom-0 left-0">
               {userStore.isFetched && (
-                <div className="flex items-center flex-col justify-center">
-                  <img src={user.avatar} className="w-16 h-16 rounded-full" alt="头像" />
-                  <span className="dark-color text-md mt-2">{user.nickname}</span>
-                </div>
+                <Link to={`/authors/${user.address}`}>
+                  <div className="flex items-center flex-col justify-center">
+                    <img
+                      src={resizeImage(user.avatar, 180)}
+                      className="w-16 h-16 rounded-full"
+                      alt="头像"
+                    />
+                    <span className="dark-color text-md mt-2">{user.nickname}</span>
+                  </div>
+                </Link>
               )}
               <div className="mx-2 mb-3 mt-5">
                 <Button className="w-full" onClick={() => modalStore.openSettings()}>
@@ -146,7 +153,7 @@ export default observer((props: RouteChildrenProps) => {
         </nav>
         <main className="p-manage-layout-main flex flex-col">
           <Route path="/dashboard" exact component={Dashboard} />
-          <Route path="/topic" exact component={Topic} />
+          <Route path="/blockTopic" exact component={BlockTopic} />
           <Route path="/postManager" exact component={PostManager} />
           <Route path="/sticky" exact component={Sticky} />
         </main>

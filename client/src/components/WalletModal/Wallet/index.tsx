@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import Badge from '@material-ui/core/Badge';
 import Info from '@material-ui/icons/Info';
 import { useStore } from 'store';
-import { isPc } from 'utils';
+import { isPc, isMobile } from 'utils';
 import Assets from './assets';
 import Settings from './settings';
 import Receipts from './receipts';
@@ -55,7 +55,7 @@ export default observer(() => {
   }, [walletStore]);
 
   React.useEffect(() => {
-    if (userStore.user.version === 1 || !walletStore.rewardOnly) {
+    if (isMobile || userStore.user.version === 1 || !walletStore.rewardOnly) {
       return;
     }
     (async () => {
@@ -176,7 +176,7 @@ export default observer(() => {
                       <span className="flex items-center mr-2 text-lg">
                         <Info />
                       </span>
-                      <span className="hidden md:block">
+                      <span>
                         现在推荐使用 {settingsStore.settings['mixinApp.name']}{' '}
                         扫码打赏，将不再支持余额打赏，检测到您的钱包有余额，请尽快提现哦
                       </span>

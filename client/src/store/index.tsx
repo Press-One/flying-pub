@@ -14,7 +14,6 @@ import { createSubscriptionStore } from './subscription';
 import { createModalStore } from './modal';
 import { createPathStore } from './lastPath';
 import { createSettingsStore } from './settings';
-import { createAuthorStore } from './author';
 import { createNotificationStore } from './notification';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createFilesStore } from './files';
@@ -40,7 +39,6 @@ const useCreateStore = () => ({
   modalStore: useLocalStore(createModalStore),
   pathStore: useLocalStore(createPathStore),
   settingsStore: useLocalStore(createSettingsStore),
-  authorStore: useLocalStore(createAuthorStore),
   notificationStore: useLocalStore(createNotificationStore),
   confirmDialogStore: useLocalStore(createConfirmDialogStore),
   fileStore: useLocalStore(createFilesStore),

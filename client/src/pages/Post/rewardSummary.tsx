@@ -2,6 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { currencyIconMap } from 'components/WalletModal/Wallet/utils';
+import { resizeImage } from 'utils';
 
 export default (props: any) => {
   let { amountMap = {}, users = [] } = props.summary;
@@ -31,7 +32,7 @@ export default (props: any) => {
                 <div className="px-1 mb-2" key={user.id}>
                   <img
                     className="rounded-sm w-10 h-10"
-                    src={user.avatar}
+                    src={resizeImage(user.avatar)}
                     alt={user.nickname}
                     key={user.id}
                   />

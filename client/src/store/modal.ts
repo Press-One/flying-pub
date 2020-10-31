@@ -1,5 +1,25 @@
 import { stopBodyScroll, isWeChat, getLoginUrl, isMobile } from 'utils';
 import Api from 'api';
+import { IPost } from 'apis/post';
+import { IFile } from 'apis/file';
+
+interface IUserListData {
+  topicUuid?: string;
+  title: string;
+  type: 'FOLLOWING_USERS' | 'USER_FOLLOWERS' | 'TOPIC_FOLLOWERS' | 'TOPIC_AUTHORS';
+  authorAddress: string;
+}
+
+type ITopicListData = {
+  post?: IPost;
+  title: string;
+  type: 'CREATED_TOPICS' | 'FOLLOWING_TOPICS' | 'CONTRIBUTION_TO_MY_TOPICS' | 'CONTRIBUTED_TOPICS',
+  userAddress?: string;
+}
+
+type IContributionData = {
+  file: IFile;
+}
 
 export function createModalStore() {
   return {
@@ -25,6 +45,29 @@ export function createModalStore() {
     mixinNotification: {
       open: false,
       data: {},
+    },
+    userList: {
+      open: false,
+      data: {
+        title: '',
+        type: 'FOLLOWING_USERS',
+        authorAddress: ''
+      } as IUserListData,
+    },
+    topicList: {
+      open: false,
+      data: {
+        title: '',
+        type: 'CREATED_TOPICS',
+      } as ITopicListData,
+    },
+    topicEditor: {
+      open: false,
+      data: {},
+    },
+    contribution: {
+      open: false,
+      data: {} as IContributionData
     },
     setAuthProviders(authProviders: string[]) {
       this.authProviders = authProviders;
@@ -61,8 +104,8 @@ export function createModalStore() {
       this.showPageLoading = false;
     },
     openWallet(data: any = {}) {
-      this.wallet.open = true;
       this.wallet.data = data;
+      this.wallet.open = true;
       stopBodyScroll(true);
     },
     closeWallet() {
@@ -71,8 +114,8 @@ export function createModalStore() {
       stopBodyScroll(false);
     },
     openNotification(data: any = {}) {
-      this.notification.open = true;
       this.notification.data = data;
+      this.notification.open = true;
       stopBodyScroll(true);
     },
     closeNotification() {
@@ -81,8 +124,8 @@ export function createModalStore() {
       stopBodyScroll(false);
     },
     openMixinNotification(data: any = {}) {
-      this.mixinNotification.open = true;
       this.mixinNotification.data = data;
+      this.mixinNotification.open = true;
       stopBodyScroll(true);
     },
     closeMixinNotification() {
@@ -106,6 +149,33 @@ export function createModalStore() {
     },
     closeSettings() {
       this.settings.open = false;
+    },
+    openUserList(data: IUserListData) {
+      this.userList.data = data;
+      this.userList.open = true;
+      stopBodyScroll(true);
+    },
+    closeUserList() {
+      this.userList.open = false;
+      stopBodyScroll(false);
+    },
+    openTopicList(data: ITopicListData) {
+      this.topicList.data = data;
+      this.topicList.open = true;
+      stopBodyScroll(true);
+    },
+    closeTopicList() {
+      this.topicList.open = false;
+      stopBodyScroll(false);
+    },
+    openContribution(data: IContributionData) {
+      this.contribution.data = data;
+      this.contribution.open = true;
+      stopBodyScroll(true);
+    },
+    closeContribution() {
+      this.contribution.open = false;
+      stopBodyScroll(false);
     },
   };
 }

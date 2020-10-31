@@ -1,15 +1,19 @@
 import React from 'react';
 import classNames from 'classnames';
+import ButtonProgress from 'components/ButtonProgress';
 
 interface Props {
   className?: string;
   onClick?: () => unknown;
   fullWidth?: boolean;
-  small?: boolean;
-  color?: 'primary' | 'gray';
+  size?: 'normal' | 'small' | 'mini';
+  color?: 'primary' | 'gray' | 'red' | 'green' | 'white';
   disabled?: boolean;
   children?: React.ReactNode;
   outline?: boolean;
+  isDoing?: boolean;
+  isDone?: boolean;
+  progressSize?: number;
 }
 
 export default (props: Props) => {
@@ -17,37 +21,81 @@ export default (props: Props) => {
     className,
     onClick,
     fullWidth = false,
-    small = false,
+    size = 'normal',
     color = 'primary',
     disabled,
     outline = false,
+    isDoing = false,
+    isDone = false,
   } = props;
 
   return (
     <button
       className={classNames(
-        'the-button',
+        'button',
         className,
         {
           'w-full': fullWidth,
-          'text-xs py-2 px-3 md:py-1 md:px-3': small,
-          'text-sm py-3 px-5 md:py-2 md:px-4': !small,
+          normal: size === 'normal',
+          small: size === 'small',
+          mini: size === 'mini',
           'bg-blue-400 text-white': !outline && color === 'primary',
-          'bg-gray-300 text-gray-600': !outline && color === 'gray',
-          'border border-blue-400 text-blue-400': outline,
+          'bg-gray text-white': !outline && color === 'gray',
+          'bg-green-500 text-white': !outline && color === 'green',
+          'border-blue-400 text-blue-400 border outline': outline && color === 'primary',
+          'border-red-400 text-red-400 border outline': outline && color === 'red',
+          'border-green-500 text-green-500 border outline': outline && color === 'green',
+          'border-white text-white border outline': outline && color === 'white',
         },
-        'rounded font-bold outline-none leading-none md:leading-normal',
+        'rounded-full outline-none leading-none',
       )}
       onClick={() => {
         onClick && onClick();
       }}
       disabled={disabled}
     >
-      <div className="flex justify-center items-center">{props.children}</div>
+      <div className="flex justify-center items-center">
+        {props.children}
+        <ButtonProgress
+          isDoing={isDoing}
+          isDone={isDone}
+          color={outline ? 'text-blue-400' : 'text-white'}
+        />
+      </div>
       <style jsx>{`
-        .the-button[disabled] {
+        .button.mini {
+          min-width: 45px;
+          font-size: 12px;
+          padding: 6px 8px;
+        }
+        .button.mini.outline {
+          padding: 5px 7px;
+        }
+        .button.small {
+          min-width: 60px;
+          font-size: 13px;
+          padding: 9px 12px;
+        }
+        .button.small.outline {
+          padding: 8px 11px;
+        }
+        .button.normal {
+          font-size: 14px;
+          padding: 9px 24px;
+        }
+        .button.normal.w-full {
+          font-size: 15px;
+          padding: 11px 24px;
+        }
+        .button.normal.outline {
+          padding: 8px 23px;
+        }
+        .button[disabled] {
           color: rgba(0, 0, 0, 0.26);
           background-color: rgba(0, 0, 0, 0.12);
+        }
+        .bg-gray {
+          background-color: #262b32;
         }
       `}</style>
     </button>

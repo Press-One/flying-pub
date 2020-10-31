@@ -80,7 +80,7 @@ const start = () => {
           }
           try {
             await tryCreateConversation(profile.userId, msgObj);
-            const text = '你成功开通了消息提醒。当有人在评论区 @ 你，或者你的文章收到点赞、打赏、评论，我会第一时间通知你';
+            const text = '你成功开通了消息提醒。当有新的消息，我会第一时间通知你';
             await trySendText(profile.userId, text);
           } catch (e) {
             console.log(e);

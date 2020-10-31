@@ -30,7 +30,7 @@ module.exports = {
       const provider = 'phone';
       const name = providerId.toString();
       // FIXME: hardcode
-      const avatar = 'https://static.press.one/pub/avatar.png';
+      const avatar = 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f';
 
       const profile = await queryInterface.sequelize.query(
         `select id from profiles where provider = '${provider}' and "providerId" = ${providerId}`, {

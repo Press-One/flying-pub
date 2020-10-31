@@ -4,9 +4,9 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { Button as MuiButton, CircularProgress, TextField } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import { getProtectedPhone, isMobile, getApiEndpoint } from 'utils';
+import { resizeImage } from 'utils';
 
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import { useStore } from 'store';
 import Api from 'api';
 
@@ -48,7 +48,7 @@ export const AccountBind = observer(() => {
         message: '验证码已发送',
       });
       if (codeInputRef.current) {
-        codeInputRef.current.focus()
+        codeInputRef.current.focus();
       }
       state.countdown = 60;
       const id = window.setInterval(() => {
@@ -167,9 +167,13 @@ export const AccountBind = observer(() => {
                 </div>
 
                 <div className="mt-6 mb-4">
-                  <Button disabled={!state.formValid} onClick={handleBindPhone}>
+                  <Button
+                    disabled={!state.formValid}
+                    onClick={handleBindPhone}
+                    isDoing={state.phoneBinding}
+                    isDone={state.phoneBindingDone}
+                  >
                     <span>绑定</span>
-                    <ButtonProgress isDoing={state.phoneBinding} isDone={state.phoneBindingDone} />
                   </Button>
                 </div>
               </div>
@@ -192,7 +196,7 @@ export const AccountBind = observer(() => {
               <div className="flex mt-3">
                 <img
                   className="w-10 h-10 rounded-full"
-                  src={mixinProfile.avatar}
+                  src={resizeImage(mixinProfile.avatar)}
                   alt="mixin avatar"
                 />
                 <div className="ml-3">

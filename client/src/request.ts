@@ -1,14 +1,20 @@
 import { getApiEndpoint } from 'utils';
+import { sleep } from 'utils';
 const BASE = getApiEndpoint();
 export default async (url: any, options: any = {}) => {
-  if (options.method === 'POST' || options.method === 'DELETE' || options.method === 'PUT') {
+  const hasEffectMethod = options.method === 'POST' || options.method === 'DELETE' || options.method === 'PUT';
+  if (hasEffectMethod) {
     options.headers = { 'Content-Type': 'application/json' };
     options.body = JSON.stringify(options.body);
   }
   if (!options.base) {
     options.credentials = 'include';
   }
-  const res = await fetch(new Request((options.base || BASE) + url), options);
+  const result = await Promise.all([
+    fetch(new Request((options.base || BASE) + url), options),
+    sleep(options.minPendingDuration ? options.minPendingDuration : 0)
+  ]);
+  const res: any = result[0];
   let resData;
   if (options.isTextResponse) {
     resData = await res.text();
@@ -18,8 +24,12 @@ export default async (url: any, options: any = {}) => {
   if (res.ok) {
     return resData;
   } else {
+    if (hasEffectMethod && res.status === 401) {
+      (window as any).store.modalStore.openLogin()
+    }
     throw Object.assign(new Error(), {
-      status: resData.status,
+      code: resData.code,
+      status: res.status,
       message: resData.message,
     });
   }

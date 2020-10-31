@@ -59,7 +59,7 @@ export default observer(() => {
         window.location.href = '/';
       }}
     >
-      <div className="bg-white rounded">{renderMain()}</div>
+      <div className="bg-white rounded-12">{renderMain()}</div>
     </Modal>
   );
 });

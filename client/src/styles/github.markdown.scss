@@ -3,6 +3,13 @@
   background: #fff !important;
 }
 
+.markdown-body.small {
+  line-height: 1.5;
+  p {
+    margin-bottom: 10px;
+  }
+}
+
 .markdown-body,
 .editor-preview-active {
   line-height: 1.75;

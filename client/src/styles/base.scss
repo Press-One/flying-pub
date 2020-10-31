@@ -79,8 +79,25 @@ ul {
   }
 
   .Mui-focused fieldset {
-    border-color: #1bb0e6 !important;
+    border-color: #63b3ed !important;
   }
+
+  .MuiOutlinedInput-multiline {
+    padding: 0 !important;
+  }
+}
+
+.MuiFormLabel-root.Mui-focused {
+  color: #63b3ed !important;
+}
+
+.MuiInput-underline:hover:not(.Mui-disabled):before,
+.MuiInput-underline:after {
+  border-bottom-color: #63b3ed !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #63b3ed !important;
 }
 
 /************************************** MATH JAX STYLES **************************************/
@@ -226,4 +243,28 @@ ul {
 
 .help-color {
   color: #77a0b2;
+}
+
+/************************************** MODAL STYLES **************************************/
+.MuiPaper-rounded {
+  border-radius: 12px !important;
+}
+
+/************************************** SWITCH STYLES **************************************/
+.MuiSwitch-colorPrimary.Mui-checked {
+  color: #63b3ed !important;
+  & + .MuiSwitch-track {
+    background-color: #63b3ed !important;
+  }
+}
+
+/************************************** TOOLTIP STYLES **************************************/
+.MuiTooltip-tooltip {
+  font-size: 12px !important;
+}
+
+/************************************** TAB HIGHLIGHT STYLES **************************************/
+* { 
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -moz-tap-highlight-color: rgba(0, 0, 0, 0);
 }

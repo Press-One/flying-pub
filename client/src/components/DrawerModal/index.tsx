@@ -4,11 +4,11 @@ import Clear from '@material-ui/icons/Clear';
 import classNames from 'classnames';
 
 interface Props {
-  open: boolean
-  onClose: () => unknown
-  hideCloseButton?: boolean
-  darkMode?: boolean
-  children: React.ReactNode
+  open: boolean;
+  onClose: () => unknown;
+  hideCloseButton?: boolean;
+  darkMode?: boolean;
+  children: React.ReactNode;
 }
 
 export default (props: Props) => {
@@ -19,15 +19,18 @@ export default (props: Props) => {
         {props.children}
         {!hideCloseButton && (
           <div
+            onClick={onClose}
             className={classNames(
               {
                 'text-white': !darkMode,
                 'text-gray': darkMode,
               },
-              'flex justify-center items-center w-6 h-6 absolute top-0 right-0 m-4 rounded-full bg-gray-300 text-xl',
+              'absolute top-0 right-0 p-3 mr-1',
             )}
           >
-            <Clear onClick={onClose} />
+            <div className="flex justify-center items-center w-6 h-6 rounded-full bg-gray-300 text-xl">
+              <Clear />
+            </div>
           </div>
         )}
         <style jsx>{`

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@material-ui/core';
 import Button from 'components/Button';
-import ButtonProgress from 'components/ButtonProgress';
 import './index.scss';
 import { pressOneLinkRegexp, wechatLinkRegexp } from '../../utils/import';
 
@@ -58,8 +57,8 @@ const PostImportDialog = (props: IProps) => {
       </DialogContent>
       <DialogActions style={{ marginBottom: '12px' }}>
         <span className="flex justify-center items-center -mt-2 pb-2 w-full">
-          <Button onClick={handleOk}>
-            导入 <ButtonProgress isDoing={loading} />
+          <Button onClick={handleOk} isDoing={loading}>
+            导入
           </Button>
         </span>
       </DialogActions>

@@ -24,7 +24,7 @@ export default () => {
 
   const ContactModal = () => (
     <Modal open={open} onClose={() => setOpen(false)} className="flex justify-center items-center">
-      <div className="modal-content bg-white rounded-sm text-center p-8">
+      <div className="modal-content bg-white rounded-12 text-center p-8">
         <div className="text-lg font-bold text-gray-700">扫码加微信，联系我们</div>
         <div className="mt-5 flex items-center gray-color text-center text-sm px-10">
           <div className="flex flex-col items-center mr-10">
