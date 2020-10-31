@@ -200,8 +200,8 @@ export default observer((props: any) => {
     preloadStore.ready,
   ]);
   const isMyself = React.useMemo(
-    () => (state.topic.user && userStore.user.id === Number(state.topic.user!.id)) || false,
-    [state.topic.user, userStore.user.id],
+    () => (state.topic.user && userStore.user.address === state.topic.user.address) || false,
+    [state.topic.user, userStore.user.address],
   );
   const { uuid } = props.match.params;
   const tabs = [

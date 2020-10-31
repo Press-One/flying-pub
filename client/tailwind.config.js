@@ -3,10 +3,10 @@ const {
 } = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  purge: [
-    './src/**/*.ts',
-    './src/**/*.tsx',
-  ],
+  // purge: [
+  //   './src/**/*.ts',
+  //   './src/**/*.tsx',
+  // ],
   theme: {
     extend: {
       colors: {
