@@ -83,10 +83,10 @@ const PostEntry = (props: IPostProps) => {
                   </div>
                 </h2>
                 {isMobile && (
-                  <div className="mt-1 text-gray-bd text-12 pb-4">{ago(post.pubDate)}</div>
+                  <div className="mt-1 text-gray-af text-12 pb-4">{ago(post.pubDate)}</div>
                 )}
               </Link>
-              <div className="text-12 md:text-13 text-gray-9b md:mt-1">
+              <div className="text-12 md:text-13 text-gray-99 md:mt-1">
                 <div className="flex items-center">
                   {post.author && (
                     <Tooltip placement="left" title="点击进入 Ta 的主页" arrow>

@@ -72,7 +72,7 @@ export default class CommentItem extends React.Component<any, any> {
                     </span>
                   )}
                 </div>
-                <div className="mt-2 md:hidden text-gray-bd text-12">{ago(comment.createdAt)}</div>
+                <div className="mt-2 md:hidden text-gray-af text-12">{ago(comment.createdAt)}</div>
               </div>
               <span className="hidden md:block mx-1 w-2 text-center opacity-75">·</span>
               <span className="hidden md:block text-12">{ago(comment.createdAt)}</span>
