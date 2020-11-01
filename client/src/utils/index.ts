@@ -146,7 +146,9 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
 
 export const onlyForLogin = () => false;
 
-export const getDefaultAvatar = () => 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f';
+export const getDefaultDeprecatedAvatar = () => 'https://static.press.one/pub/avatar.png';
+
+export const getDefaultAvatar = () => 'https://static-assets.xue.cn/images/435d111.jpg';
 
 export const scrollToHere = (top: number) => {
   const scrollElement = document.scrollingElement || document.documentElement;

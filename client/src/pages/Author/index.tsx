@@ -10,7 +10,7 @@ import FolderGrid from 'components/FolderGrid';
 import Filter from 'components/PostsFilter';
 import subscriptionApi from 'apis/subscription';
 import authorApi from 'apis/author';
-import { isMobile, isPc, getDefaultAvatar, sleep } from 'utils';
+import { isMobile, isPc, getDefaultAvatar, getDefaultDeprecatedAvatar, sleep } from 'utils';
 import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
 import TopicEditorModal from 'components/TopicEditorModal';
@@ -48,7 +48,9 @@ export default observer((props: any) => {
   const { address } = props.match.params;
   const isMyself = isLogin && userStore.user.address === address;
   const thatName = isMyself ? '我' : 'TA';
-  const isDefaultAvatar = state.author.avatar === getDefaultAvatar();
+  const isDefaultAvatar =
+    state.author.avatar === getDefaultAvatar() ||
+    state.author.avatar === getDefaultDeprecatedAvatar();
   const tabs = [
     {
       type: 'POPULARITY',
