@@ -124,22 +124,20 @@ const PostEntry = (props: IPostProps) => {
                     >
                       {post.upVotesCount > 0 && (
                         <div className="flex items-center">
-                          {!hideAuthor && (
-                            <span className="w-3 md:w-5 text-center opacity-75">·</span>
-                          )}
+                          {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}
                           <span className="font-bold mr-1">{post.upVotesCount}</span>赞
                         </div>
                       )}
                       {post.commentsCount > 0 && (
                         <div className="flex items-center">
                           {(post.upVotesCount > 0 || !hideAuthor) && (
-                            <span className="w-3 md:w-5 text-center opacity-75">·</span>
+                            <span className="w-3 text-center opacity-75">·</span>
                           )}
                           <span className="font-bold mr-1">{post.commentsCount} </span>评论
                         </div>
                       )}
                       {(post.upVotesCount > 0 || post.commentsCount > 0 || !hideAuthor) &&
-                        !isMobile && <span className="w-3 md:w-5 text-center opacity-75">·</span>}
+                        !isMobile && <span className="w-3 text-center opacity-75">·</span>}
                       {!isMobile && <div>{ago(post.pubDate)}</div>}
                     </div>
                   </Link>
