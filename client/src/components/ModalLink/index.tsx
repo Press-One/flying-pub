@@ -19,6 +19,7 @@ export default (props: IProps) => {
         e.preventDefault();
         props.onClick && props.onClick();
         (async () => {
+          console.log({ 'props.to': props.to });
           await sleep(200);
           history.push(props.to);
         })();

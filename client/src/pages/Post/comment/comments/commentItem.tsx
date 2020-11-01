@@ -85,15 +85,15 @@ export default class CommentItem extends React.Component<any, any> {
             </div>
             <div className="relative">
               <div className="flex items-center text-gray-88 leading-none absolute top-0 right-0 -mt-1 md:-mt-3">
-                {!isOwner && !isMobile && (
+                {!isOwner && (
                   <span
-                    className="flex items-center cursor-pointer text-xs mr-5 p-1 w-16"
+                    className="flex items-center cursor-pointer text-xs p-1 w-16 justify-end"
                     onClick={() => replyTo(comment)}
                   >
-                    <span className="flex items-center text-lg mr-1">
+                    <span className="flex items-center text-lg mr-2 md:mr-1">
                       <ModeCommentOutlined />
                     </span>
-                    <span>回复</span>
+                    {!isMobile && <span>回复</span>}
                   </span>
                 )}
                 <div
@@ -101,11 +101,11 @@ export default class CommentItem extends React.Component<any, any> {
                     {
                       'text-blue-400': comment.voted,
                     },
-                    'flex items-center cursor-pointer p-1',
+                    'flex items-center justify-end cursor-pointer p-1 w-16',
                   )}
                   onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
                 >
-                  <span className="flex items-center text-lg mr-1">
+                  <span className="flex items-center text-lg mr-1 md">
                     <ThumbUpAltOutlined />
                   </span>
                   <span className="font-bold">{Number(comment.upVotesCount) || ''}</span>

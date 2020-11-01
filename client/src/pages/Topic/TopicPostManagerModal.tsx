@@ -20,6 +20,7 @@ const ConfirmContent = observer(
       isRemoving: false,
       note: '',
     }));
+    const isMyself = props.post.author && userStore.user.address === props.post.author.address;
 
     const removeContribution = async (topicUuid: string, post: IPost, note?: string) => {
       try {
@@ -35,7 +36,7 @@ const ConfirmContent = observer(
         <div className="font-bold items-center text-xl flex justify-center md:justify-start">
           移除文章
         </div>
-        <div className="w-auto">
+        <div className={`w-auto ${isMyself ? 'md:w-64' : 'md:w-100'}`}>
           <div className="flex items-start mt-8">
             文章：《<div className="truncate m-w-56">{props.post.title}</div>》
           </div>
@@ -50,7 +51,7 @@ const ConfirmContent = observer(
               </OpenInNewLinkForPc>
             </div>
           )}
-          {props.post.author && userStore.user.address !== props.post.author.address && (
+          {!isMyself && (
             <div className="pt-4 md:w-100">
               <TextField
                 className="w-full"
@@ -140,6 +141,9 @@ const TopicPostManager = observer((props: IProps) => {
   const afterRemovedContribution = async () => {
     try {
       state.showConfirmDialog = false;
+      state.page = 0;
+      state.total = 0;
+      state.posts = [];
       fetchTopicPosts();
       await sleep(300);
       snackbarStore.show({

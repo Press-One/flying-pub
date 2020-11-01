@@ -79,6 +79,7 @@ export const ProfileChange = observer(() => {
           imageUrl={state.avatar}
           getImageUrl={(url: string) => {
             state.avatar = url;
+            handleSubmit();
           }}
         />
         <div className="px-4" />
@@ -88,6 +89,7 @@ export const ProfileChange = observer(() => {
           imageUrl={state.cover}
           getImageUrl={(url: string) => {
             state.cover = url;
+            handleSubmit();
           }}
         />
       </div>

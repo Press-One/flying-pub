@@ -253,9 +253,7 @@ export default observer((props: IProps) => {
           <img
             className="hidden md:block mr-3 rounded"
             src={
-              user && user.avatar
-                ? user.avatar
-                : 'https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f'
+              user && user.avatar ? user.avatar : 'https://static-assets.xue.cn/images/435d111.jpg'
             }
             width="36px"
             height="36px"

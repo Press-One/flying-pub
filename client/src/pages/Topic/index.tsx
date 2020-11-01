@@ -31,6 +31,7 @@ const TopView = observer(
     subscribe: () => Promise<void>;
     unsubscribe: () => Promise<void>;
     openTopicManagerEntryModal: () => void;
+    fetchTopic: any;
   }) => {
     const { userStore, modalStore } = useStore();
     const state = useLocalStore(() => ({
@@ -148,6 +149,7 @@ const TopView = observer(
           open={state.showTopicContributionModal}
           close={() => {
             state.showTopicContributionModal = false;
+            props.fetchTopic();
           }}
         />
         {isMobile && (
@@ -156,6 +158,7 @@ const TopView = observer(
             open={state.showTopicIntroductionModal}
             close={() => {
               state.showTopicIntroductionModal = false;
+              props.fetchTopic();
             }}
           />
         )}
@@ -215,6 +218,36 @@ export default observer((props: any) => {
     },
   ];
 
+  const fetchTopic = React.useCallback(() => {
+    (async () => {
+      try {
+        const topic = await topicApi.get(uuid);
+        state.topic = topic;
+        feedStore.setBelongedTopic(toJS(topic));
+      } catch (err) {}
+      state.isFetchedTopic = true;
+    })();
+  }, [state, feedStore, uuid]);
+
+  const fetchTopicPosts = React.useCallback(() => {
+    (async () => {
+      feedStore.setIsFetching(true);
+      try {
+        const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
+          order: feedStore.filterType,
+          offset: feedStore.page * feedStore.limit,
+          limit: feedStore.limit,
+        });
+        feedStore.setTotal(total);
+        feedStore.addPosts(posts);
+      } catch (err) {
+        console.log(err);
+      }
+      feedStore.setIsFetching(false);
+      feedStore.setIsFetched(true);
+    })();
+  }, [feedStore, uuid]);
+
   React.useEffect(() => {
     if (feedStore.provider !== `topic:${uuid}`) {
       feedStore.setProvider(`topic:${uuid}`);
@@ -242,15 +275,8 @@ export default observer((props: any) => {
       }
     }
 
-    (async () => {
-      try {
-        const topic = await topicApi.get(uuid);
-        state.topic = topic;
-        feedStore.setBelongedTopic(toJS(topic));
-      } catch (err) {}
-      state.isFetchedTopic = true;
-    })();
-  }, [state, uuid, feedStore]);
+    fetchTopic();
+  }, [state, uuid, feedStore, fetchTopic]);
 
   React.useEffect(() => {
     if (!feedStore.filterType) {
@@ -263,23 +289,8 @@ export default observer((props: any) => {
       return;
     }
 
-    (async () => {
-      feedStore.setIsFetching(true);
-      try {
-        const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
-          order: feedStore.filterType,
-          offset: feedStore.page * feedStore.limit,
-          limit: feedStore.limit,
-        });
-        feedStore.setTotal(total);
-        feedStore.addPosts(posts);
-      } catch (err) {
-        console.log(err);
-      }
-      feedStore.setIsFetching(false);
-      feedStore.setIsFetched(true);
-    })();
-  }, [state, feedStore.page, feedStore.filterType, uuid, feedStore]);
+    fetchTopicPosts();
+  }, [state, feedStore.page, feedStore.filterType, uuid, feedStore, fetchTopicPosts]);
 
   const infiniteRef: any = useWindowInfiniteScroll({
     loading: feedStore.isFetching,
@@ -369,6 +380,14 @@ export default observer((props: any) => {
           subscribe={subscribe}
           unsubscribe={unsubscribe}
           openTopicManagerEntryModal={() => (state.showTopicManagerEntryModal = true)}
+          fetchTopic={() => {
+            fetchTopic();
+            feedStore.setIsFetched(false);
+            feedStore.setPage(0);
+            feedStore.clear();
+            feedStore.setFilterType(tabs[1].type);
+            fetchTopicPosts();
+          }}
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
@@ -497,11 +516,7 @@ export default observer((props: any) => {
                 topic={state.topic}
                 onChange={async (topic) => {
                   if (topic) {
-                    state.topic.cover = topic.cover;
-                    state.topic.name = topic.name;
-                    state.topic.description = topic.description;
-                    state.topic.contributionEnabled = topic.contributionEnabled;
-                    feedStore.setBelongedTopic(toJS(state.topic));
+                    fetchTopic();
                     await sleep(400);
                     snackbarStore.show({
                       message: '专题已更新',
@@ -514,6 +529,7 @@ export default observer((props: any) => {
                 open={state.showTopicPostManagerModal}
                 close={() => {
                   state.showTopicPostManagerModal = false;
+                  fetchTopic();
                 }}
               />
               {isMobile && (
@@ -522,6 +538,7 @@ export default observer((props: any) => {
                   open={state.showTopicManagerEntryModal}
                   close={() => {
                     state.showTopicManagerEntryModal = false;
+                    fetchTopic();
                   }}
                   onEdit={() => (state.showTopicEditorModal = true)}
                   onDelete={onDelete}

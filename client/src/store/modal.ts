@@ -8,6 +8,7 @@ interface IUserListData {
   title: string;
   type: 'FOLLOWING_USERS' | 'USER_FOLLOWERS' | 'TOPIC_FOLLOWERS' | 'TOPIC_AUTHORS';
   authorAddress: string;
+  onClose?: () => void;
 }
 
 type ITopicListData = {
@@ -15,10 +16,12 @@ type ITopicListData = {
   title: string;
   type: 'CREATED_TOPICS' | 'FOLLOWING_TOPICS' | 'CONTRIBUTION_TO_MY_TOPICS' | 'CONTRIBUTED_TOPICS',
   userAddress?: string;
+  onClose?: () => void;
 }
 
 type IContributionData = {
   file: IFile;
+  onClose?: () => void;
 }
 
 export function createModalStore() {
@@ -157,6 +160,9 @@ export function createModalStore() {
     },
     closeUserList() {
       this.userList.open = false;
+      if (this.userList.data.onClose) {
+        this.userList.data.onClose();
+      }
       stopBodyScroll(false);
     },
     openTopicList(data: ITopicListData) {
@@ -166,6 +172,9 @@ export function createModalStore() {
     },
     closeTopicList() {
       this.topicList.open = false;
+      if (this.topicList.data.onClose) {
+        this.topicList.data.onClose();
+      }
       stopBodyScroll(false);
     },
     openContribution(data: IContributionData) {
@@ -175,6 +184,9 @@ export function createModalStore() {
     },
     closeContribution() {
       this.contribution.open = false;
+      if (this.contribution.data.onClose) {
+        this.contribution.data.onClose();
+      }
       stopBodyScroll(false);
     },
   };

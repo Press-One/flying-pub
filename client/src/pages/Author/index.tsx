@@ -68,6 +68,31 @@ export default observer((props: any) => {
     });
   }
 
+  const fetchAuthor = React.useCallback(
+    (type?: string) => {
+      (async () => {
+        if (type !== 'SILENT') {
+          state.isFetchingAuthor = true;
+        }
+        try {
+          const author = await authorApi.fetchAuthor(address, {
+            withSummary: true,
+            summaryPreviewCount: 3,
+          });
+          state.author = author;
+          document.title = state.author.nickname;
+        } catch (err) {
+          console.log(err);
+        }
+        if (type !== 'SILENT') {
+          state.isFetchingAuthor = false;
+          state.isFetchedAuthor = true;
+        }
+      })();
+    },
+    [state, address],
+  );
+
   React.useEffect(() => {
     if (feedStore.provider !== `author:${address}`) {
       feedStore.setProvider(`author:${address}`);
@@ -95,22 +120,8 @@ export default observer((props: any) => {
       }
     }
 
-    (async () => {
-      state.isFetchingAuthor = true;
-      try {
-        const author = await authorApi.fetchAuthor(address, {
-          withSummary: true,
-          summaryPreviewCount: 3,
-        });
-        state.author = author;
-        document.title = state.author.nickname;
-      } catch (err) {
-        console.log(err);
-      }
-      state.isFetchingAuthor = false;
-      state.isFetchedAuthor = true;
-    })();
-  }, [state, address, feedStore]);
+    fetchAuthor();
+  }, [state, address, feedStore, fetchAuthor]);
 
   React.useEffect(() => {
     if (!feedStore.filterType) {
@@ -237,8 +248,16 @@ export default observer((props: any) => {
                   onError={(e: any) => {
                     e.target.src = getDefaultAvatar();
                   }}
+                  onClick={() => {
+                    isMyself && modalStore.openSettings('profile');
+                  }}
                 />
-                <div className="font-bold mt-3 md:mt-2 text-18 md:text-24 pt-1 leading-snug nickname">
+                <div
+                  className="font-bold mt-3 md:mt-2 text-18 md:text-24 pt-1 leading-snug nickname"
+                  onClick={() => {
+                    isMyself && modalStore.openSettings('profile');
+                  }}
+                >
                   {state.author.nickname}
                 </div>
                 <div className="text-14 md:text-16 flex items-center">
@@ -260,6 +279,7 @@ export default observer((props: any) => {
                           authorAddress: state.author.address,
                           title: `${thatName}关注的人`,
                           type: 'FOLLOWING_USERS',
+                          onClose: () => fetchAuthor('SILENT'),
                         });
                       }}
                     >
@@ -280,6 +300,7 @@ export default observer((props: any) => {
                           authorAddress: state.author.address,
                           title: `关注${thatName}的人`,
                           type: 'USER_FOLLOWERS',
+                          onClose: () => fetchAuthor('SILENT'),
                         });
                       }}
                     >
@@ -367,6 +388,7 @@ export default observer((props: any) => {
                           title: `专题`,
                           content: `${state.author.summary?.topic.count}个`,
                           gallery: state.author.summary?.topic.preview || [],
+                          onClose: () => fetchAuthor('SILENT'),
                         },
                         {
                           hide: state.author.summary?.followingTopic.count === 0,
@@ -375,6 +397,7 @@ export default observer((props: any) => {
                           title: `${thatName}关注的专题`,
                           content: `${state.author.summary?.followingTopic.count}个`,
                           gallery: state.author.summary?.followingTopic.preview || [],
+                          onClose: () => fetchAuthor('SILENT'),
                         },
                         {
                           hide: state.author.summary?.followingAuthor.count === 0,
@@ -383,6 +406,7 @@ export default observer((props: any) => {
                           title: `关注的人`,
                           content: `${state.author.summary?.followingAuthor.count}个`,
                           gallery: state.author.summary?.followingAuthor.preview || [],
+                          onClose: () => fetchAuthor('SILENT'),
                         },
                         {
                           hide: state.author.summary?.follower.count === 0,
@@ -391,6 +415,7 @@ export default observer((props: any) => {
                           title: `关注${thatName}的人`,
                           content: `${state.author.summary?.follower.count}个`,
                           gallery: state.author.summary?.follower.preview || [],
+                          onClose: () => fetchAuthor('SILENT'),
                         },
                       ]}
                     />
@@ -481,6 +506,7 @@ export default observer((props: any) => {
                     title: `专题`,
                     content: `${state.author.summary?.topic.count}个`,
                     gallery: state.author.summary?.topic.preview || [],
+                    onClose: () => fetchAuthor('SILENT'),
                   },
                   {
                     hide: state.author.summary?.followingTopic.count === 0,
@@ -489,6 +515,7 @@ export default observer((props: any) => {
                     title: `${thatName}关注的专题`,
                     content: `${state.author.summary?.followingTopic.count}个`,
                     gallery: state.author.summary?.followingTopic.preview || [],
+                    onClose: () => fetchAuthor('SILENT'),
                   },
                   {
                     hide: state.author.summary?.followingAuthor.count === 0,
@@ -497,6 +524,7 @@ export default observer((props: any) => {
                     title: `关注的人`,
                     content: `${state.author.summary?.followingAuthor.count}个`,
                     gallery: state.author.summary?.followingAuthor.preview || [],
+                    onClose: () => fetchAuthor('SILENT'),
                   },
                   {
                     hide: state.author.summary?.follower.count === 0,
@@ -505,6 +533,7 @@ export default observer((props: any) => {
                     title: `关注${thatName}的人`,
                     content: `${state.author.summary?.follower.count}个`,
                     gallery: state.author.summary?.follower.preview || [],
+                    onClose: () => fetchAuthor('SILENT'),
                   },
                 ]}
               />

@@ -19,6 +19,7 @@ type Folder = {
   title: string;
   content: string;
   gallery: string[];
+  onClose?: () => void;
 };
 
 interface Props {
@@ -36,6 +37,7 @@ export default (props: Props) => {
         type,
         authorAddress: folder.authorAddress as string,
         title: folder.title,
+        onClose: folder.onClose,
       });
       return;
     }
@@ -45,6 +47,7 @@ export default (props: Props) => {
         userAddress: folder.authorAddress as string,
         type,
         title: folder.title,
+        onClose: folder.onClose,
       });
       return;
     }
@@ -55,6 +58,7 @@ export default (props: Props) => {
         type: 'TOPIC_FOLLOWERS',
         authorAddress: folder.authorAddress as string,
         title: folder.title,
+        onClose: folder.onClose,
       });
       return;
     }
@@ -65,6 +69,7 @@ export default (props: Props) => {
         type: 'TOPIC_AUTHORS',
         authorAddress: folder.authorAddress as string,
         title: folder.title,
+        onClose: folder.onClose,
       });
       return;
     }

@@ -10,9 +10,10 @@ import { isMobile, isPc } from 'utils';
 import postApi, { FilterType } from 'apis/post';
 import settingsApi from 'apis/settings';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
+import Button from 'components/Button';
 
 export default observer(() => {
-  const { preloadStore, feedStore, settingsStore, userStore } = useStore();
+  const { preloadStore, feedStore, settingsStore, userStore, modalStore } = useStore();
   const { ready } = preloadStore;
   const state = useLocalStore(() => ({
     isFetchingStickyPosts: false,
@@ -120,6 +121,9 @@ export default observer(() => {
   }, [state, ready, feedStore]);
 
   React.useEffect(() => {
+    if (filterType === 'SUBSCRIPTION' && !userStore.isLogin) {
+      return;
+    }
     if (feedStore.isFetching) {
       return;
     }
@@ -154,7 +158,7 @@ export default observer(() => {
       feedStore.setIsFetching(false);
       feedStore.setIsFetched(true);
     })();
-  }, [feedStore.page, filterType, filterDayRange, state, feedStore, ready]);
+  }, [feedStore.page, filterType, filterDayRange, state, feedStore, ready, userStore.isLogin]);
 
   const infiniteRef: any = useWindowInfiniteScroll({
     loading: feedStore.isFetching,
@@ -166,9 +170,17 @@ export default observer(() => {
   });
 
   const setFilter = async (filter: any) => {
-    feedStore.setPage(0);
-    feedStore.setFilter(filter);
-    feedStore.setIsFetched(false);
+    if (filter.type === 'SUBSCRIPTION' && !userStore.isLogin) {
+      feedStore.setPage(0);
+      feedStore.setFilter(filter);
+      feedStore.setIsFetched(true);
+      feedStore.emptyPosts();
+      return;
+    } else {
+      feedStore.setPage(0);
+      feedStore.setFilter(filter);
+      feedStore.setIsFetched(false);
+    }
     try {
       const settings: any = {
         'filter.type': filter.type,
@@ -255,16 +267,29 @@ export default observer(() => {
                   <Loading />
                 </div>
               )}
-              {!pending && !feedStore.hasPosts && filterType === 'SUBSCRIPTION' && (
-                <div className="pt-32 text-center text-gray-500">
-                  <div className="pt-4">去关注你感兴趣的作者和专题吧~</div>
+              {!userStore.isLogin && filterType === 'SUBSCRIPTION' && (
+                <div className="pt-32 flex justify-center text-gray-500">
+                  <Button outline onClick={() => modalStore.openLogin()}>
+                    请先登录
+                  </Button>
                 </div>
               )}
-              {!pending && !feedStore.hasPosts && filterType !== 'SUBSCRIPTION' && (
-                <div className="pt-32 text-center text-gray-500">
-                  <div className="pt-4">暂无文章</div>
-                </div>
-              )}
+              {userStore.isLogin &&
+                !pending &&
+                !feedStore.hasPosts &&
+                filterType === 'SUBSCRIPTION' && (
+                  <div className="pt-32 text-center text-gray-500">
+                    <div className="pt-4">去关注你感兴趣的作者和专题吧~</div>
+                  </div>
+                )}
+              {userStore.isLogin &&
+                !pending &&
+                !feedStore.hasPosts &&
+                filterType !== 'SUBSCRIPTION' && (
+                  <div className="pt-32 text-center text-gray-500">
+                    <div className="pt-4">暂无文章</div>
+                  </div>
+                )}
             </div>
           </div>
         </div>

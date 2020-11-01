@@ -142,8 +142,11 @@ exports.create = async (user, data) => {
   assert(insertedTopicCount === 0, Errors.ERR_IS_DUPLICATED('name'), 409);
   data.userId = user.id;
   const topic = await Topic.create(data);
-  user.addTopics(topic);
-  return await pickTopic(topic);
+  await user.addTopics(topic);
+  await topic.addFollowers(user);
+  return await pickTopic(topic, {
+    currentUser: user
+  });
 }
 
 exports.update = async (user, uuid, data) => {

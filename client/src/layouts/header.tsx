@@ -374,7 +374,7 @@ export default observer((props: any) => {
         {isPc && (
           <div className="py-2 border-b border-gray-300">
             <div className="container mx-auto">
-              <div className="w-7/12 mx-auto flex justify-between items-center">
+              <div className="w-916 mx-auto flex justify-between items-center">
                 <Link to="/">
                   <div className="flex items-center">
                     <img

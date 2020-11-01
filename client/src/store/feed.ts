@@ -118,6 +118,10 @@ export function createFeedStore() {
       this.filterType = type;
       this.filterDayRange = dayRange;
     },
+    emptyPosts() {
+      this.rIdsSet.clear();
+      this.hasMorePosts = false;
+    },
     clear() {
       this.rIdsSet.clear();
       this.belongedAuthor = {} as IAuthor;

@@ -187,20 +187,23 @@ const TopicList = observer(() => {
                   <div className="flex items-center">
                     <img className="w-10 h-10 rounded" src={topic.cover} alt="cover" />
                     <div className="ml-3">
-                      <div className="text-14 text-gray-70 truncate w-56">{topic.name}</div>
+                      <div className="text-14 text-gray-70 truncate w-48 md:w-56">{topic.name}</div>
                       {(Number(topic.summary.post.count) > 0 ||
                         Number(topic.summary.following.count) > 0) && (
                         <div className="text-12 text-gray-af">
                           {topic.summary.post.count ? `${topic.summary.post.count} 篇文章` : ''}
+                          {topic.summary.post.count > 0 && topic.summary.following.count > 0 && (
+                            <span> · </span>
+                          )}
                           {topic.summary.following.count
-                            ? ` · ${topic.summary.following.count} 人关注`
+                            ? `${topic.summary.following.count} 人关注`
                             : ''}
                         </div>
                       )}
                     </div>
                   </div>
                 </ModalLink>
-                {(isFollowingTopics || isCreatedTopics) && (
+                {(isContributedToMyTopics || isFollowingTopics || isCreatedTopics) && (
                   <div>
                     {topic.following ? (
                       <Button size="small" onClick={() => unsubscribe(topic)} outline>
@@ -228,14 +231,6 @@ const TopicList = observer(() => {
                       收录
                     </Button>
                   ))}
-                {isContributedToMyTopics && (
-                  <ModalLink
-                    to={`/topics/${topic.uuid}`}
-                    onClick={() => modalStore.closeTopicList()}
-                  >
-                    <Button size="small">进入</Button>
-                  </ModalLink>
-                )}
               </div>
             ))}
             {state.hasMore && (

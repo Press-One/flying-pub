@@ -13,7 +13,7 @@ const {
   Errors
 } = require("../utils/validator");
 
-const DEFAULT_AVATAR = "https://static-assets.xue.cn/images/435db86d9a082d12166605b4c1e345fd93b206a5cd425544b5c153afcc61659f";
+const DEFAULT_AVATAR = "https://static-assets.xue.cn/images/435d111.jpg";
 const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED("user"));
 

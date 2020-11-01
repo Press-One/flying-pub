@@ -144,9 +144,11 @@ const UserList = observer(() => {
                         alt={author.nickname}
                       />
                       <div className="ml-3">
-                        <div className="text-14 truncate w-56">{author.nickname}</div>
+                        <div className="text-14 truncate w-48 md:w-56">{author.nickname}</div>
                         {author.bio && (
-                          <div className="truncate w-56 text-12 text-gray-af">{author.bio}</div>
+                          <div className="truncate w-48 md:w-56 text-12 text-gray-af">
+                            {author.bio}
+                          </div>
                         )}
                       </div>
                     </div>
