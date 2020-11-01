@@ -114,7 +114,7 @@ export default observer(() => {
         <div className="text-13">
           向你的专题《
           <OpenInNewLinkForPc
-            to={`/authors/${extras.topicUuid}`}
+            to={`/topics/${extras.topicUuid}`}
             className="font-bold text-blue-400"
           >
             {extras.topicName}
