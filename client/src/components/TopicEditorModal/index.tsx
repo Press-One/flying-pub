@@ -112,20 +112,22 @@ const TopicEditor = observer((props: IProps) => {
         {!state.isUpdating && (
           <div className="flex items-center">
             <span className="mr-1">创建专题</span>
-            <Tooltip
-              placement="right"
-              arrow
-              title={
-                <div className="py-1 px-1 text-12">
-                  <div>创建专题之后，你可以：</div>
-                  <div className="mt-2">1. 收录整理自己的文章</div>
-                  <div className="mt-1">2. 收录别人的好文章</div>
-                  <div className="mt-1">3. 呼吁别人来投稿，一起创造精彩的文章合集</div>
-                </div>
-              }
-            >
-              <Help className="text-gray-600" />
-            </Tooltip>
+            {!isMobile && (
+              <Tooltip
+                placement="right"
+                arrow
+                title={
+                  <div className="py-1 px-1 text-12">
+                    <div>创建专题之后，你可以：</div>
+                    <div className="mt-2">1. 收录整理自己的文章</div>
+                    <div className="mt-1">2. 收录别人的好文章</div>
+                    <div className="mt-1">3. 呼吁别人来投稿，一起创造精彩的文章合集</div>
+                  </div>
+                }
+              >
+                <Help className="text-gray-600" />
+              </Tooltip>
+            )}
           </div>
         )}
       </div>

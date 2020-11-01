@@ -108,7 +108,7 @@ exports.addContribution = async ctx => {
   Log.create(user.id, `向专题 ${topic.uuid} ${topic.name} 投稿 ${post.rId} ${post.title}`);
   (async () => {
     try {
-      const isMyself = user.id === ~~topic.userId;
+      const isMyself = user.id == topic.userId;
       const post = await Post.getByRId(data.rId);
       if (isMyself) {
         return;

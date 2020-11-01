@@ -4,6 +4,7 @@ import Modal from 'components/Modal';
 import DrawerModal from 'components/DrawerModal';
 import Notification from './Notification';
 import { isMobile } from 'utils';
+import classNames from 'classnames';
 
 export default observer((props: any) => {
   const { open, close } = props;
@@ -25,12 +26,22 @@ export default observer((props: any) => {
 
   return (
     <Modal open={open} onClose={close}>
-      <div className="notification-modal-content bg-white rounded-12">
+      <div
+        className={classNames(
+          {
+            md: window.innerHeight > 700 + 100,
+          },
+          'notification-modal-content bg-white rounded-12',
+        )}
+      >
         <Notification />
         <style jsx>{`
           .notification-modal-content {
             width: 700px;
-            height: ${window.innerHeight > 700 + 100 ? '700px' : '90vh'};
+            height: 90vh;
+          }
+          .notification-modal-content.md {
+            height: 700px;
           }
         `}</style>
       </div>

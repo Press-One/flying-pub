@@ -266,7 +266,7 @@ export default observer(() => {
                   msg.notification.sub_type === NotificationSubType.LIKE && (
                     <OpenInNewLinkForPc
                       to={removeUrlHost(msg.notification.extras.originUrl)}
-                      className="text-13 msg-link"
+                      className="text-12 msg-link"
                       onClick={() => {
                         isMobile && modalStore.closeNotification();
                       }}
@@ -278,7 +278,7 @@ export default observer(() => {
                   msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) && (
                   <OpenInNewLinkForPc
                     to={removeUrlHost(msg.notification.extras.originUrl)}
-                    className="text-13 msg-link"
+                    className="text-12 msg-link"
                     onClick={() => {
                       isMobile && modalStore.closeNotification();
                     }}
