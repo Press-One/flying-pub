@@ -6,6 +6,7 @@ const {
   Errors
 } = require('../utils/validator');
 const {generateSignature} = require('./signature');
+const {prod_generateSignature} = require('./signature');
 const Log = require('./log');
 
 const checkPhoneNumber = (phone) => {
@@ -20,14 +21,23 @@ exports.sendSmsCode = async (phone) => {
   const payload = {
     mobile: phone,
   };
-  payload['signature'] = generateSignature(payload);
-
-  await request({
-    method: 'post',
-    uri: config.messageSystem.sendSmsCodeURL,
-    json: true,
-    body: payload,
-  }).promise();
+  if (config.prod_messageSystem) {
+    payload['signature'] = prod_generateSignature(payload);
+    await request({
+      method: 'post',
+      uri: config.prod_messageSystem.sendSmsCodeURL,
+      json: true,
+      body: payload,
+    }).promise();
+  } else {
+    payload['signature'] = generateSignature(payload);
+    await request({
+      method: 'post',
+      uri: config.messageSystem.sendSmsCodeURL,
+      json: true,
+      body: payload,
+    }).promise();
+  }
 
   Log.createAnonymity('验证码', '发送成功');
 }
@@ -41,18 +51,35 @@ exports.verifySmsCode = async (phone, code) => {
     mobile: phone,
     code: code,
   };
-  payload['signature'] = generateSignature(payload, config.messageSystem.secretKey);
 
-  try {
-    await request({
-      method: 'post',
-      uri: config.messageSystem.verifySmsCodeURL,
-      json: true,
-      body: payload,
-    }).promise();
-    Log.createAnonymity('验证码', '验证通过');
-  } catch (err) {
-    throws(Errors.ERR_IS_INVALID('code'));
-    Log.createAnonymity('验证码', '验证失败');
+  if (config.prod_messageSystem) {
+    payload['signature'] = prod_generateSignature(payload, config.prod_messageSystem.secretKey);
+    try {
+      await request({
+        method: 'post',
+        uri: config.prod_.verifySmsCodeURL,
+        json: true,
+        body: payload,
+      }).promise();
+      Log.createAnonymity('验证码', '验证通过');
+    } catch (err) {
+      throws(Errors.ERR_IS_INVALID('code'));
+      Log.createAnonymity('验证码', '验证失败');
+    }
+  } else {
+    payload['signature'] = generateSignature(payload, config.messageSystem.secretKey);
+    try {
+      await request({
+        method: 'post',
+        uri: config.messageSystem.verifySmsCodeURL,
+        json: true,
+        body: payload,
+      }).promise();
+      Log.createAnonymity('验证码', '验证通过');
+    } catch (err) {
+      throws(Errors.ERR_IS_INVALID('code'));
+      Log.createAnonymity('验证码', '验证失败');
+    }
   }
+
 }

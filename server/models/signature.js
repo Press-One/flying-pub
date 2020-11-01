@@ -51,3 +51,15 @@ exports.generateSignature = (obj, hashAlg = 'sha1') => {
   // const secretKey = 'c09ced907b3853e1badf06fa8c586093caee702ccf6699d7';
   return _generateSignature(obj, secretKey);
 }
+
+exports.prod_generateSignature = (obj, hashAlg = 'sha1') => {
+  if ('project' in obj === false) {
+    obj['project'] = config.prod_messageSystem.project;
+  }
+  if ('access_key' in obj === false) {
+    obj['access_key'] = config.prod_messageSystem.accessKey;
+  }
+  const secretKey = config.prod_messageSystem.secretKey;
+  // const secretKey = 'c09ced907b3853e1badf06fa8c586093caee702ccf6699d7';
+  return _generateSignature(obj, secretKey);
+}

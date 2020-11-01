@@ -110,6 +110,13 @@ export default observer((props: any) => {
     })();
   }, [rId, setPost, modalStore]);
 
+  const syncTopics = async () => {
+    try {
+      const resPost: IPost = await postApi.fetchPost(rId);
+      post.topics = resPost.topics || [];
+    } catch (err) {}
+  };
+
   React.useEffect(() => {
     (async () => {
       try {
@@ -322,11 +329,11 @@ export default observer((props: any) => {
                     {
                       'text-base': isPc,
                     },
-                    'flex whitespace-no-wrap items-center mt-1 md:mt-0',
+                    'flex items-center mt-1 md:mt-0',
                   )}
                 >
                   <Link to={`/authors/${author.address}`}>
-                    <span className="text-gray-88 font-bold mr-6 md:mr-4 truncate">
+                    <span className="text-gray-88 font-bold mr-0 md:mr-4 truncate block md:inline-block author-view-nickname">
                       {author.nickname}
                     </span>
                   </Link>
@@ -362,6 +369,11 @@ export default observer((props: any) => {
             </div>
           )}
         </div>
+        <style jsx>{`
+          .author-view-nickname {
+            max-width: 150px;
+          }
+        `}</style>
       </div>
     );
   };
@@ -583,7 +595,7 @@ export default observer((props: any) => {
                 <div className="flex items-center">
                   收录到我的专题
                   <div className="ml-3">
-                    <IncludedButton post={post as IPost} />
+                    <IncludedButton post={post as IPost} onClose={() => syncTopics()} />
                   </div>
                 </div>
               )}
@@ -595,6 +607,7 @@ export default observer((props: any) => {
               post={post}
               showContributionButton
               maxListCount={4}
+              onClose={() => syncTopics()}
             />
           </div>
         </div>

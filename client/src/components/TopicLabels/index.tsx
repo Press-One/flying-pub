@@ -9,7 +9,7 @@ import { IPostTopic, IPost } from 'apis/post';
 import classNames from 'classnames';
 import { isMobile } from 'utils';
 
-export const IncludedButton = (props: { post: IPost }) => {
+export const IncludedButton = (props: { post: IPost; onClose?: () => void }) => {
   const { modalStore, userStore } = useStore();
 
   return (
@@ -21,6 +21,9 @@ export const IncludedButton = (props: { post: IPost }) => {
           userAddress: userStore.user.address,
           title: '收录到我的专题',
           type: 'CONTRIBUTION_TO_MY_TOPICS',
+          onClose: () => {
+            props.onClose && props.onClose();
+          },
         })
       }
     >
@@ -36,6 +39,7 @@ interface IProps {
   topics: IPostTopic[];
   showContributionButton?: boolean;
   maxListCount?: number;
+  onClose?: () => void;
 }
 
 export default observer((props: IProps) => {
@@ -91,7 +95,7 @@ export default observer((props: IProps) => {
               'mt-2': !folderEnabled,
             })}
           >
-            <IncludedButton post={props.post} />
+            <IncludedButton post={props.post} onClose={props.onClose} />
           </div>
         </Tooltip>
       )}
