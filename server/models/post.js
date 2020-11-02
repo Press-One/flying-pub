@@ -142,7 +142,6 @@ exports.getOrder = getOrder;
 
 exports.list = async (options = {}) => {
   const {
-    addresses,
     offset = 0,
     limit = 20,
     order = 'PUB_DATE',
@@ -150,30 +149,11 @@ exports.list = async (options = {}) => {
     dayRange,
     filterBan,
     filterSticky = false,
+    addresses,
     topicUuids
   } = options;
-  const where = {
-    deleted: false,
-    invisibility: false
-  };
-  const byAddress = addresses && addresses.length > 0;
-  if (byAddress) {
-    where.userAddress = addresses;
-  }
-  if (dayRange) {
-    where.pubDate = {
-      [Op.gte]: moment().subtract(~~dayRange, 'days').toDate()
-    }
-  }
-  if (filterBan) {
-    where.deleted = true;
-    where.latestRId = null
-  }
-  if (filterSticky) {
-    where.sticky = true;
-  }
+
   const queryOptions = {
-    where,
     offset,
     limit,
     include: [{
@@ -184,6 +164,66 @@ exports.list = async (options = {}) => {
     }],
     order: [getOrder(order)]
   };
+
+  const requiredWhere = {
+    deleted: false,
+    invisibility: false
+  };
+  let where = {
+    ...requiredWhere
+  };
+
+  const isSubscription = addresses || topicUuids;
+  if (isSubscription) {
+    const addressWhere = {
+      userAddress: addresses
+    };
+    const topicWhere = {
+      '$topics.uuid$': topicUuids,
+      '$topics.deleted$': false
+    };
+
+    if (addresses && !topicUuids) {
+      where = {
+        ...where,
+        ...addressWhere
+      };
+    }
+
+    if (!addresses && topicUuids) {
+      where = {
+        ...where,
+        ...topicWhere
+      }
+    }
+
+    if (addresses && topicUuids) {
+      where = {
+        ...where,
+        [Op.or]: [addressWhere, topicWhere]
+      }
+    }
+    
+  } else {
+
+    if (dayRange) {
+      where.pubDate = {
+        [Op.gte]: moment().subtract(~~dayRange, 'days').toDate()
+      }
+    }
+
+    if (filterBan) {
+      where.deleted = true;
+      where.latestRId = null
+    }
+
+    if (filterSticky) {
+      where.sticky = true;
+    }
+  }
+
+  queryOptions.where = where;
+
   const topicOptions = {
     model: Topic,
     as: 'topics',
@@ -192,18 +232,11 @@ exports.list = async (options = {}) => {
       attributes: [],
     }
   }
+
   let countOptions;
   let findOptions;
   if (topicUuids) {
     queryOptions.subQuery = false;
-    queryOptions.where = {
-      [Op.or]: [{
-        ...queryOptions.where
-      }, {
-        '$topics.uuid$': topicUuids,
-        '$topics.deleted$': false
-      }]
-    }
     queryOptions.include.push(topicOptions)
     countOptions = queryOptions;
     findOptions = queryOptions;
@@ -212,10 +245,12 @@ exports.list = async (options = {}) => {
     findOptions = { ...queryOptions }
     findOptions.include = [...queryOptions.include, topicOptions];
   }
+
   const [total, posts] = await Promise.all([
       Post.count(countOptions),
       Post.findAll(findOptions)
   ]);
+
   const derivedPosts = await Promise.all(
     posts.map(post => {
       return packPost(post.toJSON(), {
@@ -223,6 +258,7 @@ exports.list = async (options = {}) => {
       });
     })
   );
+
   return { total, posts: derivedPosts };
 }
 

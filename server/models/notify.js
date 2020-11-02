@@ -39,8 +39,8 @@ const notifyCommentMention = async (data) => {
   const payload = {
     type: "COMMENT",
     sub_type: "COMMENT_MENTION_ME",
-    title: "有人@了你",
-    message: `${fromNickName}在评论中@你`,
+    title: "有人回复了你",
+    message: `${fromNickName}回复了你`,
     to_usernames: [toUserName],
     web: data,
   };

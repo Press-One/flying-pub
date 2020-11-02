@@ -29,7 +29,7 @@ export default observer(() => {
 
   const tabToTitle: any = {
     [NotificationSubType.ARTICLE_COMMENT]: '评论',
-    [NotificationSubType.COMMENT_MENTION_ME]: '@我',
+    [NotificationSubType.COMMENT_MENTION_ME]: '回复',
     [NotificationSubType.LIKE]: '赞',
     [CombinedNotificationType.OTHERS]: '其他',
   };

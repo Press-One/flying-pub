@@ -5,7 +5,6 @@ import Header from './layouts/header';
 import Feed from './pages/Feed';
 import Post from './pages/Post';
 import Author from './pages/Author';
-import Subscription from './pages/Subscription';
 import TryFetch from './pages/TryFetch';
 import ManagementLayout from './pages/ManagementLayout';
 import Editor from './pages/Editor';
@@ -39,7 +38,7 @@ const Reader = () => {
     <div>
       <Route path="/" component={Header} />
       <Route
-        path={['/', '/authors/:address', '/topics/:address', '/subscriptions']}
+        path={['/', '/authors/:address', '/topics/:address']}
         exact
         component={() => (
           <div>
@@ -48,7 +47,6 @@ const Reader = () => {
                 <Route path="/" exact component={Feed} />
                 <Route path="/authors/:address" exact component={Author} />
                 <Route path="/topics/:uuid" exact component={Topic} />
-                <Route path="/subscriptions" exact component={Subscription} />
               </div>
             </div>
           </div>

@@ -21,6 +21,7 @@ import {
   getQuery,
   removeQuery,
   scrollToHere,
+  scrollToElementById,
 } from 'utils';
 import CommentApi from './api';
 import Api from 'api';
@@ -80,24 +81,30 @@ export default observer((props: IProps) => {
     initMathJax(document.getElementById('comments'));
   }, []);
 
+  const selectComment = React.useCallback(
+    (selectedCommentId, scrollOptions: any = {}) => {
+      (async () => {
+        setSelectedCommentId(selectedCommentId);
+        scrollToElementById(`#comment_${selectedCommentId}`, scrollOptions);
+        modalStore.closePageLoading();
+        removeQuery('commentId');
+        await sleep(2000);
+        setSelectedCommentId('');
+      })();
+    },
+    [modalStore],
+  );
+
   React.useEffect(() => {
     if (!selectedCommentId) {
       return;
     }
     (async () => {
       await sleep(500);
-      const commentEle: any = document.querySelector(`#comment_${selectedCommentId}`);
-      if (commentEle) {
-        scrollToHere(commentEle.offsetTop);
-        modalStore.closePageLoading();
-        removeQuery('commentId');
-        await sleep(2000);
-        setSelectedCommentId('');
-      } else {
-        modalStore.closePageLoading();
-      }
+      selectComment(selectedCommentId);
+      console.log({ selectedCommentId });
     })();
-  }, [selectedCommentId, modalStore]);
+  }, [selectedCommentId, selectComment]);
 
   const reply = async () => {
     if (isCreatingComment || isDrawerCreatingComment) {
@@ -115,12 +122,18 @@ export default observer((props: IProps) => {
     openDrawer ? setIsDrawerCreatingComment(true) : setIsCreatingComment(true);
     openDrawer ? setIsDrawerCreatedComment(false) : setIsCreatedComment(false);
     try {
-      const comment = {
+      const comment: any = {
         content: _value,
         objectId: fileRId,
         objectType: 'post',
       };
       const mentionsUserIds = getMentionUserIds(_value, commentStore.comments);
+      if (replyingComment) {
+        comment.replyId = replyingComment.id;
+        if (!mentionsUserIds.includes(replyingComment.user.id)) {
+          mentionsUserIds.push(replyingComment.user.id);
+        }
+      }
       const newComment = await CommentApi.create({
         ...comment,
         options: { mentionsUserIds },
@@ -135,6 +148,7 @@ export default observer((props: IProps) => {
       if (openDrawer) {
         setOpenDrawer(false);
         stopBodyScroll(false);
+        setReplyingComment(null);
       }
       setDrawerReplyValue('');
       setValue('');
@@ -246,10 +260,23 @@ export default observer((props: IProps) => {
   };
 
   const renderEditor = (options: any = {}) => {
-    const { user, valueState, isDoing, isDone } = options;
+    const { user, valueState, isDoing, isDone, isFromDrawer, replyingComment } = options;
     return (
-      <div>
-        <div className="flex items-start mt-5 pb-2 comment-editor-container">
+      <div className="mt-2 comment-editor-container">
+        <div className="mb-2">
+          {isFromDrawer && replyingComment && (
+            <div style={{ marginLeft: isMobile ? '1px' : '36px' }} className="md:pl-3">
+              <div
+                className="border-blue-300 pl-2 text-12 cursor-pointer"
+                style={{ borderLeftWidth: '3px' }}
+              >
+                <div className="text-blue-400">{replyingComment.user.nickname}</div>
+                <div className="truncate text-gray-99">{replyingComment.content}</div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex items-start pb-2 md:pb-0">
           <img
             className="hidden md:block mr-3 rounded"
             src={
@@ -295,30 +322,12 @@ export default observer((props: IProps) => {
     );
   };
 
-  const appendReplyUser = (value: string, name: string) => {
-    if (!value) {
-      return `@${name} `;
-    }
-    if (value.startsWith(`@${name} `)) {
-      return value;
-    }
-    const arr = value.split('@');
-    const last = (arr.pop() || '').trim();
-    if (last === name) {
-      return value;
-    }
-    return `${value}@${name} `;
-  };
-
   const replyTo = (comment: any) => {
-    const user = comment.user;
     setReplyingComment(comment);
     setOpenDrawer(true);
     setTimeout(() => {
       const cachedContent = localStorage.getItem(`COMMENT_REPLY:${comment.id}_CONTENT`) || '';
-      const replyValue = cachedContent
-        ? cachedContent
-        : appendReplyUser(drawerReplyValue, user.nickname);
+      const replyValue = cachedContent ? cachedContent : drawerReplyValue;
       setDrawerReplyValue(replyValue);
     }, 400);
   };
@@ -426,6 +435,8 @@ export default observer((props: IProps) => {
                 valueState: drawerReplyValue,
                 isDoing: isDrawerCreatingComment,
                 isCreated: isDrawerCreatedComment,
+                replyingComment,
+                isFromDrawer: true,
               })}
             </div>
           </div>
@@ -439,6 +450,7 @@ export default observer((props: IProps) => {
               replyTo={replyTo}
               upVote={upVote}
               resetVote={resetVote}
+              selectComment={selectComment}
               selectedId={selectedCommentId}
             />
           </div>

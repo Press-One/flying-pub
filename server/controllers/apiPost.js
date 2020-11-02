@@ -155,11 +155,18 @@ exports.listBySubscriptions = async ctx => {
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
   const user = ctx.verification.sequelizeUser;
+  const query = {
+    offset,
+    limit
+  };
   const followingAuthors = await user.getFollowingAuthors({
     attributes: ['address'],
     joinTableAttributes: []
   });
   const followingAuthorAddresses = followingAuthors.map(author => author.address);
+  if (followingAuthorAddresses.length > 0) {
+    query.addresses = followingAuthorAddresses;
+  }
   const followingTopics = await user.getFollowingTopics({
     where: {
       deleted: false
@@ -168,12 +175,10 @@ exports.listBySubscriptions = async ctx => {
     joinTableAttributes: []
   });
   const followingTopicUuids = followingTopics.map(topics => topics.uuid);
-  const result = await Post.list({
-    addresses: followingAuthorAddresses,
-    topicUuids: followingTopicUuids,
-    offset,
-    limit
-  });
+  if (followingTopicUuids.length > 0) {
+    query.topicUuids = followingTopicUuids;
+  }
+  const result = await Post.list(query);
   ctx.body = {
     total: result.total,
     posts: result.posts,
@@ -202,6 +207,7 @@ exports.update = async ctx => {
 }
 
 exports.listTopics = async ctx => {
+  const currentUser = ctx.verification && ctx.verification.sequelizeUser;
   const rId = ctx.params.id;
   const post = await Post.getByRId(rId, {
     raw: true
@@ -215,7 +221,9 @@ exports.listTopics = async ctx => {
     joinTableAttributes: []
   });
   const derivedTopics = await Promise.all(topics.map(async topic => {
-    return await Topic.pickTopic(topic);
+    return await Topic.pickTopic(topic, {
+      currentUser
+    });
   }));
   ctx.body = {
     total: derivedTopics.length,

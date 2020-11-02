@@ -19,6 +19,9 @@ const Comment = sequelize.define('comments', {
   objectType: {
     type: Sequelize.STRING
   },
+  replyId: {
+    type: Sequelize.BIGINT,
+  },
   upVotesCount: {
     type: Sequelize.BIGINT,
     defaultValue: 0

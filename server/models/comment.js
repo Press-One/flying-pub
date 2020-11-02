@@ -6,6 +6,7 @@ const Comment = require("./sequelize/comment");
 const User = require("./user");
 const Vote = require("./vote");
 const Sync = require("./sync");
+const _ = require('lodash');
 
 const packComment = async (comment, options = {}) => {
   const {
@@ -14,10 +15,24 @@ const packComment = async (comment, options = {}) => {
   assert(comment, Errors.ERR_NOT_FOUND("comment"));
   const commentJson = comment.toJSON();
   const user = await User.get(commentJson.userId);
-  commentJson.user = user;
+  commentJson.user = _.pick(user, ['id', 'nickname', 'avatar', 'address']);
   const voted = !!userId && (await Vote.isVoted(userId, "comments", comment.id));
   commentJson.voted = voted;
   delete commentJson.deleted;
+  if (comment.replyId) {
+    const replyComment = await Comment.findOne({
+      where: {
+        id: comment.replyId,
+        deleted: false
+      }
+    });
+    if (replyComment) {
+      const user = await User.get(replyComment.userId);
+      const replyCommentJson = replyComment.toJSON();
+      replyCommentJson.user = _.pick(user, ['nickname']);
+      commentJson.replyComment = replyCommentJson;
+    }
+  }
   return commentJson;
 };
 

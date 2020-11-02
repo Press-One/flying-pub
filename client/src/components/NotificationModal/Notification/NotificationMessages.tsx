@@ -23,7 +23,7 @@ export default observer(() => {
   const { notificationStore, modalStore } = useStore();
   const subTypeToTitle: any = {
     [NotificationSubType.ARTICLE_COMMENT]: '评论了你的文章',
-    [NotificationSubType.COMMENT_MENTION_ME]: '在评论中@你',
+    [NotificationSubType.COMMENT_MENTION_ME]: '回复了你',
     [NotificationSubType.LIKE]: '赞了你的',
     [NotificationSubType.AUTHOR_NEW_FOLLOWER]: '关注了你',
     [NotificationSubType.ARTICLE_REWARD]: '打赏了你的文章',

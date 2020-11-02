@@ -193,3 +193,24 @@ export const resizeFullImage = (url: any) => {
   }
   return `${url}?image=&action=resize:w_${900 * window.devicePixelRatio}`;
 }
+
+export const scrollToElementById = (id: string, options: any = {}) => {
+  const commentEle: any = document.querySelector(id);
+  if (!commentEle) {
+    return;
+  }
+  const scrollElement: any = document.scrollingElement || document.documentElement;
+  const top = commentEle.offsetTop;
+  if (options.behavior) {
+    try {
+      scrollElement.scrollTo({
+        top,
+        behavior: options.behavior
+      });
+    } catch (e) {
+      scrollElement.scrollTop = top;
+    }
+  } else {
+    scrollElement.scrollTop = top;
+  }
+}

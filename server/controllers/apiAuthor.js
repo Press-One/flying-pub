@@ -129,7 +129,7 @@ exports.listRecommended = async ctx => {
     authors = JSON.parse(cachedAuthors);
   } else {
     authors = await Author.listRecommended({
-      limit: 50
+      limit: 150
     });
     const halfDay = 60 * 60 * 12;
     const cachedDuration = config.recommendation ? config.recommendation.authors.cachedDuration : halfDay;

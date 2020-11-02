@@ -25,6 +25,6 @@ router.get('/:id', ensureAuthorization({
   strict: isPrivate
 }), get);
 router.put('/:id', ensureAuthorization(), ensureAdmin(), update);
-router.get('/:id/topics', listTopics);
+router.get('/:id/topics', ensureAuthorization({ strict: false }), listTopics);
 
 module.exports = router;

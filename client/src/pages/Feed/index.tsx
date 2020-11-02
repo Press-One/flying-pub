@@ -138,7 +138,10 @@ export default observer(() => {
         if (ready) {
           fetchPostsPromise =
             filterType === 'SUBSCRIPTION'
-              ? postApi.fetchSubscription()
+              ? postApi.fetchSubscription({
+                  offset: feedStore.page * limit,
+                  limit,
+                })
               : postApi.fetchPosts({
                   ...optionsForFetching,
                   offset: feedStore.page * limit,
