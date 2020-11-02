@@ -12,6 +12,7 @@ import NotificationMessages from './NotificationMessages';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import { sleep, isPc, isMobile } from 'utils';
+import classNames from 'classnames';
 import './index.scss';
 
 export default observer(() => {
@@ -130,7 +131,15 @@ export default observer(() => {
           </div>
         )}
       </div>
-      <div className="px-4 md:px-8 notification-container">
+      <div
+        className={classNames(
+          {
+            pc: isPc,
+            'pc md': isPc && window.innerHeight > 700 + 100,
+          },
+          'px-4 md:px-8 notification-container',
+        )}
+      >
         <div ref={infiniteRef}>
           {notificationStore.isFetched && <NotificationMessages />}
           {!notificationStore.isFetched && <div className="pt-20" />}
@@ -152,8 +161,14 @@ export default observer(() => {
           color: #63b3ed;
         }
         .notification-container {
-          max-height: ${isPc ? (window.innerHeight > 700 + 100 ? '630px' : '80vh') : '85vh'};
+          max-height: 85vh;
           overflow: auto;
+        }
+        .notification-container.pc {
+          max-height: 80vh;
+        }
+        .notification-container.pc.md {
+          max-height: 630px;
         }
         .notification-header {
           height: 50px;

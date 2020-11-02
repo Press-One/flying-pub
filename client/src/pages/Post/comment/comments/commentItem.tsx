@@ -146,7 +146,7 @@ export default class CommentItem extends React.Component<any, any> {
             background: #e2f6ff;
           }
           .markdown-body {
-            font-size: ${isMobile ? 13 : 14}px;
+            font-size: 14px;
           }
           .markdown-body :global(p) {
             line-height: 1.625;

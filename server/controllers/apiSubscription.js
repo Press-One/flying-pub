@@ -16,7 +16,7 @@ const {
 const Mixin = require("../models/mixin");
 
 exports.subscribe = async ctx => {
-  const user = ctx.verification.sequelizeUser;
+  const { user, sequelizeUser } = ctx.verification;
   const authorAddress = ctx.params.authorAddress;
   const author = await Author.findOne({
     where: {
@@ -24,7 +24,7 @@ exports.subscribe = async ctx => {
     }
   });
   assert(author, Errors.ERR_NOT_FOUND('author'));
-  await user.addFollowingAuthors(author);
+  await sequelizeUser.addFollowingAuthors(author);
   Log.create(user.id, `关注作者 ${authorAddress}`);
   (async () => {
     try {
