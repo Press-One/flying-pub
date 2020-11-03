@@ -47,7 +47,7 @@ const TopicLists = observer((props: IProps) => {
       try {
         const apiAction =
           props.type === 'myTopics'
-            ? topicApi.listByUserAddress(userStore.user.address, {
+            ? topicApi.fetchTopicsByUserAddress(userStore.user.address, {
                 offset: state.page * LIMIT,
                 limit: LIMIT,
               })

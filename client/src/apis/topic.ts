@@ -42,8 +42,14 @@ export default {
       minPendingDuration: 200
     });
   },
-  listByUserAddress(userAddress: string, options = {}) {
+  fetchTopicsByUserAddress(userAddress: string, options = {}) {
     return request(`/api/topics/user/${userAddress}?${qs.stringify(options)}`, {
+      method: 'GET',
+      minPendingDuration: 300
+    });
+  },
+  fetchFollowingTopicsByUserAddress(userAddress: string, options = {}) {
+    return request(`/api/topics/user/${userAddress}/following?${qs.stringify(options)}`, {
       method: 'GET',
       minPendingDuration: 300
     });
@@ -113,12 +119,6 @@ export default {
   },
   fetchTopicPosts(uuid: string, options = {}) {
     return request(`/api/topics/${uuid}/posts?${qs.stringify(options)}`, {
-      method: 'GET',
-      minPendingDuration: 300
-    });
-  },
-  fetchFollowingTopics(options = {}) {
-    return request(`/api/topics/following?${qs.stringify(options)}`, {
       method: 'GET',
       minPendingDuration: 300
     });

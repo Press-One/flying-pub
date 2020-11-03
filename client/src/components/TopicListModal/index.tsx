@@ -48,7 +48,7 @@ const TopicList = observer(() => {
       };
       try {
         if (isCreatedTopics || isContributionToMyTopics) {
-          res = await topicApi.listByUserAddress(data.userAddress as string, {
+          res = await topicApi.fetchTopicsByUserAddress(data.userAddress as string, {
             offset: state.page * LIMIT,
             limit: LIMIT,
           });
@@ -58,7 +58,7 @@ const TopicList = observer(() => {
             limit: LIMIT,
           });
         } else if (isFollowingTopics) {
-          res = await topicApi.fetchFollowingTopics({
+          res = await topicApi.fetchFollowingTopicsByUserAddress(data.userAddress as string, {
             offset: state.page * LIMIT,
             limit: LIMIT,
           });

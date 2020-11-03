@@ -11,7 +11,7 @@ const {
   addFollower,
   removeFollower,
   listFollowers,
-  listFollowingTopics,
+  listFollowingTopicsByUserAddress,
   listAuthors,
   getPublicTopics
 } = require('../controllers/apiTopic');
@@ -21,12 +21,12 @@ const {
 } = require('../middleware/api');
 
 router.get('/public', ensureAuthorization({ strict: false }), getPublicTopics);
-router.get('/following', ensureAuthorization(), listFollowingTopics);
 router.get('/:uuid', ensureAuthorization({ strict: false }), get);
 router.post('/', ensureAuthorization(), create);
 router.put('/:uuid', ensureAuthorization(), update);
 router.del('/:uuid', ensureAuthorization(), remove);
 router.get('/user/:userAddress', ensureAuthorization({ strict: false }), listByUserAddress);
+router.get('/user/:userAddress/following', ensureAuthorization({ strict: false }), listFollowingTopicsByUserAddress);
 router.post('/:uuid/contributions', ensureAuthorization(), addContribution);
 router.del('/:uuid/contributions', ensureAuthorization(), removeContribution);
 router.post('/:uuid/followers', ensureAuthorization(), addFollower);

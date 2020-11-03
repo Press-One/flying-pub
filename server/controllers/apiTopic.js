@@ -284,10 +284,15 @@ exports.listFollowers = async ctx => {
   };
 }
 
-exports.listFollowingTopics = async ctx => {
-  const user = ctx.verification && ctx.verification.sequelizeUser;
+exports.listFollowingTopicsByUserAddress = async ctx => {
+  const currentUser = ctx.verification && ctx.verification.sequelizeUser;
+  const userAddress = ctx.params.userAddress;
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const user = await User.getByAddress(userAddress, {
+    raw: true
+  });
+  assert(user, Errors.ERR_NOT_FOUND("user"));
   const where = {
     deleted: false
   };
@@ -304,9 +309,9 @@ exports.listFollowingTopics = async ctx => {
     })
   ]);
   const derivedTopics = await Promise.all(topics.map(async topic => {
-    const derivedTopic = await Topic.pickTopic(topic);
-    derivedTopic.following = true;
-    return derivedTopic;
+    return await Topic.pickTopic(topic, {
+      currentUser
+    })
   }));
 
   ctx.body = {
