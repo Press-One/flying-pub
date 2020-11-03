@@ -118,14 +118,6 @@ export default observer((props: RouteChildrenProps) => {
                 </Link>
               )}
               <div className="mx-2 mb-3 mt-5">
-                <Button className="w-full" onClick={() => modalStore.openSettings()}>
-                  <div className="flex items-center text-lg mr-1">
-                    <Settings />
-                  </div>
-                  账号设置
-                </Button>
-              </div>
-              <div className="mx-2 mb-3">
                 <Button
                   className="w-full"
                   onClick={() => {

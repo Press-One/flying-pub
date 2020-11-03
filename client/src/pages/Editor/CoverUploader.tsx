@@ -13,7 +13,9 @@ export default observer((props: any) => {
           <ImageEditor
             name="封面"
             imageUrl={cover}
-            width={200}
+            width={700}
+            placeholderWidth={200}
+            editorPlaceholderWidth={400}
             ratio={16 / 9}
             getImageUrl={(url: string) => {
               setCover(url);

@@ -2,7 +2,8 @@ import { observer } from 'mobx-react-lite';
 import io from 'socket.io-client';
 import { useStore } from '../../store';
 import { getTokenUrl } from '../../utils';
-import { Notification, NotificationStatus } from '../../store/notification';
+import { Notification, NotificationStatus, NotificationSubType } from '../../store/notification';
+import CommentApi from 'apis/comment';
 
 let checkingTimer: any = 0;
 
@@ -22,6 +23,9 @@ const sleep = (duration: number) =>
   });
 
 let socket: any = null;
+
+const getCommentIdFromMsg = (msg: Notification) =>
+  msg.notification.extras.originUrl.split('=').pop() || '0';
 
 export default observer(() => {
   const { settingsStore, userStore, notificationStore } = useStore();
@@ -105,14 +109,30 @@ export default observer(() => {
     log('history', '收到事件');
     try {
       clearTimeout(checkingTimer);
-      await sleep(500);
+      let messages = JSON.parse(data);
+      notificationStore.setHasMore(messages.length === notificationStore.limit);
+
+      if (
+        notificationStore.subTypes.includes(NotificationSubType.ARTICLE_COMMENT) ||
+        notificationStore.subTypes.includes(NotificationSubType.COMMENT_MENTION_ME)
+      ) {
+        if (messages.length > 0) {
+          const commentIds = messages.map(getCommentIdFromMsg);
+          if (commentIds.length > 0) {
+            const existCommentIds = await CommentApi.batchCommentIds(commentIds);
+            messages = messages.map((message: Notification) => {
+              if (!existCommentIds.includes(getCommentIdFromMsg(message))) {
+                message.notification.extras.originUrl = '';
+              }
+              return message;
+            });
+          }
+        }
+      }
+      notificationStore.appendMessages(messages);
       notificationStore.setLoading(false);
       notificationStore.setIsFetched(true);
-      const json = JSON.parse(data);
-      console.log({ data: json });
-      notificationStore.setHasMore(json.length === notificationStore.limit);
-      notificationStore.appendMessages(json);
-      await markAsRead(json);
+      await markAsRead(messages);
     } catch (e) {
       console.log(e);
     }

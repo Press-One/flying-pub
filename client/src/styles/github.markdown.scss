@@ -455,10 +455,11 @@
   }
 
   blockquote {
-    padding: 1em;
+    padding: 10px;
     color: #6a737d;
-    border-left: 0.25em solid #dfe2e5;
+    border-left: 3px solid #90cdf4;
     background: #f7f7f7;
+    font-size: 14px;
   }
 
   blockquote>:first-child {

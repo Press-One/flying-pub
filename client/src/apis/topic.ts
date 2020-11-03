@@ -21,7 +21,7 @@ export interface ITopic {
   following?: boolean;
   user?: IUser;
   summary: {
-    following: {
+    follower: {
       count: number;
       preview: string[]
     },

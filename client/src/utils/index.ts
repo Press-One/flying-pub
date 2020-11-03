@@ -191,7 +191,7 @@ export const resizeFullImage = (url: any) => {
   if (isMobile) {
     return `${url}?image=&action=resize:w_${window.innerWidth * window.devicePixelRatio}`;
   }
-  return `${url}?image=&action=resize:w_${900 * window.devicePixelRatio}`;
+  return `${url}?image=&action=resize:w_${700 * window.devicePixelRatio}`;
 }
 
 export const scrollToElementById = (id: string, options: any = {}) => {
@@ -213,4 +213,5 @@ export const scrollToElementById = (id: string, options: any = {}) => {
   } else {
     scrollElement.scrollTop = top;
   }
+  return commentEle;
 }

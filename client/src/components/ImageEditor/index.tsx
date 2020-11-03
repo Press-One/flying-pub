@@ -27,6 +27,14 @@ export default observer((props: any) => {
 
   const width: any = React.useMemo(() => props.width || 120, [props.width]);
   const ratio: any = React.useMemo(() => props.ratio || 1, [props.ratio]);
+  const placeholderScale: any = React.useMemo(
+    () => (props.placeholderWidth ? props.placeholderWidth / props.width : 1),
+    [props.placeholderWidth, props.width],
+  );
+  const editorPlaceholderScale: any = React.useMemo(
+    () => (props.editorPlaceholderWidth ? props.editorPlaceholderWidth / props.width : 1),
+    [props.editorPlaceholderWidth, props.width],
+  );
 
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const avatarEditorRef = React.useRef<AvatarEditor>(null);
@@ -92,14 +100,27 @@ export default observer((props: any) => {
         <div className="mt-2 text-center text-18 py-4 font-bold">移动或缩放图片</div>
       </div>
       <div className="px-10">
-        <AvatarEditor
-          ref={avatarEditorRef}
-          width={300}
-          height={300 / ratio}
-          border={0}
-          scale={1.1 ** state.scale}
-          image={state.avatarTemp}
-        />
+        <div
+          className="relative"
+          style={{
+            width: width * editorPlaceholderScale,
+            height: (width * editorPlaceholderScale) / ratio,
+          }}
+        >
+          <div
+            className="top-0 canvas-container absolute"
+            style={{ transform: `translateX(-50%) scale(${editorPlaceholderScale})`, left: '50%' }}
+          >
+            <AvatarEditor
+              ref={avatarEditorRef}
+              width={width}
+              height={width / ratio}
+              border={0}
+              scale={1.1 ** state.scale}
+              image={state.avatarTemp}
+            />
+          </div>
+        </div>
 
         <div className="slider-box flex items-center py-1 mt-1 text-xl text-gray-500">
           <ZoomOut className="mx-2" />
@@ -120,6 +141,11 @@ export default observer((props: any) => {
           </Button>
         </div>
       </div>
+      <style jsx>{`
+        .canvas-container {
+          transform-origin: top;
+        }
+      `}</style>
     </div>
   );
 
@@ -128,7 +154,7 @@ export default observer((props: any) => {
       <div
         className="avatar-edit-box mt-2"
         onClick={handleEditAvatar}
-        style={{ width: width, height: width / ratio }}
+        style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
@@ -140,7 +166,7 @@ export default observer((props: any) => {
         {!state.avatar && (
           <div
             className="flex items-center justify-center text-3xl bg-gray-200 text-gray-500"
-            style={{ width: width, height: width / ratio }}
+            style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
           >
             <div className="flex flex-col items-center">
               <CameraAlt />
@@ -173,6 +199,7 @@ export default observer((props: any) => {
 
       {isPc && (
         <Dialog
+          maxWidth={false}
           className="setting-avatar-crop-dialog"
           onClose={() => {
             if (!state.avatarLoading) {
@@ -229,13 +256,6 @@ export const getCroppedImg = (
     dWidth: image.naturalWidth * crop.width,
     dHeight: image.naturalHeight * crop.height,
   };
-
-  if (state.sWidth > 512 || state.sHeight > 512) {
-    const ratio = state.sWidth > state.sHeight ? 512 / state.sWidth : 512 / state.sHeight;
-
-    state.dWidth *= ratio;
-    state.dHeight *= ratio;
-  }
 
   canvas.width = state.dWidth;
   canvas.height = state.dHeight;

@@ -24,14 +24,7 @@ const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
 
 export default observer((props: any) => {
-  const {
-    subscriptionStore,
-    modalStore,
-    userStore,
-    snackbarStore,
-    preloadStore,
-    feedStore,
-  } = useStore();
+  const { modalStore, userStore, snackbarStore, preloadStore, feedStore } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
     isFetchedAuthor: false,
@@ -198,7 +191,7 @@ export default observer((props: any) => {
     try {
       await subscriptionApi.subscribe(address);
       state.author.following = true;
-      subscriptionStore.addAuthor(state.author);
+      state.author.summary!.follower!.count += 1;
     } catch (err) {
       console.log(err);
     }
@@ -208,7 +201,7 @@ export default observer((props: any) => {
     try {
       await subscriptionApi.unsubscribe(address);
       state.author.following = false;
-      subscriptionStore.removeAuthor(state.author.address);
+      state.author.summary!.follower!.count -= 1;
     } catch (err) {
       console.log(err);
     }
@@ -232,9 +225,11 @@ export default observer((props: any) => {
             <div
               className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center md:rounded-12"
               style={{
-                backgroundImage: `url('${resizeFullImage(
-                  isDefaultAvatar ? DEFAULT_BG_GRADIENT : state.author.cover || state.author.avatar,
-                )}')`,
+                backgroundImage: `url('${
+                  isDefaultAvatar
+                    ? resizeFullImage(DEFAULT_BG_GRADIENT)
+                    : resizeFullImage(state.author.cover) || resizeImage(state.author.avatar, 200)
+                }')`,
               }}
             >
               <div className="absolute top-0 left-0 right-0 bottom-0 blur-layer md:rounded-12" />
@@ -559,8 +554,8 @@ export default observer((props: any) => {
               rgba(32, 32, 32, 0.56) 100%
             );
             background: linear-gradient(rgba(32, 32, 32, 0) 14%, rgba(32, 32, 32, 0.56) 100%);
-            -webkit-backdrop-filter: blur(${state.author.cover ? 0 : 20}px);
-            backdrop-filter: blur(${state.author.cover ? 0 : 20}px);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
           }
           .posts-container {
             min-height: 90vh;

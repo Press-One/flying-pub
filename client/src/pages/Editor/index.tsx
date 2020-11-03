@@ -11,6 +11,7 @@ import Fade from '@material-ui/core/Fade';
 
 import { Input, Tooltip } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
+import { CameraAlt } from '@material-ui/icons';
 
 import { useStore } from 'store';
 import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery } from 'utils';
@@ -493,6 +494,16 @@ export default observer((props: any) => {
                   >
                     <img className="rounded mr-2" width="55px" src={file.cover} alt="封面" />
                   </Tooltip>
+                )}
+                {!file.cover && (
+                  <div
+                    className="mr-2 text-xl flex items-center justify-center rounded bg-gray-200"
+                    style={{ width: '55px', height: '31px' }}
+                  >
+                    <div className="flex items-center mt-1">
+                      <CameraAlt />
+                    </div>
+                  </div>
                 )}
                 {file.cover ? '更换封面' : '上传封面'}
               </div>

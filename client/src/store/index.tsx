@@ -10,7 +10,6 @@ import { createReaderWalletStore } from './readerWallet';
 import { createSnackbarStore } from './snackbar';
 import { createSocketStore } from './socket';
 import { createCommentStore } from './comment';
-import { createSubscriptionStore } from './subscription';
 import { createModalStore } from './modal';
 import { createPathStore } from './lastPath';
 import { createSettingsStore } from './settings';
@@ -35,7 +34,6 @@ const useCreateStore = () => ({
   snackbarStore: useLocalStore(createSnackbarStore),
   socketStore: useLocalStore(createSocketStore),
   commentStore: useLocalStore(createCommentStore),
-  subscriptionStore: useLocalStore(createSubscriptionStore),
   modalStore: useLocalStore(createModalStore),
   pathStore: useLocalStore(createPathStore),
   settingsStore: useLocalStore(createSettingsStore),

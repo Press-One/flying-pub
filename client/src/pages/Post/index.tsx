@@ -18,7 +18,7 @@ import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 
-import CommentApi from './comment/api';
+import CommentApi from 'apis/comment';
 import Comment from './comment';
 import { IPost } from 'apis/post';
 import postApi from 'apis/post';
@@ -46,7 +46,6 @@ export default observer((props: any) => {
     feedStore,
     userStore,
     modalStore,
-    subscriptionStore,
     commentStore,
     confirmDialogStore,
   } = useStore();
@@ -96,7 +95,7 @@ export default observer((props: any) => {
       try {
         const post: IPost = await postApi.fetchPost(rId);
         if (post.latestRId) {
-          window.location.href = `/posts/${post.latestRId}`;
+          window.location.replace(`/posts/${post.latestRId}`);
           return;
         }
         document.title = post.title;
@@ -268,8 +267,7 @@ export default observer((props: any) => {
     try {
       await subscriptionApi.subscribe(post.author.address);
       post.author.following = true;
-      setPost(post);
-      subscriptionStore.addAuthor(post.author);
+      post.author.summary.follower.count += 1;
     } catch (err) {
       console.log(err);
     }
@@ -279,8 +277,7 @@ export default observer((props: any) => {
     try {
       await subscriptionApi.unsubscribe(post.author.address);
       post.author.following = false;
-      setPost(post);
-      subscriptionStore.removeAuthor(post.author.address);
+      post.author.summary.follower.count -= 1;
     } catch (err) {
       console.log(err);
     }
@@ -333,13 +330,13 @@ export default observer((props: any) => {
                   )}
                 >
                   <Link to={`/authors/${author.address}`}>
-                    <span className="text-gray-88 font-bold mr-0 md:mr-4 truncate block md:inline-block author-view-nickname">
+                    <span className="text-gray-88 font-bold mr-0 md:mr-4 truncate block author-view-nickname">
                       {author.nickname}
                     </span>
                   </Link>
                 </div>
                 {author.summary && (
-                  <div className="text-13 mt-1 flex items-center">
+                  <div className="text-13 mt-1 md:mt-0 flex items-center">
                     {author.summary.post.count} 篇文章
                     {Number(author.summary.follower.count) > 0 && <span className="mx-1">·</span>}
                     {Number(author.summary.follower.count) > 0 && (
@@ -398,16 +395,15 @@ export default observer((props: any) => {
     }
     setVoting(true);
     try {
-      const { author } = post;
-      const { postCount, following } = author;
-      const newPost = await Api.createVote({
+      const { upVotesCount, voted } = await Api.createVote({
         objectType: 'posts',
         objectId: rId,
         type: 'UP',
       });
-      newPost.author.postCount = postCount;
-      newPost.author.following = following;
-      feedStore.updatePost(post.rId, newPost);
+      feedStore.updatePost(post.rId, {
+        upVotesCount,
+        voted,
+      });
     } catch (err) {
       console.log(err);
     }
@@ -424,22 +420,21 @@ export default observer((props: any) => {
     }
     setVoting(true);
     try {
-      const { author } = post;
-      const { postCount, following } = author;
-      const newPost = await Api.deleteVote({
+      const { upVotesCount, voted } = await Api.deleteVote({
         objectType: 'posts',
         objectId: rId,
       });
-      newPost.author.postCount = postCount;
-      newPost.author.following = following;
-      feedStore.updatePost(post.rId, newPost);
+      feedStore.updatePost(post.rId, {
+        upVotesCount,
+        voted,
+      });
     } catch (err) {
       console.log(err);
     }
     setVoting(false);
   };
 
-  const VoteView = (post: IPost, options: any = {}) => {
+  const VoteView = (post: IPost) => {
     return (
       <div
         className={classNames(
@@ -606,7 +601,7 @@ export default observer((props: any) => {
               topics={post.topics || []}
               post={post}
               showContributionButton
-              maxListCount={4}
+              maxListCount={isMobile ? 1 : 10}
               onClose={() => syncTopics()}
             />
           </div>

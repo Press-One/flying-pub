@@ -217,7 +217,9 @@ exports.listTopicPosts = async ctx => {
     order: [Post.getOrder(order)]
   });
   const derivedPosts = await Promise.all(posts.map(async post => {
-    return await Post.packPost(post.toJSON());
+    return await Post.packPost(post, {
+      withTopic: false
+    });
   }))
   ctx.body = {
     total,

@@ -6,11 +6,21 @@ interface IProps {
   to: string;
   children: any;
   className?: string;
-  onClick?: () => void;
+  onClick?: any;
+  openInNew?: boolean;
 }
 
 export default (props: IProps) => {
   const history = useHistory();
+
+  const open = async () => {
+    if (props.openInNew) {
+      window.open(props.to);
+    } else {
+      await sleep(200);
+      history.push(props.to);
+    }
+  };
 
   return (
     <span
@@ -18,11 +28,7 @@ export default (props: IProps) => {
       onClick={(e) => {
         e.preventDefault();
         props.onClick && props.onClick();
-        (async () => {
-          console.log({ 'props.to': props.to });
-          await sleep(200);
-          history.push(props.to);
-        })();
+        open();
       }}
     >
       {props.children}

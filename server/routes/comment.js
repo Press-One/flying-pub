@@ -3,6 +3,7 @@ const {
   list,
   create,
   remove,
+  batchCommentIds
 } = require('../controllers/apiComment');
 const {
   ensureAuthorization
@@ -13,5 +14,6 @@ router.get('/', ensureAuthorization({
 }), list);
 router.post('/', ensureAuthorization(), create);
 router.del('/:id', ensureAuthorization(), remove);
+router.get('/batch', batchCommentIds);
 
 module.exports = router;

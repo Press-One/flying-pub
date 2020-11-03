@@ -14,9 +14,9 @@ const { immediatePromise } = require("../utils");
 
 const pickTopic = async (topic, options = {}) => {
   const [
-    followingCount,
+    followerCount,
     postCount,
-    followingPreview,
+    followerPreview,
     user,
     authors,
     followingTopicsCount
@@ -50,9 +50,9 @@ const pickTopic = async (topic, options = {}) => {
     ...derivedTopic,
     user,
     summary: {
-      following: {
-        count: followingCount,
-        preview: followingPreview.map(item => item.avatar)
+      follower: {
+        count: followerCount,
+        preview: followerPreview.map(item => item.avatar)
       },
       post: {
         count: postCount
@@ -193,13 +193,14 @@ exports.remove = async (user, uuid) => {
   });
 }
 
-const getTopicOrderQuery = () => ({
-  attributes: [
-    'id', 'userId', 'uuid', 'cover', 'name', 'description', 'contributionEnabled', 'reviewEnabled', 'deleted', 
-    [Sequelize.literal('(SELECT COUNT(*) FROM "posts_topics" WHERE "posts_topics"."topicUuid" = "topics"."uuid")'), '"postCount"'],
-  ],
-  order: [[Sequelize.literal('"postCount"'), 'DESC NULLS LAST']]
-});
+const getTopicOrderQuery = (options = {}) => {
+  const attributes = options.attributes ? options.attributes : Object.keys(Topic.rawAttributes);
+  attributes.push([Sequelize.literal('(SELECT COUNT(*) FROM "posts_topics" WHERE "posts_topics"."topicUuid" = "topics"."uuid")'), '"postCount"']);
+  return {
+    attributes,
+    order: [[Sequelize.literal('"postCount"'), 'DESC NULLS LAST']]
+  }
+};
 exports.getTopicOrderQuery = getTopicOrderQuery;
 
 exports.listPublicTopics = async (options = {}) => {

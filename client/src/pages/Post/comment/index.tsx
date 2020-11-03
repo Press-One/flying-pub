@@ -23,7 +23,7 @@ import {
   scrollToHere,
   scrollToElementById,
 } from 'utils';
-import CommentApi from './api';
+import CommentApi from 'apis/comment';
 import Api from 'api';
 
 interface IProps {
@@ -85,24 +85,36 @@ export default observer((props: IProps) => {
     (selectedCommentId, scrollOptions: any = {}) => {
       (async () => {
         setSelectedCommentId(selectedCommentId);
-        scrollToElementById(`#comment_${selectedCommentId}`, scrollOptions);
+        const element: any = scrollToElementById(`#comment_${selectedCommentId}`, scrollOptions);
         modalStore.closePageLoading();
         removeQuery('commentId');
-        await sleep(2000);
-        setSelectedCommentId('');
+        if (!element) {
+          await sleep(200);
+          confirmDialogStore.show({
+            content: '这条评论已经被 Ta 删除了',
+            cancelDisabled: true,
+            okText: '我知道了',
+            ok: () => {
+              confirmDialogStore.hide();
+            },
+          });
+          setSelectedCommentId('');
+        } else {
+          await sleep(2000);
+          setSelectedCommentId('');
+        }
       })();
     },
-    [modalStore],
+    [modalStore, confirmDialogStore],
   );
 
   React.useEffect(() => {
-    if (!selectedCommentId) {
+    if (!selectedCommentId || selectedCommentId === '0') {
       return;
     }
     (async () => {
       await sleep(500);
       selectComment(selectedCommentId);
-      console.log({ selectedCommentId });
     })();
   }, [selectedCommentId, selectComment]);
 

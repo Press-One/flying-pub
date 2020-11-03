@@ -1,17 +1,17 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { useStore } from '../../../store';
+import { useStore } from 'store';
 import {
   NotificationSubType,
   NotificationType,
   Notification,
   CombinedNotificationType,
-} from '../../../store/notification';
-import { ago, isMobile, removeUrlHost } from '../../../utils';
+} from 'store/notification';
+import { ago, removeUrlHost } from 'utils';
 import marked from 'marked';
-import OpenInNewLinkForPc from 'components/openInNewLinkForPc';
-import { resizeImage } from 'utils';
+import ModalLink from 'components/ModalLink';
+import { resizeImage, isMobile, isPc } from 'utils';
 
 const defaultAvatar = resizeImage('https://avatar.xue.cn/avatar/default.png');
 
@@ -36,6 +36,9 @@ export default observer(() => {
   const renderContent = (msg: Notification) => {
     const extras = msg.notification.extras;
     if (msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) {
+      if (!msg.notification.extras.originUrl) {
+        return <div className="text-12 text-gray-af border-l-4 pl-2">评论已经被 Ta 删除了</div>;
+      }
       return (
         <p
           className="msg-at-me"
@@ -61,7 +64,8 @@ export default observer(() => {
     if (msg.notification.sub_type === NotificationSubType.ARTICLE_REWARD) {
       return (
         <p className="msg-reward-me flex items-center">
-          <OpenInNewLinkForPc
+          <ModalLink
+            openInNew={isPc}
             to={removeUrlHost(extras.originUrl)}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -73,7 +77,7 @@ export default observer(() => {
               <span className="text-green-500 amount ml-2 font-bold">{extras.amount}</span>
               <span className="ml-1 text-xs text-gray-600 font-bold">{extras.currency || ''}</span>
             </span>
-          </OpenInNewLinkForPc>
+          </ModalLink>
         </p>
       );
     }
@@ -83,7 +87,8 @@ export default observer(() => {
       msg.notification.sub_type === NotificationSubType.LIKE
     ) {
       return (
-        <OpenInNewLinkForPc
+        <ModalLink
+          openInNew={isPc}
           to={removeUrlHost(extras.originUrl)}
           className="font-bold text-blue-400"
           onClick={() => {
@@ -91,13 +96,14 @@ export default observer(() => {
           }}
         >
           <span>{extras.fromArticleTitle}</span>
-        </OpenInNewLinkForPc>
+        </ModalLink>
       );
     }
 
     if (msg.notification.sub_type === NotificationSubType.AUTHOR_NEW_FOLLOWER) {
       return (
-        <OpenInNewLinkForPc
+        <ModalLink
+          openInNew={isPc}
           to={`/authors/${extras.fromUserName}`}
           className="font-bold text-blue-400 text-13"
           onClick={() => {
@@ -105,7 +111,7 @@ export default observer(() => {
           }}
         >
           去 Ta 的主页看看
-        </OpenInNewLinkForPc>
+        </ModalLink>
       );
     }
 
@@ -113,7 +119,8 @@ export default observer(() => {
       return (
         <div className="text-13">
           向你的专题《
-          <OpenInNewLinkForPc
+          <ModalLink
+            openInNew={isPc}
             to={`/topics/${extras.topicUuid}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -121,9 +128,10 @@ export default observer(() => {
             }}
           >
             {extras.topicName}
-          </OpenInNewLinkForPc>
+          </ModalLink>
           》投稿文章《
-          <OpenInNewLinkForPc
+          <ModalLink
+            openInNew={isPc}
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -131,7 +139,7 @@ export default observer(() => {
             }}
           >
             {extras.postTitle}
-          </OpenInNewLinkForPc>
+          </ModalLink>
           》
         </div>
       );
@@ -142,7 +150,8 @@ export default observer(() => {
         <div>
           <div className="text-13">
             从专题《
-            <OpenInNewLinkForPc
+            <ModalLink
+              openInNew={isPc}
               to={`/topics/${extras.topicUuid}`}
               className="font-bold text-blue-400"
               onClick={() => {
@@ -150,9 +159,10 @@ export default observer(() => {
               }}
             >
               {extras.topicName}
-            </OpenInNewLinkForPc>
+            </ModalLink>
             》 移除了你的文章《
-            <OpenInNewLinkForPc
+            <ModalLink
+              openInNew={isPc}
               to={`/posts/${extras.postRId}`}
               className="font-bold text-blue-400"
               onClick={() => {
@@ -160,7 +170,7 @@ export default observer(() => {
               }}
             >
               {extras.postTitle}
-            </OpenInNewLinkForPc>
+            </ModalLink>
             》
           </div>
           {extras.note && (
@@ -215,7 +225,8 @@ export default observer(() => {
             )}
           >
             <div className="msg-avatar">
-              <OpenInNewLinkForPc
+              <ModalLink
+                openInNew={isPc}
                 to={`/authors/${msg.notification.extras.fromUserName}`}
                 className="font-bold text-blue-400"
                 onClick={() => {
@@ -229,11 +240,12 @@ export default observer(() => {
                   width="36"
                   height="36"
                 />
-              </OpenInNewLinkForPc>
+              </ModalLink>
             </div>
             <div className="msg-body mx-3 flex-1">
               <p className="msg-title mb-2">
-                <OpenInNewLinkForPc
+                <ModalLink
+                  openInNew={isPc}
                   to={`/authors/${msg.notification.extras.fromUserName}`}
                   className="font-bold text-blue-400"
                   onClick={() => {
@@ -241,7 +253,7 @@ export default observer(() => {
                   }}
                 >
                   <span className="from-user-name">{msg.notification.extras.fromNickName}</span>
-                </OpenInNewLinkForPc>
+                </ModalLink>
                 <span className="msg-head ml-2">
                   {subTypeToTitle[msg.notification.sub_type]}
                   {msg.notification.sub_type === NotificationSubType.LIKE
@@ -250,34 +262,37 @@ export default observer(() => {
                 </span>
               </p>
               {renderContent(msg)}
-              <div className="mt-2 pt-1 msg-foot">
+              <div className="mt-2 pt-1 msg-foot flex items-center">
                 <span className="msg-timestamp mr-5">
                   {formatDateTime(msg.notification.created_at)}
                 </span>
                 {msg.notification.type === NotificationType.COMMENT &&
                   msg.notification.sub_type === NotificationSubType.LIKE && (
-                    <OpenInNewLinkForPc
+                    <ModalLink
+                      openInNew={isPc}
                       to={removeUrlHost(msg.notification.extras.originUrl)}
                       className="text-12 msg-link"
+                      onClick={() => {
+                        modalStore.closeNotification();
+                      }}
+                    >
+                      去看看
+                    </ModalLink>
+                  )}
+                {(msg.notification.sub_type === NotificationSubType.ARTICLE_COMMENT ||
+                  msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) &&
+                  msg.notification.extras.originUrl && (
+                    <ModalLink
+                      openInNew={isPc}
+                      to={removeUrlHost(msg.notification.extras.originUrl)}
+                      className="text-12 msg-link flex items-center"
                       onClick={() => {
                         isMobile && modalStore.closeNotification();
                       }}
                     >
-                      去看看
-                    </OpenInNewLinkForPc>
+                      <span className="mr-1">去回复</span>
+                    </ModalLink>
                   )}
-                {(msg.notification.sub_type === NotificationSubType.ARTICLE_COMMENT ||
-                  msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) && (
-                  <OpenInNewLinkForPc
-                    to={removeUrlHost(msg.notification.extras.originUrl)}
-                    className="text-12 msg-link"
-                    onClick={() => {
-                      isMobile && modalStore.closeNotification();
-                    }}
-                  >
-                    去回复
-                  </OpenInNewLinkForPc>
-                )}
               </div>
             </div>
           </div>,

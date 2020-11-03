@@ -65,8 +65,8 @@ const TopicIntroduction = observer((props: IProps) => {
                       topicUuid: props.topic.uuid,
                       type: 'TOPIC_FOLLOWERS',
                       title: '关注的人',
-                      content: `${props.topic.summary.following.count}个`,
-                      gallery: props.topic.summary.following.preview,
+                      content: `${props.topic.summary.follower.count}个`,
+                      gallery: props.topic.summary.follower.preview,
                     },
                   ]}
                 />

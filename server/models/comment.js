@@ -36,6 +36,18 @@ const packComment = async (comment, options = {}) => {
   return commentJson;
 };
 
+exports.batchCommentIds = async ids => {
+  assert(ids, Errors.ERR_IS_REQUIRED("ids"));
+  const comments = await Comment.findAll({
+    attributes: ['id'],
+    where: {
+      id: ids,
+      deleted: false
+    }
+  });
+  return comments.map(comment => comment.id);
+};
+
 exports.get = async (id, options = {}) => {
   const {
     userId

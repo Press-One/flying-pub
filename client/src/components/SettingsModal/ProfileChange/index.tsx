@@ -72,9 +72,11 @@ export const ProfileChange = observer(() => {
 
   return (
     <div className="profile-edit flex flex-col items-center md:items-start -mt-2">
-      <div className="py-2 mt-2 flex items-center justify-center]">
+      <div className="py-2 mt-2 flex items-end justify-center">
         <ImageEditor
-          width={120}
+          width={200}
+          placeholderWidth={120}
+          editorPlaceholderWidth={300}
           name="头像"
           imageUrl={state.avatar}
           getImageUrl={(url: string) => {
@@ -84,7 +86,10 @@ export const ProfileChange = observer(() => {
         />
         <div className="px-4" />
         <ImageEditor
-          width={120}
+          width={700}
+          placeholderWidth={150}
+          editorPlaceholderWidth={300}
+          ratio={3 / 2}
           name="封面"
           imageUrl={state.cover}
           getImageUrl={(url: string) => {

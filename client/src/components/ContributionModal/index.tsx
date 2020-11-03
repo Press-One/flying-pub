@@ -143,7 +143,7 @@ const TopicLists = observer((props: IProps) => {
                     <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>
                     {!isMyself && (
                       <div className="text-12 text-gray-af">
-                        {topic.summary.post.count} 文章 · {topic.summary.following.count} 关注
+                        {topic.summary.post.count} 文章 · {topic.summary.follower.count} 关注
                       </div>
                     )}
                   </div>

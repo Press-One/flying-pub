@@ -2,12 +2,12 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Button from 'components/Button';
 import { Dialog, TextField } from '@material-ui/core';
-import OpenInNewLinkForPc from 'components/openInNewLinkForPc';
+import ModalLink from 'components/ModalLink';
 import { IPost } from 'apis/post';
 import topicApi from 'apis/topic';
 import Loading from 'components/Loading';
 import { useStore } from 'store';
-import { sleep, isMobile } from 'utils';
+import { sleep, isMobile, isPc } from 'utils';
 import DrawerModal from 'components/DrawerModal';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 
@@ -43,12 +43,13 @@ const ConfirmContent = observer(
           {props.post.author && (
             <div className="mt-3">
               作者：
-              <OpenInNewLinkForPc
+              <ModalLink
+                openInNew={isPc}
                 to={`/authors/${props.post.author.address}`}
                 className="text-blue-400"
               >
                 {props.post.author.nickname}
-              </OpenInNewLinkForPc>
+              </ModalLink>
             </div>
           )}
           {!isMyself && (
@@ -169,9 +170,9 @@ const TopicPostManager = observer((props: IProps) => {
               className="px-5 py-4 flex items-center justify-between border-b border-gray-300"
               key={post.rId}
             >
-              <OpenInNewLinkForPc to={`/posts/${post.rId}`}>
+              <ModalLink openInNew={isPc} to={`/posts/${post.rId}`}>
                 <div className="truncate w-56 mr-4 text-14 font-bold">{post.title}</div>
-              </OpenInNewLinkForPc>
+              </ModalLink>
               <Button
                 size="small"
                 color="red"

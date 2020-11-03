@@ -163,3 +163,9 @@ exports.list = async (ctx) => {
     comments: result,
   };
 };
+
+exports.batchCommentIds = async (ctx) => {
+  const ids = ctx.query.ids;
+  const commentIds = await Comment.batchCommentIds(ids.split(','));
+  ctx.body = commentIds;
+};

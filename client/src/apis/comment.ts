@@ -1,4 +1,4 @@
-import request from '../../../request';
+import request from '../request';
 import { stringify } from 'query-string';
 
 export default {
@@ -29,7 +29,7 @@ export default {
       method: 'DELETE',
     });
   },
-  batchCommentIds(ids: []) {
+  batchCommentIds(ids: string[]) {
     const path = `/api/comments/batch?ids=${ids.join(',')}`;
     return request(path, {
       method: 'GET'

@@ -26,7 +26,7 @@ export default function (props: { size?: number }) {
   const classes = useStyles();
   return (
     <div className="flex items-start justify-center">
-      <div className="relative">
+      <div className="flex items-start relative">
         <CircularProgress
           size={size || 26}
           className={classes.bottom}

@@ -126,6 +126,7 @@ const TopicList = observer(() => {
     try {
       await topicApi.subscribe(topic.uuid);
       topic.following = true;
+      topic.summary.follower!.count += 1;
     } catch (err) {
       console.log(err);
     }
@@ -135,6 +136,7 @@ const TopicList = observer(() => {
     try {
       await topicApi.unsubscribe(topic.uuid);
       topic.following = false;
+      topic.summary.follower!.count -= 1;
     } catch (err) {
       console.log(err);
     }
@@ -189,14 +191,14 @@ const TopicList = observer(() => {
                     <div className="ml-3">
                       <div className="text-14 text-gray-70 truncate w-48 md:w-56">{topic.name}</div>
                       {(Number(topic.summary.post.count) > 0 ||
-                        Number(topic.summary.following.count) > 0) && (
+                        Number(topic.summary.follower.count) > 0) && (
                         <div className="text-12 text-gray-af">
                           {topic.summary.post.count ? `${topic.summary.post.count} 篇文章` : ''}
-                          {topic.summary.post.count > 0 && topic.summary.following.count > 0 && (
+                          {topic.summary.post.count > 0 && topic.summary.follower.count > 0 && (
                             <span> · </span>
                           )}
-                          {topic.summary.following.count
-                            ? `${topic.summary.following.count} 人关注`
+                          {topic.summary.follower.count
+                            ? `${topic.summary.follower.count} 人关注`
                             : ''}
                         </div>
                       )}

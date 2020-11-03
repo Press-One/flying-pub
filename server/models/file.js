@@ -46,6 +46,7 @@ const packFile = async (file, options = {}) => {
   }
   if (dropContent) {
     delete fileJson.content;
+    delete fileJson.encryptedContent;
   }
   delete fileJson.deleted;
   return fileJson;

@@ -100,11 +100,11 @@ const TopView = observer(
                     <span className="text-14 md:text-15 font-bold">{topic.summary.post.count}</span>{' '}
                     篇文章
                   </span>
-                  {topic.summary.following.count > 0 && <span className="opacity-70 mx-2">·</span>}
-                  {topic.summary.following.count > 0 ? (
+                  {topic.summary.follower.count > 0 && <span className="opacity-70 mx-2">·</span>}
+                  {topic.summary.follower.count > 0 ? (
                     <span>
                       <span className="text-14 md:text-15 font-bold">
-                        {topic.summary.following.count}
+                        {topic.summary.follower.count}
                       </span>{' '}
                       人关注
                     </span>
@@ -314,6 +314,7 @@ export default observer((props: any) => {
     try {
       await topicApi.subscribe(state.topic.uuid);
       state.topic.following = true;
+      state.topic.summary!.follower!.count += 1;
     } catch (err) {
       console.log(err);
     }
@@ -323,6 +324,7 @@ export default observer((props: any) => {
     try {
       await topicApi.unsubscribe(state.topic.uuid);
       state.topic.following = false;
+      state.topic.summary!.follower!.count -= 1;
     } catch (err) {
       console.log(err);
     }
@@ -462,12 +464,12 @@ export default observer((props: any) => {
                     gallery: state.topic.summary?.author?.preview || [],
                   },
                   {
-                    hide: state.topic.summary.following.count === 0,
+                    hide: state.topic.summary.follower.count === 0,
                     topicUuid: state.topic.uuid,
                     type: 'TOPIC_FOLLOWERS',
                     title: '关注的人',
-                    content: `${state.topic.summary.following.count}个`,
-                    gallery: state.topic.summary.following.preview,
+                    content: `${state.topic.summary.follower.count}个`,
+                    gallery: state.topic.summary.follower.preview,
                   },
                 ]}
               />
