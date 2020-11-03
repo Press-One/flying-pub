@@ -187,6 +187,9 @@ export default observer(() => {
     }
 
     if (msg.notification.sub_type === NotificationSubType.ARTICLE_COMMENT) {
+      if (!msg.notification.extras.originUrl) {
+        return <div className="text-12 text-gray-af border-l-4 pl-2">评论已经被 Ta 删除了</div>;
+      }
       return (
         <div
           className="msg-comment-me"
