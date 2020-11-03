@@ -8,7 +8,6 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import VerticalAlignTop from '@material-ui/icons/VerticalAlignTop';
 import CreateIcon from '@material-ui/icons/Create';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
-import Settings from '@material-ui/icons/Settings';
 import Fade from '@material-ui/core/Fade';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';

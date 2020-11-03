@@ -178,6 +178,13 @@ exports.listBySubscriptions = async ctx => {
   if (followingTopicUuids.length > 0) {
     query.topicUuids = followingTopicUuids;
   }
+  if (followingAuthorAddresses.length === 0 && followingTopicUuids.length === 0) {
+    ctx.body = {
+      total: 0,
+      posts: [],
+    };
+    return;
+  }
   const result = await Post.list(query);
   ctx.body = {
     total: result.total,
