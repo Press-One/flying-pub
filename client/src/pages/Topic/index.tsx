@@ -42,20 +42,22 @@ const TopView = observer(
 
     const Buttons = () => (
       <div className="flex items-start">
-        <Button
-          className="mr-5"
-          onClick={() => {
-            if (!userStore.isLogin) {
-              modalStore.openLogin();
-              return;
-            }
-            state.showTopicContributionModal = true;
-          }}
-          size={isMobile ? 'small' : 'normal'}
-          color="green"
-        >
-          {props.isMyself ? '收录' : '投稿'}
-        </Button>
+        {(topic.contributionEnabled || props.isMyself) && (
+          <Button
+            className="mr-5"
+            onClick={() => {
+              if (!userStore.isLogin) {
+                modalStore.openLogin();
+                return;
+              }
+              state.showTopicContributionModal = true;
+            }}
+            size={isMobile ? 'small' : 'normal'}
+            color="green"
+          >
+            {props.isMyself ? '收录' : '投稿'}
+          </Button>
+        )}
         {topic.following ? (
           <Button
             outline
@@ -115,11 +117,7 @@ const TopView = observer(
                 {isMobile && <div className="mt-1">{Buttons()}</div>}
               </div>
             </div>
-            {isPc && (
-              <div className="pt-2 mt-16 mr-3">
-                {(topic.contributionEnabled || props.isMyself) && Buttons()}
-              </div>
-            )}
+            {isPc && <div className="pt-2 mt-16 mr-3">{Buttons()}</div>}
             {isMobile && props.isMyself && (
               <div
                 className="settings-btn text-24 absolute top-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"

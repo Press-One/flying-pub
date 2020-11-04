@@ -135,7 +135,9 @@ const TopicEditor = observer((props: IProps) => {
         <div className="mt-5 flex justify-center">
           <ImageEditor
             imageUrl={state.topic.cover}
-            width={120}
+            width={200}
+            placeholderWidth={120}
+            editorPlaceholderWidth={200}
             name="封面"
             getImageUrl={(url: string) => {
               state.topic.cover = url;

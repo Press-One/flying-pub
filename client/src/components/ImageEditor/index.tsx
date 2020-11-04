@@ -100,52 +100,58 @@ export default observer((props: any) => {
         <div className="mt-2 text-center text-18 py-4 font-bold">移动或缩放图片</div>
       </div>
       <div className="px-10">
-        <div
-          className="relative"
-          style={{
-            width: width * editorPlaceholderScale,
-            height: (width * editorPlaceholderScale) / ratio,
-          }}
-        >
+        <div className="md:mx-5">
           <div
-            className="top-0 canvas-container absolute"
-            style={{ transform: `translateX(-50%) scale(${editorPlaceholderScale})`, left: '50%' }}
+            className="relative mx-auto"
+            style={{
+              width: width * editorPlaceholderScale,
+              height: (width * editorPlaceholderScale) / ratio,
+            }}
           >
-            <AvatarEditor
-              ref={avatarEditorRef}
-              width={width}
-              height={width / ratio}
-              border={0}
-              scale={1.1 ** state.scale}
-              image={state.avatarTemp}
+            <div
+              className="top-0 canvas-container absolute"
+              style={{
+                transform: `translateX(-50%) scale(${editorPlaceholderScale})`,
+                left: '50%',
+              }}
+            >
+              <AvatarEditor
+                ref={avatarEditorRef}
+                width={width}
+                height={width / ratio}
+                border={0}
+                scale={1 * (state.scale > 1 ? state.scale : 1)}
+                image={state.avatarTemp}
+              />
+            </div>
+          </div>
+
+          <div className="slider-box flex items-center py-1 mt-1 text-xl text-gray-500">
+            <ZoomOut className="mx-2" />
+            <AvatarScaleSlider
+              className="mx-2"
+              step={0.001}
+              min={0}
+              onChange={(_e, v) => {
+                console.log({ 'state.scale': state.scale });
+                state.scale = v as number;
+              }}
+              max={5}
             />
+            <ZoomIn className="mx-2" />
+          </div>
+          <div className="m-3 flex pb-4 justify-center w-full md:w-auto">
+            <Button onClick={handleAvatarSubmit} isDoing={state.avatarLoading}>
+              确定
+            </Button>
           </div>
         </div>
-
-        <div className="slider-box flex items-center py-1 mt-1 text-xl text-gray-500">
-          <ZoomOut className="mx-2" />
-          <AvatarScaleSlider
-            className="mx-2"
-            step={0.001}
-            min={0}
-            onChange={(_e, v) => {
-              state.scale = v as number;
-            }}
-            max={20}
-          />
-          <ZoomIn className="mx-2" />
-        </div>
-        <div className="m-3 flex pb-4 justify-center w-full md:w-auto">
-          <Button onClick={handleAvatarSubmit} isDoing={state.avatarLoading}>
-            确定
-          </Button>
-        </div>
+        <style jsx>{`
+          .canvas-container {
+            transform-origin: top;
+          }
+        `}</style>
       </div>
-      <style jsx>{`
-        .canvas-container {
-          transform-origin: top;
-        }
-      `}</style>
     </div>
   );
 

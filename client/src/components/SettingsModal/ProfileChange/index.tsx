@@ -76,7 +76,7 @@ export const ProfileChange = observer(() => {
         <ImageEditor
           width={200}
           placeholderWidth={120}
-          editorPlaceholderWidth={300}
+          editorPlaceholderWidth={200}
           name="头像"
           imageUrl={state.avatar}
           getImageUrl={(url: string) => {

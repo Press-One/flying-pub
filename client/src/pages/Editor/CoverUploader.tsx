@@ -15,7 +15,7 @@ export default observer((props: any) => {
             imageUrl={cover}
             width={700}
             placeholderWidth={200}
-            editorPlaceholderWidth={400}
+            editorPlaceholderWidth={300}
             ratio={16 / 9}
             getImageUrl={(url: string) => {
               setCover(url);
