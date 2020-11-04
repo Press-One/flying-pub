@@ -115,10 +115,21 @@ export default observer(() => {
       );
     }
 
-    if (msg.notification.sub_type === NotificationSubType.TOPIC_RECEIVED_CONTRIBUTION) {
+    if (msg.notification.sub_type === NotificationSubType.TOPIC_POST_BE_CONTRIBUTED) {
       return (
         <div className="text-13">
-          向你的专题《
+          把你的文章《
+          <ModalLink
+            openInNew={isPc}
+            to={`/posts/${extras.postRId}`}
+            className="font-bold text-blue-400"
+            onClick={() => {
+              modalStore.closeNotification();
+            }}
+          >
+            {extras.postTitle}
+          </ModalLink>
+          》收录到专题《
           <ModalLink
             openInNew={isPc}
             to={`/topics/${extras.topicUuid}`}
@@ -129,7 +140,15 @@ export default observer(() => {
           >
             {extras.topicName}
           </ModalLink>
-          》投稿文章《
+          》
+        </div>
+      );
+    }
+
+    if (msg.notification.sub_type === NotificationSubType.TOPIC_RECEIVED_CONTRIBUTION) {
+      return (
+        <div className="text-13">
+          把文章《
           <ModalLink
             openInNew={isPc}
             to={`/posts/${extras.postRId}`}
@@ -139,6 +158,17 @@ export default observer(() => {
             }}
           >
             {extras.postTitle}
+          </ModalLink>
+          》投稿你的专题《
+          <ModalLink
+            openInNew={isPc}
+            to={`/topics/${extras.topicUuid}`}
+            className="font-bold text-blue-400"
+            onClick={() => {
+              modalStore.closeNotification();
+            }}
+          >
+            {extras.topicName}
           </ModalLink>
           》
         </div>

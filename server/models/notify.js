@@ -156,6 +156,25 @@ const notifyAuthorNewFollower = async (data) => {
   }
 };
 
+const notifyBeContributedToTopic = async (data) => {
+  const {
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_CONTRIBUTION",
+    sub_type: "TOPIC_POST_BE_CONTRIBUTED",
+    title: "你有一篇文章被收录到专题",
+    message: `你有一篇文章被收录到专题`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  try {
+    await notify(payload);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 const notifyTopicRejectedContribution = async (data) => {
   const {
     toUserName
@@ -202,6 +221,7 @@ module.exports = {
   notifyArticleLike,
   notifyArticleComment,
   notifyAuthorNewFollower,
+  notifyBeContributedToTopic,
   notifyTopicRejectedContribution,
   notifyTopicReceivedContribution
 };
