@@ -25,6 +25,7 @@ exports.get = async ctx => {
     author.avatar = author.avatar || authorUser.avatar;
     author.nickname = author.nickname || authorUser.nickname;
     author.bio = author.bio || authorUser.bio;
+    author.privateSubscriptionEnabled = authorUser.privateSubscriptionEnabled;
   }
 
   const [

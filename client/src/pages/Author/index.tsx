@@ -24,7 +24,14 @@ const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
 
 export default observer((props: any) => {
-  const { modalStore, userStore, snackbarStore, preloadStore, feedStore } = useStore();
+  const {
+    modalStore,
+    userStore,
+    snackbarStore,
+    preloadStore,
+    feedStore,
+    confirmDialogStore,
+  } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
     isFetchedAuthor: false,
@@ -147,8 +154,17 @@ export default observer((props: any) => {
       state.author.avatar = user.avatar;
       state.author.cover = user.cover;
       state.author.bio = user.bio;
+      state.author.privateSubscriptionEnabled = user.privateSubscriptionEnabled;
     }
-  }, [user.nickname, user.avatar, user.cover, user.bio, isMyself, state]);
+  }, [
+    user.nickname,
+    user.avatar,
+    user.cover,
+    user.bio,
+    user.privateSubscriptionEnabled,
+    isMyself,
+    state,
+  ]);
 
   React.useEffect(() => {
     feedStore.setBelongedAuthor(toJS(state.author));
@@ -158,6 +174,7 @@ export default observer((props: any) => {
     state.author.avatar,
     state.author.cover,
     state.author.bio,
+    state.author.privateSubscriptionEnabled,
     feedStore,
   ]);
 
@@ -275,12 +292,23 @@ export default observer((props: any) => {
                     <span
                       className="cursor-pointer mt-2"
                       onClick={() => {
-                        modalStore.openUserList({
-                          authorAddress: state.author.address,
-                          title: `${thatName}关注的人`,
-                          type: 'FOLLOWING_USERS',
-                          onClose: () => fetchAuthor('SILENT'),
-                        });
+                        if (isMyself || !state.author.privateSubscriptionEnabled) {
+                          modalStore.openUserList({
+                            authorAddress: state.author.address,
+                            title: `${thatName}关注的人`,
+                            type: 'FOLLOWING_USERS',
+                            onClose: () => fetchAuthor('SILENT'),
+                          });
+                        } else {
+                          confirmDialogStore.show({
+                            content: 'Ta 没有公开这个列表哦',
+                            okText: '我知道了',
+                            cancelDisabled: true,
+                            ok: () => {
+                              confirmDialogStore.hide();
+                            },
+                          });
+                        }
                       }}
                     >
                       <span className="text-16 font-bold">
@@ -296,12 +324,23 @@ export default observer((props: any) => {
                     <span
                       className="cursor-pointer mt-2"
                       onClick={() => {
-                        modalStore.openUserList({
-                          authorAddress: state.author.address,
-                          title: `关注${thatName}的人`,
-                          type: 'USER_FOLLOWERS',
-                          onClose: () => fetchAuthor('SILENT'),
-                        });
+                        if (isMyself || !state.author.privateSubscriptionEnabled) {
+                          modalStore.openUserList({
+                            authorAddress: state.author.address,
+                            title: `关注${thatName}的人`,
+                            type: 'USER_FOLLOWERS',
+                            onClose: () => fetchAuthor('SILENT'),
+                          });
+                        } else {
+                          confirmDialogStore.show({
+                            content: 'Ta 没有公开这个列表哦',
+                            okText: '我知道了',
+                            cancelDisabled: true,
+                            ok: () => {
+                              confirmDialogStore.hide();
+                            },
+                          });
+                        }
                       }}
                     >
                       <span className="text-16 font-bold">
@@ -400,7 +439,9 @@ export default observer((props: any) => {
                           onClose: () => fetchAuthor('SILENT'),
                         },
                         {
-                          hide: state.author.summary?.followingAuthor.count === 0,
+                          hide:
+                            (state.author.privateSubscriptionEnabled && !isMyself) ||
+                            state.author.summary?.followingAuthor.count === 0,
                           authorAddress: state.author.address,
                           type: 'FOLLOWING_USERS',
                           title: `关注的人`,
@@ -409,7 +450,9 @@ export default observer((props: any) => {
                           onClose: () => fetchAuthor('SILENT'),
                         },
                         {
-                          hide: state.author.summary?.follower.count === 0,
+                          hide:
+                            (state.author.privateSubscriptionEnabled && !isMyself) ||
+                            state.author.summary?.follower.count === 0,
                           authorAddress: state.author.address,
                           type: 'USER_FOLLOWERS',
                           title: `关注${thatName}的人`,
@@ -518,7 +561,9 @@ export default observer((props: any) => {
                     onClose: () => fetchAuthor('SILENT'),
                   },
                   {
-                    hide: state.author.summary?.followingAuthor.count === 0,
+                    hide:
+                      (state.author.privateSubscriptionEnabled && !isMyself) ||
+                      state.author.summary?.followingAuthor.count === 0,
                     authorAddress: state.author.address,
                     type: 'FOLLOWING_USERS',
                     title: `关注的人`,
@@ -527,7 +572,9 @@ export default observer((props: any) => {
                     onClose: () => fetchAuthor('SILENT'),
                   },
                   {
-                    hide: state.author.summary?.follower.count === 0,
+                    hide:
+                      (state.author.privateSubscriptionEnabled && !isMyself) ||
+                      state.author.summary?.follower.count === 0,
                     authorAddress: state.author.address,
                     type: 'USER_FOLLOWERS',
                     title: `关注${thatName}的人`,

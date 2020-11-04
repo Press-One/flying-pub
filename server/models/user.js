@@ -29,6 +29,7 @@ const packUser = async (user, options = {}) => {
     avatar: user.avatar,
     cover: user.cover,
     bio: user.bio,
+    privateSubscriptionEnabled: user.privateSubscriptionEnabled
   };
 
   if (options.withSSO) {

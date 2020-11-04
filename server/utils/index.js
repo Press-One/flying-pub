@@ -30,7 +30,7 @@ exports.truncate = (text, max = 8) => {
 
 exports.removeEmpty = (obj) => {
   for (const key of Object.keys(obj)) {
-    if (!obj[key]) {
+    if (!obj[key] && obj[key] !== false) {
       delete obj[key];
     }
   }

@@ -38,6 +38,10 @@ const User = sequelize.define('users', {
   version: {
     type: Sequelize.INTEGER,
     defaultValue: 0
+  },
+  privateSubscriptionEnabled: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,

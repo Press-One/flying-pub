@@ -176,7 +176,7 @@ exports.listBySubscriptions = async ctx => {
   });
   const followingTopicUuids = followingTopics.map(topics => topics.uuid);
   if (followingTopicUuids.length > 0) {
-    query.topicUuids = followingTopicUuids;
+    // query.topicUuids = followingTopicUuids;
   }
   if (followingAuthorAddresses.length === 0 && followingTopicUuids.length === 0) {
     ctx.body = {

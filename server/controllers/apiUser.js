@@ -63,6 +63,7 @@ exports.put = async (ctx) => {
     nickname,
     avatar,
     bio,
+    privateSubscriptionEnabled
   } = ctx.request.body || {};
   const {
     user,
@@ -73,7 +74,7 @@ exports.put = async (ctx) => {
   }
 
   const data = removeEmpty(ctx.request.body);
-  const support_fields = ['nickname', 'bio', 'avatar', 'cover'];
+  const support_fields = ['nickname', 'bio', 'avatar', 'cover', 'privateSubscriptionEnabled'];
   for (const [k, _] of Object.entries(data)) {
     if (!support_fields.includes(k)) {
       throws(Errors.ERR_IS_INVALID(k));

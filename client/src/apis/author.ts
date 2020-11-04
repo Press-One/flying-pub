@@ -7,6 +7,7 @@ export interface IAuthor {
   cover: string;
   nickname: string;
   bio?: string;
+  privateSubscriptionEnabled: boolean;
   following?: boolean;
   summary?: {
     followingAuthor: {

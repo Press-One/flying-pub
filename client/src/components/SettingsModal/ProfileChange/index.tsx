@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { when } from 'mobx';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import ImageEditor from 'components/ImageEditor';
-import { TextField } from '@material-ui/core';
+import { TextField, Switch } from '@material-ui/core';
 import Button from 'components/Button';
 import { useStore } from 'store';
 import { isMobile, sleep } from 'utils';
@@ -17,6 +17,7 @@ export const ProfileChange = observer(() => {
     cover: '',
     nickname: '',
     bio: '',
+    privateSubscriptionEnabled: false,
     submitting: false,
     submitDone: false,
   }));
@@ -30,6 +31,7 @@ export const ProfileChange = observer(() => {
     const bio = state.bio;
     const avatar = state.avatar;
     const cover = state.cover;
+    const privateSubscriptionEnabled = state.privateSubscriptionEnabled;
 
     try {
       await Api.updateUser({
@@ -37,12 +39,14 @@ export const ProfileChange = observer(() => {
         cover: state.cover,
         nickname: state.nickname,
         bio: state.bio,
+        privateSubscriptionEnabled: state.privateSubscriptionEnabled,
       });
       const user = userStore.user;
       user.avatar = avatar;
       user.cover = cover;
       user.nickname = nickname;
       user.bio = bio;
+      user.privateSubscriptionEnabled = privateSubscriptionEnabled;
       state.submitDone = true;
       if (isMobile) {
         (async () => {
@@ -63,6 +67,7 @@ export const ProfileChange = observer(() => {
         state.cover = userStore.user.cover;
         state.nickname = userStore.user.nickname;
         state.bio = userStore.user.bio;
+        state.privateSubscriptionEnabled = userStore.user.privateSubscriptionEnabled;
       },
     );
 
@@ -131,12 +136,23 @@ export const ProfileChange = observer(() => {
         />
       </div>
 
+      <div className="flex items-center mt-3 w-full">
+        <div className="font-bold text-14 text-gray-700">关注和关注者列表对他人不可见：</div>
+        <Switch
+          color="primary"
+          checked={state.privateSubscriptionEnabled}
+          onChange={(e) => {
+            state.privateSubscriptionEnabled = e.target.checked;
+          }}
+        />
+      </div>
+
       <div
         className={classNames(
           {
             'w-full': isMobile,
           },
-          'mt-10',
+          'mt-8 md:mt-10',
         )}
       >
         <Button

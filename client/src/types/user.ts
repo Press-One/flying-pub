@@ -4,5 +4,6 @@ export default interface IUser {
   avatar: string;
   cover: string;
   bio?: string;
+  privateSubscriptionEnabled: boolean;
   nickname: string;
 }
