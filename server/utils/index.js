@@ -38,3 +38,5 @@ exports.removeEmpty = (obj) => {
 }
 
 exports.listToJSON = list => list.map(item => item.toJSON())
+
+exports.getHost = () => `${config.settings['site.url'] || config.serviceRoot}`;

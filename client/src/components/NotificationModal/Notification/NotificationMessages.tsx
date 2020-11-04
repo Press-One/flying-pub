@@ -11,7 +11,7 @@ import {
 import { ago, removeUrlHost } from 'utils';
 import marked from 'marked';
 import ModalLink from 'components/ModalLink';
-import { resizeImage, isMobile, isPc } from 'utils';
+import { resizeImage } from 'utils';
 
 const defaultAvatar = resizeImage('https://avatar.xue.cn/avatar/default.png');
 
@@ -25,8 +25,6 @@ export default observer(() => {
     [NotificationSubType.ARTICLE_COMMENT]: '评论了你的文章',
     [NotificationSubType.COMMENT_MENTION_ME]: '回复了你',
     [NotificationSubType.LIKE]: '赞了你的',
-    [NotificationSubType.AUTHOR_NEW_FOLLOWER]: '关注了你',
-    [NotificationSubType.ARTICLE_REWARD]: '打赏了你的文章',
     [CombinedNotificationType.OTHERS]: '其他',
   };
   const typeToTitle: any = {
@@ -63,22 +61,20 @@ export default observer(() => {
 
     if (msg.notification.sub_type === NotificationSubType.ARTICLE_REWARD) {
       return (
-        <p className="msg-reward-me flex items-center">
+        <div className="text-13">
+          打赏了你的文章《
           <ModalLink
-            openInNew={isPc}
             to={removeUrlHost(extras.originUrl)}
             className="font-bold text-blue-400"
             onClick={() => {
               modalStore.closeNotification();
             }}
           >
-            <span>
-              {extras.fromArticleTitle}
-              <span className="text-green-500 amount ml-2 font-bold">{extras.amount}</span>
-              <span className="ml-1 text-xs text-gray-600 font-bold">{extras.currency || ''}</span>
-            </span>
+            {extras.fromArticleTitle}
           </ModalLink>
-        </p>
+          》 <span className="text-green-500 amount font-bold">{extras.amount}</span>{' '}
+          <span className="text-xs text-gray-600 font-bold">{extras.currency || ''}</span>
+        </div>
       );
     }
 
@@ -88,7 +84,6 @@ export default observer(() => {
     ) {
       return (
         <ModalLink
-          openInNew={isPc}
           to={removeUrlHost(extras.originUrl)}
           className="font-bold text-blue-400"
           onClick={() => {
@@ -101,17 +96,24 @@ export default observer(() => {
     }
 
     if (msg.notification.sub_type === NotificationSubType.AUTHOR_NEW_FOLLOWER) {
+      return <div className="text-13">关注了你</div>;
+    }
+
+    if (msg.notification.sub_type === NotificationSubType.TOPIC_NEW_FOLLOWER) {
       return (
-        <ModalLink
-          openInNew={isPc}
-          to={`/authors/${extras.fromUserName}`}
-          className="font-bold text-blue-400 text-13"
-          onClick={() => {
-            modalStore.closeNotification();
-          }}
-        >
-          去 Ta 的主页看看
-        </ModalLink>
+        <div className="text-13">
+          关注了你的专题《
+          <ModalLink
+            to={`/topics/${extras.topicUuid}`}
+            className="font-bold text-blue-400"
+            onClick={() => {
+              modalStore.closeNotification();
+            }}
+          >
+            {extras.topicName}
+          </ModalLink>
+          》
+        </div>
       );
     }
 
@@ -120,7 +122,6 @@ export default observer(() => {
         <div className="text-13">
           把你的文章《
           <ModalLink
-            openInNew={isPc}
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -131,7 +132,6 @@ export default observer(() => {
           </ModalLink>
           》收录到专题《
           <ModalLink
-            openInNew={isPc}
             to={`/topics/${extras.topicUuid}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -150,7 +150,6 @@ export default observer(() => {
         <div className="text-13">
           把文章《
           <ModalLink
-            openInNew={isPc}
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -161,7 +160,6 @@ export default observer(() => {
           </ModalLink>
           》投稿你的专题《
           <ModalLink
-            openInNew={isPc}
             to={`/topics/${extras.topicUuid}`}
             className="font-bold text-blue-400"
             onClick={() => {
@@ -181,7 +179,6 @@ export default observer(() => {
           <div className="text-13">
             从专题《
             <ModalLink
-              openInNew={isPc}
               to={`/topics/${extras.topicUuid}`}
               className="font-bold text-blue-400"
               onClick={() => {
@@ -192,7 +189,6 @@ export default observer(() => {
             </ModalLink>
             》 移除了你的文章《
             <ModalLink
-              openInNew={isPc}
               to={`/posts/${extras.postRId}`}
               className="font-bold text-blue-400"
               onClick={() => {
@@ -259,7 +255,6 @@ export default observer(() => {
           >
             <div className="msg-avatar">
               <ModalLink
-                openInNew={isPc}
                 to={`/authors/${msg.notification.extras.fromUserName}`}
                 className="font-bold text-blue-400"
                 onClick={() => {
@@ -278,7 +273,6 @@ export default observer(() => {
             <div className="msg-body mx-3 flex-1">
               <p className="msg-title mb-2">
                 <ModalLink
-                  openInNew={isPc}
                   to={`/authors/${msg.notification.extras.fromUserName}`}
                   className="font-bold text-blue-400"
                   onClick={() => {
@@ -302,7 +296,6 @@ export default observer(() => {
                 {msg.notification.type === NotificationType.COMMENT &&
                   msg.notification.sub_type === NotificationSubType.LIKE && (
                     <ModalLink
-                      openInNew={isPc}
                       to={removeUrlHost(msg.notification.extras.originUrl)}
                       className="text-12 msg-link"
                       onClick={() => {
@@ -316,11 +309,10 @@ export default observer(() => {
                   msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) &&
                   msg.notification.extras.originUrl && (
                     <ModalLink
-                      openInNew={isPc}
                       to={removeUrlHost(msg.notification.extras.originUrl)}
                       className="text-12 msg-link flex items-center"
                       onClick={() => {
-                        isMobile && modalStore.closeNotification();
+                        modalStore.closeNotification();
                       }}
                     >
                       <span className="mr-1">去回复</span>

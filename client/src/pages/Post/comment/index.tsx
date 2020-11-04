@@ -19,7 +19,6 @@ import {
   isPc,
   initMathJax,
   getQuery,
-  removeQuery,
   scrollToHere,
   scrollToElementById,
 } from 'utils';
@@ -87,7 +86,6 @@ export default observer((props: IProps) => {
         setSelectedCommentId(selectedCommentId);
         const element: any = scrollToElementById(`#comment_${selectedCommentId}`, scrollOptions);
         modalStore.closePageLoading();
-        removeQuery('commentId');
         if (!element) {
           await sleep(200);
           confirmDialogStore.show({
@@ -170,15 +168,24 @@ export default observer((props: IProps) => {
       }
       scrollToHere(99999);
     } catch (e) {
-      console.log(e);
-      let msg;
-      if (e.message.includes('comment is invalid. reason: comment contains sensitive words')) {
-        msg = '您的评论含有敏感词';
+      if (e.status === 404) {
+        const message = e.message.includes('post')
+          ? '文章已经被作者删除了'
+          : '评论已经被 Ta 删除了';
+        snackbarStore.show({
+          message,
+          type: 'error',
+        });
+      } else {
+        let msg;
+        if (e.message.includes('comment is invalid. reason: comment contains sensitive words')) {
+          msg = '您的评论含有敏感词';
+        }
+        snackbarStore.show({
+          message: msg || e.message || '发布失败，请稍后重试',
+          type: 'error',
+        });
       }
-      snackbarStore.show({
-        message: msg || e.message || '发布失败，请稍后重试',
-        type: 'error',
-      });
     } finally {
       openDrawer ? setIsDrawerCreatingComment(false) : setIsCreatingComment(false);
     }
@@ -212,7 +219,14 @@ export default observer((props: IProps) => {
         type: 'UP',
       });
       commentStore.updateComment(comment);
-    } catch (err) {}
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '评论已经被 Ta 删除了',
+          type: 'error',
+        });
+      }
+    }
     setIsVoting(false);
   };
 
@@ -227,7 +241,14 @@ export default observer((props: IProps) => {
         objectId: commentId,
       });
       commentStore.updateComment(comment);
-    } catch (err) {}
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '评论已经被 Ta 删除了',
+          type: 'error',
+        });
+      }
+    }
     setIsVoting(false);
   };
 
@@ -350,7 +371,13 @@ export default observer((props: IProps) => {
         <div className="fixed z-10 bottom-0 left-0 w-full py-2 border-t border-gray-300 bg-white flex items-center justify-between">
           <div
             className="flex-1 ml-3 mr-3 rounded-lg bg-gray-200 text-gray-600 py-2 px-3"
-            onClick={() => setOpenDrawer(true)}
+            onClick={() => {
+              setOpenDrawer(true);
+              stopBodyScroll(true);
+              setTimeout(() => {
+                setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
+              }, 400);
+            }}
           >
             说点什么...
           </div>
@@ -475,7 +502,9 @@ export default observer((props: IProps) => {
               onClick={() => {
                 setOpenDrawer(true);
                 stopBodyScroll(true);
-                setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
+                setTimeout(() => {
+                  setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
+                }, 400);
               }}
             >
               说点什么

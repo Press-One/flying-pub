@@ -51,7 +51,7 @@ const PostEntry = (props: IPostProps) => {
   return (
     <div>
       <div id={post.rId} />
-      <div className="border-b border-gray-300 md:border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
+      <div className="border-b border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
         <div className="flex justify-between items-start px-4">
           <div className="text-gray-88 box-border flex-1">
             <div

@@ -1,7 +1,6 @@
 const config = require("../config");
 const Comment = require("../models/comment");
 const Post = require("../models/post");
-const File = require("../models/file");
 const User = require("../models/user");
 const Log = require("../models/log");
 const Mixin = require("../models/mixin");
@@ -46,9 +45,15 @@ exports.create = async (ctx) => {
     );
   }
 
+  const post = await Post.getLatestByRId(data.objectId);
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  data.objectId = post.rId;
+  if (data.replyId) {
+    const replyComment = await Comment.get(data.replyId);
+    assert(replyComment, Errors.ERR_NOT_FOUND("replyComment"));
+  }
   const comment = await Comment.create(user.id, data);
   const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?commentId=${comment.id}`;
-  const post = await Post.getByRId(data.objectId);
 
   // 两个词的也暂时不管了，因为误伤率还是太高了 (By Junhong)
   offWords = offWords.filter(word => word.length > 2);
@@ -63,32 +68,28 @@ exports.create = async (ctx) => {
 
   (async () => {
     try {
-
       if (mentionsUserIds.length === 0) {
         try {
-          const file = await File.getByRId(data.objectId);
-          if (file) {
-            const authorUser = await User.getByAddress(post.author.address);
-            const isMyself = user.address === post.author.address;
-            if (!isMyself) {
-              await Mixin.pushToNotifyQueue({
-                userId: authorUser.id,
-                text: `${truncate(user.nickname)} 刚刚回复了你的文章`,
-                url: originUrl
-              });
+          const authorUser = await User.getByAddress(post.author.address);
+          const isMyself = user.address === post.author.address;
+          if (!isMyself) {
+            await Mixin.pushToNotifyQueue({
+              userId: authorUser.id,
+              text: `${truncate(user.nickname)} 刚刚回复了你的文章`,
+              url: originUrl
+            });
 
-              await notifyArticleComment({
-                fromUserName: user.address,
-                fromNickName: user.nickname,
-                fromUserAvatar: user.avatar,
-                fromContent: comment.content,
-                originUrl,
-                toUserName: authorUser.address,
-                toNickName: authorUser.nickname,
-                fromArticleId: file.rId,
-                fromArticleTitle: file.title,
-              });
-            }
+            await notifyArticleComment({
+              fromUserName: user.address,
+              fromNickName: user.nickname,
+              fromUserAvatar: user.avatar,
+              fromContent: comment.content,
+              originUrl,
+              toUserName: authorUser.address,
+              toNickName: authorUser.nickname,
+              fromArticleId: post.rId,
+              fromArticleTitle: post.title,
+            });
           }
         } catch (err) {
           console.log(err);
@@ -124,6 +125,16 @@ exports.create = async (ctx) => {
           });
         }
 
+      }
+
+      if (data.content.includes('@新作小助手') || data.content.includes('@小助手')) {
+        if (config.assistantUserId) {
+          await Mixin.pushToNotifyQueue({
+            userId: config.assistantUserId,
+            text: `有人@小助手`,
+            url: originUrl,
+          });
+        }
       }
     } catch (e) {
       console.log(e);

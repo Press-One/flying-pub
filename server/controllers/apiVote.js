@@ -1,7 +1,6 @@
 const config = require("../config");
 const Vote = require("../models/vote");
 const Post = require("../models/post");
-const File = require("../models/file");
 const Sync = require("../models/sync");
 const Log = require("../models/log");
 const Mixin = require("../models/mixin");
@@ -28,31 +27,39 @@ exports.create = async (ctx) => {
   assert(data.objectType, Errors.ERR_IS_REQUIRED("data.objectType"));
   assert(data.objectId, Errors.ERR_IS_REQUIRED("data.objectId"));
   const userId = user.id;
-  const {
-    objectType,
-    objectId
-  } = data;
   const isVoteExist = await Vote.isVoted(
     userId,
-    objectType,
-    objectId,
-    "comments"
+    data.objectType,
+    data.objectId
   );
   assert(!isVoteExist, Errors.ERR_IS_DUPLICATED("vote"));
+
+  let object = null;
+
+  if (data.objectType === 'comments') {
+    object = await Comment.get(data.objectId);
+    assert(object, Errors.ERR_NOT_FOUND("comment"));
+  }
+  if (data.objectType === 'posts') {
+    object = await Post.getLatestByRId(data.objectId);
+    assert(object, Errors.ERR_NOT_FOUND("post"));
+    data.objectId = object.rId;
+  }
+
   await Vote.create(userId, {
-    objectType,
-    objectId,
+    objectType: data.objectType,
+    objectId: data.objectId,
     type: data.type,
   });
-  const object = await Sync.syncVote(objectType, objectId, {
+  const votedObject = await Sync.syncVote(data.objectType, data.objectId, {
     userId,
   });
-  ctx.body = object;
+  ctx.body = votedObject;
   (async () => {
-    if (objectType === "comments") {
+    if (data.objectType === "comments") {
       try {
-        const comment = await Comment.get(objectId);
-        const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${comment.objectId}?commentId=${objectId}`;
+        const comment = object;
+        const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${comment.objectId}?commentId=${data.objectId}`;
 
         try {
           const isMyself = user.id === comment.userId;
@@ -82,34 +89,31 @@ exports.create = async (ctx) => {
         console.log(err);
       }
     }
-    if (objectType === "posts") {
+    if (data.objectType === "posts") {
       try {
-        const file = await File.getByRId(objectId);
-        if (file) {
-          const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${objectId}`;
-          const post = await Post.getByRId(data.objectId);
-          const authorUser = await User.getByAddress(post.author.address);
-          const isMyself = user.address === post.author.address;
-          if (!isMyself) {
-            await Mixin.pushToNotifyQueue({
-              userId: authorUser.id,
-              text: `《${truncate(file.title)}》收到了一个赞`,
-              url: originUrl
-            });
+        const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}`;
+        const post = object;
+        const authorUser = await User.getByAddress(post.author.address);
+        const isMyself = user.address === post.author.address;
+        if (!isMyself) {
+          await Mixin.pushToNotifyQueue({
+            userId: authorUser.id,
+            text: `《${truncate(post.title)}》收到了一个赞`,
+            url: originUrl
+          });
 
-            await notifyArticleLike({
-              fromUserName: user.address,
-              fromNickName: user.nickname,
-              fromUserAvatar: user.avatar,
-              originUrl,
-              toUserName: authorUser.address,
-              toNickName: authorUser.nickname,
-              fromArticleId: file.rId,
-              fromArticleTitle: file.title,
-            });
-          }
-          Log.create(userId, `点赞文章 ${originUrl}`);
+          await notifyArticleLike({
+            fromUserName: user.address,
+            fromNickName: user.nickname,
+            fromUserAvatar: user.avatar,
+            originUrl,
+            toUserName: authorUser.address,
+            toNickName: authorUser.nickname,
+            fromArticleId: post.rId,
+            fromArticleTitle: post.title,
+          });
         }
+        Log.create(userId, `点赞文章 ${originUrl}`);
       } catch (err) {
         console.log(err);
       }
@@ -128,6 +132,17 @@ exports.delete = async (ctx) => {
     objectType,
     objectId
   } = data;
+
+  if (data.objectType === 'comments') {
+    const comment = await Comment.get(data.objectId);
+    assert(comment, Errors.ERR_NOT_FOUND("comment"));
+  }
+  if (data.objectType === 'posts') {
+    const post = await Post.getLatestByRId(data.objectId);
+    assert(post, Errors.ERR_NOT_FOUND("post"));
+    data.objectId = post.rId;
+  }
+
   await Vote.delete(userId, objectType, objectId);
   const object = await Sync.syncVote(objectType, objectId, {
     userId,

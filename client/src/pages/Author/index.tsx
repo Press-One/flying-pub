@@ -219,7 +219,12 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div className="w-full md:w-916 md:m-auto -mt-2 md:mt-0">
+      <div
+        className="w-full md:w-916 md:m-auto"
+        style={{
+          marginTop: isPc ? '0' : '-6px',
+        }}
+      >
         <div>
           <div className="flex items-stretch overflow-hidden relative pb-6 md:rounded-12">
             <div

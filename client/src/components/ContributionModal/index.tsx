@@ -82,6 +82,12 @@ const TopicLists = observer((props: IProps) => {
       await topicApi.addContribution(topic.uuid, post.rId);
       state.includedTopicUuidMap[topic.uuid] = true;
     } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
       console.log(err);
     }
   };

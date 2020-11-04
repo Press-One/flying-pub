@@ -65,8 +65,6 @@ exports.upsert = async (address, data) => {
     });
     if (data.status) {
       Log.createAnonymity('更新作者状态', `${address} ${data.status}`);
-    } else {
-      Log.createAnonymity('更新作者资料', `${address}`);
     }
   } else {
     verifiedData.status = verifiedData.status || 'allow';

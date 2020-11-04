@@ -194,6 +194,7 @@ export default observer(() => {
       if (userStore.isLogin) {
         await settingsApi.saveSettings(settings);
       }
+      settingsStore.updateSettings(settings);
     } catch (err) {}
   };
 

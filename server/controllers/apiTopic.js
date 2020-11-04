@@ -10,12 +10,14 @@ const {
 } = require("../utils/validator");
 const _ = require('lodash');
 const {
+  notifyTopicNewFollower,
   notifyBeContributedToTopic,
   notifyTopicReceivedContribution,
   notifyTopicRejectedContribution
 } = require("../models/notify");
 const Mixin = require("../models/mixin");
 const Log = require('../models/log');
+const { truncate, getHost } = require('../utils');
 
 exports.get = async ctx => {
   const currentUser = ctx.verification && ctx.verification.sequelizeUser;
@@ -101,16 +103,16 @@ exports.addContribution = async ctx => {
     raw: true,
   });
   assert(topic, Errors.ERR_NOT_FOUND("topic"));
-  const post = await Post.getByRId(data.rId, {
+  const post = await Post.getLatestByRId(data.rId, {
     raw: true
   });
   assert(post, Errors.ERR_NOT_FOUND("post"));
   await topic.addPosts(post);
   const isPostOwner = user.address === post.userAddress;
   if (isPostOwner) {
-    Log.create(user.id, `向专题 ${topic.uuid} ${topic.name} 投稿 ${post.rId} ${post.title}`);
+    Log.create(user.id, `向专题 ${topic.uuid} ${topic.name} 投稿 ${post.title} ${getHost()}/posts/${post.rId}`);
   } else {
-    Log.create(user.id, `收录 ${post.rId} ${post.title} 到专题 ${topic.uuid} ${topic.name} `);
+    Log.create(user.id, `给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
   }
   if (isPostOwner) {
     (async () => {
@@ -132,7 +134,7 @@ exports.addContribution = async ctx => {
           toUserName: topicOwner.address,
           toNickName: topicOwner.nickname,
         });
-        const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${post.rId}`;
+        const originUrl = `${getHost()}/posts/${post.rId}`;
         await Mixin.pushToNotifyQueue({
           userId: topic.userId,
           text: `你的专题收到一个新的投稿`,
@@ -157,7 +159,7 @@ exports.addContribution = async ctx => {
           toUserName: post.author.address,
           toNickName: post.author.nickname,
         });
-        const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${post.rId}`;
+        const originUrl = `${getHost()}/posts/${post.rId}`;
         const authorUser = await User.getByAddress(post.author.address);
         await Mixin.pushToNotifyQueue({
           userId: authorUser.id,
@@ -186,7 +188,7 @@ exports.removeContribution = async ctx => {
   });
   assert(post, Errors.ERR_NOT_FOUND("post"));
   await topic.removePosts(post);
-  Log.create(user.id, `从专题 ${topic.uuid} ${topic.name} 移除 ${post.rId} ${post.title}`);
+  Log.create(user.id, `从专题 ${topic.uuid} ${topic.name} 移除 ${post.title} ${getHost()}/posts/${post.rId}`);
   (async () => {
     try {
       const post = await Post.getByRId(data.rId);
@@ -207,7 +209,7 @@ exports.removeContribution = async ctx => {
         toUserName: post.author.address,
         toNickName: post.author.nickname,
       });
-      const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${post.rId}`;
+      const originUrl = `${getHost()}/posts/${post.rId}`;
       const authorUser = await User.getByAddress(post.author.address);
       await Mixin.pushToNotifyQueue({
         userId: authorUser.id,
@@ -269,7 +271,33 @@ exports.addFollower = async ctx => {
   });
   assert(topic, Errors.ERR_NOT_FOUND('topic'));
   await topic.addFollowers(user);
-  Log.create(user.id, `关注专题 ${topic.uuid} ${topic.name}`);
+  Log.create(user.id, `关注专题 ${topic.name} ${getHost()}/topics/${topic.uuid}`);
+  (async () => {
+    try {
+      const isMyself = user.id == topic.userId;
+      if (isMyself) {
+        return;
+      }
+      const topicOwner = await User.get(topic.userId);
+      await notifyTopicNewFollower({
+        fromUserName: user.address,
+        fromNickName: user.nickname,
+        fromUserAvatar: user.avatar,
+        topicUuid: topic.uuid,
+        topicName: topic.name,
+        toUserName: topicOwner.address,
+        toNickName: topicOwner.nickname,
+      });
+      const originUrl = `${getHost()}/authors/${user.address}`;
+      await Mixin.pushToNotifyQueue({
+        userId: topicOwner.id,
+        text: `${truncate(user.nickname)} 关注了你的专题`,
+        url: originUrl
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  })();
   ctx.body = true;
 }
 

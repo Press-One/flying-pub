@@ -33,7 +33,6 @@ async function notify(payload, messageType = "private_message", channel = "all")
 const notifyCommentMention = async (data) => {
   const {
     fromNickName,
-    fromArticleTitle,
     toUserName
   } = data;
   const payload = {
@@ -156,6 +155,26 @@ const notifyAuthorNewFollower = async (data) => {
   }
 };
 
+const notifyTopicNewFollower = async (data) => {
+  const {
+    fromNickName,
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_SUBSCRIPTION",
+    sub_type: "TOPIC_NEW_FOLLOWER",
+    title: "有人关注了你的专题",
+    message: `${fromNickName}关注了你的专题`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  try {
+    await notify(payload);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 const notifyBeContributedToTopic = async (data) => {
   const {
     toUserName
@@ -221,6 +240,7 @@ module.exports = {
   notifyArticleLike,
   notifyArticleComment,
   notifyAuthorNewFollower,
+  notifyTopicNewFollower,
   notifyBeContributedToTopic,
   notifyTopicRejectedContribution,
   notifyTopicReceivedContribution

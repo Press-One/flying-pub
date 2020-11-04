@@ -43,7 +43,12 @@ const Reader = () => {
         component={() => (
           <div>
             <div className="gray-bg">
-              <div className={`container m-auto pt-2 min-h-screen`}>
+              <div
+                className={`container m-auto min-h-screen`}
+                style={{
+                  paddingTop: isPc ? '0.5rem' : '6px',
+                }}
+              >
                 <Route path="/" exact component={Feed} />
                 <Route path="/authors/:address" exact component={Author} />
                 <Route path="/topics/:uuid" exact component={Topic} />

@@ -16,5 +16,10 @@ export function createSettingsStore() {
     setSettings(settings: any = {}) {
       this.settings = addDefaultValue(settings);
     },
+    updateSettings(data: any = {}) {
+      for (const key in data) {
+        this.settings[key] = data[key]; 
+      }
+    },
   };
 }

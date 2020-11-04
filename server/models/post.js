@@ -7,6 +7,7 @@ const Post = require('./sequelize/post');
 const { getTopicOrderQuery } = require('./topic');
 const Topic = require('./sequelize/topic');
 const Author = require('./sequelize/author');
+const User = require('./user');
 const {
   packAuthor
 } = require('./author');
@@ -26,7 +27,8 @@ const packPost = async (post, options = {}) => {
     withContent = false,
     withPaymentUrl = false,
     withTopic = true,
-    dropAuthor = false
+    dropAuthor = false,
+    includeAuthor = true
   } = options;
   const postJson = post.toJSON();
 
@@ -52,11 +54,21 @@ const packPost = async (post, options = {}) => {
   if (!withContent) {
     delete postJson.content;
   }
-  if (dropAuthor) {
-    delete postJson.author;
-  }
-  if (postJson.author) {
-    postJson.author = packAuthor(postJson.author);
+  if (includeAuthor) {
+    if (dropAuthor) {
+      delete postJson.author;
+    } else {
+      if (!postJson.author.nickname) {
+        const authorUser = await User.getByAddress(postJson.author.address);
+        postJson.author.nickname = authorUser.nickname;
+        postJson.author.avatar = authorUser.avatar;
+        postJson.author.cover = authorUser.cover;
+        postJson.author.bio = authorUser.bio;
+      }
+    }
+    if (postJson.author) {
+      postJson.author = packAuthor(postJson.author);
+    }
   }
   if (withVoted) {
     const voted = !!userId && await Vote.isVoted(userId, 'posts', postJson.rId);
@@ -105,6 +117,19 @@ const getByRId = async (rId, options = {}) => {
   return post ? await packPost(post, options) : null;
 }
 exports.getByRId = getByRId;
+
+exports.getLatestByRId = async (rId, options = {}) => {
+  const rawPost = await Post.findOne({
+    where: {
+      rId
+    }
+  });
+  if (!rawPost) {
+    return null;
+  }
+  const latestPost = await getByRId(rawPost.latestRId || rawPost.rId, options);
+  return latestPost;
+}
 
 const updateByRId = async (rId, data) => {
   assert(rId, Errors.ERR_IS_REQUIRED('rId'))

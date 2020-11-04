@@ -110,7 +110,7 @@ export default observer((props: IProps) => {
                 {
                   'px-0': fixed,
                 },
-                'border-b border-gray-ec bg-white filter',
+                'border-b border-gray-200 bg-white filter',
               )}
             >
               <Tabs

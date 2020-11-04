@@ -12,9 +12,11 @@ const {
   verifySmsCode
 } = require('../models/verifycode');
 const {
-  removeEmpty
+  removeEmpty,
+  getHost
 } = require('../utils');
 const config = require('../config');
+const Log = require('../models/log');
 
 exports.get = async ctx => {
   const {
@@ -81,6 +83,9 @@ exports.put = async (ctx) => {
   if (Object.keys(data).length >= 0) {
     await User.update(user.id, data);
   }
+
+  Log.createAnonymity('更新作者资料', `${nickname || user.nickname} ${getHost()}/authors/${user.address}`);
+
   ctx.body = await User.get(user.id);
 }
 

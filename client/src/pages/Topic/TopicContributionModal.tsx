@@ -20,7 +20,7 @@ interface IProps {
 const POSTS_LIMIT = 20;
 
 const TopicContribution = observer((props: IProps) => {
-  const { userStore, settingsStore } = useStore();
+  const { userStore, settingsStore, snackbarStore } = useStore();
   const { settings } = settingsStore;
   const { isMyself, topicUuid } = props;
   const state = useLocalStore(() => ({
@@ -58,7 +58,14 @@ const TopicContribution = observer((props: IProps) => {
     try {
       await topicApi.addContribution(topicUuid, post.rId);
       state.includedRIdMap[post.rId] = true;
-    } catch (err) {}
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
+    }
   };
 
   const removeContribution = async (post: IPost) => {

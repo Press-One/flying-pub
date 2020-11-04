@@ -48,6 +48,7 @@ export default observer((props: any) => {
     modalStore,
     commentStore,
     confirmDialogStore,
+    snackbarStore,
   } = useStore();
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
@@ -95,7 +96,7 @@ export default observer((props: any) => {
       try {
         const post: IPost = await postApi.fetchPost(rId);
         if (post.latestRId) {
-          window.location.replace(`/posts/${post.latestRId}`);
+          window.location.replace(`/posts/${post.latestRId}${window.location.search}`);
           return;
         }
         document.title = post.title;
@@ -405,6 +406,12 @@ export default observer((props: any) => {
         voted,
       });
     } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
       console.log(err);
     }
     setVoting(false);
@@ -429,6 +436,12 @@ export default observer((props: any) => {
         voted,
       });
     } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
       console.log(err);
     }
     setVoting(false);

@@ -290,6 +290,12 @@ export default observer((props: any) => {
     fetchTopicPosts();
   }, [state, feedStore.page, feedStore.filterType, uuid, feedStore, fetchTopicPosts]);
 
+  React.useEffect(() => {
+    if (state.topic.name) {
+      document.title = state.topic.name;
+    }
+  }, [state.topic.name]);
+
   const infiniteRef: any = useWindowInfiniteScroll({
     loading: feedStore.isFetching,
     hasNextPage: feedStore.hasMorePosts,
@@ -373,7 +379,12 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div className="w-full md:w-916 md:m-auto -mt-2 md:mt-0">
+      <div
+        className="w-full md:w-916 md:m-auto"
+        style={{
+          marginTop: isPc ? '0' : '-6px',
+        }}
+      >
         <TopView
           isMyself={isMyself}
           topic={state.topic}
