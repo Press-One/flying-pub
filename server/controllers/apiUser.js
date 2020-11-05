@@ -62,8 +62,7 @@ exports.put = async (ctx) => {
   const {
     nickname,
     avatar,
-    bio,
-    privateSubscriptionEnabled
+    bio
   } = ctx.request.body || {};
   const {
     user,
