@@ -20,8 +20,8 @@ exports.sendSmsCode = async (phone) => {
 
   const payload = {
     mobile: phone,
-    // action: 'login',
-    // expire_seconds: 30 * 60,
+    action: 'login',
+    expire_seconds: 30 * 60,
   };
   if (config.prod_messageSystem) {
     payload['signature'] = prod_generateSignature(payload);
@@ -52,7 +52,7 @@ exports.verifySmsCode = async (phone, code) => {
   const payload = {
     mobile: phone,
     code: code,
-    // action: 'login',
+    action: 'login',
   };
 
   if (config.prod_messageSystem) {
