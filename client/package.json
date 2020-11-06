@@ -48,7 +48,7 @@
   "scripts": {
     "build:css": "tailwindcss build src/styles/index.css -o src/styles/tailwind.css",
     "start": "yarn build:css && PORT=5000 react-app-rewired start 1",
-    "build": "export NODE_ENV='production' && yarn build:css && react-app-rewired build && cp ./build/index.html ./build/404.html"
+    "build": "export NODE_ENV='production' && yarn build:css && react-app-rewired --max_old_space_size=4096 build && cp ./build/index.html ./build/404.html"
   },
   "eslintConfig": {
     "extends": "react-app"
