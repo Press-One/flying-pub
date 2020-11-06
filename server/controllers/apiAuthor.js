@@ -134,7 +134,9 @@ exports.listRecommended = async ctx => {
     });
     const halfDay = 60 * 60 * 12;
     const cachedDuration = config.recommendation ? config.recommendation.authors.cachedDuration : halfDay;
-    await Cache.pSetWithExpired(TYPE, KEY, JSON.stringify(authors), cachedDuration, true);
+    if (authors.length === 150) {
+      await Cache.pSetWithExpired(TYPE, KEY, JSON.stringify(authors), cachedDuration, true);
+    }
   }
   const shuffledAuthors = _.shuffle(authors).slice(0, limit);
   ctx.body = {
