@@ -7,7 +7,6 @@ import { Dialog, Slider, withStyles } from '@material-ui/core';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile, isPc } from 'utils';
 import Api from 'api';
-import Img from 'components/Img';
 
 import './index.sass';
 
@@ -67,7 +66,7 @@ export default observer((props: any) => {
     const imageElement = new Image();
     imageElement.src = state.avatarTemp;
     const crop = avatarEditorRef.current!.getCroppingRect();
-    const imageBlob = await getCroppedImg(imageElement, crop);
+    const imageBlob = await getCroppedImg(imageElement, crop, width);
 
     const run = async () => {
       const formData = new FormData();
@@ -163,7 +162,7 @@ export default observer((props: any) => {
         onClick={handleEditAvatar}
         style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
       >
-        {state.avatar && <Img src={state.avatar} resizeWidth={220} ignoreError alt="avatar" />}
+        {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
           <div className="edit-button text-13">
             <Edit className="edit-icon" />
@@ -251,6 +250,7 @@ export const AvatarScaleSlider = withStyles({
 export const getCroppedImg = (
   image: HTMLImageElement,
   crop: { x: number; y: number; width: number; height: number },
+  width: number,
 ) => {
   const canvas = document.createElement('canvas');
   const state = {
@@ -263,6 +263,13 @@ export const getCroppedImg = (
     dWidth: image.naturalWidth * crop.width,
     dHeight: image.naturalHeight * crop.height,
   };
+
+  if (state.sWidth > width || state.sHeight > width) {
+    const ratio = state.sWidth > state.sHeight ? width / state.sWidth : width / state.sHeight;
+
+    state.dWidth *= ratio;
+    state.dHeight *= ratio;
+  }
 
   canvas.width = state.dWidth;
   canvas.height = state.dHeight;

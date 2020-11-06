@@ -121,6 +121,7 @@ exports.get = async ctx => {
 }
 
 exports.listRecommended = async ctx => {
+  const currentSequelizeUser = ctx.verification && ctx.verification.sequelizeUser;
   const TYPE = 'AUTHORS';
   const KEY = 'RECOMMENDED';
   const limit = Math.min(~~ctx.query.limit || 10, 50);
@@ -139,7 +140,21 @@ exports.listRecommended = async ctx => {
     }
   }
   const shuffledAuthors = _.shuffle(authors).slice(0, limit);
+  let derivedAuthors = shuffledAuthors;
+  if (currentSequelizeUser) {
+    derivedAuthors = await Promise.all(
+      shuffledAuthors.map(async shuffledAuthor => {
+        const count = await currentSequelizeUser.countFollowingAuthors({
+          where: {
+            address: shuffledAuthor.address
+          }
+        });
+        shuffledAuthor.following = count > 0; 
+        return shuffledAuthor;
+      })
+    );
+  }
   ctx.body = {
-    authors: shuffledAuthors
+    authors: derivedAuthors
   }
 }

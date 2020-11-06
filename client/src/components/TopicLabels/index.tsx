@@ -55,7 +55,7 @@ export default observer((props: IProps) => {
           <div
             className={classNames(
               {
-                'mb-2': maxListCount > 0,
+                'md:mb-2': maxListCount > 0,
               },
               'mr-2',
             )}

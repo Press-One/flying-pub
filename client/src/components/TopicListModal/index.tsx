@@ -13,7 +13,7 @@ import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
 import Img from 'components/Img';
 
-const LIMIT = 10;
+const LIMIT = 15;
 
 const TopicList = observer(() => {
   const state = useLocalStore(() => ({
@@ -162,7 +162,7 @@ const TopicList = observer(() => {
           </span>
         )}
       </div>
-      <div className="w-full md:w-100 h-60-vh md:h-90 overflow-auto">
+      <div className="w-full md:w-400-px h-60-vh md:h-400-px overflow-y-auto">
         {loading && (
           <div className="pt-24 flex items-center justify-center">
             <Loading />

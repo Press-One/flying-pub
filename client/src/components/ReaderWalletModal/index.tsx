@@ -5,15 +5,6 @@ import Modal from 'components/Modal';
 import Wallet from './Wallet';
 import { useStore } from 'store';
 import { isMobile } from 'utils';
-import css from 'styled-jsx/css';
-
-const styles = css`
-  .wallet-modal-content,
-  :global(.wallet-content) {
-    height: ${isMobile ? 'auto' : '600px'};
-    overflow: auto;
-  }
-`;
 
 export default observer(() => {
   const { preloadStore, readerWalletStore } = useStore();
@@ -24,17 +15,22 @@ export default observer(() => {
 
   const renderMain = () => {
     return (
-      <div
-        className="wallet-modal max-h-screen overflow-auto"
-        style={{
-          width: isMobile ? 'auto' : readerWalletStore.rewardOnly ? '620px' : '860px',
-        }}
-      >
-        <div className="wallet-modal-content relative">
-          <Wallet />
+      <div>
+        <div
+          className="wallet-modal max-h-screen overflow-y-auto"
+          style={{
+            width: isMobile ? 'auto' : readerWalletStore.rewardOnly ? '620px' : '860px',
+          }}
+        >
+          <div
+            className="wallet-modal-content relative overflow-y-auto"
+            style={{
+              height: isMobile ? 'auto' : '600px',
+            }}
+          >
+            <Wallet />
+          </div>
         </div>
-
-        <style jsx>{styles}</style>
       </div>
     );
   };

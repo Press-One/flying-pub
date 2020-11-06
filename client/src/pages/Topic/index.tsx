@@ -380,12 +380,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div
-        className="w-full md:w-916 md:m-auto"
-        style={{
-          marginTop: isPc ? '0' : '-6px',
-        }}
-      >
+      <div className="w-full md:w-916 md:m-auto">
         <TopView
           isMyself={isMyself}
           topic={state.topic}
@@ -412,7 +407,7 @@ export default observer((props: any) => {
               />
               {feedStore.filterType !== 'OTHERS' && (
                 <div className="posts-container" ref={infiniteRef}>
-                  <div className="mt-2" />
+                  <div className="md:mt-2" />
                   {feedStore.isFetched && state.showPosts && feedStore.hasPosts && (
                     <Posts posts={feedStore.posts} hideTopics smallCoverSize />
                   )}
@@ -420,7 +415,7 @@ export default observer((props: any) => {
                     <div className="pt-20 pb-16 text-center text-gray-500">还没有收录文章</div>
                   )}
                   {(!feedStore.isFetched || !state.showPosts) && (
-                    <div className="pt-20 md:pt-20">
+                    <div className="pt-24 mt-5">
                       <Loading />
                     </div>
                   )}

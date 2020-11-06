@@ -7,7 +7,7 @@ import ReceiptIcon from '@material-ui/icons/Receipt';
 import classNames from 'classnames';
 import Badge from '@material-ui/core/Badge';
 import { useStore } from 'store';
-import { isPc } from 'utils';
+import { isPc, isMobile } from 'utils';
 import Assets from './assets';
 import Settings from './settings';
 import Receipts from './receipts';
@@ -109,8 +109,11 @@ export default observer(() => {
             {
               'md:w-9/12': !readerWalletStore.rewardOnly,
             },
-            'w-full md:border-l md:border-gray-400 wallet-content',
+            'w-full md:border-l md:border-gray-400 wallet-content overflow-y-auto',
           )}
+          style={{
+            height: isMobile ? 'auto' : '600px',
+          }}
         >
           {!readerWalletStore.rewardOnly && tab === 'assets' && (
             <TabContent>

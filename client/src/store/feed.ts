@@ -13,7 +13,8 @@ export function createFeedStore() {
     stickyRIdsSet,
     postMap,
     filterType: '' as string,
-    filterDayRange: 3,
+    filterDayRange: 7,
+    subscriptionType: 'author',
     limit: 15,
     pending: false,
     hasMore: false,
@@ -35,7 +36,9 @@ export function createFeedStore() {
     },
     get optionsForFetching() {
       if (this.filterType === 'SUBSCRIPTION') {
-        return {};
+        return {
+          type: this.subscriptionType
+        };
       }
       const options: any = { order: this.filterType };
       if (this.filterType === 'POPULARITY' && this.filterDayRange > 0) {
@@ -114,9 +117,14 @@ export function createFeedStore() {
       this.filterType = type;
     },
     setFilter(options: any = {}) {
-      const { type, dayRange } = options;
+      const { type, dayRange, subscriptionType } = options;
       this.filterType = type;
-      this.filterDayRange = dayRange;
+      if (dayRange || dayRange === 0) {
+        this.filterDayRange = dayRange;
+      }
+      if (subscriptionType) {
+        this.subscriptionType = subscriptionType;
+      }
     },
     emptyPosts() {
       this.rIdsSet.clear();

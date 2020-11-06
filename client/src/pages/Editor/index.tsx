@@ -490,23 +490,27 @@ export default observer((props: any) => {
                 {file.cover && (
                   <Tooltip
                     title={
-                      <Img
-                        src={file.cover}
-                        resizeWidth={250}
-                        useOriginalDefault
-                        alt="封面"
-                        width="250"
-                      />
+                      <div>
+                        <Img
+                          src={file.cover}
+                          resizeWidth={250}
+                          useOriginalDefault
+                          alt="封面"
+                          width="250"
+                        />
+                      </div>
                     }
                     placement="left"
                   >
-                    <Img
-                      className="rounded mr-2"
-                      width="55px"
-                      src={file.cover}
-                      resizeWidth={55}
-                      alt="封面"
-                    />
+                    <div>
+                      <Img
+                        className="rounded mr-2"
+                        width="55px"
+                        src={file.cover}
+                        resizeWidth={55}
+                        alt="封面"
+                      />
+                    </div>
                   </Tooltip>
                 )}
                 {!file.cover && (

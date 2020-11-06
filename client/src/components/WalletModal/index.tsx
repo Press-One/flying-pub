@@ -8,15 +8,6 @@ import Fade from '@material-ui/core/Fade';
 import Wallet from './Wallet';
 import { useStore } from 'store';
 import { isMobile } from 'utils';
-import css from 'styled-jsx/css';
-
-const styles = css`
-  .wallet-modal-content,
-  :global(.wallet-content) {
-    height: ${isMobile ? 'auto' : '600px'};
-    overflow: auto;
-  }
-`;
 
 export default observer(() => {
   const { modalStore, walletStore } = useStore();
@@ -30,12 +21,17 @@ export default observer(() => {
   const renderMain = () => {
     return (
       <div
-        className="wallet-modal max-h-screen overflow-auto"
+        className="wallet-modal max-h-screen overflow-y-auto"
         style={{
           width: isMobile ? 'auto' : walletStore.rewardOnly ? '620px' : '860px',
         }}
       >
-        <div className="wallet-modal-content relative">
+        <div
+          className="wallet-modal-content relative overflow-y-auto"
+          style={{
+            height: isMobile ? 'auto' : '600px',
+          }}
+        >
           {modalStore.wallet.open && <Wallet />}
           {returnInfo && isBalanceEnough && walletStore.isCustomPinExist && (
             <Fade in={true} timeout={500}>
@@ -51,7 +47,11 @@ export default observer(() => {
           )}
         </div>
 
-        <style jsx>{styles}</style>
+        <style jsx>{`
+          .wallet-modal-content.md {
+            height: 600px;
+          }
+        `}</style>
       </div>
     );
   };

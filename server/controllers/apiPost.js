@@ -1,6 +1,7 @@
 const Post = require('../models/post');
 const Author = require('../models/author');
 const Topic = require('../models/topic');
+const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
 const config = require('../config');
 const {
@@ -152,6 +153,7 @@ const getUserOptions = async ctx => {
 }
 
 exports.listBySubscriptions = async ctx => {
+  const type = ctx.query.type || 'author';
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
   const user = ctx.verification.sequelizeUser;
@@ -159,36 +161,64 @@ exports.listBySubscriptions = async ctx => {
     offset,
     limit
   };
-  const followingAuthors = await user.getFollowingAuthors({
-    attributes: ['address'],
-    joinTableAttributes: []
-  });
-  const followingAuthorAddresses = followingAuthors.map(author => author.address);
-  if (followingAuthorAddresses.length > 0) {
-    query.addresses = followingAuthorAddresses;
+  assert(type, Errors.ERR_IS_REQUIRED("type"));
+  let total = 0;
+  let posts = [];
+
+  if (type === 'author') {
+    const followingAuthors = await user.getFollowingAuthors({
+      attributes: ['address'],
+      joinTableAttributes: []
+    });
+    const followingAuthorAddresses = followingAuthors.map(author => author.address);
+    if (followingAuthorAddresses.length > 0) {
+      query.addresses = followingAuthorAddresses;
+      const result = await Post.list(query);
+      total = result.total;
+      posts = result.posts;
+    }
+  } else if (type === 'topic') {
+    const followingTopics = await user.getFollowingTopics({
+      where: {
+        deleted: false
+      },
+      attributes: ['uuid'],
+      joinTableAttributes: []
+    });
+    const followingTopicUuids = followingTopics.map(topics => topics.uuid);
+    if (followingTopicUuids.length > 0) {
+
+      const countSql = `
+      SELECT count(DISTINCT p."rId") FROM posts_topics AS p_t 
+        LEFT JOIN (
+          SELECT * FROM posts AS all_p LEFT JOIN authors as a ON a.address = all_p."userAddress" WHERE a.status = 'allow' AND all_p."deleted" = false and all_p."invisibility" = false 
+        ) p
+        ON p."rId" = p_t."postRId"
+        LEFT JOIN topics ON topics."uuid" = p_t."topicUuid" AND topics."deleted" = false 
+      WHERE "topicUuid" IN (${followingTopicUuids.map(uuid => `'${uuid}'`).join(',')})`;
+
+      const findSql = `
+      SELECT DISTINCT ON ("postRId") * FROM posts_topics AS p_t 
+        LEFT JOIN (
+          SELECT * FROM posts AS all_p LEFT JOIN authors as a ON a.address = all_p."userAddress" WHERE a.status = 'allow' AND all_p."deleted" = false and all_p."invisibility" = false 
+        ) p
+        ON p."rId" = p_t."postRId" 
+        LEFT JOIN topics ON topics."uuid" = p_t."topicUuid" AND topics."deleted" = false 
+      WHERE "topicUuid" IN (${followingTopicUuids.map(uuid => `'${uuid}'`).join(',')}) 
+      OFFSET ${offset} 
+      LIMIT ${limit};`;
+
+      const [countResult, rawPostTopics] = await Promise.all([sequelize.query(countSql), sequelize.query(findSql)])
+      total = ~~countResult[0][0].count;
+      const postRIds = rawPostTopics[0].map(postTopic => postTopic.postRId);
+      if (postRIds.length > 0) {
+        posts = await Post.listByRIds(postRIds);
+      } 
+    }
   }
-  const followingTopics = await user.getFollowingTopics({
-    where: {
-      deleted: false
-    },
-    attributes: ['uuid'],
-    joinTableAttributes: []
-  });
-  const followingTopicUuids = followingTopics.map(topics => topics.uuid);
-  if (followingTopicUuids.length > 0) {
-    // query.topicUuids = followingTopicUuids;
-  }
-  if (followingAuthorAddresses.length === 0 && followingTopicUuids.length === 0) {
-    ctx.body = {
-      total: 0,
-      posts: [],
-    };
-    return;
-  }
-  const result = await Post.list(query);
   ctx.body = {
-    total: result.total,
-    posts: result.posts,
+    total,
+    posts,
   };
 }
 

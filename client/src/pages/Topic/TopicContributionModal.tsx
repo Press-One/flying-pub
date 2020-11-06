@@ -80,7 +80,7 @@ const TopicContribution = observer((props: IProps) => {
       <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 text-gray-4a flex justify-between items-center">
         选择要{isMyself ? '收录' : '投稿'}的文章
       </div>
-      <div className="w-full md:w-100 h-80-vh md:h-90 overflow-auto content">
+      <div className="w-full md:w-400-px h-80-vh md:h-400-px overflow-y-auto content">
         {state.isFetched && state.posts.length === 0 && (
           <div className="py-20 text-center text-gray-af">
             你还没有文章可以{isMyself ? '收录' : '投稿'}{' '}

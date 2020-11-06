@@ -55,7 +55,7 @@ const PostEntry = observer((props: IPostProps) => {
   return (
     <div>
       <div id={post.rId} />
-      <div className="border-b border-gray-200 py-4 md:px-0 md:py-5 leading-none post cursor-pointer">
+      <div className="border-b border-gray-200 py-10-px md:px-0 md:py-5 leading-none post cursor-pointer bg-white">
         <div className="flex justify-between items-start px-4">
           <div className="text-gray-88 box-border flex-1">
             <div
@@ -148,7 +148,7 @@ const PostEntry = observer((props: IPostProps) => {
                     <TopicLabels topics={post.topics} post={post} maxListCount={1} />
                   </div>
                 )}
-                {!showTopics && !hideAuthor && <div className="pb-1" />}
+                {!showTopics && !hideAuthor && <div className="pb-0 md:pb-1" />}
               </div>
             </div>
           </div>

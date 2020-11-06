@@ -13,7 +13,7 @@ export default observer((props: any) => {
           <ImageEditor
             name="封面"
             imageUrl={cover}
-            width={700}
+            width={350}
             placeholderWidth={200}
             editorPlaceholderWidth={300}
             ratio={3 / 2}

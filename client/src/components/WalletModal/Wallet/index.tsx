@@ -127,6 +127,9 @@ export default observer(() => {
             },
             'w-full md:border-l md:border-gray-400 wallet-content',
           )}
+          style={{
+            height: isMobile ? 'auto' : '600px',
+          }}
         >
           {!walletStore.rewardOnly && tab === 'assets' && (
             <TabContent>

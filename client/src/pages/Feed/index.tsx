@@ -22,7 +22,7 @@ export default observer(() => {
     enableFilterScroll: true,
   }));
 
-  const { filterType, filterDayRange, stickyEnabled } = feedStore;
+  const { filterType, filterDayRange, subscriptionType, stickyEnabled } = feedStore;
   const { settings } = settingsStore;
   const filterEnabled = settings['filter.enabled'];
   const showPopularity =
@@ -61,10 +61,18 @@ export default observer(() => {
         if (type === 'POPULARITY') {
           const dayRange = settings['filter.dayRange'];
           const dayRangeOptions = settings['filter.dayRangeOptions'];
-          const isValidDayRange = dayRange && dayRangeOptions.includes(dayRange);
+          const isValidDayRange =
+            (dayRange || dayRange === 0) && dayRangeOptions.includes(dayRange);
           const validDayRange = isValidDayRange ? dayRange : dayRangeOptions[0];
           settings['filter.dayRange'] = validDayRange;
           filter.dayRange = validDayRange;
+        }
+        if (type === 'SUBSCRIPTION') {
+          if (settings['filter.subscriptionType']) {
+            filter.subscriptionType = settings['filter.subscriptionType'];
+          } else {
+            filter.subscriptionType = 'author';
+          }
         }
         feedStore.setFilter(filter);
       }
@@ -139,6 +147,7 @@ export default observer(() => {
           fetchPostsPromise =
             filterType === 'SUBSCRIPTION'
               ? postApi.fetchSubscription({
+                  ...optionsForFetching,
                   offset: feedStore.page * limit,
                   limit,
                 })
@@ -161,7 +170,16 @@ export default observer(() => {
       feedStore.setIsFetching(false);
       feedStore.setIsFetched(true);
     })();
-  }, [feedStore.page, filterType, filterDayRange, state, feedStore, ready, userStore.isLogin]);
+  }, [
+    feedStore.page,
+    filterType,
+    filterDayRange,
+    subscriptionType,
+    state,
+    feedStore,
+    ready,
+    userStore.isLogin,
+  ]);
 
   const infiniteRef: any = useWindowInfiniteScroll({
     loading: feedStore.isFetching,
@@ -191,6 +209,9 @@ export default observer(() => {
       if (filter.type === 'POPULARITY') {
         settings['filter.dayRange'] = filter.dayRange;
       }
+      if (filter.type === 'SUBSCRIPTION') {
+        settings['filter.subscriptionType'] = filter.subscriptionType;
+      }
       if (userStore.isLogin) {
         await settingsApi.saveSettings(settings);
       }
@@ -198,14 +219,21 @@ export default observer(() => {
     } catch (err) {}
   };
 
-  const handleFilterChange = (type: string, dayRange = 0) => {
+  const handleFilterChange = (type: string, value: any) => {
     if (feedStore.isFetching) {
       return;
     }
-    setFilter({
-      type: type as FilterType,
-      dayRange,
-    });
+    if (type !== 'SUBSCRIPTION') {
+      setFilter({
+        type: type as FilterType,
+        dayRange: value,
+      });
+    } else {
+      setFilter({
+        type: type as FilterType,
+        subscriptionType: value,
+      });
+    }
   };
 
   if (userStore.shouldLogin) {
@@ -227,23 +255,26 @@ export default observer(() => {
       <div className="w-full md:w-916 md:m-auto pb-0 md:pb-10 flex justify-between items-start">
         <div className="w-full md:w-8/12 box-border md:pr-3">
           <div className="bg-white md:px-5 pb-8 rounded-12">
-            {filterEnabled && (
-              <Filter
-                provider="feed"
-                dayRange={feedStore.filterDayRange}
-                type={feedStore.filterType}
-                enableScroll={state.enableFilterScroll}
-                onChange={handleFilterChange}
-                showPopularity={showPopularity}
-                dayRangeOptions={settings['filter.dayRangeOptions']}
-                tabs={tabs}
-              />
-            )}
+            <div className="md:pt-2">
+              {filterEnabled && (
+                <Filter
+                  provider="feed"
+                  dayRange={feedStore.filterDayRange}
+                  subscriptionType={feedStore.subscriptionType}
+                  type={feedStore.filterType}
+                  enableScroll={state.enableFilterScroll}
+                  onChange={handleFilterChange}
+                  showPopularity={showPopularity}
+                  dayRangeOptions={settings['filter.dayRangeOptions']}
+                  tabs={tabs}
+                />
+              )}
+            </div>
             {!filterEnabled && (
-              <div className="mt-10 md:mt-12 border-t border-gray-300 md:border-gray-200" />
+              <div className="mt-10 md:mt-12 md:border-t border-gray-300 md:border-gray-200" />
             )}
             <div className="posts-container" ref={infiniteRef}>
-              <div className="mt-2" />
+              <div className="md:mt-2" />
               {stickyEnabled &&
                 !pending &&
                 feedStore.hasPosts &&
@@ -262,7 +293,7 @@ export default observer(() => {
                 />
               )}
               {pending && (
-                <div className="pt-20 md:pt-20">
+                <div className="pt-24 mt-5">
                   <Loading />
                 </div>
               )}
@@ -283,7 +314,9 @@ export default observer(() => {
                 !feedStore.hasPosts &&
                 filterType === 'SUBSCRIPTION' && (
                   <div className="pt-32 text-center text-gray-500">
-                    <div className="pt-4">去关注你感兴趣的作者和专题吧~</div>
+                    <div className="pt-4">
+                      去关注你感兴趣的{subscriptionType === 'author' ? '作者' : '专题'}吧~
+                    </div>
                   </div>
                 )}
               {userStore.isLogin &&

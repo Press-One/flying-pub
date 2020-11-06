@@ -316,7 +316,8 @@ export default observer((props: any) => {
     <Fade in={true} timeout={isMobile ? 400 : 1500}>
       <div>
         <div className="md:hidden">
-          <div className="flex justify-between items-center py-1 px-3 border-t border-b border-gray-300 h-12">
+          <div className="border-t border-gray-300 border-opacity-50" />
+          <div className="flex justify-between items-center py-1 px-3 border-b border-gray-200 h-12">
             {!showBack && (
               <Link to="/">
                 <div className="flex items-center">

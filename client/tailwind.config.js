@@ -3,12 +3,26 @@ const {
 } = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  // purge: [
-  //   './src/**/*.ts',
-  //   './src/**/*.tsx',
-  // ],
+  purge: [
+    './src/**/*.ts',
+    './src/**/*.tsx',
+  ],
   theme: {
     extend: {
+      margin: {
+        ...Object.fromEntries(
+          Array(10).fill(0).map(
+            (_v, i) => [`${(i + 1)}-px`, `${(i + 1)}px`],
+          )
+        ),
+      },
+      padding: {
+        ...Object.fromEntries(
+          Array(10).fill(0).map(
+            (_v, i) => [`${(i + 1)}-px`, `${(i + 1)}px`],
+          )
+        ),
+      },
       colors: {
         'gray': {
           'f7': '#f7f7f7',
@@ -46,8 +60,13 @@ module.exports = {
       },
       width: {
         ...Object.fromEntries(
-          [72, 80, 90, 100].map(
-            v => [v, `${v * 4}px`]
+          Array(72).fill(0).map(
+            (_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`],
+          ),
+        ),
+        ...Object.fromEntries(
+          Array(12).fill(0).map(
+            (_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`],
           )
         ),
         ...Object.fromEntries(
@@ -59,8 +78,13 @@ module.exports = {
       },
       height: {
         ...Object.fromEntries(
-          [72, 80, 90, 100, 120, 150].map(
-            v => [v, `${v * 4}px`]
+          Array(72).fill(0).map(
+            (_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`],
+          ),
+        ),
+        ...Object.fromEntries(
+          Array(12).fill(0).map(
+            (_v, i) => [`${(i + 1) * 100}-px`, `${(i + 1) * 100}px`],
           )
         ),
         ...Object.fromEntries(

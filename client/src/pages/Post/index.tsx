@@ -345,7 +345,7 @@ export default observer((props: any) => {
               </div>
               <div>
                 {author.bio && (
-                  <div className="mt-1 truncate hidden md:block w-100">{author.bio}</div>
+                  <div className="mt-1 truncate hidden md:block w-400-px">{author.bio}</div>
                 )}
               </div>
             </div>

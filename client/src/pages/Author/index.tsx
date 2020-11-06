@@ -237,12 +237,7 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div
-        className="w-full md:w-916 md:m-auto"
-        style={{
-          marginTop: isPc ? '0' : '-6px',
-        }}
-      >
+      <div className="w-full md:w-916 md:m-auto">
         <div>
           <div className="flex items-stretch overflow-hidden relative pb-6 md:rounded-12">
             <div
@@ -369,8 +364,8 @@ export default observer((props: any) => {
                 )}
                 {isMyself && (
                   <Button
-                    outline={!state.author.cover}
-                    color={state.author.cover ? 'gray' : 'white'}
+                    outline
+                    color="white"
                     size={isMobile ? 'small' : 'normal'}
                     onClick={() => {
                       modalStore.openSettings('profile');
@@ -388,7 +383,7 @@ export default observer((props: any) => {
         </div>
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
-            <div className="bg-white md:px-5 pb-8 md:rounded-12 h-screen md:h-auto">
+            <div className="bg-white md:px-5 pb-8 md:rounded-12 h-screen md:h-auto md:pt-2">
               <Filter
                 provider="author"
                 onChange={handleFilterChange}
@@ -397,7 +392,7 @@ export default observer((props: any) => {
               />
               {feedStore.filterType !== 'OTHERS' && (
                 <div className="posts-container" ref={infiniteRef}>
-                  <div className="mt-2" />
+                  <div className="md:mt-2" />
                   {feedStore.isFetched && state.showPosts && feedStore.hasPosts && (
                     <Posts posts={feedStore.posts} hideAuthor smallCoverSize />
                   )}
@@ -405,7 +400,7 @@ export default observer((props: any) => {
                     <div className="pt-20 pb-16 text-center text-gray-500">Ta 还没有发布过文章</div>
                   )}
                   {(!feedStore.isFetched || !state.showPosts) && (
-                    <div className="pt-20 md:pt-20">
+                    <div className="pt-24 mt-5">
                       <Loading />
                     </div>
                   )}
@@ -465,7 +460,7 @@ export default observer((props: any) => {
                     />
                   )}
                   {state.loadingOthers && (
-                    <div className="pt-20 md:pt-20">
+                    <div className="pt-24 mt-5">
                       <Loading />
                     </div>
                   )}

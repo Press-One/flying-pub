@@ -11,7 +11,7 @@ import { sleep, isMobile, isPc } from 'utils';
 import DrawerModal from 'components/DrawerModal';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 
-const LIMIT = 10;
+const LIMIT = 15;
 
 const ConfirmContent = observer(
   (props: { topicUuid: string; post: IPost; afterRemovedContribution: () => void }) => {
@@ -36,7 +36,7 @@ const ConfirmContent = observer(
         <div className="font-bold items-center text-xl flex justify-center md:justify-start">
           移除文章
         </div>
-        <div className={`w-auto ${isMyself ? 'md:w-64' : 'md:w-100'}`}>
+        <div className={`w-auto ${isMyself ? 'md:w-64' : 'md:w-400-px'}`}>
           <div className="flex items-start mt-8">
             文章：《<div className="truncate m-w-56">{props.post.title}</div>》
           </div>
@@ -53,7 +53,7 @@ const ConfirmContent = observer(
             </div>
           )}
           {!isMyself && (
-            <div className="pt-4 md:w-100">
+            <div className="pt-4 md:w-400-px">
               <TextField
                 className="w-full"
                 value={state.note}
@@ -158,7 +158,10 @@ const TopicPostManager = observer((props: IProps) => {
       <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 text-gray-4a flex justify-between items-center">
         已收录的文章
       </div>
-      <div className="w-full md:w-100 h-80-vh md:h-90 overflow-auto content" ref={infiniteRef}>
+      <div
+        className="w-full md:w-400-px h-80-vh md:h-400-px overflow-y-auto content"
+        ref={infiniteRef}
+      >
         {loading && (
           <div className="pt-24 flex items-center justify-center">
             <Loading />

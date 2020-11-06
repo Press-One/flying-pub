@@ -1,4 +1,5 @@
 import React from 'react';
+import { toJS } from 'mobx';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { resizeImage, getDefaultAvatar, getImageWidth } from 'utils';
 
@@ -12,6 +13,7 @@ interface IProps {
 export default observer((props: IProps) => {
   const state = useLocalStore(() => ({
     src: '',
+    style: {} as any,
     rawImgProps: {} as any,
   }));
 
@@ -21,6 +23,12 @@ export default observer((props: IProps) => {
     delete state.rawImgProps.useOriginalDefault;
     delete state.rawImgProps.resizeWidth;
     delete state.rawImgProps.ignoreError;
+    if (props.width) {
+      state.style.width = props.width;
+    }
+    if (props.height) {
+      state.style.height = props.height;
+    }
   }, [props.src, props.resizeWidth, state, props]);
 
   return (
@@ -28,6 +36,7 @@ export default observer((props: IProps) => {
       {...state.rawImgProps}
       src={state.src}
       alt={props.alt}
+      style={toJS(state.style)}
       onError={() => {
         if (props.ignoreError) {
           return;

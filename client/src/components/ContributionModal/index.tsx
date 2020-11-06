@@ -111,7 +111,7 @@ const TopicLists = observer((props: IProps) => {
   }
 
   return (
-    <div className="mt-5 text-left overflow-auto box-content topics-container px-6">
+    <div className="mt-5 text-left overflow-y-auto box-content topics-container px-6">
       <div className="border rounded-8 border-gray-d8 border-opacity-75 mb-2">
         {state.topics.length === 0 && (
           <div className="py-4 text-center text-gray-70 text-14">

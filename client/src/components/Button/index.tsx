@@ -40,12 +40,13 @@ export default (props: Props) => {
           small: size === 'small',
           mini: size === 'mini',
           'bg-blue-400 text-white': !outline && color === 'primary',
-          'bg-gray text-white': !outline && color === 'gray',
+          'bg-gray-af text-white': !outline && color === 'gray',
           'bg-green-500 text-white': !outline && color === 'green',
           'border-blue-400 text-blue-400 border outline': outline && color === 'primary',
           'border-red-400 text-red-400 border outline': outline && color === 'red',
           'border-green-500 text-green-500 border outline': outline && color === 'green',
           'border-white text-white border outline': outline && color === 'white',
+          'border-gray-af text-gray-af border outline': outline && color === 'gray',
         },
         'rounded-full outline-none leading-none',
       )}
@@ -93,9 +94,6 @@ export default (props: Props) => {
         .button[disabled] {
           color: rgba(0, 0, 0, 0.26);
           background-color: rgba(0, 0, 0, 0.12);
-        }
-        .bg-gray {
-          background-color: #262b32;
         }
       `}</style>
     </button>

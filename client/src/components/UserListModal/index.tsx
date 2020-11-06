@@ -13,7 +13,7 @@ import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
 import Img from 'components/Img';
 
-const LIMIT = 10;
+const LIMIT = 15;
 
 const UserList = observer(() => {
   const { modalStore, userStore } = useStore();
@@ -118,7 +118,7 @@ const UserList = observer(() => {
       <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
         {data.title}
       </div>
-      <div className="w-full md:w-100 h-80-vh md:h-90 overflow-auto">
+      <div className="w-full md:w-400-px h-80-vh md:h-400-px overflow-y-auto">
         {loading && (
           <div className="pt-24 flex items-center justify-center">
             <Loading />

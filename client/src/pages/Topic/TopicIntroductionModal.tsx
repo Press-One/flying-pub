@@ -72,7 +72,7 @@ const TopicIntroduction = observer((props: IProps) => {
                 />
               )}
               {state.loadingOthers && (
-                <div className="pt-20 md:pt-20">
+                <div className="pt-24 mt-5">
                   <Loading />
                 </div>
               )}

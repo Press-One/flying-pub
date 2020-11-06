@@ -118,6 +118,45 @@ const getByRId = async (rId, options = {}) => {
 }
 exports.getByRId = getByRId;
 
+exports.listByRIds = async (rIds, options = {}) => {
+  assert(rIds, Errors.ERR_IS_REQUIRED('rIds'))
+  const {
+    includeAuthor = true
+  } = options;
+  const query = {
+    where: {
+      rId: rIds,
+      deleted: false,
+      invisibility: false
+    }
+  };
+  const {
+    ignoreDeleted,
+    ignoreInvisibility
+  } = options;
+  if (ignoreInvisibility) {
+    delete query.where.invisibility;
+  }
+  if (ignoreDeleted) {
+    delete query.where.deleted;
+  }
+  if (includeAuthor) {
+    query.include = [{
+      model: Author,
+      where: {
+        status: 'allow'
+      }
+    }];
+  }
+  const posts = await Post.findAll(query);
+  if (posts.length > 0) {
+    return await Promise.all(posts.map(async post => {
+      return await packPost(post, options)
+    }))
+  }
+  return [];
+}
+
 exports.getLatestByRId = async (rId, options = {}) => {
   const rawPost = await Post.findOne({
     where: {

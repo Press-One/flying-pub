@@ -268,3 +268,16 @@ ul {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -moz-tap-highlight-color: rgba(0, 0, 0, 0);
 }
+
+/************************************** SCROLL BAR STYLES **************************************/
+.overflow-y-auto {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.overflow-y-auto::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+  display: none;  /* Safari and Chrome */
+  background: transparent;
+}
