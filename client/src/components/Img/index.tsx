@@ -23,6 +23,7 @@ export default observer((props: IProps) => {
     delete state.rawImgProps.useOriginalDefault;
     delete state.rawImgProps.resizeWidth;
     delete state.rawImgProps.ignoreError;
+    delete state.rawImgProps.className;
     if (props.width) {
       state.style.width = props.width;
     }
@@ -34,7 +35,8 @@ export default observer((props: IProps) => {
   return (
     <img
       {...state.rawImgProps}
-      src={state.src}
+      className={props.className}
+      src={state.src || resizeImage(props.src, getImageWidth(props.resizeWidth || 80))}
       alt={props.alt}
       style={toJS(state.style)}
       onError={() => {
