@@ -24,12 +24,12 @@ import { IPost } from 'apis/post';
 import postApi from 'apis/post';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, initMathJax, getDefaultAvatar, getQuery } from 'utils';
+import { ago, isPc, isMobile, sleep, initMathJax, getQuery } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
 import QRCode from 'qrcode.react';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -298,7 +298,7 @@ export default observer((props: any) => {
         >
           <div className="flex items-center">
             <Link to={`/authors/${author.address}`}>
-              <img
+              <Img
                 className={classNames(
                   {
                     'mr-6': isPc,
@@ -306,11 +306,8 @@ export default observer((props: any) => {
                   },
                   'w-12 h-12 rounded-full',
                 )}
-                src={resizeImage(author.avatar)}
+                src={author.avatar}
                 alt={author.nickname}
-                onError={(e: any) => {
-                  e.target.src = getDefaultAvatar();
-                }}
               />
             </Link>
             <div className="text-gray-9b">
@@ -573,13 +570,10 @@ export default observer((props: any) => {
           <Link to={`/authors/${post.author.address}`}>
             <div className="flex items-center">
               <div className="flex items-center w-6 h-6 mr-2">
-                <img
+                <Img
                   className="w-6 h-6 rounded-full border border-gray-300"
-                  src={resizeImage(post.author.avatar)}
+                  src={post.author.avatar}
                   alt={post.author.nickname}
-                  onError={(e: any) => {
-                    e.target.src = getDefaultAvatar();
-                  }}
                 />
               </div>
               <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>

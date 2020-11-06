@@ -20,7 +20,7 @@ import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, isMobile, sleep, stopBodyScroll, isPc } from 'utils';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -423,11 +423,7 @@ export default observer((props: any) => {
                     {isLogin && (
                       <div className="flex items-center pl-1 mr-3">
                         <Link to={`/authors/${user.address}`}>
-                          <img
-                            src={resizeImage(user.avatar)}
-                            className="w-8 h-8 rounded-full"
-                            alt="头像"
-                          />
+                          <Img src={user.avatar} className="w-8 h-8 rounded-full" alt="头像" />
                         </Link>
                       </div>
                     )}

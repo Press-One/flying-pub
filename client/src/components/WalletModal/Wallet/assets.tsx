@@ -9,6 +9,7 @@ import WithdrawModal from './withdrawModal';
 import { currencyIconMap } from './utils';
 import { sleep, isMobile, getApiEndpoint } from 'utils';
 import Api from './api';
+import Img from 'components/Img';
 
 const Asset = (props: any) => {
   const { snackbarStore, walletStore } = useStore();
@@ -37,7 +38,7 @@ const Asset = (props: any) => {
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-300 leading-none">
       <div className="flex items-center">
         <div className="w-10 h-10">
-          <img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} />
+          <Img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} />
         </div>
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">{amount}</span>

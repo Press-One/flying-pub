@@ -23,6 +23,7 @@ import TopicManagerEntry from './TopicManagerEntry';
 import Settings from '@material-ui/icons/Settings';
 import { toJS } from 'mobx';
 import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 const TopView = observer(
   (props: {
@@ -88,10 +89,14 @@ const TopView = observer(
         <div className="z-10 w-full">
           <div className="flex justify-between w-full box-border pt-8 md:pt-24 md:mt-6 px-5 pb-3 md:pb-0 md:px-16 text-black">
             <div className="flex items-start md:items-end">
-              <img
-                className="rounded-12 avatar md:border-4 border-white bg-white"
-                src={resizeImage(topic.cover, 240)}
+              <Img
+                width={isMobile ? 90 : 120}
+                height={isMobile ? 90 : 120}
+                className="rounded-12 md:border-4 border-white bg-white"
+                src={topic.cover}
                 alt={topic.name}
+                useOriginalDefault
+                resizeWidth={isMobile ? 90 : 120}
               />
               <div className="ml-5">
                 <div className="font-bold text-18 md:text-24 leading-none text-white md:text-gray-4a">
@@ -163,10 +168,6 @@ const TopView = observer(
         <style jsx>{`
           .cover {
             height: ${isMobile ? 184 : 160}px;
-          }
-          .avatar {
-            width: ${isMobile ? 90 : 120}px;
-            height: ${isMobile ? 90 : 120}px;
           }
           .blur-layer {
             background: -webkit-linear-gradient(
@@ -451,9 +452,9 @@ export default observer((props: any) => {
                 <div className="px-5 py-4">
                   <Link to={`/authors/${state.topic.user?.address}`}>
                     <div className="flex items-center cursor-pointer">
-                      <img
+                      <Img
                         className="w-8 h-8 rounded-full"
-                        src={resizeImage(state.topic.user?.avatar)}
+                        src={state.topic.user?.avatar}
                         alt={state.topic.user?.nickname}
                       />
                       <span className="ml-3">{state.topic.user?.nickname}</span>

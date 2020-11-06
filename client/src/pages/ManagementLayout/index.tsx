@@ -11,7 +11,7 @@ import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Fade from '@material-ui/core/Fade';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 import { useStore } from '../../store';
 
@@ -72,7 +72,12 @@ export default observer((props: RouteChildrenProps) => {
           >
             <div className="px-4 flex items-center">
               <div className="w-10 h-10">
-                <img className="w-10 h-10" src={settings['site.logo']} alt="logo" />
+                <Img
+                  className="w-10 h-10"
+                  src={settings['site.logo']}
+                  useOriginalDefault
+                  alt="logo"
+                />
               </div>
               <div className="text-base font-bold ml-4 text-gray-700 flex items-center justify-center tracking-wide">
                 创作文章
@@ -107,8 +112,9 @@ export default observer((props: RouteChildrenProps) => {
               {userStore.isFetched && (
                 <Link to={`/authors/${user.address}`}>
                   <div className="flex items-center flex-col justify-center">
-                    <img
-                      src={resizeImage(user.avatar, 180)}
+                    <Img
+                      src={user.avatar}
+                      resizeWidth={120}
                       className="w-16 h-16 rounded-full"
                       alt="头像"
                     />

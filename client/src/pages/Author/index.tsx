@@ -18,7 +18,8 @@ import postApi from 'apis/post';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import { Edit } from '@material-ui/icons';
 import { toJS } from 'mobx';
-import { resizeImage, resizeFullImage } from 'utils';
+import { resizeFullImage } from 'utils';
+import Img from 'components/Img';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -250,7 +251,7 @@ export default observer((props: any) => {
                 backgroundImage: `url('${
                   isDefaultAvatar
                     ? resizeFullImage(DEFAULT_BG_GRADIENT)
-                    : resizeFullImage(state.author.cover) || resizeImage(state.author.avatar, 200)
+                    : resizeFullImage(state.author.cover) || state.author.avatar
                 }')`,
               }}
             >
@@ -258,13 +259,13 @@ export default observer((props: any) => {
             </div>
             <div className="flex justify-between z-10 w-full box-border pt-8 md:pt-16 px-5 md:px-16 text-white relative">
               <div className="w-10/12 md:w-auto">
-                <img
+                <Img
+                  width={isMobile ? 74 : 120}
+                  height={isMobile ? 74 : 120}
                   className="rounded-full avatar bg-white"
-                  src={resizeImage(state.author.avatar, 200)}
+                  src={state.author.avatar}
                   alt={state.author.nickname}
-                  onError={(e: any) => {
-                    e.target.src = getDefaultAvatar();
-                  }}
+                  resizeWidth={isMobile ? 74 : 120}
                   onClick={() => {
                     isMyself && modalStore.openSettings('profile');
                   }}
@@ -593,10 +594,6 @@ export default observer((props: any) => {
           </div>
         )}
         <style jsx>{`
-          .avatar {
-            width: ${isMobile ? 74 : 120}px;
-            height: ${isMobile ? 74 : 120}px;
-          }
           .nickname {
             max-width: ${isMobile ? '230px' : 'auto'};
           }

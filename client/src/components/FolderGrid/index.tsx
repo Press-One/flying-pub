@@ -3,7 +3,7 @@ import { Folder } from '@material-ui/icons';
 import { useStore } from 'store';
 import _ from 'lodash';
 import { isMobile } from 'utils';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 type Folder = {
   hide?: boolean;
@@ -98,14 +98,9 @@ export default (props: Props) => {
               </div>
               <div className="flex items-center mt-4">
                 {folder.gallery.map((url, index) => (
-                  <img
-                    key={index}
-                    className="mr-1 rounded"
-                    width="28"
-                    height="28"
-                    src={resizeImage(url)}
-                    alt="cover"
-                  />
+                  <div key={index} className="flex items-start mr-1">
+                    <Img className="rounded" width="28" height="28" src={url} alt="." />
+                  </div>
                 ))}
               </div>
             </div>

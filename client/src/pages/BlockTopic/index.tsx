@@ -5,7 +5,7 @@ import { Tabs, Tab, Button } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import NavigateNext from '@material-ui/icons/NavigateNext';
 import Loading from 'components/Loading';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 import { useStore } from 'store';
 import Api, { TopicPermissionResult } from 'api';
@@ -56,7 +56,7 @@ const renderUserList = (renderUserListProps: RenderUserListProps) => {
       {users.map((userItem) => (
         <div key={userItem.address} className="user-list-item flex items-center">
           <div className="w-10 h-10 rounded-full overflow-hidden">
-            <img className="w-10 h-10" src={resizeImage(userItem.avatar)} alt={userItem.nickname} />
+            <Img className="w-10 h-10" src={userItem.avatar} alt={userItem.nickname} />
           </div>
           <div className="user-name" title={userItem.nickname}>
             {userItem.nickname}

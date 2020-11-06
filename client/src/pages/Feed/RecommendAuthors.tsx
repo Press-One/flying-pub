@@ -7,7 +7,7 @@ import Loading from 'components/Loading';
 import classNames from 'classnames';
 import Button from 'components/Button';
 import Tooltip from '@material-ui/core/Tooltip';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 const isLargeWindow = window.innerHeight > 700;
 const LIMIT = isLargeWindow ? 8 : 6;
@@ -71,7 +71,7 @@ export default observer(() => {
                 )}
               >
                 <div className="flex items-center cursor-pointer">
-                  <img className="w-10 h-10 rounded" src={resizeImage(author.avatar)} alt="cover" />
+                  <Img className="w-10 h-10 rounded" src={author.avatar} alt="." />
                   <div className="ml-3">
                     <div className="text-14 text-gray-70 truncate w-40 box-border pr-2">
                       {author.nickname}

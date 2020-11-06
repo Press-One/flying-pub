@@ -4,7 +4,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { Button as MuiButton, CircularProgress, TextField } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import { getProtectedPhone, isMobile, getApiEndpoint } from 'utils';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 import Button from 'components/Button';
 import { useStore } from 'store';
@@ -194,9 +194,9 @@ export const AccountBind = observer(() => {
             <div className="text-lg">{settingsStore.settings['mixinApp.name']} 账号</div>
             {mixinProfile && (
               <div className="flex mt-3">
-                <img
+                <Img
                   className="w-10 h-10 rounded-full"
-                  src={resizeImage(mixinProfile.avatar)}
+                  src={mixinProfile.avatar}
                   alt="mixin avatar"
                 />
                 <div className="ml-3">

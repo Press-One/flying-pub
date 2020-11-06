@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import Add from '@material-ui/icons/Add';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
-import Tooltip from '@material-ui/core/Tooltip';
 import { IPostTopic, IPost } from 'apis/post';
 import classNames from 'classnames';
 import { isMobile } from 'utils';
+import Tooltip from '@material-ui/core/Tooltip';
 
 export const IncludedButton = (props: { post: IPost; onClose?: () => void }) => {
   const { modalStore, userStore } = useStore();
@@ -70,29 +70,22 @@ export default observer((props: IProps) => {
         </div>
       ))}
       {folderEnabled && length > maxListCount && (
-        <Tooltip
-          disableHoverListener={isMobile}
-          placement="top"
-          title={maxListCount > 1 ? '查看全部' : '查看所有收录了这篇文章的专题'}
-          arrow
+        <div
+          className="flex items-center bg-gray-f2 rounded-full cursor-pointer px-1 mr-2"
+          onClick={() =>
+            modalStore.openTopicList({
+              post: props.post,
+              userAddress: userStore.user.address,
+              title: '文章被以下专题收录',
+              type: 'CONTRIBUTED_TOPICS',
+            })
+          }
         >
-          <div
-            className="flex items-center bg-gray-f2 rounded-full cursor-pointer px-1 mr-2"
-            onClick={() =>
-              modalStore.openTopicList({
-                post: props.post,
-                userAddress: userStore.user.address,
-                title: '文章被以下专题收录',
-                type: 'CONTRIBUTED_TOPICS',
-              })
-            }
-          >
-            <div className="rounded-full w-4 h-3 m-2 mr-0 text-16 overflow-hidden box-border text-blue-400 flex items-center">
-              <MoreHoriz />
-            </div>
-            <div className="text-blue-400 text-14 pr-2"></div>
+          <div className="rounded-full w-4 h-3 m-2 mr-0 text-16 overflow-hidden box-border text-blue-400 flex items-center">
+            <MoreHoriz />
           </div>
-        </Tooltip>
+          <div className="text-blue-400 text-14 pr-2"></div>
+        </div>
       )}
       {topics.length > 0 && props.showContributionButton && userStore.isLogin && (
         <Tooltip disableHoverListener={isMobile} placement="top" title="收录到我的专题" arrow>

@@ -11,7 +11,7 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import { isMobile } from 'utils';
 import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 const LIMIT = 10;
 
@@ -138,9 +138,9 @@ const UserList = observer(() => {
                     onClick={() => modalStore.closeUserList()}
                   >
                     <div className="flex items-center cursor-pointer">
-                      <img
+                      <Img
                         className="w-10 h-10 rounded-full"
-                        src={resizeImage(author.avatar)}
+                        src={author.avatar}
                         alt={author.nickname}
                       />
                       <div className="ml-3">

@@ -5,7 +5,7 @@ import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import { useStore } from 'store';
 import Api from '../../api';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 export default () => {
   const [value, setValue] = React.useState('');
@@ -120,9 +120,9 @@ export default () => {
   const Post = (post: any) => (
     <div className="flex items-center mt-4">
       <div className="flex items-center">
-        <img
+        <Img
           className="w-10 h-10 rounded-full border border-gray-300"
-          src={resizeImage(post.author.avatar)}
+          src={post.author.avatar}
           alt={post.author.nickname}
         />
         <span className="ml-2 text-gray-800 w-16 truncate">{post.author.nickname}</span>

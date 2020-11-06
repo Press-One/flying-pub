@@ -8,6 +8,7 @@ import WithdrawModal from './withdrawModal';
 import { currencyIconMap } from './utils';
 import { sleep, isMobile, getApiEndpoint } from 'utils';
 import Api from './api';
+import Img from 'components/Img';
 
 const Asset = (props: any) => {
   const { snackbarStore, readerWalletStore } = useStore();
@@ -36,7 +37,7 @@ const Asset = (props: any) => {
     <div className="flex items-center justify-between py-3 px-2 border-b border-gray-300 leading-none">
       <div className="flex items-center">
         <div className="w-10 h-10">
-          <img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} />
+          <Img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} useOriginalDefault />
         </div>
         <div className="flex items-center ml-4">
           <span className="font-bold mr-1 text-lg">{amount}</span>
@@ -56,7 +57,13 @@ const Asset = (props: any) => {
 };
 
 export default observer((props: any) => {
-  const { userStore, readerWalletStore, snackbarStore, settingsStore, confirmDialogStore } = useStore();
+  const {
+    userStore,
+    readerWalletStore,
+    snackbarStore,
+    settingsStore,
+    confirmDialogStore,
+  } = useStore();
   const { settings } = settingsStore;
   const [currency, setCurrency] = React.useState('');
   const [openWithdrawModal, setOpenWithdrawModal] = React.useState(false);

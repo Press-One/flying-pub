@@ -11,6 +11,7 @@ import { sleep, isMobile } from 'utils';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
+import Img from 'components/Img';
 
 const LIMIT = 10;
 
@@ -193,7 +194,7 @@ const TopicList = observer(() => {
               >
                 <ModalLink to={`/topics/${topic.uuid}`} onClick={() => modalStore.closeTopicList()}>
                   <div className="flex items-center">
-                    <img className="w-10 h-10 rounded" src={topic.cover} alt="cover" />
+                    <Img className="w-10 h-10 rounded" src={topic.cover} resizeWidth={40} alt="." />
                     <div className="ml-3">
                       <div className="text-14 text-gray-70 truncate w-48 md:w-56">{topic.name}</div>
                       {(Number(topic.summary.post.count) > 0 ||

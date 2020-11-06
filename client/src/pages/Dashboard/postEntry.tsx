@@ -18,7 +18,7 @@ import fileApi from 'apis/file';
 import { useStore } from 'store';
 
 import { ago, sleep } from 'utils';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 export const FileStatus: any = {
   published: '已发布',
@@ -123,7 +123,11 @@ export default observer((props: any) => {
         )}
       </TableCell>
       <TableCell>
-        {file.cover ? <img width="55px" src={resizeImage(file.cover, 120)} alt="封面" /> : ''}
+        {file.cover ? (
+          <Img width="55px" src={file.cover} resizeWidth={55} useOriginalDefault alt="封面" />
+        ) : (
+          ''
+        )}
       </TableCell>
       <TableCell>
         {!file.invisibility && (

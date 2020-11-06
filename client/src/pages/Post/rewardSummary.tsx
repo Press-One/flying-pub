@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { currencyIconMap } from 'components/WalletModal/Wallet/utils';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 export default (props: any) => {
   let { amountMap = {}, users = [] } = props.summary;
@@ -30,12 +30,7 @@ export default (props: any) => {
             return (
               <Link to={`/authors/${user.address}`} key={user.id}>
                 <div className="px-1 mb-2" key={user.id}>
-                  <img
-                    className="rounded-sm w-10 h-10"
-                    src={resizeImage(user.avatar)}
-                    alt={user.nickname}
-                    key={user.id}
-                  />
+                  <Img className="rounded-sm w-10 h-10" src={user.avatar} alt={user.nickname} />
                 </div>
               </Link>
             );
@@ -61,7 +56,12 @@ export default (props: any) => {
                 key={asset}
               >
                 <div className="flex items-center">
-                  <img className="w-10 h-10" src={currencyIconMap[asset]} alt={asset} />
+                  <Img
+                    className="w-10 h-10"
+                    src={currencyIconMap[asset]}
+                    alt={asset}
+                    useOriginalDefault
+                  />
                   <span className="ml-3 font-bold text-gray-700">{asset}</span>
                 </div>
                 <span className="text-gray-600 ml-2 flex items-center leading-none">

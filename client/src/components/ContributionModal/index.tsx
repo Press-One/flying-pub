@@ -10,6 +10,7 @@ import topicApi, { ITopic } from 'apis/topic';
 import Loading from 'components/Loading';
 import { sleep } from 'utils';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
+import Img from 'components/Img';
 
 const LIMIT = 20;
 
@@ -143,7 +144,7 @@ const TopicLists = observer((props: IProps) => {
               <a href={`/topics/${topic.uuid}`} rel="noopener noreferrer" target="_blank">
                 <div className="flex items-center mr-2">
                   <div className="w-10 h-10">
-                    <img className="w-10 h-10 rounded" src={topic.cover} alt="cover" />
+                    <Img className="w-10 h-10 rounded" src={topic.cover} resizeWidth={40} alt="." />
                   </div>
                   <div className="ml-3">
                     <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>

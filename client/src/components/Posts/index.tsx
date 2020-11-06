@@ -1,11 +1,12 @@
 import React from 'react';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { IPost } from 'apis/post';
 import { Link } from 'react-router-dom';
-import { isMobile, ago, getDefaultAvatar, getImageWidth } from 'utils';
+import { isMobile, ago, getImageWidth } from 'utils';
 import TopicLabels from 'components/TopicLabels';
 import Tooltip from '@material-ui/core/Tooltip';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 const AVATAR_RATIO = isMobile ? 1 : 3 / 2;
 
@@ -24,7 +25,7 @@ interface IPostProps {
   postsProps: IPostsProps;
 }
 
-const PostEntry = (props: IPostProps) => {
+const PostEntry = observer((props: IPostProps) => {
   const {
     post,
     postsProps: {
@@ -36,6 +37,9 @@ const PostEntry = (props: IPostProps) => {
     },
   } = props;
   const coverWidth = smallCoverSize ? (isMobile ? 86 : 120) : isMobile ? 86 : 150;
+  const state = useLocalStore(() => ({
+    useOriginalCover: false,
+  }));
 
   if (!post) {
     return null;
@@ -94,13 +98,10 @@ const PostEntry = (props: IPostProps) => {
                         <div className="flex items-center z-10">
                           {!hideAuthor && (
                             <div className="flex items-center w-5 h-5 mr-1 md:mr-2">
-                              <img
+                              <Img
                                 className="w-5 h-5 rounded-full border border-gray-300"
-                                src={resizeImage(post.author.avatar)}
+                                src={post.author.avatar}
                                 alt={'头像'}
-                                onError={(e: any) => {
-                                  e.target.src = getDefaultAvatar();
-                                }}
                               />
                             </div>
                           )}
@@ -152,17 +153,28 @@ const PostEntry = (props: IPostProps) => {
             </div>
           </div>
           {post.cover && (
-            <div className="cover ml-5 md:ml-8">
+            <div
+              className="cover ml-5 md:ml-8 cover-container rounded"
+              style={{
+                backgroundImage: state.useOriginalCover
+                  ? `url(${post.cover})`
+                  : `url(${post.cover}?image=&action=resize:h_${
+                      getImageWidth(coverWidth) / AVATAR_RATIO
+                    })`,
+              }}
+            >
               <Link to={`/posts/${encodeURIComponent(postId)}`}>
                 <img
-                  className="cover rounded"
-                  src={
-                    post.cover +
-                    `?image=&action=resize:h_${
-                      getImageWidth(coverWidth) / AVATAR_RATIO
-                    }|crop:w_${getImageWidth(coverWidth)}`
-                  }
+                  className="cover rounded invisible"
+                  src={`${post.cover}?image=&action=resize:h_${
+                    getImageWidth(coverWidth) / AVATAR_RATIO
+                  }`}
                   alt="封面"
+                  onError={() => {
+                    if (!state.useOriginalCover) {
+                      state.useOriginalCover = true;
+                    }
+                  }}
                 />
               </Link>
             </div>
@@ -195,6 +207,10 @@ const PostEntry = (props: IPostProps) => {
           .small-height {
             min-height: 55px;
           }
+          .cover-container {
+            background-size: cover;
+            background-position: center center;
+          }
           .cover {
             width: ${coverWidth}px;
             height: ${coverWidth / AVATAR_RATIO}px;
@@ -203,7 +219,7 @@ const PostEntry = (props: IPostProps) => {
       </div>
     </div>
   );
-};
+});
 
 export default (props: IPostsProps) => {
   const { borderTop } = props;

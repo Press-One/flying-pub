@@ -11,9 +11,7 @@ import {
 import { ago, removeUrlHost } from 'utils';
 import marked from 'marked';
 import ModalLink from 'components/ModalLink';
-import { resizeImage } from 'utils';
-
-const defaultAvatar = resizeImage('https://avatar.xue.cn/avatar/default.png');
+import Img from 'components/Img';
 
 function formatDateTime(ts: string) {
   return ago(ts);
@@ -261,9 +259,9 @@ export default observer(() => {
                   modalStore.closeNotification();
                 }}
               >
-                <img
+                <Img
                   className="rounded-full"
-                  src={resizeImage(msg.notification.extras.fromUserAvatar) || defaultAvatar}
+                  src={msg.notification.extras.fromUserAvatar}
                   alt="avatar"
                   width="36"
                   height="36"

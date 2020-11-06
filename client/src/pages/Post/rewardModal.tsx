@@ -18,6 +18,7 @@ import WalletApi from 'components/WalletModal/Wallet/api';
 import { sleep, isPc, stopBodyScroll, isMobile, isIPhone } from 'utils';
 import { checkAmount } from 'components/WalletModal/Wallet/utils';
 import Tooltip from '@material-ui/core/Tooltip';
+import Img from 'components/Img';
 
 export default observer((props: any) => {
   const cachedCurrency = localStorage.getItem('REWARD_CURRENCY');
@@ -199,7 +200,12 @@ export default observer((props: any) => {
                   }}
                 >
                   <div className="w-8 h-8">
-                    <img className="w-8 h-8" src={currencyIconMap[currency]} alt={currency} />
+                    <Img
+                      className="w-8 h-8"
+                      src={currencyIconMap[currency]}
+                      alt={currency}
+                      useOriginalDefault
+                    />
                   </div>
                   <div className="mt-2 leading-none text-xs currency tracking-wide">{currency}</div>
                 </div>

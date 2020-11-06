@@ -7,6 +7,7 @@ import { Dialog, Slider, withStyles } from '@material-ui/core';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile, isPc } from 'utils';
 import Api from 'api';
+import Img from 'components/Img';
 
 import './index.sass';
 
@@ -162,7 +163,7 @@ export default observer((props: any) => {
         onClick={handleEditAvatar}
         style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
       >
-        {state.avatar && <img src={state.avatar} alt="avatar" />}
+        {state.avatar && <Img src={state.avatar} resizeWidth={220} ignoreError alt="avatar" />}
         {state.avatar && (
           <div className="edit-button text-13">
             <Edit className="edit-icon" />

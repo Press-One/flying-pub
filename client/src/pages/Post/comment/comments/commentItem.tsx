@@ -6,7 +6,7 @@ import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
 import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
 import DeleteOutline from '@material-ui/icons/Close';
 import marked from 'marked';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 marked.setOptions({
   highlight: (code: string) => {
@@ -42,8 +42,8 @@ export default class CommentItem extends React.Component<any, any> {
         <div className="relative">
           <div className="avatar rounded absolute top-0 left-0">
             <Link to={`/authors/${comment.user.address}`}>
-              <img
-                src={resizeImage(comment.user.avatar)}
+              <Img
+                src={comment.user.avatar}
                 width="36px"
                 height="36px"
                 alt="avatar"

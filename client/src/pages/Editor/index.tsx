@@ -19,7 +19,7 @@ import fileApi from 'apis/file';
 import authApi from 'apis/auth';
 import config from './config';
 import * as EditorStorage from './Storage';
-import { resizeImage } from 'utils';
+import Img from 'components/Img';
 
 import 'easymde/dist/easymde.min.css';
 import './index.scss';
@@ -489,16 +489,30 @@ export default observer((props: any) => {
               <div className="flex items-center pt-1 h-8">
                 {file.cover && (
                   <Tooltip
-                    title={<img src={resizeImage(file.cover, 250)} alt="封面" width="250" />}
+                    title={
+                      <Img
+                        src={file.cover}
+                        resizeWidth={250}
+                        useOriginalDefault
+                        alt="封面"
+                        width="250"
+                      />
+                    }
                     placement="left"
                   >
-                    <img className="rounded mr-2" width="55px" src={file.cover} alt="封面" />
+                    <Img
+                      className="rounded mr-2"
+                      width="55px"
+                      src={file.cover}
+                      resizeWidth={55}
+                      alt="封面"
+                    />
                   </Tooltip>
                 )}
                 {!file.cover && (
                   <div
                     className="mr-2 text-xl flex items-center justify-center rounded bg-gray-200"
-                    style={{ width: '55px', height: '31px' }}
+                    style={{ width: '55px', height: '31px', marginTop: '-2px' }}
                   >
                     <div className="flex items-center mt-1">
                       <CameraAlt />
