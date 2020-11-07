@@ -22,7 +22,7 @@ exports.create = async (userId, message, options = {}) => {
   if (config.bot && config.bot.enabled) {
     try {
       sendToBot(data, {
-        toMixin: options.toMixin
+        toActiveMixinUser: options.toActiveMixinUser
       });
     } catch (e) {
       log(e);
@@ -55,13 +55,16 @@ const sendToBot = async (data, options = {}) => {
     }
   }).promise();
 
-  if (options.toMixin && config.bot.mixin) {
+  if (config.bot.mixin) {
     await request({
       uri: config.bot.mixin.url,
       method: 'post',
       json: true,
       body: {
-        payload: data
+        payload: {
+          ...data,
+          mixinUserUuid: options.toActiveMixinUser ? (config.bot.mixin.activeMixinUserUuid || '') : config.bot.mixin.lazyMixinUserUuid
+        }
       }
     }).promise();
   }

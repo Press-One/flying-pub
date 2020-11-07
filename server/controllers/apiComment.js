@@ -59,7 +59,7 @@ exports.create = async (ctx) => {
   offWords = offWords.filter(word => word.length > 2);
   if (offWords && offWords.length > 0) {
     Log.create(user.id, `评论包含敏感词：${offWords.join('，')} ${originUrl}`, {
-      toMixin: true
+      toActiveMixinUser: true
     });
   }
 
