@@ -93,12 +93,16 @@ export function createFeedStore() {
     },
     addPosts(posts: IPost[]) {
       this.isNew = false;
-      this.hasMorePosts = posts.length === this.limit;
       for (const post of posts) {
         if (!this.rIdsSet.has(post.rId)) {
           this.postMap[post.rId] = post;
           this.rIdsSet.add(post.rId);
         }
+      }
+      if (this.filterType === 'SUBSCRIPTION') {
+        this.hasMorePosts = this.length < this.total;
+      } else {
+        this.hasMorePosts = posts.length === this.limit;
       }
     },
     setPost(post: IPost) {

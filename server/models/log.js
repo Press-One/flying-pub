@@ -16,7 +16,7 @@ exports.create = async (userId, message, options = {}) => {
   const SSO_FLAG = user.SSO ? ' SSO' : '';
   const data = {
     userId,
-    message: `【${config.serviceKey} ${userDevice || ''}】${user.nickname}${version}${SSO_FLAG}：${message}`,
+    message: `【${config.serviceKey.replace('_FLYING_PUB', '')} ${userDevice || ''}】${user.nickname}${version}${SSO_FLAG}：${message}`,
   };
   await Log.create(data);
   if (config.bot && config.bot.enabled) {
@@ -33,7 +33,7 @@ exports.create = async (userId, message, options = {}) => {
 exports.createAnonymity = async (identity, message) => {
   const data = {
     userId: 0,
-    message: `【${config.serviceKey}】 ${identity}：${message}`,
+    message: `【${config.serviceKey.replace('_FLYING_PUB', '')}】 ${identity}：${message}`,
   };
   await Log.create(data);
   if (config.bot && config.bot.enabled) {
