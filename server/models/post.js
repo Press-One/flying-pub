@@ -128,7 +128,10 @@ exports.listByRIds = async (rIds, options = {}) => {
       rId: rIds,
       deleted: false,
       invisibility: false
-    }
+    },
+    order: [
+      ['pubDate', 'DESC'],
+    ],
   };
   const {
     ignoreDeleted,

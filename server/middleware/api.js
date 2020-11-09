@@ -7,6 +7,7 @@ const {
   throws,
 } = require('../utils/validator');
 const User = require('../models/user');
+const Profile = require('../models/profile');
 const Cache = require('../models/cache');
 
 exports.ensureAuthorization = (options = {}) => {
@@ -43,14 +44,20 @@ exports.ensureAuthorization = (options = {}) => {
       }
     } = decodedToken;
     assert(userId, Errors.ERR_NOT_FOUND('userId'));
-    const { user, sequelizeUser } = await User.get(userId, {
-      returnRaw: true,
-      withSSO: true
-    });
+    const [{ user, sequelizeUser }, profiles] = await Promise.all([
+      User.get(userId, {
+        returnRaw: true,
+        withSSO: true
+      }),
+      Profile.getByUserId(userId)
+    ]);
     assert(user, Errors.ERR_NOT_FOUND('user'));
-    const providerAdminList = config.auth.adminList ? config.auth.adminList[provider] : [];
-    const isAdmin = (providerAdminList || []).includes(parseInt(providerId));
-    user.isAdmin = isAdmin;
+    for (const profile of profiles) {
+      const providerAdminList = config.auth.adminList ? config.auth.adminList[profile.provider] : [];
+      if ((providerAdminList || []).includes(parseInt(profile.providerId))) {
+        user.isAdmin = true;
+      }
+    }
     ctx.verification.user = user;
     ctx.verification.sequelizeUser = sequelizeUser;
     ctx.verification.profile = {
