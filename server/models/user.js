@@ -3,9 +3,7 @@ const Profile = require("./profile");
 const PrsUtil = require("prs-utility");
 const util = require("../utils");
 const config = require("../config");
-const Author = require("./author");
 const Wallet = require("./wallet");
-const Log = require('./log');
 const SSO_User = require('../models_SSO/user');
 
 const {
@@ -72,25 +70,6 @@ const packUser = async (user, options = {}) => {
         config.encryption.aesKey256
       );
     }
-  }
-
-  try {
-    // 检查 author 是否创建
-    const author = await Author.getByAddress(derivedUser.address);
-    if (!author) {
-      // 还没有创建对应的 author，那么根据 user 创建一个
-      await Author.upsert(derivedUser.address, {
-        // 默认是 deny，提交 allow block 之后就会设置成 allow
-        status: 'deny',
-        nickname: derivedUser.nickname || '',
-        avatar: derivedUser.avatar || '',
-        cover: derivedUser.cover || '',
-        bio: derivedUser.bio || '',
-      });
-      Log.create(derivedUser.id, 'author 缺失，已创建对应的 author');
-    }
-  } catch (err) {
-    console.log(err);
   }
 
   return derivedUser;
@@ -170,16 +149,7 @@ exports.create = async (data) => {
     version: 1
   });
 
-  try {
-    await Author.upsert(address, {
-      status: 'deny',
-      nickname: nickname || '',
-      avatar: avatar || '',
-      bio: bio || '',
-    });
-  } catch (err) {
-    console.log(err)
-  }
+  
 
   return packUser(user.toJSON());
 };
@@ -195,14 +165,8 @@ exports.update = async (userId, data) => {
   });
 
   try {
-    const user = await exports.get(userId);
-    await Author.upsert(user.address, {
-      nickname: user.nickname || '',
-      avatar: user.avatar || '',
-      cover: user.cover || '',
-      bio: user.bio || '',
-    });
     if (data.nickname) {
+      const user = await exports.get(userId);
       await Wallet.updateNickname(user.address, user.nickname);
     }
   } catch (err) {

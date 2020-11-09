@@ -13,9 +13,11 @@ exports.get = async ctx => {
   const address = ctx.params.id;
   const withSummary = ctx.query.withSummary;
   const summaryPreviewCount = ctx.query.summaryPreviewCount || 0;
-  const { user: authorUser, sequelizeUser } = await User.getByAddress(address, {
+  const authorUserWithRaw = await User.getByAddress(address, {
     returnRaw: true
   });
+  assert(authorUserWithRaw, Errors.ERR_NOT_FOUND('author'))
+  const { user: authorUser, sequelizeUser } = authorUserWithRaw;
   const { author, sequelizeAuthor } = await Author.getByAddress(address, {
     returnRaw: true
   });
@@ -42,7 +44,7 @@ exports.get = async ctx => {
     sequelizeUser.countFollowingAuthors(),
     sequelizeUser.getFollowingAuthors({
       limit: summaryPreviewCount,
-      attributes: ['avatar'],
+      attributes: ['address', 'avatar'],
       joinTableAttributes: []
     }),
     sequelizeAuthor.countFollowers(),
@@ -85,10 +87,11 @@ exports.get = async ctx => {
   ]);
 
   if (withSummary) {
+    const derivedFollowingPreview = await Author.packAuthors(followingPreview);
     author.summary = {
       followingAuthor: {
         count: followingCount,
-        preview: followingPreview.map(item => item.avatar)
+        preview: derivedFollowingPreview.map(item => item.avatar)
       },
       follower: {
         count: followerCount,

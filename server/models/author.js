@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+const User = require("./user");
 const Author = require('./sequelize/author');
 const Log = require('./log');
 const {
@@ -8,17 +9,25 @@ const {
   attempt
 } = require('../utils/validator');
 
-const packAuthor = author => {
+const packAuthor = async author => {
+  const user = await User.getByAddress(author.address) || {};
   return {
     status: author.status,
     address: author.address,
-    nickname: author.nickname,
-    avatar: author.avatar,
-    cover: author.cover,
-    bio: author.bio
+    nickname: user.nickname || author.nickname,
+    avatar: user.avatar || author.avatar,
+    cover: user.cover || author.cover,
+    bio: user.bio || author.bio
   };
 }
 exports.packAuthor = packAuthor;
+
+const packAuthors = async authors => {
+  return await Promise.all(authors.map(async author => {
+    return await packAuthor(author);
+  }));
+}
+exports.packAuthors = packAuthors;
 
 const getByAddress = async (address, options = {}) => {
   assert(address, Errors.ERR_IS_REQUIRED('address'))
@@ -32,7 +41,7 @@ const getByAddress = async (address, options = {}) => {
     return null;
   }
   
-  const derivedAuthor = packAuthor(author.toJSON());
+  const derivedAuthor = await packAuthor(author.toJSON());
 
   if (options.raw) {
     return author;
@@ -94,7 +103,7 @@ exports.listRecommended = async (options = {}) => {
     limit
   });
 
-  const derivedAuthors = await Promise.all(authors.map(author => packAuthor(author.toJSON())));
+  const derivedAuthors = await packAuthors(authors);
 
   return derivedAuthors;
 }

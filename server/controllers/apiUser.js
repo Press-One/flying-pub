@@ -7,6 +7,7 @@ const {
 const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require("../models/wallet");
+const Author = require("../models/author");
 const ReaderWallet = require("../models/readerWallet");
 const {
   verifySmsCode
@@ -84,9 +85,22 @@ exports.put = async (ctx) => {
     await User.update(user.id, data);
   }
 
-  Log.createAnonymity('更新作者资料', `${nickname || user.nickname} ${getHost()}/authors/${user.address}`);
+  const updatedUser = await User.get(user.id);
 
-  ctx.body = await User.get(user.id);
+  try {
+    await Author.upsert(updatedUser.address, {
+      nickname: updatedUser.nickname || '',
+      avatar: updatedUser.avatar || '',
+      cover: updatedUser.cover || '',
+      bio: updatedUser.bio || '',
+    });
+  } catch (err) {
+    console.log(err);
+  }
+
+  Log.createAnonymity('更新作者资料', `${nickname || updatedUser.nickname} ${getHost()}/authors/${updatedUser.address}`);
+
+  ctx.body = updatedUser;
 }
 
 // set password for phone

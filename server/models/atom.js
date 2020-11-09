@@ -200,10 +200,12 @@ const saveChainPost = async (chainPost, options = {}) => {
     return;
   }
 
+  const user = await User.getByAddress(author.address) || {};
   await Author.upsert(author.address, {
-    nickname: author.name,
-    avatar: author.avatar,
-    bio: author.bio,
+    nickname: user.nickname || author.nickname || author.name || '',
+    avatar: user.avatar || author.avatar || '',
+    cover: user.cover || author.cover || '',
+    bio: user.bio || author.bio || '',
   });
 
   if (options.fromAtomSync) {

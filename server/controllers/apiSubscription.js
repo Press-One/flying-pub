@@ -1,5 +1,6 @@
 const config = require("../config");
 const User = require('../models/user');
+const { packAuthors } = require('../models/author');
 const Author = require('../models/sequelize/author');
 const Log = require('../models/log');
 const {
@@ -108,6 +109,8 @@ exports.listFollowing = async ctx => {
   ]);
 
   let derivedAuthors = await listToJSON(authors);
+
+  derivedAuthors = await packAuthors(derivedAuthors);
 
   if (user && derivedAuthors.length > 0) {
     derivedAuthors = await appendFollowingStatus(derivedAuthors, user);

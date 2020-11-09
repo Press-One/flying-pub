@@ -221,7 +221,7 @@ module.exports = {
     mixin: {
       activeMixinUserUuid: 'c39c2ecc-2109-499f-b6c4-d6f278ea29fb',
       lazyMixinUserUuid: 'c07448b5-a35c-49d6-8214-174f966d7f56',
-      url: 'http://localhost:8091/forward/mixin'
+      url: 'http://dev.press.one:8091/forward/mixin'
     }
   },
 

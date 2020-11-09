@@ -280,6 +280,16 @@ const login = async (ctx, user, provider) => {
       userData.mixinAccountRaw = profile.raw;
     }
     const user = await User.create(userData);
+    try {
+      await Author.upsert(user.address, {
+        status: 'deny',
+        nickname: user.nickname || '',
+        avatar: user.avatar || '',
+        bio: user.bio || '',
+      });
+    } catch (err) {
+      console.log(err)
+    }
     insertedUser = user;
     insertedProfile = await Profile.createProfile({
       userId: user.id,
