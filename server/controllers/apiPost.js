@@ -3,6 +3,7 @@ const Author = require('../models/author');
 const Topic = require('../models/topic');
 const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
+const View = require('../cache/view');
 const config = require('../config');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -77,6 +78,15 @@ exports.get = async ctx => {
       }
     }
   }
+
+  try {
+    await View.trySave(ctx.ip, rId);
+    const cachedViewCount = await View.getCountByRId(rId);
+    post.viewCount += cachedViewCount;
+  } catch (err) {
+    console.log(err);
+  }
+
   ctx.body = post;
 }
 

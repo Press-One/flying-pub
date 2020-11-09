@@ -19,6 +19,7 @@ export interface IPost {
   rewardSummary: string;
   upVotesCount: number;
   commentsCount: number;
+  viewCount: number;
   latestRId: string | null;
   deleted: boolean;
   sticky: boolean;

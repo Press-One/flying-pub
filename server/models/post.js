@@ -76,6 +76,7 @@ const packPost = async (post, options = {}) => {
   }
   postJson.upVotesCount = ~~postJson.upVotesCount;
   postJson.commentsCount = ~~postJson.commentsCount;
+  postJson.viewCount = ~~postJson.viewCount;
   return postJson;
 }
 exports.packPost = packPost;
@@ -180,6 +181,7 @@ const updateByRId = async (rId, data) => {
     rewardSummary: Joi.any().optional(),
     upVotesCount: Joi.number().optional(),
     commentsCount: Joi.number().optional(),
+    viewCount: Joi.number().optional(),
     latestRId: Joi.any().optional(),
     deleted: Joi.boolean().optional(),
     sticky: Joi.boolean().optional(),

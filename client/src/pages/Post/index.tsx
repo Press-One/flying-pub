@@ -582,6 +582,9 @@ export default observer((props: any) => {
             </div>
           </Link>
           <span className="mr-5">{ago(post.pubDate)}</span>
+          {localStorage.getItem('VIEW_COUNT_ENABLED') && (
+            <span className="mr-5">阅读 {post.viewCount}</span>
+          )}
           {isMyself && !isMobile && <Link to={`/editor?rId=${post.rId}`}>编辑</Link>}
         </div>
         <div

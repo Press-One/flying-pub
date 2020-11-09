@@ -58,6 +58,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(convert(logger()));
+app.proxy = true;
 
 app.keys = config.encryption.sessionKeys;
 app.use(session(config.session, app));

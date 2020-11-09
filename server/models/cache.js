@@ -7,11 +7,13 @@ const config = require('../config');
 
 let redis;
 
+var getPrefix = () => 'PRSCACHE_';
+
 var getKey = function (type, id, callback) {
   if (!type || !id) {
     return callback ? callback('Error cache type or id.') : null;
   }
-  var key = 'PRSCACHE_' + type.toUpperCase() + '_' + String(id);
+  var key = getPrefix() + type.toUpperCase() + '_' + String(id);
   return callback ? callback(null, key) : key;
 };
 
@@ -250,6 +252,8 @@ let getRedis = () => {
 }
 
 const cache = {
+  getPrefix,
+  getKey,
   getRedis,
   set,
   get,
