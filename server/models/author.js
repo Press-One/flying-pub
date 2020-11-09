@@ -9,9 +9,9 @@ const {
   attempt
 } = require('../utils/validator');
 
-const packAuthor = async author => {
+const packAuthor = async (author, options = {}) => {
   const user = await User.getByAddress(author.address) || {};
-  return {
+  const derivedAuthor = {
     status: author.status,
     address: author.address,
     nickname: user.nickname || author.nickname,
@@ -19,6 +19,10 @@ const packAuthor = async author => {
     cover: user.cover || author.cover,
     bio: user.bio || author.bio
   };
+  if (options.withUserId) {
+    derivedAuthor.userId = user.id;
+  }
+  return derivedAuthor;
 }
 exports.packAuthor = packAuthor;
 
@@ -41,11 +45,11 @@ const getByAddress = async (address, options = {}) => {
     return null;
   }
   
-  const derivedAuthor = await packAuthor(author.toJSON());
-
   if (options.raw) {
     return author;
   }
+
+  const derivedAuthor = await packAuthor(author.toJSON(), options);
 
   if (options.returnRaw) {
     return { sequelizeAuthor: author, author: derivedAuthor }

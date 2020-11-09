@@ -2,6 +2,8 @@ const config = require("../config");
 const Author = require('../models/author');
 const User = require("../models/user");
 const Cache = require("../models/cache");
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const _ = require('lodash');
 const {
   assert,
@@ -41,14 +43,36 @@ exports.get = async ctx => {
     followingTopicPreview,
     postCount
   ] = await Promise.all([
-    sequelizeUser.countFollowingAuthors(),
+    sequelizeUser.countFollowingAuthors({
+      where: {
+        address: {
+          [Op.not]: address
+        }
+      },
+    }),
     sequelizeUser.getFollowingAuthors({
+      where: {
+        address: {
+          [Op.not]: address
+        }
+      },
       limit: summaryPreviewCount,
       attributes: ['address', 'avatar'],
       joinTableAttributes: []
     }),
-    sequelizeAuthor.countFollowers(),
+    sequelizeAuthor.countFollowers({
+      where: {
+        id: {
+          [Op.not]: authorUser.id
+        }
+      }
+    }),
     sequelizeAuthor.getFollowers({
+      where: {
+        id: {
+          [Op.not]: authorUser.id
+        }
+      },
       limit: summaryPreviewCount,
       attributes: ['avatar'],
       joinTableAttributes: []

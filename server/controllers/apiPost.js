@@ -4,6 +4,8 @@ const Topic = require('../models/topic');
 const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
 const config = require('../config');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const {
   assert,
   Errors,
@@ -33,14 +35,21 @@ exports.get = async ctx => {
     throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
   }
   if (post.author && post.author.address) {
-    const sequelizeAuthor = await Author.getByAddress(post.author.address, {
-      raw: true
+    const { author, sequelizeAuthor } = await Author.getByAddress(post.author.address, {
+      returnRaw: true,
+      withUserId: true
     });
     const [
       followerCount,
       postCount
     ] = await Promise.all([
-      sequelizeAuthor.countFollowers(),
+      sequelizeAuthor.countFollowers({
+        where: {
+          id: {
+            [Op.not]: author.userId
+          }
+        }
+      }),
       sequelizeAuthor.countPosts({
         where: {
           deleted: false,
