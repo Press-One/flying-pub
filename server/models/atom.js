@@ -5,6 +5,7 @@ const {
 const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
+const User = require('./user');
 const Cache = require('./cache');
 const Receipt = require('./receipt');
 const Vote = require('./vote');
@@ -200,13 +201,19 @@ const saveChainPost = async (chainPost, options = {}) => {
     return;
   }
 
-  const user = await User.getByAddress(author.address) || {};
-  await Author.upsert(author.address, {
-    nickname: user.nickname || author.nickname || author.name || '',
-    avatar: user.avatar || author.avatar || '',
-    cover: user.cover || author.cover || '',
-    bio: user.bio || author.bio || '',
-  });
+  try {
+    const user = await User.getByAddress(author.address);
+    if (!user) {
+      await Author.upsert(author.address, {
+        nickname: author.nickname || author.name || '',
+        avatar: author.avatar || '',
+        cover: author.cover || '',
+        bio: author.bio || '',
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 
   if (options.fromAtomSync) {
     post.status = 'finished';
@@ -219,13 +226,18 @@ const saveChainPost = async (chainPost, options = {}) => {
       ignoreDeleted: true,
       raw: true
     });
-    post.pubDate = updatedFile.pubDate;
-    await Post.create(post);
-    Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
-    await Post.delete(updatedFile.rId);
-    Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
-    await replacePost(updatedRId, post.rId);
-    Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+    if (updatedFile) {
+      post.pubDate = updatedFile.pubDate;
+      await Post.create(post);
+      Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+      await Post.delete(updatedFile.rId);
+      Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
+      await replacePost(updatedRId, post.rId);
+      Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+    } else {
+      await Post.create(post);
+      Log.createAnonymity('updatedFile not found', `${updatedRId} ${post.rId}`);
+    }
   } else {
     await Post.create(post);
     Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
@@ -301,7 +313,7 @@ exports.sync = async () => {
     if (syncAuthorsDone) {
       // 同步所有 posts
       await syncPosts({
-        step: 10
+        step: 20
       });
     }
   }

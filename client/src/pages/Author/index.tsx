@@ -353,7 +353,7 @@ export default observer((props: any) => {
                       <span className="text-16 font-bold">
                         {state.author.summary?.follower.count}
                       </span>{' '}
-                      关注者
+                      被关注
                     </span>
                   )}
                 </div>
