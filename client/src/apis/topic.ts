@@ -95,6 +95,22 @@ export default {
       minPendingDuration: 500
     });
   },
+  addContributionRequest(uuid: string, rId: string) {
+    return request(`/api/topics/${uuid}/contribution_requests`, {
+      method: 'POST',
+      body: {
+        payload: { rId },
+      }
+    });
+  },
+  removeContributionRequest(uuid: string, rId: string) {
+    return request(`/api/topics/${uuid}/contribution_requests`, {
+      body: {
+        payload: { rId },
+      },
+      method: 'DELETE'
+    });
+  },
   subscribe(uuid: string) {
     return request(`/api/topics/${uuid}/followers`, {
       method: 'POST',

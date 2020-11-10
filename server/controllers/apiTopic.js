@@ -1,9 +1,9 @@
-const config = require("../config");
 const User = require('../models/user');
 const Topic = require('../models/topic');
 const Post = require('../models/post');
 const { appendFollowingStatus } = require('./apiSubscription');
 const Author = require('../models/sequelize/author');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
 const {
   assert,
   Errors
@@ -221,6 +221,204 @@ exports.removeContribution = async ctx => {
     }
   })();
   ctx.body = true;
+}
+
+exports.addContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const uuid = ctx.params.uuid;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED("data"));
+  const topic = await Topic.get(uuid, {
+    raw: true,
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getLatestByRId(data.rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await TopicContributionRequest.create({
+    userId: user.id,
+    postRId: post.rId,
+    topicUserId: topic.userId,
+    topicUuid: topic.uuid,
+    status: 'pending'
+  });
+  // TODO: 给主人发送通知
+  // TODO: url 可以打开消息位置，文章被删除，或者取消投稿，要及时提醒
+  ctx.body = true;
+}
+
+exports.removeContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const uuid = ctx.params.uuid;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED("data"));
+  const topic = await Topic.get(uuid, {
+    raw: true,
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getLatestByRId(data.rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await TopicContributionRequest.destroy({
+    where: {
+      userId: user.id,
+      postRId: post.rId,
+      topicUserId: topic.userId,
+      topicUuid: topic.uuid,
+      status: 'pending'
+    }
+  });
+  ctx.body = true;
+}
+
+exports.listContributionRequests = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const result = await TopicContributionRequest.findAndCountAll({
+    where: {
+      topicUserId: user.id
+    },
+    include: [{
+      model: Post.SequelizePost,
+      attributes: [],
+      where: {
+        deleted: false,
+        invisibility: false
+      }
+    }, {
+      model: Topic.SequelizeTopic,
+      attributes: [],
+      where: {
+        deleted: false
+      }
+    }],
+    order: [
+      ['createdAt', 'DESC']
+    ]
+  });
+  ctx.body = {
+    total: result.count,
+    requests: result.rows
+  }
+}
+
+exports.approveContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const id = ~~ctx.params.id;
+  const request = await TopicContributionRequest({
+    where: {
+      id,
+      topicUserId: user.id
+    },
+    raw: true
+  });
+  assert(request, Errors.ERR_NOT_FOUND("request"));
+  const topic = await Topic.get(request.topicUuid, {
+    raw: true
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getByRId(request.postRId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await topic.addPosts(post);
+  await TopicContributionRequest.update({
+    status: 'approved'
+  }, {
+    where: {
+      userId: user.id,
+      postRId: post.rId,
+      topicUserId: topic.userId,
+      topicUuid: topic.uuid,
+      status: 'pending'
+    }
+  });
+  Log.create(user.id, `同意收录，给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    try {
+      await notifyBeContributedToTopic({
+        fromUserName: user.address,
+        fromNickName: user.nickname,
+        fromUserAvatar: user.avatar,
+        postTitle: post.title,
+        postRId: post.rId,
+        topicUuid: topic.uuid,
+        topicName: topic.name,
+        toUserName: post.author.address,
+        toNickName: post.author.nickname,
+      });
+      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const authorUser = await User.getByAddress(post.author.address);
+      // TODO: url 可以打开消息位置，文章被删除，或者取消投稿，要及时提醒
+      await Mixin.pushToNotifyQueue({
+        userId: authorUser.id,
+        text: `你有一个投稿请求已审核通过`,
+        url: originUrl
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+  ctx.body = true;
+}
+
+exports.rejectContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const id = ~~ctx.params.id;
+  const request = await TopicContributionRequest({
+    where: {
+      id,
+      topicUserId: user.id
+    },
+    raw: true
+  });
+  assert(request, Errors.ERR_NOT_FOUND("request"));
+  const topic = await Topic.get(request.topicUuid, {
+    raw: true
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getByRId(request.postRId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await TopicContributionRequest.update({
+    status: 'rejected'
+  }, {
+    where: {
+      userId: user.id,
+      postRId: post.rId,
+      topicUserId: topic.userId,
+      topicUuid: topic.uuid,
+      status: 'pending'
+    }
+  });
+  Log.create(user.id, `拒绝收录，给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    try {
+      await notifyBeContributedToTopic({
+        fromUserName: user.address,
+        fromNickName: user.nickname,
+        fromUserAvatar: user.avatar,
+        postTitle: post.title,
+        postRId: post.rId,
+        topicUuid: topic.uuid,
+        topicName: topic.name,
+        toUserName: post.author.address,
+        toNickName: post.author.nickname,
+      });
+      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const authorUser = await User.getByAddress(post.author.address);
+      // TODO: url 可以打开消息位置，文章被删除，或者取消投稿，要及时提醒
+      await Mixin.pushToNotifyQueue({
+        userId: authorUser.id,
+        text: `你有一个投稿请求被拒绝了`,
+        url: originUrl
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  })();
 }
 
 exports.listTopicPosts = async ctx => {

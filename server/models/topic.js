@@ -226,3 +226,5 @@ exports.listPublicTopics = async (options = {}) => {
     topics
   }
 }
+
+exports.SequelizeTopic = Topic;

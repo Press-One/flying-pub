@@ -8,21 +8,22 @@ import TopicEditorModal from 'components/TopicEditorModal';
 import postApi, { IPost } from 'apis/post';
 import topicApi, { ITopic } from 'apis/topic';
 import Loading from 'components/Loading';
-import { sleep } from 'utils';
+import { sleep, isMobile } from 'utils';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Img from 'components/Img';
+import Tooltip from '@material-ui/core/Tooltip';
 
 const LIMIT = 20;
 
 interface IProps {
   type: string;
   post: IPost;
-  isMyself?: boolean;
+  isMyTopicsList?: boolean;
 }
 
 const TopicLists = observer((props: IProps) => {
   const { userStore, snackbarStore } = useStore();
-  const { post, isMyself } = props;
+  const { post, isMyTopicsList } = props;
   const state = useLocalStore(() => ({
     hasMore: false,
     topics: [] as ITopic[],
@@ -31,6 +32,7 @@ const TopicLists = observer((props: IProps) => {
     isFetching: false,
     isFetched: false,
     includedTopicUuidMap: {} as any,
+    pendingTopicUuidMap: {} as any,
     showTopicEditorModal: false,
   }));
 
@@ -38,6 +40,11 @@ const TopicLists = observer((props: IProps) => {
     if (post && post.topics) {
       for (const topic of post.topics) {
         state.includedTopicUuidMap[topic.uuid] = true;
+      }
+    }
+    if (post && post.pendingTopicUuids) {
+      for (const uuid of post.pendingTopicUuids) {
+        state.pendingTopicUuidMap[uuid] = true;
       }
     }
   }, [post, state]);
@@ -85,7 +92,7 @@ const TopicLists = observer((props: IProps) => {
     } catch (err) {
       if (err.status === 404) {
         snackbarStore.show({
-          message: '文章已经被作者删除了',
+          message: '粘贴已经被作者删除了',
           type: 'error',
         });
       }
@@ -102,6 +109,30 @@ const TopicLists = observer((props: IProps) => {
     }
   };
 
+  const addContributionRequest = async (topic: ITopic, post: IPost) => {
+    try {
+      await topicApi.addContributionRequest(topic.uuid, post.rId);
+      state.pendingTopicUuidMap[topic.uuid] = true;
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
+      console.log(err);
+    }
+  };
+
+  const removeContributionRequest = async (topic: ITopic, post: IPost) => {
+    try {
+      await topicApi.removeContributionRequest(topic.uuid, post.rId);
+      state.pendingTopicUuidMap[topic.uuid] = false;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   if (!state.isFetched) {
     return (
       <div className="pt-24 mt-2">
@@ -111,11 +142,11 @@ const TopicLists = observer((props: IProps) => {
   }
 
   return (
-    <div className="mt-5 text-left overflow-y-auto box-content topics-container px-6">
+    <div className="mt-5 text-left overflow-y-auto box-content topics-container px-2">
       <div className="border rounded-8 border-gray-d8 border-opacity-75 mb-2">
         {state.topics.length === 0 && (
           <div className="py-4 text-center text-gray-70 text-14">
-            {isMyself ? (
+            {isMyTopicsList ? (
               <div>
                 你还没有专题，
                 <span
@@ -131,48 +162,88 @@ const TopicLists = observer((props: IProps) => {
           </div>
         )}
         <div className="flex items-start flex-wrap topics-list" ref={infiniteRef}>
-          {state.topics.map((topic, index: number) => (
-            <div
-              key={index}
-              className={classNames(
-                {
-                  'border-r': (index + 1) % 2 !== 0,
-                },
-                'px-4 py-3 flex items-center justify-between border-b border-gray-300 row box-border w-1/2',
-              )}
-            >
-              <a href={`/topics/${topic.uuid}`} rel="noopener noreferrer" target="_blank">
-                <div className="flex items-center mr-2">
-                  <div className="w-10 h-10">
-                    <Img className="w-10 h-10 rounded" src={topic.cover} resizeWidth={40} alt="." />
+          {state.topics.map((topic, index: number) => {
+            const isTopicOwner = topic.user && topic.user.id === userStore.user.id;
+            return (
+              <div
+                key={index}
+                className={classNames(
+                  {
+                    'border-r': (index + 1) % 2 !== 0,
+                  },
+                  'px-4 py-3 flex items-center justify-between border-b border-gray-300 row box-border w-1/2',
+                )}
+              >
+                <a href={`/topics/${topic.uuid}`} rel="noopener noreferrer" target="_blank">
+                  <div className="flex items-center mr-2">
+                    <div className="w-10 h-10">
+                      <Img
+                        className="w-10 h-10 rounded"
+                        src={topic.cover}
+                        resizeWidth={40}
+                        alt="."
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>
+                      {!isMyTopicsList && (
+                        <div className="text-12 text-gray-af">
+                          {topic.summary.post.count} 文章 · {topic.summary.follower.count} 关注
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>
-                    {!isMyself && (
-                      <div className="text-12 text-gray-af">
-                        {topic.summary.post.count} 文章 · {topic.summary.follower.count} 关注
-                      </div>
+                </a>
+                {!isTopicOwner && topic.reviewEnabled && (
+                  <div>
+                    {!state.pendingTopicUuidMap[topic.uuid] && (
+                      <Tooltip
+                        disableHoverListener={isMobile}
+                        placement="top"
+                        title="投稿这个专题需要经过创建者审核，一旦有了审核结果，你将收到通知提醒"
+                        arrow
+                      >
+                        <div>
+                          <Button size="mini" onClick={() => addContributionRequest(topic, post)}>
+                            投稿
+                          </Button>
+                        </div>
+                      </Tooltip>
+                    )}
+                    {state.pendingTopicUuidMap[topic.uuid] && (
+                      <Button
+                        size="mini"
+                        color="red"
+                        outline
+                        onClick={() => removeContributionRequest(topic, post)}
+                      >
+                        待审核
+                      </Button>
                     )}
                   </div>
-                </div>
-              </a>
-              {!state.includedTopicUuidMap[topic.uuid] && (
-                <Button size="mini" onClick={() => addContribution(topic, post)}>
-                  {isMyself ? '收录' : '投稿'}
-                </Button>
-              )}
-              {state.includedTopicUuidMap[topic.uuid] && (
-                <Button
-                  size="mini"
-                  color="red"
-                  outline
-                  onClick={() => removeContribution(topic, post)}
-                >
-                  移除
-                </Button>
-              )}
-            </div>
-          ))}
+                )}
+                {(isTopicOwner || !topic.reviewEnabled) && (
+                  <div>
+                    {!state.includedTopicUuidMap[topic.uuid] && (
+                      <Button size="mini" onClick={() => addContribution(topic, post)}>
+                        {isTopicOwner ? '收录' : '投稿'}
+                      </Button>
+                    )}
+                    {state.includedTopicUuidMap[topic.uuid] && (
+                      <Button
+                        size="mini"
+                        color="red"
+                        outline
+                        onClick={() => removeContribution(topic, post)}
+                      >
+                        移除
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       {state.isFetched && state.hasMore && (
@@ -180,7 +251,7 @@ const TopicLists = observer((props: IProps) => {
           <Loading />
         </div>
       )}
-      {isMyself && state.topics.length > 0 && (
+      {isMyTopicsList && state.topics.length > 0 && (
         <div className="flex py-4 justify-center">
           <Button
             outline
@@ -226,6 +297,7 @@ const Contribution = observer(() => {
       try {
         const post = await postApi.fetchPost(file.rId, {
           dropContent: true,
+          withPendingTopicUuids: true,
         });
         state.post = post;
       } catch (err) {
@@ -263,7 +335,7 @@ const Contribution = observer(() => {
                 </div>
                 <div className="flex justify-center">
                   {state.tab === 'myTopics' && (
-                    <TopicLists type="myTopics" post={state.post} isMyself />
+                    <TopicLists type="myTopics" post={state.post} isMyTopicsList />
                   )}
                   {state.tab === 'publicTopics' && (
                     <TopicLists type="publicTopics" post={state.post} />
@@ -284,20 +356,20 @@ const Contribution = observer(() => {
       <style jsx global>{`
         .contribution-modal .content {
           height: 487px;
-          width: 600px;
+          width: 640px;
         }
         .contribution-modal .post-title {
           max-width: 400px;
         }
         .contribution-modal .topics-container {
           height: 365px;
-          width: 542px;
+          width: 592px;
         }
         .contribution-modal .topics-list {
-          width: 542px;
+          width: 592px;
         }
         .contribution-modal .topic-name {
-          width: 135px;
+          width: 142px;
         }
       `}</style>
     </div>

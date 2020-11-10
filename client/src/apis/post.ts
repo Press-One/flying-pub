@@ -26,6 +26,7 @@ export interface IPost {
   status: string;
   invisibility: boolean;
   topics: IPostTopic[];
+  pendingTopicUuids?: string[];
   voted: boolean;
   author: {
     address: string;

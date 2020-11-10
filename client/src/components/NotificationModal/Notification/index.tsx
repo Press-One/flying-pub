@@ -1,7 +1,11 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useStore } from '../../../store';
-import { NotificationSubType, CombinedNotificationType } from '../../../store/notification';
+import { useStore } from 'store';
+import {
+  NotificationSubType,
+  CombinedNotificationType,
+  ExtraNotificationType,
+} from 'store/notification';
 import { getNotificationHistory } from '../../NotificationSocket';
 import Loading from 'components/Loading';
 import Tabs from '@material-ui/core/Tabs';
@@ -13,18 +17,22 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import { sleep, isPc, isMobile } from 'utils';
 import classNames from 'classnames';
+import TopicReviewRequest from './TopicReviewRequest';
 import './index.scss';
 
 export default observer(() => {
   const { notificationStore, modalStore, userStore } = useStore();
   const [page, setPage] = React.useState(0);
-  const [tabValue, setTabvalue] = React.useState(0);
+  console.log(` ------------- hard code ---------------`);
+  // const [tabValue, setTabvalue] = React.useState(0);
+  const [tabValue, setTabvalue] = React.useState(4);
 
   const tabs = [
     NotificationSubType.LIKE,
     NotificationSubType.ARTICLE_COMMENT,
     NotificationSubType.COMMENT_MENTION_ME,
     CombinedNotificationType.OTHERS,
+    ExtraNotificationType.TOPIC_REVIEW_REQUEST,
   ];
 
   const tabToTitle: any = {
@@ -32,6 +40,7 @@ export default observer(() => {
     [NotificationSubType.COMMENT_MENTION_ME]: '回复',
     [NotificationSubType.LIKE]: '赞',
     [CombinedNotificationType.OTHERS]: '其他',
+    [ExtraNotificationType.TOPIC_REVIEW_REQUEST]: '投稿请求',
   };
 
   const renderTabLabel = (tab: string) => {
@@ -140,15 +149,18 @@ export default observer(() => {
           'px-4 md:px-8 notification-container',
         )}
       >
-        <div ref={infiniteRef}>
-          {notificationStore.isFetched && <NotificationMessages />}
-          {!notificationStore.isFetched && <div className="pt-20" />}
-          {notificationStore.loading && (
-            <div className="pt-10" style={{ height: '100px' }}>
-              <Loading />
-            </div>
-          )}
-        </div>
+        {tabs[tabValue] !== ExtraNotificationType.TOPIC_REVIEW_REQUEST && (
+          <div ref={infiniteRef}>
+            {notificationStore.isFetched && <NotificationMessages />}
+            {!notificationStore.isFetched && <div className="pt-20" />}
+            {notificationStore.loading && (
+              <div className="pt-10" style={{ height: '100px' }}>
+                <Loading />
+              </div>
+            )}
+          </div>
+        )}
+        {tabs[tabValue] === ExtraNotificationType.TOPIC_REVIEW_REQUEST && <TopicReviewRequest />}
       </div>
       <style jsx global>{`
         .notification-content .MuiTab-root {
@@ -156,6 +168,8 @@ export default observer(() => {
           color: rgba(0, 0, 0, 0.54);
           font-size: 16px;
           line-height: 28px;
+          min-width: auto;
+          width: 16%;
         }
         .notification-content .MuiTab-textColorInherit.Mui-selected {
           color: #63b3ed;

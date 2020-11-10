@@ -7,6 +7,10 @@ export enum CombinedNotificationType {
   OTHERS = 'OTHERS',
 }
 
+export enum ExtraNotificationType {
+  TOPIC_REVIEW_REQUEST = 'TOPIC_REVIEW_REQUEST'
+}
+
 export enum NotificationSubType {
   // @ 、回复、点赞、打赏
   COMMENT_MENTION_ME = 'COMMENT_MENTION_ME',

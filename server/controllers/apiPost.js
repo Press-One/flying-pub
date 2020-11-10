@@ -3,6 +3,7 @@ const Author = require('../models/author');
 const Topic = require('../models/topic');
 const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
 const View = require('../cache/view');
 const config = require('../config');
 const Sequelize = require('sequelize');
@@ -85,6 +86,18 @@ exports.get = async ctx => {
     post.viewCount += cachedViewCount;
   } catch (err) {
     console.log(err);
+  }
+
+  if (ctx.query.withPendingTopicUuids) {
+    const topicContributionRequests = await TopicContributionRequest.findAll({
+      attributes: ['topicUuid'],
+      where: {
+        postRId: post.rId,
+        status: 'pending'
+      },
+      raw: true
+    });
+    post.pendingTopicUuids = topicContributionRequests.map((t => t.topicUuid));
   }
 
   ctx.body = post;

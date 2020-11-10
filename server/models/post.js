@@ -358,3 +358,5 @@ exports.delete = async rId => {
   });
   return true;
 };
+
+exports.SequelizePost = Post;
