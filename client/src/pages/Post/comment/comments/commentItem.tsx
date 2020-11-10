@@ -5,14 +5,7 @@ import { ago, isMobile } from 'utils';
 import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
 import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
 import DeleteOutline from '@material-ui/icons/Close';
-import marked from 'marked';
 import Img from 'components/Img';
-
-marked.setOptions({
-  highlight: (code: string) => {
-    return require('highlight.js').highlightAuto(code).value;
-  },
-});
 
 export default class CommentItem extends React.Component<any, any> {
   render() {
@@ -130,27 +123,17 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
               </div>
               <div
-                className="markdown-body comment text-gray-1e pb-4 md:pb-5"
+                className="comment-body comment text-gray-1e pb-4 md:pb-5 break-words whitespace-pre-wrap"
                 onClick={() => isMobile && replyTo(comment)}
-                dangerouslySetInnerHTML={{ __html: marked.parse(comment.content) }}
-              />
+              >
+                {comment.content}
+              </div>
             </div>
           </div>
         </div>
         <style jsx>{`
           .name-max-width {
             max-width: 140px;
-          }
-          .markdown-body :global(img) {
-            max-width: 80%;
-          }
-          .markdown-body :global(h1),
-          .markdown-body :global(h2),
-          .markdown-body :global(h3),
-          .markdown-body :global(h4),
-          .markdown-body :global(h5),
-          .markdown-body :global(h6) {
-            border: none;
           }
           .gray {
             color: #8b8b8b;
@@ -161,10 +144,8 @@ export default class CommentItem extends React.Component<any, any> {
           .highlight {
             background: #e2f6ff;
           }
-          .markdown-body {
+          .comment-body {
             font-size: 14px;
-          }
-          .markdown-body :global(p) {
             line-height: 1.625;
           }
         `}</style>
