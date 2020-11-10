@@ -33,7 +33,7 @@ export default class CommentItem extends React.Component<any, any> {
         className={classNames(
           {
             highlight: highlight,
-            'border-b border-gray-300 duration-500 ease-in-out transition-all': !hideDivider,
+            'border-b border-gray-200 duration-500 ease-in-out transition-all': !hideDivider,
           },
           'comment-item pt-4 md:pt-6 px-4',
         )}
