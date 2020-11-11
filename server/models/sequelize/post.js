@@ -46,6 +46,10 @@ const Post = sequelize.define('posts', {
     type: Sequelize.INTEGER,
     defaultValue: 0
   },
+  viewCount: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
+  },
   latestRId: {
     type: Sequelize.STRING
   },

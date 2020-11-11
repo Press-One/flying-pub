@@ -3,7 +3,11 @@ const Author = require('../models/author');
 const Topic = require('../models/topic');
 const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
+const View = require('../cache/view');
 const config = require('../config');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const {
   assert,
   Errors,
@@ -15,12 +19,14 @@ exports.get = async ctx => {
   const rId = ctx.params.id;
   const includeDeleted = ctx.query.includeDeleted;
   const dropContent = ctx.query.dropContent || false;
+  const withPendingTopicUuids = ctx.query.withPendingTopicUuids;
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
     withContent: !dropContent,
     withPaymentUrl: true,
-    ignoreDeleted: true
+    ignoreDeleted: true,
+    withPendingTopicUuids
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
   if (post.latestRId) {
@@ -33,14 +39,21 @@ exports.get = async ctx => {
     throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
   }
   if (post.author && post.author.address) {
-    const sequelizeAuthor = await Author.getByAddress(post.author.address, {
-      raw: true
+    const { author, sequelizeAuthor } = await Author.getByAddress(post.author.address, {
+      returnRaw: true,
+      withUserId: true
     });
     const [
       followerCount,
       postCount
     ] = await Promise.all([
-      sequelizeAuthor.countFollowers(),
+      sequelizeAuthor.countFollowers({
+        where: {
+          id: {
+            [Op.not]: author.userId
+          }
+        }
+      }),
       sequelizeAuthor.countPosts({
         where: {
           deleted: false,
@@ -68,6 +81,15 @@ exports.get = async ctx => {
       }
     }
   }
+
+  try {
+    await View.trySave(ctx.ip, rId);
+    const cachedViewCount = await View.getCountByRId(rId);
+    post.viewCount += cachedViewCount;
+  } catch (err) {
+    console.log(err);
+  }
+
   ctx.body = post;
 }
 
@@ -88,6 +110,7 @@ const getListController = (listOptions = {}) => {
     const dayRange = options.dayRange;
     const filterBan = ctx.query.filterBan;
     const filterSticky = ctx.query.filterSticky;
+    const withPendingTopicUuids = ctx.query.withPendingTopicUuids
     const query = {
       offset,
       limit,
@@ -95,7 +118,8 @@ const getListController = (listOptions = {}) => {
       dropAuthor: !!address,
       dayRange,
       filterBan,
-      filterSticky
+      filterSticky,
+      withPendingTopicUuids
     };
     if (address) {
       query.addresses = [address];

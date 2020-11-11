@@ -15,6 +15,7 @@ import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
 import TopicEditorModal from 'components/TopicEditorModal';
 import postApi from 'apis/post';
+import _ from 'lodash';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import { Edit } from '@material-ui/icons';
 import { toJS } from 'mobx';
@@ -235,6 +236,16 @@ export default observer((props: any) => {
     );
   }
 
+  if (state.isFetchedAuthor && _.isEmpty(state.author)) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+          抱歉，你访问的作者不存在
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -342,7 +353,7 @@ export default observer((props: any) => {
                       <span className="text-16 font-bold">
                         {state.author.summary?.follower.count}
                       </span>{' '}
-                      关注者
+                      被关注
                     </span>
                   )}
                 </div>

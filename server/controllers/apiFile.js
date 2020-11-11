@@ -12,6 +12,9 @@ const Chain = require("./chain");
 const {
   truncate
 } = require("../utils");
+const {
+  pushToNotificationQueue,
+} = require("../models/notification");
 
 exports.list = async ctx => {
   const {
@@ -81,11 +84,13 @@ const createFile = async (user, data, options = {}) => {
       Log.create(user.id, `发布文章《${file.title}》 ${postUrl}`);
       (async () => {
         try {
-          await Mixin.pushToNotifyQueue({
-            userId: user.id,
-            text: `《${truncate(file.title)}》已发布`,
-            url: postUrl
-          });
+          await pushToNotificationQueue({
+            mixin: {
+              userId: user.id,
+              text: `《${truncate(file.title)}》已发布`,
+              url: postUrl
+            },
+          })
         } catch (err) {
           console.log(err);
         }
@@ -204,11 +209,13 @@ exports.update = async ctx => {
       Log.create(user.id, `发布草稿《${file.title}》 ${postUrl}`);
       (async () => {
         try {
-          await Mixin.pushToNotifyQueue({
-            userId: user.id,
-            text: `《${truncate(file.title)}》已发布`,
-            url: postUrl
-          });
+          await pushToNotificationQueue({
+            mixin: {
+              userId: user.id,
+              text: `《${truncate(file.title)}》已发布`,
+              url: postUrl
+            },
+          })
         } catch (err) {
           console.log(err);
         }

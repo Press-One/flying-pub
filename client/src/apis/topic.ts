@@ -1,5 +1,6 @@
 import request from '../request';
 import IUser from 'types/user'
+import { IPost } from './post';
 import qs from 'query-string';
 
 export interface IEditableTopic {
@@ -33,6 +34,16 @@ export interface ITopic {
       count: number;
     }
   },
+}
+
+export interface ITopicContributionRequest {
+  id: number;
+  post: IPost;
+  topic: ITopic;
+  status: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default {
@@ -93,6 +104,48 @@ export default {
       },
       method: 'DELETE',
       minPendingDuration: 500
+    });
+  },
+  addContributionRequest(uuid: string, rId: string) {
+    return request(`/api/topics/${uuid}/contribution_requests`, {
+      method: 'POST',
+      body: {
+        payload: { rId },
+      }
+    });
+  },
+  removeContributionRequest(uuid: string, rId: string) {
+    return request(`/api/topics/${uuid}/contribution_requests`, {
+      body: {
+        payload: { rId },
+      },
+      method: 'DELETE'
+    });
+  },
+  fetchContributionRequests(options = {}) {
+    return request(`/api/topics/contribution_requests?${qs.stringify(options)}`, {
+      method: 'GET',
+      minPendingDuration: 500
+    });
+  },
+  fetchPendingContributionRequestCount() {
+    return request(`/api/topics/contribution_requests/pending_count`, {
+      method: 'GET',
+    });
+  },
+  approveContributionRequest(id: number) {
+    return request(`/api/topics/contribution_requests/${id}/approve`, {
+      method: 'POST',
+    });
+  },
+  rejectContributionRequest(id: number, note: string) {
+    return request(`/api/topics/contribution_requests/${id}/reject`, {
+      method: 'POST',
+      body: {
+        payload: {
+          note
+        }
+      }
     });
   },
   subscribe(uuid: string) {

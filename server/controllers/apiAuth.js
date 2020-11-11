@@ -64,9 +64,10 @@ const getMixinBoxGroupUser = async mixinUuid => {
       json: true,
       headers: {
         group_id: config.auth.boxGroupId,
-        Authorization: `Bearer ${config.auth.boxGroupToken}`
+        Authorization: `Basic ${config.auth.boxGroupToken}`
       },
     }).promise();
+    console.log({ res });
     return res.user_id === mixinUuid && res;
   } catch (err) {
     console.log(err);
@@ -133,7 +134,7 @@ exports.oauthCallback = async ctx => {
     assert(oauthType, Errors.ERR_IS_REQUIRED('oauthType'));
 
     if (oauthType === 'login') {
-      if (config.settings['permission.isPrivate'] || config.settings['permission.isOnlyPubPrivate']) {
+      if (config.settings['permission.isPrivate']) {
         const mixinGroupUser = await checkPermission(provider, profile);
 
         if (config.settings['permission.isPrivate']) {
@@ -280,6 +281,16 @@ const login = async (ctx, user, provider) => {
       userData.mixinAccountRaw = profile.raw;
     }
     const user = await User.create(userData);
+    try {
+      await Author.upsert(user.address, {
+        status: 'deny',
+        nickname: user.nickname || '',
+        avatar: user.avatar || '',
+        bio: user.bio || '',
+      });
+    } catch (err) {
+      console.log(err)
+    }
     insertedUser = user;
     insertedProfile = await Profile.createProfile({
       userId: user.id,

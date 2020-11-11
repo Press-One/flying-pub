@@ -3,7 +3,6 @@ const Vote = require("../models/vote");
 const Post = require("../models/post");
 const Sync = require("../models/sync");
 const Log = require("../models/log");
-const Mixin = require("../models/mixin");
 const Comment = require("../models/comment");
 const User = require("../models/user");
 const {
@@ -14,9 +13,12 @@ const {
   Errors
 } = require("../utils/validator");
 const {
-  notifyCommentLike,
-  notifyArticleLike
-} = require("../models/notify");
+  pushToNotificationQueue,
+} = require("../models/notification");
+const {
+  getCommentLikePayload,
+  getArticleLikePayload
+} = require("../models/messageSystem");
 
 exports.create = async (ctx) => {
   const {
@@ -64,22 +66,23 @@ exports.create = async (ctx) => {
         try {
           const isMyself = user.id === comment.userId;
           if (!isMyself) {
-            await Mixin.pushToNotifyQueue({
-              userId: comment.userId,
-              text: `你的评论收到了一个赞`,
-              url: originUrl,
-            });
-
             const commentUser = await User.get(comment.userId);
-            await notifyCommentLike({
-              fromUserName: user.address,
-              fromNickName: user.nickname,
-              fromUserAvatar: user.avatar,
-              fromContent: comment.content,
-              originUrl,
-              toUserName: commentUser.address,
-              toNickName: commentUser.nickname,
-            });
+            await pushToNotificationQueue({
+              mixin: {
+                userId: comment.userId,
+                text: `你的评论收到了一个赞`,
+                url: originUrl,
+              },
+              messageSystem: getCommentLikePayload({
+                fromUserName: user.address,
+                fromNickName: user.nickname,
+                fromUserAvatar: user.avatar,
+                fromContent: comment.content,
+                originUrl,
+                toUserName: commentUser.address,
+                toNickName: commentUser.nickname,
+              })
+            })
           }
         } catch (err) {
           console.log(err);
@@ -96,22 +99,23 @@ exports.create = async (ctx) => {
         const authorUser = await User.getByAddress(post.author.address);
         const isMyself = user.address === post.author.address;
         if (!isMyself) {
-          await Mixin.pushToNotifyQueue({
-            userId: authorUser.id,
-            text: `《${truncate(post.title)}》收到了一个赞`,
-            url: originUrl
-          });
-
-          await notifyArticleLike({
-            fromUserName: user.address,
-            fromNickName: user.nickname,
-            fromUserAvatar: user.avatar,
-            originUrl,
-            toUserName: authorUser.address,
-            toNickName: authorUser.nickname,
-            fromArticleId: post.rId,
-            fromArticleTitle: post.title,
-          });
+          await pushToNotificationQueue({
+            mixin: {
+              userId: authorUser.id,
+              text: `《${truncate(post.title)}》收到了一个赞`,
+              url: originUrl
+            },
+            messageSystem: getArticleLikePayload({
+              fromUserName: user.address,
+              fromNickName: user.nickname,
+              fromUserAvatar: user.avatar,
+              originUrl,
+              toUserName: authorUser.address,
+              toNickName: authorUser.nickname,
+              fromArticleId: post.rId,
+              fromArticleTitle: post.title,
+            })
+          })
         }
         Log.create(userId, `点赞文章 ${originUrl}`);
       } catch (err) {

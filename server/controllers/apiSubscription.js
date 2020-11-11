@@ -1,6 +1,6 @@
 const config = require("../config");
 const User = require('../models/user');
-const Author = require('../models/sequelize/author');
+const Author = require('../models/author');
 const Log = require('../models/log');
 const {
   assert,
@@ -11,37 +11,39 @@ const _ = require('lodash');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const {
-  notifyAuthorNewFollower,
-} = require("../models/notify");
-const Mixin = require("../models/mixin");
+  pushToNotificationQueue,
+} = require("../models/notification");
+const {
+  getAuthorNewFollowerPayload,
+} = require("../models/messageSystem");
 
 exports.subscribe = async ctx => {
   const { user, sequelizeUser } = ctx.verification;
   const authorAddress = ctx.params.authorAddress;
-  const author = await Author.findOne({
-    where: {
-      address: authorAddress
-    }
+  const author = await Author.getByAddress(authorAddress, {
+    raw: true
   });
   assert(author, Errors.ERR_NOT_FOUND('author'));
   await sequelizeUser.addFollowingAuthors(author);
   Log.create(user.id, `关注作者 ${authorAddress}`);
   (async () => {
     try {
-      await notifyAuthorNewFollower({
-        fromUserName: user.address,
-        fromNickName: user.nickname,
-        fromUserAvatar: user.avatar,
-        toUserName: author.address,
-        toNickName: author.nickname,
-      });
       const authorUser = await User.getByAddress(author.address);
       const originUrl = `${config.settings['site.url'] || config.serviceRoot}/authors/${user.address}`;
-      await Mixin.pushToNotifyQueue({
-        userId: authorUser.id,
-        text: `${truncate(user.nickname)} 关注了你`,
-        url: originUrl
-      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId: authorUser.id,
+          text: `${truncate(user.nickname)} 关注了你`,
+          url: originUrl
+        },
+        messageSystem: getAuthorNewFollowerPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          toUserName: author.address,
+          toNickName: author.nickname,
+        })
+      })
     } catch (err) {
       console.log(err);
     }
@@ -52,10 +54,8 @@ exports.subscribe = async ctx => {
 exports.unsubscribe = async ctx => {
   const user = ctx.verification.sequelizeUser;
   const authorAddress = ctx.params.authorAddress;
-  const author = await Author.findOne({
-    where: {
-      address: authorAddress
-    }
+  const author = await Author.getByAddress(authorAddress, {
+    raw: true
   });
   assert(author, Errors.ERR_NOT_FOUND('author'));
   await user.removeFollowingAuthors(author);
@@ -93,7 +93,13 @@ exports.listFollowing = async ctx => {
   });
   assert(publicUser, Errors.ERR_NOT_FOUND('user'));
   const [ total, authors ] = await Promise.all([
-    publicUser.countFollowingAuthors(),
+    publicUser.countFollowingAuthors({
+      where: {
+        address: {
+          [Op.not]: authorAddress
+        }
+      },
+    }),
     publicUser.getFollowingAuthors({
       where: {
         address: {
@@ -108,6 +114,8 @@ exports.listFollowing = async ctx => {
   ]);
 
   let derivedAuthors = await listToJSON(authors);
+
+  derivedAuthors = await Author.packAuthors(derivedAuthors);
 
   if (user && derivedAuthors.length > 0) {
     derivedAuthors = await appendFollowingStatus(derivedAuthors, user);
@@ -124,15 +132,25 @@ exports.listFollowers = async ctx => {
   const authorAddress = ctx.params.authorAddress;
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
-  const author = await Author.findOne({
-    where: {
-      address: authorAddress
-    }
+  const { author, sequelizeAuthor } = await Author.getByAddress(authorAddress, {
+    returnRaw: true,
+    withUserId: true
   });
   assert(author, Errors.ERR_NOT_FOUND('author'));
   const [ total, users ] = await Promise.all([
-    author.countFollowers(),
-    author.getFollowers({
+    sequelizeAuthor.countFollowers({
+      where: {
+        id: {
+          [Op.not]: author.userId
+        }
+      }
+    }),
+    sequelizeAuthor.getFollowers({
+      where: {
+        id: {
+          [Op.not]: author.userId
+        }
+      },
       joinTableAttributes: [],
       offset,
       limit

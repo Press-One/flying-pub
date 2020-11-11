@@ -7,6 +7,7 @@ const Post = require('./sequelize/post');
 const { getTopicOrderQuery } = require('./topic');
 const Topic = require('./sequelize/topic');
 const Author = require('./sequelize/author');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
 const User = require('./user');
 const {
   packAuthor
@@ -67,7 +68,7 @@ const packPost = async (post, options = {}) => {
       }
     }
     if (postJson.author) {
-      postJson.author = packAuthor(postJson.author);
+      postJson.author = await packAuthor(postJson.author);
     }
   }
   if (withVoted) {
@@ -76,6 +77,20 @@ const packPost = async (post, options = {}) => {
   }
   postJson.upVotesCount = ~~postJson.upVotesCount;
   postJson.commentsCount = ~~postJson.commentsCount;
+  postJson.viewCount = ~~postJson.viewCount;
+
+  if (options.withPendingTopicUuids) {
+    const topicContributionRequests = await TopicContributionRequest.findAll({
+      attributes: ['topicUuid'],
+      where: {
+        postRId: postJson.rId,
+        status: 'pending'
+      },
+      raw: true
+    });
+    postJson.pendingTopicUuids = topicContributionRequests.map((t => t.topicUuid));
+  }
+  
   return postJson;
 }
 exports.packPost = packPost;
@@ -180,6 +195,7 @@ const updateByRId = async (rId, data) => {
     rewardSummary: Joi.any().optional(),
     upVotesCount: Joi.number().optional(),
     commentsCount: Joi.number().optional(),
+    viewCount: Joi.number().optional(),
     latestRId: Joi.any().optional(),
     deleted: Joi.boolean().optional(),
     sticky: Joi.boolean().optional(),
@@ -326,6 +342,7 @@ exports.list = async (options = {}) => {
     posts.map(post => {
       return packPost(post, {
         dropAuthor,
+        withPendingTopicUuids: options.withPendingTopicUuids
       });
     })
   );
@@ -356,3 +373,5 @@ exports.delete = async rId => {
   });
   return true;
 };
+
+exports.SequelizePost = Post;

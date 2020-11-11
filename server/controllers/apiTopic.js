@@ -1,23 +1,29 @@
-const config = require("../config");
 const User = require('../models/user');
 const Topic = require('../models/topic');
 const Post = require('../models/post');
 const { appendFollowingStatus } = require('./apiSubscription');
 const Author = require('../models/sequelize/author');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
 const {
   assert,
   Errors
 } = require("../utils/validator");
 const _ = require('lodash');
 const {
-  notifyTopicNewFollower,
-  notifyBeContributedToTopic,
-  notifyTopicReceivedContribution,
-  notifyTopicRejectedContribution
-} = require("../models/notify");
-const Mixin = require("../models/mixin");
+  pushToNotificationQueue,
+  cancelJobFromNotificationQueue
+} = require("../models/notification");
+const {
+  getTopicNewFollowerPayload,
+  getBeContributedToTopicPayload,
+  getTopicReceivedContributionPayload,
+  getTopicRejectedContributionPayload,
+  getTopicContributionRequestApprovedPayload,
+  getTopicContributionRequestRejectedPayload
+} = require("../models/messageSystem");
 const Log = require('../models/log');
 const { truncate, getHost } = require('../utils');
+const socketIo = require("../models/socketIo");
 
 exports.get = async ctx => {
   const currentUser = ctx.verification && ctx.verification.sequelizeUser;
@@ -123,23 +129,28 @@ exports.addContribution = async ctx => {
           return;
         }
         const topicOwner = await User.get(topic.userId);
-        await notifyTopicReceivedContribution({
-          fromUserName: user.address,
-          fromNickName: user.nickname,
-          fromUserAvatar: user.avatar,
-          postTitle: post.title,
-          postRId: post.rId,
-          topicUuid: topic.uuid,
-          topicName: topic.name,
-          toUserName: topicOwner.address,
-          toNickName: topicOwner.nickname,
-        });
         const originUrl = `${getHost()}/posts/${post.rId}`;
-        await Mixin.pushToNotifyQueue({
-          userId: topic.userId,
-          text: `你的专题收到一个新的投稿`,
-          url: originUrl
-        });
+        await pushToNotificationQueue({
+          mixin: {
+            userId: topic.userId,
+            text: `你的专题收到一个新的投稿`,
+            url: originUrl
+          },
+          messageSystem: getTopicReceivedContributionPayload({
+            fromUserName: user.address,
+            fromNickName: user.nickname,
+            fromUserAvatar: user.avatar,
+            postTitle: post.title,
+            postRId: post.rId,
+            topicUuid: topic.uuid,
+            topicName: topic.name,
+            toUserName: topicOwner.address,
+            toNickName: topicOwner.nickname,
+          })
+        }, {
+          jobName: `received_contribution_${post.rId + topic.uuid}`,
+          delaySeconds: 20
+        })
       } catch (err) {
         console.log(err);
       }
@@ -148,24 +159,26 @@ exports.addContribution = async ctx => {
     (async () => {
       try {
         const post = await Post.getByRId(data.rId);
-        await notifyBeContributedToTopic({
-          fromUserName: user.address,
-          fromNickName: user.nickname,
-          fromUserAvatar: user.avatar,
-          postTitle: post.title,
-          postRId: post.rId,
-          topicUuid: topic.uuid,
-          topicName: topic.name,
-          toUserName: post.author.address,
-          toNickName: post.author.nickname,
-        });
         const originUrl = `${getHost()}/posts/${post.rId}`;
         const authorUser = await User.getByAddress(post.author.address);
-        await Mixin.pushToNotifyQueue({
-          userId: authorUser.id,
-          text: `你有一篇文章被收录到专题`,
-          url: originUrl
-        });
+        await pushToNotificationQueue({
+          mixin: {
+            userId: authorUser.id,
+            text: `你有一篇文章被收录到专题`,
+            url: originUrl
+          },
+          messageSystem: getBeContributedToTopicPayload({
+            fromUserName: user.address,
+            fromNickName: user.nickname,
+            fromUserAvatar: user.avatar,
+            postTitle: post.title,
+            postRId: post.rId,
+            topicUuid: topic.uuid,
+            topicName: topic.name,
+            toUserName: post.author.address,
+            toNickName: post.author.nickname,
+          })
+        })
       } catch (err) {
         console.log(err);
       }
@@ -194,33 +207,331 @@ exports.removeContribution = async ctx => {
       const post = await Post.getByRId(data.rId);
       const isMyself = user.address === post.author.address;
       if (isMyself) {
+        await cancelJobFromNotificationQueue(`received_contribution_${post.rId + topic.uuid}`);
         return;
       }
       Log.create(user.id, `移除理由：${data.note || ''}`);
-      await notifyTopicRejectedContribution({
-        fromUserName: user.address,
-        fromNickName: user.nickname,
-        fromUserAvatar: user.avatar,
-        postTitle: post.title,
-        postRId: post.rId,
-        topicUuid: topic.uuid,
-        topicName: topic.name,
-        note: data.note,
-        toUserName: post.author.address,
-        toNickName: post.author.nickname,
-      });
       const originUrl = `${getHost()}/posts/${post.rId}`;
       const authorUser = await User.getByAddress(post.author.address);
-      await Mixin.pushToNotifyQueue({
-        userId: authorUser.id,
-        text: `你有一篇文章被专题创建者移除`,
-        url: originUrl
-      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId: authorUser.id,
+          text: `你有一篇文章被专题创建者移除`,
+          url: originUrl
+        },
+        messageSystem: getTopicRejectedContributionPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          postTitle: post.title,
+          postRId: post.rId,
+          topicUuid: topic.uuid,
+          topicName: topic.name,
+          note: data.note,
+          toUserName: post.author.address,
+          toNickName: post.author.nickname,
+        })
+      })
     } catch (err) {
       console.log(err);
     }
   })();
   ctx.body = true;
+}
+
+exports.addContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const uuid = ctx.params.uuid;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED("data"));
+  const topic = await Topic.get(uuid, {
+    raw: true,
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getLatestByRId(data.rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  const request = await TopicContributionRequest.create({
+    userId: user.id,
+    postRId: post.rId,
+    topicUserId: topic.userId,
+    topicUuid: topic.uuid,
+    status: 'pending'
+  });
+  Log.create(user.id, `提交投稿请求，给专题 ${topic.uuid} ${topic.name} 投稿 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    const originUrl = `${getHost()}?action=OPEN_TOPIC_CONTRIBUTION_REQUEST_LIST&messageId=${request.id}`;
+    try {
+      const pendingCount = await getPendingContributionRequestCount(topic.userId);
+      socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
+        count: pendingCount
+      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId: topic.userId,
+          text: `有一个新的投稿等待你的审核`,
+          url: originUrl,
+          jobName: `request_${post.rId + topic.uuid}`,
+          delaySeconds: 20
+        },
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+  ctx.body = true;
+}
+
+exports.removeContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const uuid = ctx.params.uuid;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED("data"));
+  const topic = await Topic.get(uuid, {
+    raw: true,
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getLatestByRId(data.rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await TopicContributionRequest.destroy({
+    where: {
+      userId: user.id,
+      postRId: post.rId,
+      topicUserId: topic.userId,
+      topicUuid: topic.uuid,
+      status: 'pending'
+    }
+  });
+  Log.create(user.id, `取消投稿请求，给专题 ${topic.uuid} ${topic.name} 投稿 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    try {
+      const pendingCount = await getPendingContributionRequestCount(topic.userId);
+      socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
+        count: pendingCount
+      });
+      await cancelJobFromNotificationQueue(`request_${post.rId + topic.uuid}`);
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+  ctx.body = true;
+}
+
+exports.listContributionRequests = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const result = await TopicContributionRequest.findAndCountAll({
+    attributes: {
+      exclude: ['userId', 'postRId', 'topicUuid', 'topicUserId'],
+    },
+    where: {
+      topicUserId: user.id
+    },
+    include: [{
+      model: Post.SequelizePost,
+      attributes: ['title', 'rId'],
+      where: {
+        deleted: false,
+        invisibility: false
+      },
+      include: [{
+        model: Author,
+        attributes: ['address', 'nickname', 'avatar'],
+        where: {
+          status: 'allow'
+        }
+      }]
+    }, {
+      model: Topic.SequelizeTopic,
+      attributes: ['name', 'uuid'],
+      where: {
+        deleted: false
+      }
+    }],
+    order: [
+      ['createdAt', 'DESC']
+    ],
+    offset,
+    limit
+  });
+  ctx.body = {
+    total: result.count,
+    requests: result.rows
+  }
+}
+
+const getPendingContributionRequestCount = async (userId) => {
+  const count = await TopicContributionRequest.count({
+    where: {
+      topicUserId: userId,
+      status: 'pending'
+    },
+    include: [{
+      model: Post.SequelizePost,
+      where: {
+        deleted: false,
+        invisibility: false
+      },
+      include: [{
+        model: Author,
+        where: {
+          status: 'allow'
+        }
+      }]
+    }, {
+      model: Topic.SequelizeTopic,
+      where: {
+        deleted: false
+      }
+    }]
+  });
+  return count;
+}
+
+exports.countPendingContributionRequests = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  ctx.body = await getPendingContributionRequestCount(user.id);
+}
+
+exports.approveContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const id = ~~ctx.params.id;
+  const request = await TopicContributionRequest.findOne({
+    where: {
+      id,
+      topicUserId: user.id,
+      status: 'pending'
+    },
+    raw: true
+  });
+  assert(request, Errors.ERR_NOT_FOUND("request"));
+  const topic = await Topic.get(request.topicUuid, {
+    raw: true
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getByRId(request.postRId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await topic.addPosts(post);
+  await TopicContributionRequest.update({
+    status: 'approved'
+  }, {
+    where: {
+      id
+    }
+  });
+  Log.create(user.id, `同意收录，给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    try {
+      const pendingCount = await getPendingContributionRequestCount(topic.userId);
+      socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
+        count: pendingCount
+      });
+      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const authorUser = await User.getByAddress(post.author.address);
+      await pushToNotificationQueue({
+        mixin: {
+          userId: authorUser.id,
+          text: `你有一个投稿请求已审核通过`,
+          url: originUrl
+        },
+        messageSystem: getTopicContributionRequestApprovedPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          postTitle: post.title,
+          postRId: post.rId,
+          topicUuid: topic.uuid,
+          topicName: topic.name,
+          toUserName: post.author.address,
+          toNickName: post.author.nickname,
+        })
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+  ctx.body = await TopicContributionRequest.findOne({
+    where: {
+      id
+    },
+    raw: true
+  });
+}
+
+exports.rejectContributionRequest = async ctx => {
+  const user = ctx.verification && ctx.verification.user;
+  const id = ~~ctx.params.id;
+  const data = ctx.request.body.payload;
+  assert(data, Errors.ERR_IS_REQUIRED("data"));
+  const request = await TopicContributionRequest.findOne({
+    where: {
+      id,
+      topicUserId: user.id,
+      status: 'pending'
+    },
+    raw: true
+  });
+  assert(request, Errors.ERR_NOT_FOUND("request"));
+  const topic = await Topic.get(request.topicUuid, {
+    raw: true
+  });
+  assert(topic, Errors.ERR_NOT_FOUND("topic"));
+  const post = await Post.getByRId(request.postRId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await TopicContributionRequest.update({
+    status: 'rejected',
+    note: data.note || ''
+  }, {
+    where: {
+      id
+    }
+  });
+  Log.create(user.id, `拒绝收录，给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
+  (async () => {
+    try {
+      const pendingCount = await getPendingContributionRequestCount(topic.userId);
+      socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
+        count: pendingCount
+      });
+      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const authorUser = await User.getByAddress(post.author.address);
+      await pushToNotificationQueue({
+        mixin: {
+          userId: authorUser.id,
+          text: `你有一个投稿请求被拒绝了`,
+          url: originUrl
+        },
+        messageSystem: getTopicContributionRequestRejectedPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          postTitle: post.title,
+          postRId: post.rId,
+          note: data.note,
+          topicUuid: topic.uuid,
+          topicName: topic.name,
+          toUserName: post.author.address,
+          toNickName: post.author.nickname,
+        })
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+  ctx.body = await TopicContributionRequest.findOne({
+    where: {
+      id
+    },
+    raw: true
+  });
 }
 
 exports.listTopicPosts = async ctx => {
@@ -279,21 +590,23 @@ exports.addFollower = async ctx => {
         return;
       }
       const topicOwner = await User.get(topic.userId);
-      await notifyTopicNewFollower({
-        fromUserName: user.address,
-        fromNickName: user.nickname,
-        fromUserAvatar: user.avatar,
-        topicUuid: topic.uuid,
-        topicName: topic.name,
-        toUserName: topicOwner.address,
-        toNickName: topicOwner.nickname,
-      });
       const originUrl = `${getHost()}/authors/${user.address}`;
-      await Mixin.pushToNotifyQueue({
-        userId: topicOwner.id,
-        text: `${truncate(user.nickname)} 关注了你的专题`,
-        url: originUrl
-      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId: topicOwner.id,
+          text: `${truncate(user.nickname)} 关注了你的专题`,
+          url: originUrl
+        },
+        messageSystem: getTopicNewFollowerPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          topicUuid: topic.uuid,
+          topicName: topic.name,
+          toUserName: topicOwner.address,
+          toNickName: topicOwner.nickname,
+        })
+      })
     } catch (err) {
       console.log(err);
     }

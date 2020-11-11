@@ -19,12 +19,14 @@ export interface IPost {
   rewardSummary: string;
   upVotesCount: number;
   commentsCount: number;
+  viewCount: number;
   latestRId: string | null;
   deleted: boolean;
   sticky: boolean;
   status: string;
   invisibility: boolean;
   topics: IPostTopic[];
+  pendingTopicUuids?: string[];
   voted: boolean;
   author: {
     address: string;

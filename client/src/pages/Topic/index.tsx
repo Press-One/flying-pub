@@ -77,14 +77,14 @@ const TopView = observer(
     );
 
     return (
-      <div className="flex items-stretch overflow-hidden relative pb-4 md:rounded-12 bg-white">
+      <div className="flex items-stretch overflow-hidden relative pb-2 md:pb-4 md:rounded-12 bg-white">
         <div
-          className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center cover md:rounded-12"
+          className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center cover"
           style={{
             backgroundImage: `url('${resizeImage(topic.cover, 240)}')`,
           }}
         >
-          <div className="absolute top-0 left-0 right-0 bottom-0 blur-layer md:rounded-12" />
+          <div className="absolute top-0 left-0 right-0 bottom-0 blur-layer" />
         </div>
         <div className="z-10 w-full">
           <div className="flex justify-between w-full box-border pt-8 md:pt-24 md:mt-6 px-5 pb-3 md:pb-0 md:px-16 text-black">
@@ -98,11 +98,11 @@ const TopView = observer(
                 useOriginalDefault
                 resizeWidth={isMobile ? 90 : 120}
               />
-              <div className="ml-5">
-                <div className="font-bold text-18 md:text-24 leading-none text-white md:text-gray-4a">
+              <div className="ml-4 md:ml-5">
+                <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a">
                   {topic.name}
                 </div>
-                <div className="mt-2 text-14 md:text-15 flex items-center text-white md:text-gray-9b pb-2">
+                <div className="mt-5-px md:mt-9-px text-14 md:text-15 flex items-center text-white md:text-gray-9b pb-2">
                   <span>
                     <span className="text-14 md:text-15 font-bold">{topic.summary.post.count}</span>{' '}
                     篇文章
@@ -119,13 +119,13 @@ const TopView = observer(
                     ''
                   )}
                 </div>
-                {isMobile && <div className="mt-1">{Buttons()}</div>}
+                {isMobile && <div className="mt-1-px">{Buttons()}</div>}
               </div>
             </div>
             {isPc && <div className="pt-2 mt-16 mr-3">{Buttons()}</div>}
             {isMobile && props.isMyself && (
               <div
-                className="settings-btn text-24 absolute top-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"
+                className="settings-btn text-24 absolute bottom-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"
                 onClick={() => props.openTopicManagerEntryModal()}
               >
                 <Settings />
@@ -147,8 +147,8 @@ const TopView = observer(
           )}
         </div>
         <TopicContributionModal
-          isMyself={props.isMyself}
-          topicUuid={topic.uuid}
+          isTopicOwner={props.isMyself}
+          topic={topic}
           open={state.showTopicContributionModal}
           close={() => {
             state.showTopicContributionModal = false;
@@ -167,7 +167,7 @@ const TopView = observer(
         )}
         <style jsx>{`
           .cover {
-            height: ${isMobile ? 184 : 160}px;
+            height: ${isMobile ? '100%' : '160px'};
           }
           .blur-layer {
             background: -webkit-linear-gradient(
@@ -179,7 +179,7 @@ const TopView = observer(
             backdrop-filter: blur(20px);
           }
           .settings-btn {
-            margin-top: 95px;
+            margin-bottom: 58px;
           }
         `}</style>
       </div>

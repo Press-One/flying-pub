@@ -24,6 +24,11 @@ type IContributionData = {
   onClose?: () => void;
 }
 
+type INotificationData = {
+  tab?: number;
+  messageId?: number;
+}
+
 export function createModalStore() {
   return {
     authProviders: [] as string[],
@@ -43,7 +48,7 @@ export function createModalStore() {
     },
     notification: {
       open: false,
-      data: {},
+      data: {} as INotificationData,
     },
     mixinNotification: {
       open: false,
@@ -116,7 +121,7 @@ export function createModalStore() {
       this.wallet.data = {};
       stopBodyScroll(false);
     },
-    openNotification(data: any = {}) {
+    openNotification(data: INotificationData = {}) {
       this.notification.data = data;
       this.notification.open = true;
       stopBodyScroll(true);

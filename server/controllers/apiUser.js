@@ -7,6 +7,7 @@ const {
 const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require("../models/wallet");
+const Author = require("../models/author");
 const ReaderWallet = require("../models/readerWallet");
 const {
   verifySmsCode
@@ -17,14 +18,12 @@ const {
 } = require('../utils');
 const config = require('../config');
 const Log = require('../models/log');
+const Topic = require("../models/sequelize/topic");
 
 exports.get = async ctx => {
   const {
     user
   } = ctx.verification;
-  user.mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
-    user.address
-  );
   if (user.SSO) {
     user.SSO.reader.mixinWalletClientId = await ReaderWallet.getMixinClientIdByUserAddress(
       user.SSO.reader.address
@@ -33,12 +32,26 @@ exports.get = async ctx => {
       user.SSO.pub.address
     );
   }
-  user.mixinAccount = await User.getMixinAccount(user.id);
-  const conversation = await Conversation.get(user.id);
-  const notificationEnabled = !!conversation;
+  const [mixinWalletClientId, mixinAccount, conversation, reviewEnabledTopic] = await Promise.all([
+    Wallet.getMixinClientIdByUserAddress(
+      user.address
+    ),
+    User.getMixinAccount(user.id),
+    Conversation.get(user.id),
+    Topic.findOne({
+      attributes: ['id'],
+      where: {
+        userId: user.id,
+        reviewEnabled: true
+      }
+    })
+  ]);
+  user.mixinWalletClientId = mixinWalletClientId;
+  user.mixinAccount = mixinAccount;
   ctx.body = {
     ...user,
-    notificationEnabled
+    notificationEnabled: !!conversation,
+    topicReviewEnabled: !!reviewEnabledTopic
   };
 };
 
@@ -84,9 +97,22 @@ exports.put = async (ctx) => {
     await User.update(user.id, data);
   }
 
-  Log.createAnonymity('更新作者资料', `${nickname || user.nickname} ${getHost()}/authors/${user.address}`);
+  const updatedUser = await User.get(user.id);
 
-  ctx.body = await User.get(user.id);
+  try {
+    await Author.upsert(updatedUser.address, {
+      nickname: updatedUser.nickname || '',
+      avatar: updatedUser.avatar || '',
+      cover: updatedUser.cover || '',
+      bio: updatedUser.bio || '',
+    });
+  } catch (err) {
+    console.log(err);
+  }
+
+  Log.createAnonymity('更新作者资料', `${nickname || updatedUser.nickname} ${getHost()}/authors/${updatedUser.address}`);
+
+  ctx.body = updatedUser;
 }
 
 // set password for phone

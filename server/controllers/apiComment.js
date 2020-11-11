@@ -18,9 +18,13 @@ const {
   Errors
 } = require("../utils/validator");
 const {
-  notifyCommentMention,
-  notifyArticleComment
-} = require("../models/notify");
+  pushToNotificationQueue,
+  cancelJobFromNotificationQueue
+} = require("../models/notification");
+const {
+  getCommentMentionPayload,
+  getArticleCommentPayload
+} = require("../models/messageSystem");
 
 exports.create = async (ctx) => {
   const {
@@ -73,23 +77,27 @@ exports.create = async (ctx) => {
           const authorUser = await User.getByAddress(post.author.address);
           const isMyself = user.address === post.author.address;
           if (!isMyself) {
-            await Mixin.pushToNotifyQueue({
-              userId: authorUser.id,
-              text: `${truncate(user.nickname)} 刚刚回复了你的文章`,
-              url: originUrl
-            });
-
-            await notifyArticleComment({
-              fromUserName: user.address,
-              fromNickName: user.nickname,
-              fromUserAvatar: user.avatar,
-              fromContent: comment.content,
-              originUrl,
-              toUserName: authorUser.address,
-              toNickName: authorUser.nickname,
-              fromArticleId: post.rId,
-              fromArticleTitle: post.title,
-            });
+            await pushToNotificationQueue({
+              mixin: {
+                userId: authorUser.id,
+                text: `${truncate(user.nickname)} 刚刚回复了你的文章`,
+                url: originUrl,
+              },
+              messageSystem: getArticleCommentPayload({
+                fromUserName: user.address,
+                fromNickName: user.nickname,
+                fromUserAvatar: user.avatar,
+                fromContent: comment.content,
+                originUrl,
+                toUserName: authorUser.address,
+                toNickName: authorUser.nickname,
+                fromArticleId: post.rId,
+                fromArticleTitle: post.title,
+              })
+            }, {
+              jobName: `comment_${comment.id}`,
+              delaySeconds: 10
+            })
           }
         } catch (err) {
           console.log(err);
@@ -106,34 +114,40 @@ exports.create = async (ctx) => {
 
         const mUser = await User.get(mentionsUserId);
         if (mUser) {
-          await Mixin.pushToNotifyQueue({
-            userId: mentionsUserId,
-            text: `${truncate(user.nickname)} 刚刚回复了你的评论`,
-            url: originUrl,
-          });
-
-          await notifyCommentMention({
-            fromUserName: user.address,
-            fromNickName: user.nickname,
-            fromUserAvatar: user.avatar,
-            fromContent: comment.content,
-            originUrl,
-            toUserName: mUser.address,
-            toNickName: mUser.nickname,
-            fromArticleId: post.rId,
-            fromArticleTitle: post.title,
-          });
+          await pushToNotificationQueue({
+            mixin: {
+              userId: mentionsUserId,
+              text: `${truncate(user.nickname)} 刚刚回复了你的评论`,
+              url: originUrl,
+            },
+            messageSystem: getCommentMentionPayload({
+              fromUserName: user.address,
+              fromNickName: user.nickname,
+              fromUserAvatar: user.avatar,
+              fromContent: comment.content,
+              originUrl,
+              toUserName: mUser.address,
+              toNickName: mUser.nickname,
+              fromArticleId: post.rId,
+              fromArticleTitle: post.title,
+            })
+          }, {
+            jobName: `comment_${comment.id}`,
+            delaySeconds: 10
+          })
         }
 
       }
 
       if (data.content.includes('@新作小助手') || data.content.includes('@小助手')) {
         if (config.assistantUserId) {
-          await Mixin.pushToNotifyQueue({
-            userId: config.assistantUserId,
-            text: `有人@小助手`,
-            url: originUrl,
-          });
+          await pushToNotificationQueue({
+            mixin: {
+              userId: config.assistantUserId,
+              text: `有人@小助手`,
+              url: originUrl,
+            },
+          })
         }
       }
     } catch (e) {
@@ -151,6 +165,13 @@ exports.remove = async (ctx) => {
   assert(comment.userId === userId, Errors.ERR_NO_PERMISSION);
   const deletedComment = await Comment.delete(id);
   Log.create(userId, `删除评论 ${id}`);
+  (async () => {
+    try {
+      await cancelJobFromNotificationQueue(`comment_${id}`);
+    } catch (err) {
+      console.log(err);
+    }
+  })();
   ctx.body = deletedComment;
 };
 

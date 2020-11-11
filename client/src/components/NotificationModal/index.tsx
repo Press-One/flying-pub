@@ -5,9 +5,22 @@ import DrawerModal from 'components/DrawerModal';
 import Notification from './Notification';
 import { isMobile } from 'utils';
 import classNames from 'classnames';
+import { useStore } from 'store';
+import { ExtraNotificationType } from 'store/notification';
 
 export default observer((props: any) => {
   const { open, close } = props;
+  const { socketStore, notificationStore } = useStore();
+
+  React.useEffect(() => {
+    if (socketStore.isReady) {
+      socketStore.on('TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT', (data: any) => {
+        notificationStore.updateSummary({
+          [ExtraNotificationType.TOPIC_REVIEW_REQUEST]: data.count || 0,
+        });
+      });
+    }
+  }, [socketStore, socketStore.isReady, notificationStore]);
 
   if (isMobile) {
     return (

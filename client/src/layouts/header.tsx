@@ -388,15 +388,15 @@ export default observer((props: any) => {
                   </div>
                 </Link>
                 {!userStore.isLogin && (
-                  <div
-                    className="text-sm py-1 px-3 bg-blue-400 text-white rounded font-bold outline-none leading-normal cursor-pointer"
+                  <Button
+                    size="small"
                     onClick={() => {
                       handleClose();
                       handleOpenLogin();
                     }}
                   >
                     登录
-                  </div>
+                  </Button>
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">

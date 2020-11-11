@@ -82,10 +82,9 @@ const useImportDialog = (props: any) => {
 const LIMIT = 15;
 
 export default observer((props: RouteChildrenProps) => {
-  const { fileStore, settingsStore, notificationStore } = useStore();
+  const { fileStore, settingsStore, notificationStore, modalStore } = useStore();
   const state = useLocalStore(() => ({
     page: 0,
-    showNotificationModal: false,
     showContributionModal: false,
   }));
   const { isFetching, files, total } = fileStore;
@@ -192,7 +191,7 @@ export default observer((props: RouteChildrenProps) => {
               className="text-gray-700 mr-8 transform scale-90 cursor-pointer"
               color="error"
               onClick={() => {
-                state.showNotificationModal = true;
+                modalStore.openNotification();
               }}
             >
               <div className="text-3xl flex items-center icon-btn-color">
@@ -245,9 +244,9 @@ export default observer((props: RouteChildrenProps) => {
       )}
       {settings['notification.enabled'] && (
         <NotificationModal
-          open={state.showNotificationModal}
+          open={modalStore.notification.open}
           close={() => {
-            state.showNotificationModal = false;
+            modalStore.closeNotification();
             notificationStore.reset();
           }}
         />

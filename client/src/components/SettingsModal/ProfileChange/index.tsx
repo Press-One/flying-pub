@@ -137,7 +137,7 @@ export const ProfileChange = observer(() => {
       </div>
 
       <div className="flex items-center mt-3 w-full">
-        <div className="font-bold text-14 text-gray-700">关注和关注者列表对他人不可见：</div>
+        <div className="font-bold text-14 text-gray-700">关注和被关注列表对他人不可见：</div>
         <Switch
           color="primary"
           checked={state.privateSubscriptionEnabled}

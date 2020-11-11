@@ -18,7 +18,7 @@ interface IProps {
 }
 
 const TopicEditor = observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, userStore } = useStore();
   const state = useLocalStore(() => ({
     isDoing: false,
     isUpdating: false,
@@ -27,6 +27,7 @@ const TopicEditor = observer((props: IProps) => {
       name: '',
       description: '',
       contributionEnabled: true,
+      reviewEnabled: false,
     } as IEditableTopic,
   }));
 
@@ -37,6 +38,7 @@ const TopicEditor = observer((props: IProps) => {
         state.topic.name = props.topic.name;
         state.topic.description = props.topic.description;
         state.topic.contributionEnabled = props.topic.contributionEnabled;
+        state.topic.reviewEnabled = props.topic.reviewEnabled;
         state.isUpdating = true;
       } else {
         state.topic = {
@@ -44,6 +46,7 @@ const TopicEditor = observer((props: IProps) => {
           name: '',
           description: '',
           contributionEnabled: true,
+          reviewEnabled: false,
         } as IEditableTopic;
       }
     }
@@ -91,6 +94,9 @@ const TopicEditor = observer((props: IProps) => {
           contributionEnabled: state.topic.contributionEnabled,
           reviewEnabled: state.topic.reviewEnabled,
         });
+      }
+      if (topic.reviewEnabled) {
+        userStore.user.topicReviewEnabled = true;
       }
       props.onChange(topic);
       props.close();
@@ -197,22 +203,15 @@ const TopicEditor = observer((props: IProps) => {
         {state.topic.contributionEnabled && !isMobile && (
           <div className="flex items-center mt-2">
             <div className="font-bold text-base text-gray-700">投稿需要我审核：</div>
-            <Tooltip
-              title="审核功能正在开发中，还不能使用。这意味着其他人一旦投稿，文章就会立即被这个专题收录哦（等下个版本发布就有审核功能啦）"
-              arrow
-              placement="top"
-            >
-              <div>
-                <Switch
-                  disabled
-                  color="primary"
-                  checked={state.topic.reviewEnabled}
-                  onChange={(e) => {
-                    state.topic.reviewEnabled = e.target.checked;
-                  }}
-                />
-              </div>
-            </Tooltip>
+            <div>
+              <Switch
+                color="primary"
+                checked={state.topic.reviewEnabled}
+                onChange={(e) => {
+                  state.topic.reviewEnabled = e.target.checked;
+                }}
+              />
+            </div>
           </div>
         )}
 

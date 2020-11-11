@@ -7,6 +7,10 @@ export enum CombinedNotificationType {
   OTHERS = 'OTHERS',
 }
 
+export enum ExtraNotificationType {
+  TOPIC_REVIEW_REQUEST = 'TOPIC_REVIEW_REQUEST'
+}
+
 export enum NotificationSubType {
   // @ 、回复、点赞、打赏
   COMMENT_MENTION_ME = 'COMMENT_MENTION_ME',
@@ -18,6 +22,8 @@ export enum NotificationSubType {
   TOPIC_POST_BE_CONTRIBUTED = 'TOPIC_POST_BE_CONTRIBUTED',
   TOPIC_REJECTED_CONTRIBUTION = 'TOPIC_REJECTED_CONTRIBUTION',
   TOPIC_RECEIVED_CONTRIBUTION = 'TOPIC_RECEIVED_CONTRIBUTION',
+  TOPIC_CONTRIBUTION_REQUEST_APPROVED = 'TOPIC_CONTRIBUTION_REQUEST_APPROVED',
+  TOPIC_CONTRIBUTION_REQUEST_REJECTED = 'TOPIC_CONTRIBUTION_REQUEST_REJECTED',
   OTHERS = 'OTHERS'
 }
 
@@ -53,6 +59,7 @@ export interface Notification {
 
 export function createNotificationStore() {
   return {
+    isFirstFetching: true,
     lastReadMsgId: 0,
     connected: false,
     limit: 15,
@@ -69,12 +76,17 @@ export function createNotificationStore() {
       NotificationSubType.TOPIC_POST_BE_CONTRIBUTED,
       NotificationSubType.TOPIC_RECEIVED_CONTRIBUTION,
       NotificationSubType.TOPIC_REJECTED_CONTRIBUTION,
+      NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_APPROVED,
+      NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_REJECTED,
     ],
     setConnected(connected: boolean) {
       this.connected = connected;
     },
     setIsFetched(isFetched: boolean) {
       this.isFetched = isFetched;
+      if (isFetched) {
+        this.isFirstFetching = false;
+      }
     },
     setMessages(messages: Notification[]) {
       const orderedMessages = messages.slice().sort((a: Notification, b: Notification) => {
@@ -107,7 +119,16 @@ export function createNotificationStore() {
       this.setMessages(this.messages);
     },
     setSummary(summary: any) {
+      if (this.summary[ExtraNotificationType.TOPIC_REVIEW_REQUEST]) {
+        summary[ExtraNotificationType.TOPIC_REVIEW_REQUEST] = this.summary[ExtraNotificationType.TOPIC_REVIEW_REQUEST];
+      }
       this.summary = summary;
+    },
+    updateSummary(summary: any) {
+      this.summary = {
+        ...this.summary,
+        ...summary
+      }
     },
     setLoading(loading: boolean) {
       this.loading = loading;
@@ -128,6 +149,7 @@ export function createNotificationStore() {
       this.messages = [];
       this.subTypes = [NotificationSubType.LIKE];
       this.isFetched = false;
+      this.isFirstFetching = true;
     },
   };
 }

@@ -7,6 +7,12 @@ const {
   listByUserAddress,
   addContribution,
   removeContribution,
+  listContributionRequests,
+  countPendingContributionRequests,
+  addContributionRequest,
+  removeContributionRequest,
+  approveContributionRequest,
+  rejectContributionRequest,
   listTopicPosts,
   addFollower,
   removeFollower,
@@ -19,6 +25,13 @@ const {
 const {
   ensureAuthorization,
 } = require('../middleware/api');
+
+router.get('/contribution_requests', ensureAuthorization(), listContributionRequests);
+router.get('/contribution_requests/pending_count', ensureAuthorization(), countPendingContributionRequests);
+router.post('/:uuid/contribution_requests', ensureAuthorization(), addContributionRequest);
+router.del('/:uuid/contribution_requests', ensureAuthorization(), removeContributionRequest);
+router.post('/contribution_requests/:id/approve', ensureAuthorization(), approveContributionRequest);
+router.post('/contribution_requests/:id/reject', ensureAuthorization(), rejectContributionRequest);
 
 router.get('/public', ensureAuthorization({ strict: false }), getPublicTopics);
 router.get('/:uuid', ensureAuthorization({ strict: false }), get);

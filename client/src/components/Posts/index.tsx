@@ -123,6 +123,12 @@ const PostEntry = observer((props: IPostProps) => {
                         'flex items-center',
                       )}
                     >
+                      {post.viewCount > 0 && localStorage.getItem('VIEW_COUNT_ENABLED') && (
+                        <div className="flex items-center">
+                          {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}
+                          <span className="font-bold mr-1">{post.viewCount}</span>阅读
+                        </div>
+                      )}
                       {post.upVotesCount > 0 && (
                         <div className="flex items-center">
                           {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}

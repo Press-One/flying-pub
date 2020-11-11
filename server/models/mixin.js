@@ -3,12 +3,6 @@ const config = require('../config');
 const Log = require('./log');
 const Profile = require('./profile');
 const Conversation = require('./conversation');
-const Cache = require('./cache');
-const {
-  sleep
-} = require('../utils');
-const TYPE = `${config.serviceKey}_MIXIN_NOTIFY`;
-const JOB_ID_PREFIX = 'JOB_';
 
 let enabled = false;
 let connected = false;
@@ -153,16 +147,7 @@ const trySendButton = async (userId, text) => {
   await mixin.sendButton(text, options);
 }
 
-exports.pushToNotifyQueue = async data => {
-  const conversation = await Conversation.get(data.userId);
-  if (!conversation) {
-    console.log('conversation not found, cancel notification');
-    return;
-  }
-  await Cache.pSet(TYPE, `${JOB_ID_PREFIX}${new Date().getTime()}`, JSON.stringify(data));
-}
-
-exports.tryNotify = async () => {
+exports.tryConnect = async () => {
   if (!enabled) {
     enabled = true;
     try {
@@ -171,28 +156,18 @@ exports.tryNotify = async () => {
       mixinWsLog(e);
     }
   }
+}
+
+exports.notify = async data => {
   try {
-    if (!connected) {
-      return false;
-    }
-    const keys = await Cache.pFindKeys(TYPE, `${JOB_ID_PREFIX}*`);
-    while (keys.length > 0) {
-      const id = keys.shift().match(/JOB_(.*)/)[0];
-      const data = await Cache.pGet(TYPE, id);
-      if (data) {
-        const {
-          userId,
-          text,
-          url
-        } = JSON.parse(data);
-        await trySendToUser(userId, text, {
-          url
-        });
-      }
-      await Cache.pDel(TYPE, id);
-      await sleep(200);
-    }
+    await trySendToUser(data.userId, data.text, {
+      url: data.url
+    });
   } catch (e) {
     console.log(e);
   }
+}
+
+exports.getConnected = () => {
+  return connected;
 }
