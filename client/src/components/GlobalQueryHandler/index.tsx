@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../../store';
-import { getApiEndpoint, getQuery, removeQuery, sleep } from 'utils';
+import { getApiEndpoint, getQuery, removeQuery, sleep, isPc } from 'utils';
 
 export default observer(() => {
   const { preloadStore, settingsStore, confirmDialogStore, modalStore } = useStore();
@@ -22,7 +22,11 @@ export default observer(() => {
           content: settings['permission.denyText'],
           okText: settings['permission.denyActionText'],
           ok: () => {
-            window.open(settings['permission.denyActionLink']);
+            if (isPc) {
+              window.open(settings['permission.denyActionLink']);
+            } else {
+              window.location.href = settings['permission.denyActionLink'];
+            }
           },
         });
         return;

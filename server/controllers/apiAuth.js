@@ -64,9 +64,10 @@ const getMixinBoxGroupUser = async mixinUuid => {
       json: true,
       headers: {
         group_id: config.auth.boxGroupId,
-        Authorization: `Bearer ${config.auth.boxGroupToken}`
+        Authorization: `Basic ${config.auth.boxGroupToken}`
       },
     }).promise();
+    console.log({ res });
     return res.user_id === mixinUuid && res;
   } catch (err) {
     console.log(err);

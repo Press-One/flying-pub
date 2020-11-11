@@ -14,7 +14,7 @@ import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import { CameraAlt } from '@material-ui/icons';
 
 import { useStore } from 'store';
-import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery } from 'utils';
+import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery, isPc } from 'utils';
 import fileApi from 'apis/file';
 import authApi from 'apis/auth';
 import config from './config';
@@ -379,7 +379,11 @@ export default observer((props: any) => {
         content: settings['permission.denyText'],
         okText: settings['permission.denyActionText'],
         ok: () => {
-          window.open(settings['permission.denyActionLink']);
+          if (isPc) {
+            window.open(settings['permission.denyActionLink']);
+          } else {
+            window.location.href = settings['permission.denyActionLink'];
+          }
         },
       });
       await sleep(500);
