@@ -14,11 +14,11 @@ const Receipt = require("./receipt");
 const Sequelize = require("sequelize");
 const moment = require('moment');
 const {
-  notifyArticleReward,
-} = require("../models/notify");
+  pushToNotificationQueue,
+} = require("../models/notification");
 const {
-  pushToNotifyQueue
-} = require('../models/mixin');
+  getArticleRewardPayload,
+} = require("../models/messageSystem");
 const Op = Sequelize.Op;
 const {
   Joi,
@@ -483,25 +483,27 @@ const updateReceiptByUuid = async (uuid, data) => {
     refreshCachedBalance(updatedReceipt.toAddress);
     try {
       const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${updatedReceipt.objectRId}`;
-      await pushToNotifyQueue({
-        userId,
-        text: `收到打赏 ${parseFloat(updatedReceipt.amount)} ${updatedReceipt.currency}`,
-        url: originUrl
-      });
       const fromUser = await User.getByAddress(updatedReceipt.fromAddress);
       const file = await File.getByRId(updatedReceipt.objectRId);
-      await notifyArticleReward({
-        fromUserName: fromUser.address,
-        fromNickName: fromUser.nickname,
-        fromUserAvatar: fromUser.avatar,
-        originUrl,
-        toUserName: user.address,
-        toNickName: user.nickname,
-        fromArticleId: file.rId,
-        fromArticleTitle: file.title,
-        amount: parseFloat(updatedReceipt.amount),
-        currency: updatedReceipt.currency,
-      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId,
+          text: `收到打赏 ${parseFloat(updatedReceipt.amount)} ${updatedReceipt.currency}`,
+          url: originUrl
+        },
+        messageSystem: getArticleRewardPayload({
+          fromUserName: fromUser.address,
+          fromNickName: fromUser.nickname,
+          fromUserAvatar: fromUser.avatar,
+          originUrl,
+          toUserName: user.address,
+          toNickName: user.nickname,
+          fromArticleId: file.rId,
+          fromArticleTitle: file.title,
+          amount: parseFloat(updatedReceipt.amount),
+          currency: updatedReceipt.currency,
+        })
+      })
     } catch (e) {
       console.log(e);
     }

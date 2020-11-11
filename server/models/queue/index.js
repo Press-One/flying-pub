@@ -3,7 +3,6 @@ const config = require('../../config');
 const {
   createSyncMixinSnapshotsQueue,
   createSyncInitializedQueue,
-  createMixinNotificationQueue,
 } = require('./mixin');
 const {
   createAtomCacheQueue
@@ -11,6 +10,9 @@ const {
 const {
   createViewCacheQueue
 } = require('./view');
+const {
+  createNotificationQueue
+} = require('./notification');
 const queues = [];
 
 exports.up = async () => {
@@ -20,7 +22,7 @@ exports.up = async () => {
     queues.push(createSyncInitializedQueue());
   }
   if (!(config.queueDisabledJobs || []).includes('notification')) {
-    queues.push(createMixinNotificationQueue());
+    queues.push(createNotificationQueue());
   }
   if (!(config.queueDisabledJobs || []).includes('atom')) {
     queues.push(createAtomCacheQueue());

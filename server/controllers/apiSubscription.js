@@ -11,9 +11,11 @@ const _ = require('lodash');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const {
-  notifyAuthorNewFollower,
-} = require("../models/notify");
-const Mixin = require("../models/mixin");
+  pushToNotificationQueue,
+} = require("../models/notification");
+const {
+  getAuthorNewFollowerPayload,
+} = require("../models/messageSystem");
 
 exports.subscribe = async ctx => {
   const { user, sequelizeUser } = ctx.verification;
@@ -26,20 +28,22 @@ exports.subscribe = async ctx => {
   Log.create(user.id, `关注作者 ${authorAddress}`);
   (async () => {
     try {
-      await notifyAuthorNewFollower({
-        fromUserName: user.address,
-        fromNickName: user.nickname,
-        fromUserAvatar: user.avatar,
-        toUserName: author.address,
-        toNickName: author.nickname,
-      });
       const authorUser = await User.getByAddress(author.address);
       const originUrl = `${config.settings['site.url'] || config.serviceRoot}/authors/${user.address}`;
-      await Mixin.pushToNotifyQueue({
-        userId: authorUser.id,
-        text: `${truncate(user.nickname)} 关注了你`,
-        url: originUrl
-      });
+      await pushToNotificationQueue({
+        mixin: {
+          userId: authorUser.id,
+          text: `${truncate(user.nickname)} 关注了你`,
+          url: originUrl
+        },
+        messageSystem: getAuthorNewFollowerPayload({
+          fromUserName: user.address,
+          fromNickName: user.nickname,
+          fromUserAvatar: user.avatar,
+          toUserName: author.address,
+          toNickName: author.nickname,
+        })
+      })
     } catch (err) {
       console.log(err);
     }

@@ -62,8 +62,8 @@ const ConfirmContent = observer(
                 }}
                 margin="dense"
                 label="告诉 Ta 移除的具体原因"
-                rowsMax={6}
-                rows={4}
+                rowsMax={4}
+                rows={2}
                 multiline
                 inputProps={{
                   maxLength: 200,
@@ -77,6 +77,8 @@ const ConfirmContent = observer(
           <Button
             onClick={() => removeContribution(props.topicUuid, props.post, state.note)}
             isDoing={state.isRemoving}
+            color="red"
+            outline
             className="w-full md:w-auto"
           >
             确定

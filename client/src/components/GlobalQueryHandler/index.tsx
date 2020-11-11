@@ -77,6 +77,16 @@ export default observer(() => {
           });
           return;
         }
+
+        if (action === 'OPEN_TOPIC_CONTRIBUTION_REQUEST_LIST') {
+          modalStore.openNotification({
+            tab: 4,
+            messageId: Number(getQuery('messageId') || 0),
+          });
+          removeQuery('action');
+          removeQuery('messageId');
+          return;
+        }
       }, 500);
     }
   }, [ready, confirmDialogStore, providerNameMap, modalStore, settingsStore]);

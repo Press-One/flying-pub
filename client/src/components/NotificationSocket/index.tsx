@@ -1,9 +1,15 @@
 import { observer } from 'mobx-react-lite';
 import io from 'socket.io-client';
-import { useStore } from '../../store';
-import { getTokenUrl } from '../../utils';
-import { Notification, NotificationStatus, NotificationSubType } from '../../store/notification';
-import CommentApi from 'apis/comment';
+import { useStore } from 'store';
+import { getTokenUrl } from 'utils';
+import {
+  Notification,
+  NotificationStatus,
+  NotificationSubType,
+  ExtraNotificationType,
+} from 'store/notification';
+import commentApi from 'apis/comment';
+import topicApi from 'apis/topic';
 
 let checkingTimer: any = 0;
 
@@ -77,6 +83,14 @@ export default observer(() => {
       await sleep(2000);
       notificationStore.setConnected(true);
       socket.emit('summary', { unread: true });
+      try {
+        const count = await topicApi.fetchPendingContributionRequestCount();
+        notificationStore.updateSummary({
+          [ExtraNotificationType.TOPIC_REVIEW_REQUEST]: count || 0,
+        });
+      } catch (err) {
+        console.log(err);
+      }
       return;
     }
     try {
@@ -119,7 +133,7 @@ export default observer(() => {
         if (messages.length > 0) {
           const commentIds = messages.map(getCommentIdFromMsg);
           if (commentIds.length > 0) {
-            const existCommentIds = await CommentApi.batchCommentIds(commentIds);
+            const existCommentIds = await commentApi.batchCommentIds(commentIds);
             messages = messages.map((message: Notification) => {
               if (!existCommentIds.includes(getCommentIdFromMsg(message))) {
                 message.notification.extras.originUrl = '';
@@ -142,10 +156,23 @@ export default observer(() => {
 
 export const getNotificationSocket = () => socket;
 
-export const getNotificationHistory = (subTypes: any[], page: number, notificationStore: any) => {
-  if (!socket) return;
-  if (notificationStore.loading) return;
+export const getNotificationHistory = async (
+  subTypes: any[],
+  page: number,
+  notificationStore: any,
+) => {
+  if (!socket) {
+    console.error('socket 不存在');
+    return;
+  }
+  if (notificationStore.loading) {
+    console.error('正在 loading，取消获取本次 history');
+    return;
+  }
   notificationStore.setLoading(true);
+  if (notificationStore.isFirstFetching) {
+    await sleep(300);
+  }
   const payload = {
     sub_types: subTypes,
     page,

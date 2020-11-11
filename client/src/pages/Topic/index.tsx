@@ -147,8 +147,8 @@ const TopView = observer(
           )}
         </div>
         <TopicContributionModal
-          isMyself={props.isMyself}
-          topicUuid={topic.uuid}
+          isTopicOwner={props.isMyself}
+          topic={topic}
           open={state.showTopicContributionModal}
           close={() => {
             state.showTopicContributionModal = false;

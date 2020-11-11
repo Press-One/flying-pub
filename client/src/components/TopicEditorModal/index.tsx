@@ -18,7 +18,7 @@ interface IProps {
 }
 
 const TopicEditor = observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, userStore } = useStore();
   const state = useLocalStore(() => ({
     isDoing: false,
     isUpdating: false,
@@ -94,6 +94,9 @@ const TopicEditor = observer((props: IProps) => {
           contributionEnabled: state.topic.contributionEnabled,
           reviewEnabled: state.topic.reviewEnabled,
         });
+      }
+      if (topic.reviewEnabled) {
+        userStore.user.topicReviewEnabled = true;
       }
       props.onChange(topic);
       props.close();

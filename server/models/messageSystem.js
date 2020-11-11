@@ -5,7 +5,7 @@ const {
 const Log = require('./log');
 const config = require("../config");
 
-async function notify(payload, messageType = "private_message", channel = "all") {
+const notify = async (payload, messageType = "private_message", channel = "all") => {
   try {
     const data = {
       channel: channel,
@@ -30,7 +30,7 @@ async function notify(payload, messageType = "private_message", channel = "all")
   }
 }
 
-const notifyCommentMention = async (data) => {
+const getCommentMentionPayload = data => {
   const {
     fromNickName,
     toUserName
@@ -43,14 +43,10 @@ const notifyCommentMention = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyCommentLike = async (data) => {
+const getCommentLikePayload = data => {
   const {
     fromNickName,
     toUserName
@@ -63,14 +59,10 @@ const notifyCommentLike = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyArticleComment = async (data) => {
+const getArticleCommentPayload = data => {
   const {
     fromNickName,
     fromArticleTitle,
@@ -84,14 +76,10 @@ const notifyArticleComment = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyArticleReward = async (data) => {
+const getArticleRewardPayload = data => {
   const {
     fromNickName,
     fromArticleTitle,
@@ -107,14 +95,10 @@ const notifyArticleReward = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyArticleLike = async (data) => {
+const getArticleLikePayload = data => {
   const {
     fromNickName,
     fromArticleTitle,
@@ -128,14 +112,10 @@ const notifyArticleLike = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyAuthorNewFollower = async (data) => {
+const getAuthorNewFollowerPayload = data => {
   const {
     fromNickName,
     toUserName
@@ -148,14 +128,10 @@ const notifyAuthorNewFollower = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyTopicNewFollower = async (data) => {
+const getTopicNewFollowerPayload = data => {
   const {
     fromNickName,
     toUserName
@@ -168,14 +144,10 @@ const notifyTopicNewFollower = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyBeContributedToTopic = async (data) => {
+const getBeContributedToTopicPayload = data => {
   const {
     toUserName
   } = data;
@@ -187,14 +159,10 @@ const notifyBeContributedToTopic = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyTopicRejectedContribution = async (data) => {
+const getTopicRejectedContributionPayload = data => {
   const {
     toUserName
   } = data;
@@ -206,14 +174,10 @@ const notifyTopicRejectedContribution = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
 };
 
-const notifyTopicReceivedContribution = async (data) => {
+const getTopicReceivedContributionPayload = data => {
   const {
     toUserName
   } = data;
@@ -225,23 +189,51 @@ const notifyTopicReceivedContribution = async (data) => {
     to_usernames: [toUserName],
     web: data,
   };
-  try {
-    await notify(payload);
-  } catch (e) {
-    console.error(e);
-  }
+  return payload;
+};
+
+const getTopicContributionRequestApprovedPayload = data => {
+  const {
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_CONTRIBUTION",
+    sub_type: "TOPIC_CONTRIBUTION_REQUEST_APPROVED",
+    title: "你有一个投稿请求已审核通过",
+    message: `你有一个投稿请求已审核通过`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  return payload;
+};
+
+const getTopicContributionRequestRejectedPayload = data => {
+  const {
+    toUserName
+  } = data;
+  const payload = {
+    type: "TOPIC_CONTRIBUTION",
+    sub_type: "TOPIC_CONTRIBUTION_REQUEST_REJECTED",
+    title: "你有一个投稿请求被拒绝了",
+    message: `你有一个投稿请求被拒绝了`,
+    to_usernames: [toUserName],
+    web: data,
+  };
+  return payload;
 };
 
 module.exports = {
   notify,
-  notifyCommentMention,
-  notifyCommentLike,
-  notifyArticleReward,
-  notifyArticleLike,
-  notifyArticleComment,
-  notifyAuthorNewFollower,
-  notifyTopicNewFollower,
-  notifyBeContributedToTopic,
-  notifyTopicRejectedContribution,
-  notifyTopicReceivedContribution
+  getCommentMentionPayload,
+  getCommentLikePayload,
+  getArticleRewardPayload,
+  getArticleLikePayload,
+  getArticleCommentPayload,
+  getAuthorNewFollowerPayload,
+  getTopicNewFollowerPayload,
+  getBeContributedToTopicPayload,
+  getTopicRejectedContributionPayload,
+  getTopicReceivedContributionPayload,
+  getTopicContributionRequestApprovedPayload,
+  getTopicContributionRequestRejectedPayload
 };

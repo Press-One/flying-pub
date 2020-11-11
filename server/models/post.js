@@ -7,6 +7,7 @@ const Post = require('./sequelize/post');
 const { getTopicOrderQuery } = require('./topic');
 const Topic = require('./sequelize/topic');
 const Author = require('./sequelize/author');
+const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
 const User = require('./user');
 const {
   packAuthor
@@ -77,6 +78,19 @@ const packPost = async (post, options = {}) => {
   postJson.upVotesCount = ~~postJson.upVotesCount;
   postJson.commentsCount = ~~postJson.commentsCount;
   postJson.viewCount = ~~postJson.viewCount;
+
+  if (options.withPendingTopicUuids) {
+    const topicContributionRequests = await TopicContributionRequest.findAll({
+      attributes: ['topicUuid'],
+      where: {
+        postRId: postJson.rId,
+        status: 'pending'
+      },
+      raw: true
+    });
+    postJson.pendingTopicUuids = topicContributionRequests.map((t => t.topicUuid));
+  }
+  
   return postJson;
 }
 exports.packPost = packPost;
@@ -328,6 +342,7 @@ exports.list = async (options = {}) => {
     posts.map(post => {
       return packPost(post, {
         dropAuthor,
+        withPendingTopicUuids: options.withPendingTopicUuids
       });
     })
   );

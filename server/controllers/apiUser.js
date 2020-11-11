@@ -18,14 +18,12 @@ const {
 } = require('../utils');
 const config = require('../config');
 const Log = require('../models/log');
+const Topic = require("../models/sequelize/topic");
 
 exports.get = async ctx => {
   const {
     user
   } = ctx.verification;
-  user.mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
-    user.address
-  );
   if (user.SSO) {
     user.SSO.reader.mixinWalletClientId = await ReaderWallet.getMixinClientIdByUserAddress(
       user.SSO.reader.address
@@ -34,12 +32,26 @@ exports.get = async ctx => {
       user.SSO.pub.address
     );
   }
-  user.mixinAccount = await User.getMixinAccount(user.id);
-  const conversation = await Conversation.get(user.id);
-  const notificationEnabled = !!conversation;
+  const [mixinWalletClientId, mixinAccount, conversation, reviewEnabledTopic] = await Promise.all([
+    Wallet.getMixinClientIdByUserAddress(
+      user.address
+    ),
+    User.getMixinAccount(user.id),
+    Conversation.get(user.id),
+    Topic.findOne({
+      attributes: ['id'],
+      where: {
+        userId: user.id,
+        reviewEnabled: true
+      }
+    })
+  ]);
+  user.mixinWalletClientId = mixinWalletClientId;
+  user.mixinAccount = mixinAccount;
   ctx.body = {
     ...user,
-    notificationEnabled
+    notificationEnabled: !!conversation,
+    topicReviewEnabled: !!reviewEnabledTopic
   };
 };
 

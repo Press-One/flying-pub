@@ -194,9 +194,14 @@ const TopicLists = observer((props: IProps) => {
                     </div>
                   </div>
                 </a>
-                {!isTopicOwner && topic.reviewEnabled && (
+                {!isTopicOwner && topic.reviewEnabled && !state.includedTopicUuidMap[topic.uuid] && (
                   <div>
                     {!state.pendingTopicUuidMap[topic.uuid] && (
+                      <Button size="mini" onClick={() => addContributionRequest(topic, post)}>
+                        投稿
+                      </Button>
+                    )}
+                    {state.pendingTopicUuidMap[topic.uuid] && (
                       <Tooltip
                         disableHoverListener={isMobile}
                         placement="top"
@@ -204,42 +209,33 @@ const TopicLists = observer((props: IProps) => {
                         arrow
                       >
                         <div>
-                          <Button size="mini" onClick={() => addContributionRequest(topic, post)}>
-                            投稿
+                          <Button
+                            size="mini"
+                            color="gray"
+                            outline
+                            onClick={() => removeContributionRequest(topic, post)}
+                          >
+                            审核中
                           </Button>
                         </div>
                       </Tooltip>
                     )}
-                    {state.pendingTopicUuidMap[topic.uuid] && (
-                      <Button
-                        size="mini"
-                        color="red"
-                        outline
-                        onClick={() => removeContributionRequest(topic, post)}
-                      >
-                        待审核
-                      </Button>
-                    )}
                   </div>
                 )}
-                {(isTopicOwner || !topic.reviewEnabled) && (
-                  <div>
-                    {!state.includedTopicUuidMap[topic.uuid] && (
-                      <Button size="mini" onClick={() => addContribution(topic, post)}>
-                        {isTopicOwner ? '收录' : '投稿'}
-                      </Button>
-                    )}
-                    {state.includedTopicUuidMap[topic.uuid] && (
-                      <Button
-                        size="mini"
-                        color="red"
-                        outline
-                        onClick={() => removeContribution(topic, post)}
-                      >
-                        移除
-                      </Button>
-                    )}
-                  </div>
+                {(isTopicOwner || !topic.reviewEnabled) && !state.includedTopicUuidMap[topic.uuid] && (
+                  <Button size="mini" onClick={() => addContribution(topic, post)}>
+                    {isTopicOwner ? '收录' : '投稿'}
+                  </Button>
+                )}
+                {state.includedTopicUuidMap[topic.uuid] && (
+                  <Button
+                    size="mini"
+                    color="gray"
+                    outline
+                    onClick={() => removeContribution(topic, post)}
+                  >
+                    已投稿
+                  </Button>
                 )}
               </div>
             );

@@ -8,6 +8,7 @@ const {
   addContribution,
   removeContribution,
   listContributionRequests,
+  countPendingContributionRequests,
   addContributionRequest,
   removeContributionRequest,
   approveContributionRequest,
@@ -26,6 +27,7 @@ const {
 } = require('../middleware/api');
 
 router.get('/contribution_requests', ensureAuthorization(), listContributionRequests);
+router.get('/contribution_requests/pending_count', ensureAuthorization(), countPendingContributionRequests);
 router.post('/:uuid/contribution_requests', ensureAuthorization(), addContributionRequest);
 router.del('/:uuid/contribution_requests', ensureAuthorization(), removeContributionRequest);
 router.post('/contribution_requests/:id/approve', ensureAuthorization(), approveContributionRequest);

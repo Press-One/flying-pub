@@ -36,7 +36,7 @@ export default observer(() => {
         return <div className="text-12 text-gray-af border-l-4 pl-2">评论已经被 Ta 删除了</div>;
       }
       return (
-        <p
+        <div
           className="msg-at-me"
           dangerouslySetInnerHTML={{ __html: marked.parse(extras.fromContent) }}
         />
@@ -59,7 +59,7 @@ export default observer(() => {
 
     if (msg.notification.sub_type === NotificationSubType.ARTICLE_REWARD) {
       return (
-        <div className="text-13">
+        <div className="text-13 text-gray-4a">
           打赏了你的文章《
           <ModalLink
             to={removeUrlHost(extras.originUrl)}
@@ -94,12 +94,12 @@ export default observer(() => {
     }
 
     if (msg.notification.sub_type === NotificationSubType.AUTHOR_NEW_FOLLOWER) {
-      return <div className="text-13">关注了你</div>;
+      return <div className="text-13 text-gray-4a">关注了你</div>;
     }
 
     if (msg.notification.sub_type === NotificationSubType.TOPIC_NEW_FOLLOWER) {
       return (
-        <div className="text-13">
+        <div className="text-13 text-gray-4a">
           关注了你的专题《
           <ModalLink
             to={`/topics/${extras.topicUuid}`}
@@ -117,8 +117,36 @@ export default observer(() => {
 
     if (msg.notification.sub_type === NotificationSubType.TOPIC_POST_BE_CONTRIBUTED) {
       return (
-        <div className="text-13">
+        <div className="text-13 text-gray-4a">
           把你的文章《
+          <ModalLink
+            to={`/posts/${extras.postRId}`}
+            className="font-bold text-blue-400"
+            onClick={() => {
+              modalStore.closeNotification();
+            }}
+          >
+            {extras.postTitle}
+          </ModalLink>
+          》收录到专题《
+          <ModalLink
+            to={`/topics/${extras.topicUuid}`}
+            className="font-bold text-blue-400"
+            onClick={() => {
+              modalStore.closeNotification();
+            }}
+          >
+            {extras.topicName}
+          </ModalLink>
+          》
+        </div>
+      );
+    }
+
+    if (msg.notification.sub_type === NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_APPROVED) {
+      return (
+        <div className="text-13 text-gray-4a">
+          你的文章已审核通过，我已经把文章《
           <ModalLink
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
@@ -145,7 +173,7 @@ export default observer(() => {
 
     if (msg.notification.sub_type === NotificationSubType.TOPIC_RECEIVED_CONTRIBUTION) {
       return (
-        <div className="text-13">
+        <div className="text-13 text-gray-4a">
           把文章《
           <ModalLink
             to={`/posts/${extras.postRId}`}
@@ -174,7 +202,7 @@ export default observer(() => {
     if (msg.notification.sub_type === NotificationSubType.TOPIC_REJECTED_CONTRIBUTION) {
       return (
         <div>
-          <div className="text-13">
+          <div className="text-13 text-gray-4a">
             从专题《
             <ModalLink
               to={`/topics/${extras.topicUuid}`}
@@ -194,6 +222,45 @@ export default observer(() => {
               }}
             >
               {extras.postTitle}
+            </ModalLink>
+            》
+          </div>
+          {extras.note && (
+            <div>
+              <div className="mt-2 text-gray-99 text-12">原因是：</div>
+              <div
+                className="msg-topic-rejected-note mt-2 pl-2 border-l-2 markdown-body text-12"
+                dangerouslySetInnerHTML={{ __html: marked.parse(extras.note) }}
+              />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (msg.notification.sub_type === NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_REJECTED) {
+      return (
+        <div>
+          <div className="text-13 text-gray-4a">
+            不好意思，你的投稿请求被拒绝了。文章《
+            <ModalLink
+              to={`/posts/${extras.postRId}`}
+              className="font-bold text-blue-400"
+              onClick={() => {
+                modalStore.closeNotification();
+              }}
+            >
+              {extras.postTitle}
+            </ModalLink>
+            》无法投稿到专题《
+            <ModalLink
+              to={`/topics/${extras.topicUuid}`}
+              className="font-bold text-blue-400"
+              onClick={() => {
+                modalStore.closeNotification();
+              }}
+            >
+              {extras.topicName}
             </ModalLink>
             》
           </div>
@@ -248,7 +315,7 @@ export default observer(() => {
                 'border-gray-300 border-b':
                   nextMsg && notificationStore.lastReadMsgId !== nextMsg.id,
               },
-              'flex mb-4 pb-4 pt-1',
+              'md:px-3 flex mb-4 pb-4 pt-1',
             )}
           >
             <div className="msg-avatar">
@@ -269,7 +336,7 @@ export default observer(() => {
               </ModalLink>
             </div>
             <div className="msg-body mx-3 flex-1">
-              <p className="msg-title mb-2">
+              <div className="msg-title mb-2">
                 <ModalLink
                   to={`/authors/${msg.notification.extras.fromUserName}`}
                   className="font-bold text-blue-400"
@@ -285,7 +352,7 @@ export default observer(() => {
                     ? typeToTitle[msg.notification.type]
                     : ''}
                 </span>
-              </p>
+              </div>
               {renderContent(msg)}
               <div className="mt-2 pt-1 msg-foot flex items-center">
                 <span className="msg-timestamp mr-5">

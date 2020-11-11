@@ -19,12 +19,14 @@ exports.get = async ctx => {
   const rId = ctx.params.id;
   const includeDeleted = ctx.query.includeDeleted;
   const dropContent = ctx.query.dropContent || false;
+  const withPendingTopicUuids = ctx.query.withPendingTopicUuids;
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
     withContent: !dropContent,
     withPaymentUrl: true,
-    ignoreDeleted: true
+    ignoreDeleted: true,
+    withPendingTopicUuids
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
   if (post.latestRId) {
@@ -88,18 +90,6 @@ exports.get = async ctx => {
     console.log(err);
   }
 
-  if (ctx.query.withPendingTopicUuids) {
-    const topicContributionRequests = await TopicContributionRequest.findAll({
-      attributes: ['topicUuid'],
-      where: {
-        postRId: post.rId,
-        status: 'pending'
-      },
-      raw: true
-    });
-    post.pendingTopicUuids = topicContributionRequests.map((t => t.topicUuid));
-  }
-
   ctx.body = post;
 }
 
@@ -120,6 +110,7 @@ const getListController = (listOptions = {}) => {
     const dayRange = options.dayRange;
     const filterBan = ctx.query.filterBan;
     const filterSticky = ctx.query.filterSticky;
+    const withPendingTopicUuids = ctx.query.withPendingTopicUuids
     const query = {
       offset,
       limit,
@@ -127,7 +118,8 @@ const getListController = (listOptions = {}) => {
       dropAuthor: !!address,
       dayRange,
       filterBan,
-      filterSticky
+      filterSticky,
+      withPendingTopicUuids
     };
     if (address) {
       query.addresses = [address];

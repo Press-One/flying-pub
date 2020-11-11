@@ -134,7 +134,7 @@ exports.oauthCallback = async ctx => {
     assert(oauthType, Errors.ERR_IS_REQUIRED('oauthType'));
 
     if (oauthType === 'login') {
-      if (config.settings['permission.isPrivate'] || config.settings['permission.isOnlyPubPrivate']) {
+      if (config.settings['permission.isPrivate']) {
         const mixinGroupUser = await checkPermission(provider, profile);
 
         if (config.settings['permission.isPrivate']) {
