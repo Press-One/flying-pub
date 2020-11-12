@@ -184,7 +184,7 @@ export default observer(() => {
                       invisible={request.status !== 'pending'}
                     />
                   </div>
-                  <span className="from-user-name">{request.post.author.nickname}</span>
+                  <div className="from-user-name">{request.post.author.nickname}</div>
                 </ModalLink>
               </div>
               <div className="text-13 text-gray-4a">
