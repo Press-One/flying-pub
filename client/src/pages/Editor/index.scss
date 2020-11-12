@@ -45,6 +45,14 @@
     .editor-toolbar {
       border: 1px solid #ddd;
       border-bottom: none;
+      display: flex;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
 
     .CodeMirror {

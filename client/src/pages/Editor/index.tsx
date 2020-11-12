@@ -89,6 +89,7 @@ export default observer((props: any) => {
   const [showCoverUploader, setShowCoverUploader] = React.useState(false);
   const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
   const [isFetchingPermission, setIsFetchingPermission] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const mdeRef = React.useRef<any>(null);
   const hasPublishPermission = React.useRef(false);
   const isDirtyRef = React.useRef(false);
@@ -177,8 +178,8 @@ export default observer((props: any) => {
         mdeRef.current = mde;
         setShowImgUploader(true);
       },
-      className: 'fa fa-picture-o',
-      title: '插入图片 (Cmd-⌥-I)',
+      className: 'fa fa-camera',
+      title: '插入图片',
     });
     return () => {
       toolbar.splice(-3, 1);
@@ -285,6 +286,9 @@ export default observer((props: any) => {
 
   const handlePublish = async () => {
     if (isSaving) {
+      return;
+    }
+    if (confirmDialogStore.loading) {
       return;
     }
     try {
