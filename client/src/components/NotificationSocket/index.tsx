@@ -165,13 +165,9 @@ export const getNotificationHistory = async (
     return;
   }
   if (!socket) {
-    notificationStore.setLoading(true);
     return;
   }
   notificationStore.setLoading(true);
-  if (notificationStore.isFirstFetching) {
-    await sleep(300);
-  }
   const payload = {
     sub_types: subTypes,
     page,

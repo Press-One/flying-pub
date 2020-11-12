@@ -129,12 +129,12 @@ exports.addContribution = async ctx => {
           return;
         }
         const topicOwner = await User.get(topic.userId);
-        const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
+        const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
         await pushToNotificationQueue({
           mixin: {
             userId: topic.userId,
             text: `你的专题收到一个新的投稿`,
-            url: originUrl
+            url: mixinRedirectUrl
           },
           messageSystem: getTopicReceivedContributionPayload({
             fromUserName: user.address,
@@ -159,13 +159,13 @@ exports.addContribution = async ctx => {
     (async () => {
       try {
         const post = await Post.getByRId(data.rId);
-        const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
+        const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
         const authorUser = await User.getByAddress(post.author.address);
         await pushToNotificationQueue({
           mixin: {
             userId: authorUser.id,
             text: `你有一篇文章被收录到专题`,
-            url: originUrl
+            url: mixinRedirectUrl
           },
           messageSystem: getBeContributedToTopicPayload({
             fromUserName: user.address,
@@ -211,13 +211,13 @@ exports.removeContribution = async ctx => {
         return;
       }
       Log.create(user.id, `移除理由：${data.note || ''}`);
-      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
+      const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {
           userId: authorUser.id,
           text: `你有一篇文章被专题创建者移除`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getTopicRejectedContributionPayload({
           fromUserName: user.address,
@@ -261,7 +261,7 @@ exports.addContributionRequest = async ctx => {
   });
   Log.create(user.id, `提交投稿请求，给专题 ${topic.uuid} ${topic.name} 投稿 ${post.title} ${getHost()}/posts/${post.rId}`);
   (async () => {
-    const originUrl = `${getHost()}?action=OPEN_NOTIFICATION_MODAL&tab=4&messageId=${request.id}`;
+    const mixinRedirectUrl = `${getHost()}?action=OPEN_NOTIFICATION_MODAL&tab=4&messageId=${request.id}`;
     try {
       const pendingCount = await getPendingContributionRequestCount(topic.userId);
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
@@ -271,7 +271,7 @@ exports.addContributionRequest = async ctx => {
         mixin: {
           userId: topic.userId,
           text: `有一个新的投稿等待你的审核`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
       }, {
         jobName: `request_${post.rId + topic.uuid}`,
@@ -433,13 +433,13 @@ exports.approveContributionRequest = async ctx => {
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
         count: pendingCount
       });
-      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
+      const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {
           userId: authorUser.id,
           text: `你有一个投稿请求已审核通过`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getTopicContributionRequestApprovedPayload({
           fromUserName: user.address,
@@ -502,13 +502,13 @@ exports.rejectContributionRequest = async ctx => {
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
         count: pendingCount
       });
-      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
+      const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {
           userId: authorUser.id,
           text: `你有一个投稿请求被拒绝了`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getTopicContributionRequestRejectedPayload({
           fromUserName: user.address,
@@ -591,12 +591,12 @@ exports.addFollower = async ctx => {
         return;
       }
       const topicOwner = await User.get(topic.userId);
-      const originUrl = `${getHost()}/authors/${user.address}`;
+      const mixinRedirectUrl = `${getHost()}/authors/${user.address}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       await pushToNotificationQueue({
         mixin: {
           userId: topicOwner.id,
           text: `${truncate(user.nickname)} 关注了你的专题`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getTopicNewFollowerPayload({
           fromUserName: user.address,

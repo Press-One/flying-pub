@@ -29,12 +29,12 @@ exports.subscribe = async ctx => {
   (async () => {
     try {
       const authorUser = await User.getByAddress(author.address);
-      const originUrl = `${config.settings['site.url'] || config.serviceRoot}/authors/${user.address}`;
+      const mixinRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/authors/${user.address}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       await pushToNotificationQueue({
         mixin: {
           userId: authorUser.id,
           text: `${truncate(user.nickname)} 关注了你`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getAuthorNewFollowerPayload({
           fromUserName: user.address,

@@ -174,7 +174,7 @@ export default observer(() => {
           <div ref={infiniteRef}>
             {notificationStore.isFetched && <NotificationMessages />}
             {!notificationStore.isFetched && <div className="pt-20" />}
-            {notificationStore.loading && (
+            {(!notificationStore.connected || notificationStore.loading) && (
               <div className="pt-10" style={{ height: '100px' }}>
                 <Loading />
               </div>

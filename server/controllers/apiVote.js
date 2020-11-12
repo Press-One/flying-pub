@@ -62,6 +62,7 @@ exports.create = async (ctx) => {
       try {
         const comment = object;
         const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${comment.objectId}?commentId=${data.objectId}`;
+        const mixinRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${comment.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=0`;
 
         try {
           const isMyself = user.id === comment.userId;
@@ -71,7 +72,7 @@ exports.create = async (ctx) => {
               mixin: {
                 userId: comment.userId,
                 text: `你的评论收到了一个赞`,
-                url: originUrl,
+                url: mixinRedirectUrl,
               },
               messageSystem: getCommentLikePayload({
                 fromUserName: user.address,
@@ -95,6 +96,7 @@ exports.create = async (ctx) => {
     if (data.objectType === "posts") {
       try {
         const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}`;
+        const mixinRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=0`;
         const post = object;
         const authorUser = await User.getByAddress(post.author.address);
         const isMyself = user.address === post.author.address;
@@ -103,7 +105,7 @@ exports.create = async (ctx) => {
             mixin: {
               userId: authorUser.id,
               text: `《${truncate(post.title)}》收到了一个赞`,
-              url: originUrl
+              url: mixinRedirectUrl
             },
             messageSystem: getArticleLikePayload({
               fromUserName: user.address,
