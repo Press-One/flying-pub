@@ -89,7 +89,6 @@ export default observer((props: any) => {
   const [showCoverUploader, setShowCoverUploader] = React.useState(false);
   const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
   const [isFetchingPermission, setIsFetchingPermission] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const mdeRef = React.useRef<any>(null);
   const hasPublishPermission = React.useRef(false);
   const isDirtyRef = React.useRef(false);
