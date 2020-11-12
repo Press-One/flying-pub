@@ -152,17 +152,16 @@ const TopicContribution = observer((props: IProps) => {
                     <Tooltip
                       disableHoverListener={isMobile}
                       placement="top"
-                      title="投稿这个专题需要经过创建者审核，一旦有了审核结果，你将收到通知提醒"
+                      title="专题创建者将会审核你的投稿，一旦有了审核结果，你将收到通知提醒"
                       arrow
                     >
                       <div>
                         <Button
                           size="small"
                           color="gray"
-                          outline
                           onClick={() => removeContributionRequest(post)}
                         >
-                          审核中
+                          待审核
                         </Button>
                       </div>
                     </Tooltip>

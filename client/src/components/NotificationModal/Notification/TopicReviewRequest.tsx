@@ -42,7 +42,7 @@ export default observer(() => {
         console.log(err);
       }
       if (modalStore.notification.data.messageId) {
-        await sleep(1000);
+        await sleep(1500);
       }
       state.isFetching = false;
       state.isFetched = true;
@@ -145,7 +145,7 @@ export default observer(() => {
               {
                 highlight: request.id === state.selectedRequestId,
               },
-              'md:px-3 duration-500 ease-in-out transition-colors border-gray-200 border-b pt-5 pb-4 flex',
+              'px-4 md:px-3 duration-500 ease-in-out transition-colors border-gray-200 border-b pt-5 pb-4 flex',
             )}
           >
             <div className="msg-avatar">
@@ -166,7 +166,7 @@ export default observer(() => {
                 />
               </ModalLink>
             </div>
-            <div className="msg-body mx-3 flex-1">
+            <div className="msg-body ml-3 flex-1">
               <div className="msg-title mb-1 md:mb-2">
                 <ModalLink
                   to={`/authors/${request.post.author.address}`}

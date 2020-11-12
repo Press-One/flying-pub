@@ -107,8 +107,6 @@ export default observer(() => {
     (async () => {
       if (notificationStore.connected && modalStore.notification.open) {
         getNotificationHistory(notificationStore.subTypes, state.page, notificationStore);
-      } else {
-        console.error('socket 还没准备好');
       }
     })();
     // eslint-disable-next-line
@@ -143,6 +141,7 @@ export default observer(() => {
           className={classNames(
             {
               sm: isMobile,
+              'four-columns': !userStore.user.topicReviewEnabled,
             },
             'relative notification-filter-tabs',
           )}
@@ -168,7 +167,7 @@ export default observer(() => {
             pc: isPc,
             'pc md': isPc && window.innerHeight > 700 + 100,
           },
-          'px-4 md:px-8 notification-container overflow-y-auto',
+          'md:px-8 notification-container overflow-y-auto',
         )}
       >
         {tabs[state.tabValue] !== ExtraNotificationType.TOPIC_REVIEW_REQUEST && (
@@ -194,6 +193,7 @@ export default observer(() => {
           line-height: 28px;
           min-width: auto;
           width: 16%;
+          overflow: initial;
         }
         .notification-content .MuiTab-textColorInherit.Mui-selected {
           color: #63b3ed;
@@ -218,7 +218,9 @@ export default observer(() => {
           font-size: 14px;
           min-height: auto;
           padding: 8px 12px;
-          width: 16%;
+        }
+        .notification-filter-tabs.four-columns .MuiTab-root {
+          width: 18%;
         }
         .notification-filter-tabs.sm .MuiTabs-indicator {
           transform: scaleX(0.5);

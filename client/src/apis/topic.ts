@@ -103,7 +103,6 @@ export default {
         payload: { rId, note },
       },
       method: 'DELETE',
-      minPendingDuration: 500
     });
   },
   addContributionRequest(uuid: string, rId: string) {

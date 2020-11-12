@@ -146,7 +146,7 @@ export default observer(() => {
     if (msg.notification.sub_type === NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_APPROVED) {
       return (
         <div className="text-13 text-gray-4a">
-          你的文章已审核通过，我已经把文章《
+          你的文章已审核通过，文章《
           <ModalLink
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
@@ -156,7 +156,7 @@ export default observer(() => {
           >
             {extras.postTitle}
           </ModalLink>
-          》收录到专题《
+          》已经收录到专题《
           <ModalLink
             to={`/topics/${extras.topicUuid}`}
             className="font-bold text-blue-400"
@@ -242,7 +242,7 @@ export default observer(() => {
       return (
         <div>
           <div className="text-13 text-gray-4a">
-            不好意思，你的投稿请求被拒绝了。文章《
+            你的投稿请求被拒绝了。文章《
             <ModalLink
               to={`/posts/${extras.postRId}`}
               className="font-bold text-blue-400"
@@ -315,7 +315,7 @@ export default observer(() => {
                 'border-gray-300 border-b':
                   nextMsg && notificationStore.lastReadMsgId !== nextMsg.id,
               },
-              'md:px-3 flex mb-4 pb-4 pt-1',
+              'px-4 md:px-3 flex mb-4 pb-4 pt-1',
             )}
           >
             <div className="msg-avatar">
@@ -335,7 +335,7 @@ export default observer(() => {
                 />
               </ModalLink>
             </div>
-            <div className="msg-body mx-3 flex-1">
+            <div className="msg-body ml-3 flex-1">
               <div className="msg-title mb-2">
                 <ModalLink
                   to={`/authors/${msg.notification.extras.fromUserName}`}
