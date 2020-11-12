@@ -338,15 +338,15 @@ export default observer(() => {
               </ModalLink>
             </div>
             <div className="msg-body ml-3 flex-1">
-              <div className="msg-title mb-6-px">
+              <div className="msg-title mb-6-px flex items-center">
                 <ModalLink
                   to={`/authors/${msg.notification.extras.fromUserName}`}
-                  className="font-bold text-blue-400"
+                  className="font-bold text-blue-400 from-user-name truncate"
                   onClick={() => {
                     modalStore.closeNotification();
                   }}
                 >
-                  <div className="from-user-name">{msg.notification.extras.fromNickName}</div>
+                  {msg.notification.extras.fromNickName}
                 </ModalLink>
                 <span className="msg-head ml-2">
                   {subTypeToTitle[msg.notification.sub_type]}

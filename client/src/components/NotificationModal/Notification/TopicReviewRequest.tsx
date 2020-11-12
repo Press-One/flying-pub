@@ -167,14 +167,14 @@ export default observer(() => {
               </ModalLink>
             </div>
             <div className="msg-body ml-3 flex-1">
-              <div className="msg-title mb-6-px">
+              <div className="msg-title mb-6-px flex items-center">
                 <ModalLink
                   to={`/authors/${request.post.author.address}`}
                   openInNew={isPc}
                   onClick={() => {
                     isMobile && modalStore.closeNotification();
                   }}
-                  className="font-bold text-blue-400 relative"
+                  className="font-bold text-blue-400 relative from-user-name truncate"
                 >
                   <div className="absolute top-0 right-0 -mt-2 -mr-2">
                     <Badge
@@ -184,7 +184,7 @@ export default observer(() => {
                       invisible={request.status !== 'pending'}
                     />
                   </div>
-                  <div className="from-user-name">{request.post.author.nickname}</div>
+                  {request.post.author.nickname}
                 </ModalLink>
               </div>
               <div className="text-13 text-gray-4a">

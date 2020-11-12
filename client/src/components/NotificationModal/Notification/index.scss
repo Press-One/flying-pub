@@ -5,10 +5,11 @@
 
 .msg-title {
   .from-user-name {
+    display: block;
     color: #4a4a4a;
     font-weight: 700;
     font-size: 14px;
-    max-width: 40vw;
+    max-width: 150px;
   }
 
   .msg-head {
