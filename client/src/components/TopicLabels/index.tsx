@@ -63,7 +63,7 @@ export default observer((props: IProps) => {
             <Link to={`/topics/${topic.uuid}`}>
               <div className="flex items-center bg-gray-f2 rounded-full cursor-pointer">
                 <div className="rounded-full w-3 h-3 bg-blue-300 ml-2 mr-1 label-icon" />
-                <div className="text-blue-400 text-13 label-text">{topic.name}</div>
+                <div className="text-blue-400 text-13 label-text topic-name truncate">{topic.name}</div>
               </div>
             </Link>
           </div>
@@ -101,6 +101,9 @@ export default observer((props: IProps) => {
         }
         .label-text {
           margin-right: 10px;
+        }
+        .topic-name {
+          max-width: 190px;
         }
       `}</style>
     </div>

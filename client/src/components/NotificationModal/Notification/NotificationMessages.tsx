@@ -346,7 +346,7 @@ export default observer(() => {
                     modalStore.closeNotification();
                   }}
                 >
-                  <span className="from-user-name">{msg.notification.extras.fromNickName}</span>
+                  <div className="from-user-name">{msg.notification.extras.fromNickName}</div>
                 </ModalLink>
                 <span className="msg-head ml-2">
                   {subTypeToTitle[msg.notification.sub_type]}
