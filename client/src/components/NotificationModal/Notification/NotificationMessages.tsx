@@ -29,6 +29,7 @@ export default observer(() => {
     [NotificationType.COMMENT]: '评论',
     [NotificationType.ARTICLE]: '文章',
   };
+
   const renderContent = (msg: Notification) => {
     const extras = msg.notification.extras;
     if (msg.notification.sub_type === NotificationSubType.COMMENT_MENTION_ME) {
@@ -146,7 +147,7 @@ export default observer(() => {
     if (msg.notification.sub_type === NotificationSubType.TOPIC_CONTRIBUTION_REQUEST_APPROVED) {
       return (
         <div className="text-13 text-gray-4a">
-          你的文章已审核通过，文章《
+          你的文章已审核通过，《
           <ModalLink
             to={`/posts/${extras.postRId}`}
             className="font-bold text-blue-400"
@@ -292,7 +293,7 @@ export default observer(() => {
 
   const length = notificationStore.messages.length;
   return (
-    <section className="m-auto pb-2 pt-5 md:pt-8">
+    <section className="m-auto pb-2 md:pt-3">
       {notificationStore.messages.map((msg: Notification, idx: number) => {
         const ret = [];
         const nextMsg = notificationStore.messages[idx + 1];
@@ -309,13 +310,14 @@ export default observer(() => {
         }
         ret.push(
           <div
-            key={'msg' + idx}
+            id={`message_${msg.id}`}
+            key={`message_${msg.id}`}
             className={classNames(
               {
                 'border-gray-300 border-b':
                   nextMsg && notificationStore.lastReadMsgId !== nextMsg.id,
               },
-              'px-4 md:px-3 flex mb-4 pb-4 pt-1',
+              'px-4 md:px-3 flex pt-5 pb-4',
             )}
           >
             <div className="msg-avatar">
@@ -336,7 +338,7 @@ export default observer(() => {
               </ModalLink>
             </div>
             <div className="msg-body ml-3 flex-1">
-              <div className="msg-title mb-2">
+              <div className="msg-title mb-6-px">
                 <ModalLink
                   to={`/authors/${msg.notification.extras.fromUserName}`}
                   className="font-bold text-blue-400"

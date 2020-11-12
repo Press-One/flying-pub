@@ -129,7 +129,7 @@ exports.addContribution = async ctx => {
           return;
         }
         const topicOwner = await User.get(topic.userId);
-        const originUrl = `${getHost()}/posts/${post.rId}`;
+        const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
         await pushToNotificationQueue({
           mixin: {
             userId: topic.userId,
@@ -159,7 +159,7 @@ exports.addContribution = async ctx => {
     (async () => {
       try {
         const post = await Post.getByRId(data.rId);
-        const originUrl = `${getHost()}/posts/${post.rId}`;
+        const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
         const authorUser = await User.getByAddress(post.author.address);
         await pushToNotificationQueue({
           mixin: {
@@ -211,7 +211,7 @@ exports.removeContribution = async ctx => {
         return;
       }
       Log.create(user.id, `移除理由：${data.note || ''}`);
-      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {
@@ -261,7 +261,7 @@ exports.addContributionRequest = async ctx => {
   });
   Log.create(user.id, `提交投稿请求，给专题 ${topic.uuid} ${topic.name} 投稿 ${post.title} ${getHost()}/posts/${post.rId}`);
   (async () => {
-    const originUrl = `${getHost()}?action=OPEN_TOPIC_CONTRIBUTION_REQUEST_LIST&messageId=${request.id}`;
+    const originUrl = `${getHost()}?action=OPEN_NOTIFICATION_MODAL&tab=4&messageId=${request.id}`;
     try {
       const pendingCount = await getPendingContributionRequestCount(topic.userId);
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
@@ -271,10 +271,11 @@ exports.addContributionRequest = async ctx => {
         mixin: {
           userId: topic.userId,
           text: `有一个新的投稿等待你的审核`,
-          url: originUrl,
-          jobName: `request_${post.rId + topic.uuid}`,
-          delaySeconds: 20
+          url: originUrl
         },
+      }, {
+        jobName: `request_${post.rId + topic.uuid}`,
+        delaySeconds: 20
       })
     } catch (err) {
       console.log(err);
@@ -432,7 +433,7 @@ exports.approveContributionRequest = async ctx => {
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
         count: pendingCount
       });
-      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {
@@ -501,7 +502,7 @@ exports.rejectContributionRequest = async ctx => {
       socketIo.sendToUser(topic.userId, "TOPIC_CONTRIBUTION_REQUEST_PENDING_COUNT", {
         count: pendingCount
       });
-      const originUrl = `${getHost()}/posts/${post.rId}`;
+      const originUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
         mixin: {

@@ -167,7 +167,7 @@ export default observer(() => {
               </ModalLink>
             </div>
             <div className="msg-body ml-3 flex-1">
-              <div className="msg-title mb-1 md:mb-2">
+              <div className="msg-title mb-6-px">
                 <ModalLink
                   to={`/authors/${request.post.author.address}`}
                   openInNew={isPc}

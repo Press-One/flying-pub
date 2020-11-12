@@ -161,10 +161,11 @@ export const getNotificationHistory = async (
   page: number,
   notificationStore: any,
 ) => {
-  if (!socket) {
+  if (notificationStore.loading) {
     return;
   }
-  if (notificationStore.loading) {
+  if (!socket) {
+    notificationStore.setLoading(true);
     return;
   }
   notificationStore.setLoading(true);

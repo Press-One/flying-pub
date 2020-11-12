@@ -43,7 +43,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   p {
-    margin-bottom: 6px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.6 !important;
   }
 }
 
