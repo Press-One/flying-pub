@@ -200,7 +200,7 @@ const TopicEditor = observer((props: IProps) => {
           />
         </div>
 
-        {state.topic.contributionEnabled && !isMobile && (
+        {state.topic.contributionEnabled && (
           <div className="flex items-center mt-2">
             <div className="font-bold text-base text-gray-700">投稿需要我审核：</div>
             <div>

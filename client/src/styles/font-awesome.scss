@@ -1,0 +1,50 @@
+.fa {
+  display: inline-block;
+  background-size: cover;
+  background-position: center;
+  &.fa-bold {
+    width: 11px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/bold.svg')
+  }
+  &.fa-italic {
+    width: 8px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/italic.svg')
+  }
+  &.fa-quote-left {
+    width: 13px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/quote-left.svg')
+  }
+  &.fa-list-ul {
+    width: 14px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/list-ul.svg')
+  }
+  &.fa-list-ol {
+    width: 14px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/list-ol.svg')
+  }
+  &.fa-table {
+    width: 13px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/table.svg')
+  }
+  &.fa-link {
+    width: 13px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/link.svg')
+  }
+  &.fa-camera {
+    width: 15px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/camera.svg')
+  }
+  &.fa-eye {
+    width: 16px;
+    height: 14px;
+    background-image: url('https://static-assets.xue.cn/fa/eye.svg')
+  }
+}

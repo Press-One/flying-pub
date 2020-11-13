@@ -58,6 +58,8 @@ exports.create = async (ctx) => {
   }
   const comment = await Comment.create(user.id, data);
   const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?commentId=${comment.id}`;
+  const mixinCommentRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=1`;
+  const mixinReplyRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=2`;
 
   // 两个词的也暂时不管了，因为误伤率还是太高了 (By Junhong)
   offWords = offWords.filter(word => word.length > 2);
@@ -81,7 +83,7 @@ exports.create = async (ctx) => {
               mixin: {
                 userId: authorUser.id,
                 text: `${truncate(user.nickname)} 刚刚回复了你的文章`,
-                url: originUrl,
+                url: mixinCommentRedirectUrl,
               },
               messageSystem: getArticleCommentPayload({
                 fromUserName: user.address,
@@ -118,7 +120,7 @@ exports.create = async (ctx) => {
             mixin: {
               userId: mentionsUserId,
               text: `${truncate(user.nickname)} 刚刚回复了你的评论`,
-              url: originUrl,
+              url: mixinReplyRedirectUrl,
             },
             messageSystem: getCommentMentionPayload({
               fromUserName: user.address,
@@ -145,7 +147,7 @@ exports.create = async (ctx) => {
             mixin: {
               userId: config.assistantUserId,
               text: `有人@小助手`,
-              url: originUrl,
+              url: mixinReplyRedirectUrl,
             },
           })
         }

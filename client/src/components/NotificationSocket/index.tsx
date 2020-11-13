@@ -80,7 +80,7 @@ export default observer(() => {
     log('private_message', '收到事件');
     if (data === 'welcome') {
       log('welcom', '鉴权成功');
-      await sleep(2000);
+      await sleep(1500);
       notificationStore.setConnected(true);
       socket.emit('summary', { unread: true });
       try {
@@ -161,18 +161,13 @@ export const getNotificationHistory = async (
   page: number,
   notificationStore: any,
 ) => {
-  if (!socket) {
-    console.error('socket 不存在');
+  if (notificationStore.loading) {
     return;
   }
-  if (notificationStore.loading) {
-    console.error('正在 loading，取消获取本次 history');
+  if (!socket) {
     return;
   }
   notificationStore.setLoading(true);
-  if (notificationStore.isFirstFetching) {
-    await sleep(300);
-  }
   const payload = {
     sub_types: subTypes,
     page,

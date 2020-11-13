@@ -177,8 +177,8 @@ export default observer((props: any) => {
         mdeRef.current = mde;
         setShowImgUploader(true);
       },
-      className: 'fa fa-picture-o',
-      title: '插入图片 (Cmd-⌥-I)',
+      className: 'fa fa-camera',
+      title: '插入图片',
     });
     return () => {
       toolbar.splice(-3, 1);
@@ -285,6 +285,9 @@ export default observer((props: any) => {
 
   const handlePublish = async () => {
     if (isSaving) {
+      return;
+    }
+    if (confirmDialogStore.loading) {
       return;
     }
     try {

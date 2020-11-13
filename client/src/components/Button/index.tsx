@@ -40,7 +40,7 @@ export default (props: Props) => {
           small: size === 'small',
           mini: size === 'mini',
           'bg-blue-400 text-white': !outline && color === 'primary',
-          'bg-gray-af text-white': !outline && color === 'gray',
+          'bg-gray-bd text-white': !outline && color === 'gray',
           'bg-green-500 text-white': !outline && color === 'green',
           'border-blue-400 text-blue-400 border outline': outline && color === 'primary',
           'border-red-400 text-red-400 border outline': outline && color === 'red',

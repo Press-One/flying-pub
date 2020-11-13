@@ -89,48 +89,55 @@ export default observer(() => {
         state.authors.map((author, index) => {
           const isMyself = userStore.isLogin && author.address === userStore.user.address;
           return (
-            <Tooltip
-              placement="left"
-              arrow
-              disableHoverListener={!author.bio}
-              title={author.bio || ''}
-            >
-              <div
-                className={classNames(
-                  {
-                    'border-b border-gray-200': index + 1 !== LIMIT,
-                  },
-                  'px-5 py-4 flex items-center justify-between',
-                )}
+            <div key={index}>
+              <Tooltip
+                placement="left"
+                arrow
+                disableHoverListener={!author.bio}
+                title={author.bio || ''}
               >
-                <Link to={`/authors/${author.address}`} key={index}>
-                  <div className="flex items-center cursor-pointer">
-                    <Img className="w-10 h-10 rounded" src={author.avatar} alt="." />
-                    <div className="ml-3">
-                      <div className="text-14 text-gray-70 truncate w-38 box-border pr-2">
-                        {author.nickname}
-                      </div>
-                      <div className="text-12 text-gray-af truncate w-38 box-border pr-2">
-                        {author.bio}
+                <div
+                  className={classNames(
+                    {
+                      'border-b border-gray-200': index + 1 !== LIMIT,
+                    },
+                    'px-5 py-4 flex items-center justify-between',
+                  )}
+                >
+                  <Link to={`/authors/${author.address}`} key={index}>
+                    <div className="flex items-center cursor-pointer">
+                      <Img className="w-10 h-10 rounded" src={author.avatar} alt="." />
+                      <div className="ml-3">
+                        <div className="text-14 text-gray-70 truncate w-38 box-border pr-2">
+                          {author.nickname}
+                        </div>
+                        <div className="text-12 text-gray-af truncate w-38 box-border pr-2">
+                          {author.bio}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-                {!isMyself && (
-                  <div>
-                    {author.following ? (
-                      <Button size="mini" onClick={() => unsubscribe(author)} outline color="gray">
-                        已关注
-                      </Button>
-                    ) : (
-                      <Button size="mini" onClick={() => subscribe(author)} outline>
-                        关注
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </Tooltip>
+                  </Link>
+                  {!isMyself && (
+                    <div>
+                      {author.following ? (
+                        <Button
+                          size="mini"
+                          onClick={() => unsubscribe(author)}
+                          outline
+                          color="gray"
+                        >
+                          已关注
+                        </Button>
+                      ) : (
+                        <Button size="mini" onClick={() => subscribe(author)} outline>
+                          关注
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
+            </div>
           );
         })}
       <style jsx>{`

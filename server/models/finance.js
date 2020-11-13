@@ -483,13 +483,14 @@ const updateReceiptByUuid = async (uuid, data) => {
     refreshCachedBalance(updatedReceipt.toAddress);
     try {
       const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${updatedReceipt.objectRId}`;
+      const mixinRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${updatedReceipt.objectRId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const fromUser = await User.getByAddress(updatedReceipt.fromAddress);
       const file = await File.getByRId(updatedReceipt.objectRId);
       await pushToNotificationQueue({
         mixin: {
           userId,
           text: `收到打赏 ${parseFloat(updatedReceipt.amount)} ${updatedReceipt.currency}`,
-          url: originUrl
+          url: mixinRedirectUrl
         },
         messageSystem: getArticleRewardPayload({
           fromUserName: fromUser.address,
