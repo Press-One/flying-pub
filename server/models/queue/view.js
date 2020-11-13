@@ -47,14 +47,14 @@ exports.createAddAvgViewQueue = () => {
   const queue = createQueue(`${config.serviceKey}_AVG_VIEW_ADDING`, {
     limiter: {
       max: 1,
-      duration: 60 * 1000 * 1
+      duration: 20 * 1000 * 1
     }
   });
 
   queue.add(`${config.serviceKey}_ADD`, {}, {
     priority: 1,
     repeat: {
-      every: 60 * 1000 * 1
+      every: 20 * 1000 * 1
     },
   });
 
