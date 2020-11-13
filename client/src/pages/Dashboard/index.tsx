@@ -132,6 +132,8 @@ export default observer((props: RouteChildrenProps) => {
               <TableRow>
                 <TableCell>标题</TableCell>
                 <TableCell>封面</TableCell>
+                {(localStorage.getItem('VIEW_COUNT_ENABLED') ||
+                  settings.extra['postView.visible']) && <TableCell>阅读量</TableCell>}
                 <TableCell>状态</TableCell>
                 <TableCell>更新时间</TableCell>
                 <TableCell>操作</TableCell>

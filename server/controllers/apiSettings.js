@@ -13,7 +13,8 @@ exports.get = async ctx => {
     'notification.mixinClientId': config.provider.mixin.clientId,
     'notification.mixinId': config.provider.mixin.id,
     'messageSystem.project': config.messageSystem.project,
-    'messageSystem.endpoint': config.messageSystem.url.split('/').slice(0, 3).join('/')
+    'messageSystem.endpoint': config.messageSystem.url.split('/').slice(0, 3).join('/'),
+    'postView.visible': config.postView && config.postView.visible,
   }
   ctx.body = {
     ...config.settings,

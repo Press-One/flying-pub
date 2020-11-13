@@ -49,6 +49,7 @@ export default observer((props: any) => {
     commentStore,
     confirmDialogStore,
     snackbarStore,
+    settingsStore,
   } = useStore();
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
@@ -582,7 +583,8 @@ export default observer((props: any) => {
             </div>
           </Link>
           <span className="mr-5">{ago(post.pubDate)}</span>
-          {localStorage.getItem('VIEW_COUNT_ENABLED') && (
+          {(localStorage.getItem('VIEW_COUNT_ENABLED') ||
+            settingsStore.settings.extra['postView.visible']) && (
             <span className="mr-5">阅读 {post.viewCount}</span>
           )}
           {isMyself && !isMobile && <Link to={`/editor?rId=${post.rId}`}>编辑</Link>}

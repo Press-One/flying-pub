@@ -7,7 +7,6 @@ const {
 } = require("../utils/validator");
 const Log = require("../models/log");
 const Post = require("../models/post");
-const Mixin = require("../models/mixin");
 const Chain = require("./chain");
 const {
   truncate
