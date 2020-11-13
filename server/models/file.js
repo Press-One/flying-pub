@@ -4,6 +4,7 @@ const {
 } = require('../utils/validator');
 const prsUtil = require('prs-utility');
 const File = require('./sequelize/file');
+const Post = require('./post');
 const Block = require('./block');
 const config = require('../config');
 const ase256cbcCrypto = require('../utils/ase256cbcCrypto');
@@ -36,18 +37,21 @@ const packFile = async (file, options = {}) => {
     fileJson.status = status;
     fileJson.block = block;
   }
-  fileJson.content = fileJson.content.toString('utf8');
+  if (fileJson.content) {
+    fileJson.content = fileJson.content.toString('utf8');
+  }
   const {
     withRawContent,
-    dropContent
   } = options;
   if (!withRawContent) {
     fileJson.content = removeFrontMatter(fileJson.content);
   }
-  if (dropContent) {
-    delete fileJson.content;
-    delete fileJson.encryptedContent;
-  }
+  const post = await Post.getByRId(rId, {
+    ignoreDeleted: true,
+    ignoreInvisibility: true,
+    includeAuthor: false
+  });
+  fileJson.postViewCount = post ? post.viewCount : 0;
   delete fileJson.deleted;
   return fileJson;
 }
@@ -122,6 +126,9 @@ exports.list = async (userAddress, options = {}) => {
   } = options;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   const files = await File.findAll({
+    attributes: {
+      exclude: ['content', 'encryptedContent'],
+    },
     where: {
       userAddress,
       deleted: false,
@@ -136,7 +143,7 @@ exports.list = async (userAddress, options = {}) => {
   const list = await Promise.all(
     files.map((file) => {
       return packFile(file, {
-        dropContent: true
+        withPostViewCount: options.withPostViewCount
       });
     })
   )

@@ -3,8 +3,7 @@ const Author = require('../models/author');
 const Topic = require('../models/topic');
 const sequelize = require('../models/sequelize/database');
 const Settings = require('../models/settings');
-const TopicContributionRequest = require('../models/sequelize/topicContributionRequest');
-const View = require('../cache/view');
+const View = require('../models/view');
 const config = require('../config');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -20,6 +19,7 @@ exports.get = async ctx => {
   const includeDeleted = ctx.query.includeDeleted;
   const dropContent = ctx.query.dropContent || false;
   const withPendingTopicUuids = ctx.query.withPendingTopicUuids;
+
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
@@ -83,9 +83,8 @@ exports.get = async ctx => {
   }
 
   try {
-    await View.trySave(ctx.ip, rId);
-    const cachedViewCount = await View.getCountByRId(rId);
-    post.viewCount += cachedViewCount;
+    const cachedCount = await View.trySave(ctx.ip, rId, post.viewCount);
+    post.viewCount = cachedCount || 0;
   } catch (err) {
     console.log(err);
   }

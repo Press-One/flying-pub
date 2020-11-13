@@ -8,7 +8,10 @@ const {
   createAtomCacheQueue
 } = require('./atom');
 const {
-  createViewCacheQueue
+  createViewSyncQueue,
+  createViewMinCountSettingQueue,
+  createAddAvgViewQueue,
+  createAddHotViewQueue
 } = require('./view');
 const {
   createNotificationQueue
@@ -17,17 +20,29 @@ const queues = [];
 
 exports.up = async () => {
   await Cache.pDeleteKeysByPattern(`bull:${config.serviceKey}*`);
-  if (!(config.queueDisabledJobs || []).includes('mixin')) {
+  const queueDisabledJobs = config.queueDisabledJobs || [];
+  if (!queueDisabledJobs.includes('mixin')) {
     queues.push(createSyncMixinSnapshotsQueue());
     queues.push(createSyncInitializedQueue());
   }
-  if (!(config.queueDisabledJobs || []).includes('notification')) {
+  if (!queueDisabledJobs.includes('notification')) {
     queues.push(createNotificationQueue());
   }
-  if (!(config.queueDisabledJobs || []).includes('atom')) {
+  if (!queueDisabledJobs.includes('atom')) {
     queues.push(createAtomCacheQueue());
   }
-  queues.push(createViewCacheQueue());
+  if (config.postView && config.postView.enabled && !queueDisabledJobs.includes('view')) {
+    if (!queueDisabledJobs.includes('viewMinCountSetting')) {
+      queues.push(createViewMinCountSettingQueue());
+    }
+    if (!queueDisabledJobs.includes('viewAddAvg')) {
+      queues.push(createAddAvgViewQueue());
+    }
+    if (!queueDisabledJobs.includes('viewAddHot')) {
+      queues.push(createAddHotViewQueue());
+    }
+    queues.push(createViewSyncQueue());
+  }
 }
 
 exports.down = () => {

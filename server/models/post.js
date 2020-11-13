@@ -13,6 +13,7 @@ const {
   packAuthor
 } = require('./author');
 const Vote = require('./vote');
+const View = require('../models/view');
 const {
   Joi,
   assert,
@@ -25,7 +26,6 @@ const packPost = async (post, options = {}) => {
   const {
     userId,
     withVoted = false,
-    withContent = false,
     withPaymentUrl = false,
     withTopic = true,
     dropAuthor = false,
@@ -52,9 +52,6 @@ const packPost = async (post, options = {}) => {
   if (!withPaymentUrl) {
     delete postJson.paymentUrl;
   }
-  if (!withContent) {
-    delete postJson.content;
-  }
   if (includeAuthor) {
     if (dropAuthor) {
       delete postJson.author;
@@ -77,7 +74,6 @@ const packPost = async (post, options = {}) => {
   }
   postJson.upVotesCount = ~~postJson.upVotesCount;
   postJson.commentsCount = ~~postJson.commentsCount;
-  postJson.viewCount = ~~postJson.viewCount;
 
   if (options.withPendingTopicUuids) {
     const topicContributionRequests = await TopicContributionRequest.findAll({
@@ -90,7 +86,10 @@ const packPost = async (post, options = {}) => {
     });
     postJson.pendingTopicUuids = topicContributionRequests.map((t => t.topicUuid));
   }
-  
+
+  const cachedViewCount = await View.getCountByRId(postJson.rId);
+  postJson.viewCount = cachedViewCount || ~~postJson.viewCount;
+
   return postJson;
 }
 exports.packPost = packPost;
@@ -107,6 +106,11 @@ const getByRId = async (rId, options = {}) => {
       invisibility: false
     }
   };
+  if (!options.withContent) {
+    query.attributes = {
+      exclude: ['content'],
+    };
+  }
   const {
     ignoreDeleted,
     ignoreInvisibility
@@ -139,6 +143,9 @@ exports.listByRIds = async (rIds, options = {}) => {
     includeAuthor = true
   } = options;
   const query = {
+    attributes: {
+      exclude: ['content'],
+    },
     where: {
       rId: rIds,
       deleted: false,
@@ -248,6 +255,9 @@ exports.list = async (options = {}) => {
   const queryOptions = {
     offset,
     limit,
+    attributes: {
+      exclude: ['content'],
+    },
     include: [{
       model: Author,
       where: {

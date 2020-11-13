@@ -7,6 +7,7 @@ RUN mv /app/client/build /app/server/build
 WORKDIR /app/server
 RUN npm install
 RUN npm install wait-on -g
+RUN apt update && apt-get install vim
 
 WORKDIR /app
 

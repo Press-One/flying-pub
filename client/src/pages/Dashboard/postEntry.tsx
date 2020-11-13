@@ -129,6 +129,11 @@ export default observer((props: any) => {
           ''
         )}
       </TableCell>
+      {(localStorage.getItem('VIEW_COUNT_ENABLED') || settingsStore.settings.extra['postView.visible']) && (
+        <TableCell>
+          <span className="gray-color">{file.postViewCount || ''}</span>
+        </TableCell>
+      )}
       <TableCell>
         {!file.invisibility && (
           <span className={`font-bold ${file.status}`}>{FileStatus[file.status]}</span>
