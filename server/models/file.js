@@ -46,11 +46,13 @@ const packFile = async (file, options = {}) => {
   if (!withRawContent) {
     fileJson.content = removeFrontMatter(fileJson.content);
   }
-  const post = await Post.getByRId(rId, {
-    ignoreDeleted: true,
-    ignoreInvisibility: true,
-    includeAuthor: false
-  });
+  if (!isDraft) {
+    const post = await Post.getByRId(rId, {
+      ignoreDeleted: true,
+      ignoreInvisibility: true,
+      includeAuthor: false
+    });
+  }
   fileJson.postViewCount = post ? post.viewCount : 0;
   delete fileJson.deleted;
   return fileJson;

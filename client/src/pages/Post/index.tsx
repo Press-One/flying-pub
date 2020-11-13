@@ -666,7 +666,7 @@ export default observer((props: any) => {
         />
         <style jsx>{`
           .name-max-width {
-            max-width: 200px;
+            max-width: 115px;
           }
           .gray {
             color: #aea9ae;
