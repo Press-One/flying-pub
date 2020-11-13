@@ -653,6 +653,17 @@ export default observer((props: any) => {
           </div>
         )}
         {(!isFetchedReward || !isFetchedComments) && renderLoading()}
+        <div
+          ref={ref}
+          className={classNames(
+            {
+              'hidden': !isMobile || !showImage,
+            },
+            'mobile-viewer-container fixed'
+          )}
+          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+        >
+        </div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}
           onMaskClick={() => setShowImage(false)}
@@ -696,17 +707,6 @@ export default observer((props: any) => {
               'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif;
           }
         `}</style>
-        <div
-          ref={ref}
-          className={classNames(
-            {
-              'hidden': !isMobile || !showImage,
-            },
-            'mobile-viewer-container fixed'
-          )}
-          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-        >
-        </div>
       </div>
     </Fade>
   );
