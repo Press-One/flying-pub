@@ -52,8 +52,8 @@ const packFile = async (file, options = {}) => {
       ignoreInvisibility: true,
       includeAuthor: false
     });
+    fileJson.postViewCount = post ? post.viewCount : 0;
   }
-  fileJson.postViewCount = post ? post.viewCount : 0;
   delete fileJson.deleted;
   return fileJson;
 }
