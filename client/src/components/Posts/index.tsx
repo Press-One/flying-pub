@@ -127,6 +127,7 @@ const PostEntry = observer((props: IPostProps) => {
                         <div className="flex items-center">
                           {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}
                           <span className="font-bold mr-1">{post.viewCount}</span>阅读
+                          <span className="w-3 text-center opacity-75">·</span>
                         </div>
                       )}
                       {post.upVotesCount > 0 && (
