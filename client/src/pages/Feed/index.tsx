@@ -22,11 +22,12 @@ export default observer(() => {
     enableFilterScroll: true,
   }));
 
-  const { filterType, filterDayRange, subscriptionType, stickyEnabled } = feedStore;
+  const { filterType, filterDayRange, subscriptionType, latestType, stickyEnabled } = feedStore;
   const { settings } = settingsStore;
   const filterEnabled = settings['filter.enabled'];
   const showPopularity =
     settings['filter.popularity.enabled'] && settings['filter.dayRangeOptions'].length > 1;
+  const showLatest = settings['filter.latest.enabled'];
   const pending = React.useMemo(
     () => !ready || !state.isFetchedStickyPosts || !feedStore.isFetched,
     [ready, state.isFetchedStickyPosts, feedStore.isFetched],
@@ -41,7 +42,7 @@ export default observer(() => {
       name: '热门',
     },
     {
-      type: 'PUB_DATE',
+      type: 'LATEST',
       name: '最新',
     },
   ];
@@ -51,7 +52,7 @@ export default observer(() => {
       const type = settings['filter.type'];
       const popularityDisabled = !settings['filter.popularity.enabled'];
       if (popularityDisabled) {
-        const validType = type === 'POPULARITY' ? 'PUB_DATE' : type;
+        const validType = type === 'POPULARITY' ? 'LATEST' : type;
         settings['filter.type'] = validType;
         feedStore.setFilter({
           type: validType,
@@ -72,6 +73,14 @@ export default observer(() => {
             filter.subscriptionType = settings['filter.subscriptionType'];
           } else {
             filter.subscriptionType = 'author';
+          }
+        }
+        if (type === 'LATEST' || type === 'PUB_DATE') {
+          filter.type = 'LATEST';
+          if (settings['filter.latestType']) {
+            filter.latestType = settings['filter.latestType'];
+          } else {
+            filter.latestType = 'PUB_DATE';
           }
         }
         feedStore.setFilter(filter);
@@ -175,6 +184,7 @@ export default observer(() => {
     filterType,
     filterDayRange,
     subscriptionType,
+    latestType,
     state,
     feedStore,
     ready,
@@ -212,11 +222,16 @@ export default observer(() => {
       if (filter.type === 'SUBSCRIPTION') {
         settings['filter.subscriptionType'] = filter.subscriptionType;
       }
+      if (filter.type === 'LATEST') {
+        settings['filter.latestType'] = filter.latestType;
+      }
       if (userStore.isLogin) {
         await settingsApi.saveSettings(settings);
       }
       settingsStore.updateSettings(settings);
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleFilterChange = (type: string, value: any) => {
@@ -224,10 +239,17 @@ export default observer(() => {
       return;
     }
     if (type !== 'SUBSCRIPTION') {
-      setFilter({
-        type: type as FilterType,
-        dayRange: value,
-      });
+      if (type === 'LATEST') {
+        setFilter({
+          type: type as FilterType,
+          latestType: value,
+        });
+      } else {
+        setFilter({
+          type: type as FilterType,
+          dayRange: value,
+        });
+      }
     } else {
       setFilter({
         type: type as FilterType,
@@ -261,10 +283,12 @@ export default observer(() => {
                   provider="feed"
                   dayRange={feedStore.filterDayRange}
                   subscriptionType={feedStore.subscriptionType}
+                  latestType={feedStore.latestType}
                   type={feedStore.filterType}
                   enableScroll={state.enableFilterScroll}
                   onChange={handleFilterChange}
                   showPopularity={showPopularity}
+                  showLatest={showLatest}
                   dayRangeOptions={settings['filter.dayRangeOptions']}
                   tabs={tabs}
                 />

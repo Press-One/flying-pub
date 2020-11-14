@@ -18,9 +18,11 @@ interface IProps {
   tabs: tab[];
   type: string;
   showPopularity?: boolean;
+  showLatest?: boolean;
   dayRangeOptions?: number[];
   dayRange?: number;
   subscriptionType?: string;
+  latestType?: string;
   onChange: (type: string, value?: any) => void;
   enableScroll?: boolean;
 }
@@ -42,6 +44,39 @@ export default observer((props: IProps) => {
       tryScroll(selectorId);
     }
     props.onChange(types[value] as string);
+  };
+
+  const latestItems = () => {
+    return (
+      <Fade in={true} timeout={isMobile ? 500 : 500}>
+        <div className="flex justify-center pt-3-px pb-2 md:py-3">
+          <div>{latestItem('发布', 'PUB_DATE')}</div>
+          <div>{latestItem('评论', 'LATEST_COMMENT')}</div>
+        </div>
+      </Fade>
+    );
+  };
+
+  const latestItem = (text: string, latestType: string) => {
+    return (
+      <div
+        onClick={() => {
+          if (fixed) {
+            tryScroll(selectorId);
+          }
+          props.onChange('LATEST', latestType);
+        }}
+        className={classNames(
+          {
+            'bg-blue-400 text-white': props.latestType === latestType,
+            'bg-gray-f2 text-gray-88': props.latestType !== latestType,
+          },
+          'py-3-px px-3 mx-10-px md:mx-3 text-12 rounded-12 md:cursor-pointer',
+        )}
+      >
+        {text}
+      </div>
+    );
   };
 
   const subscriptionItems = () => {
@@ -163,6 +198,7 @@ export default observer((props: IProps) => {
                 ))}
               </Tabs>
               {userStore.isLogin && props.type === 'SUBSCRIPTION' && subscriptionItems()}
+              {props.showLatest && props.type === 'LATEST' && latestItems()}
               {props.showPopularity && props.type === 'POPULARITY' && popularityItems()}
             </div>
           </div>

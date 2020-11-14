@@ -212,7 +212,7 @@ export default observer((props: any) => {
       name: '热门',
     },
     {
-      type: 'PUB_DATE',
+      type: 'LATEST',
       name: '最新收录',
     },
   ];
@@ -232,8 +232,10 @@ export default observer((props: any) => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
+        const order =
+          feedStore.filterType === 'LATEST' ? feedStore.latestType : feedStore.filterType;
         const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
-          order: feedStore.filterType,
+          order,
           offset: feedStore.page * feedStore.limit,
           limit: feedStore.limit,
         });

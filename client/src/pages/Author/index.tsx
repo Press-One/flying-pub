@@ -59,7 +59,7 @@ export default observer((props: any) => {
       name: '热门',
     },
     {
-      type: 'PUB_DATE',
+      type: 'LATEST',
       name: '最新',
     },
   ];
@@ -137,8 +137,9 @@ export default observer((props: any) => {
     }
     feedStore.setIsFetching(true);
     (async () => {
+      const order = feedStore.filterType === 'LATEST' ? feedStore.latestType : feedStore.filterType;
       const { total, posts } = await postApi.fetchPosts({
-        order: feedStore.filterType,
+        order,
         address,
         offset: feedStore.page * feedStore.limit,
         limit: feedStore.limit,

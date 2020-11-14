@@ -15,6 +15,7 @@ export function createFeedStore() {
     filterType: '' as string,
     filterDayRange: 7,
     subscriptionType: 'author',
+    latestType: 'PUB_DATE',
     limit: 15,
     pending: false,
     hasMore: false,
@@ -43,6 +44,9 @@ export function createFeedStore() {
       const options: any = { order: this.filterType };
       if (this.filterType === 'POPULARITY' && this.filterDayRange > 0) {
         options.dayRange = this.filterDayRange;
+      }
+      if (this.filterType === 'LATEST') {
+        options.order = this.latestType;
       }
       return options;
     },
@@ -121,10 +125,13 @@ export function createFeedStore() {
       this.filterType = type;
     },
     setFilter(options: any = {}) {
-      const { type, dayRange, subscriptionType } = options;
+      const { type, dayRange, subscriptionType, latestType } = options;
       this.filterType = type;
       if (dayRange || dayRange === 0) {
         this.filterDayRange = dayRange;
+      }
+      if (latestType) {
+        this.latestType = latestType;
       }
       if (subscriptionType) {
         this.subscriptionType = subscriptionType;

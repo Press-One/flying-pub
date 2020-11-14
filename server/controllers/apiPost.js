@@ -123,6 +123,35 @@ const getListController = (listOptions = {}) => {
     if (address) {
       query.addresses = [address];
     }
+    if (order === 'LATEST_COMMENT') {
+      const findSql = `
+        SELECT p."rId" FROM posts p LEFT JOIN comments c on c."objectId" = p."rId" WHERE c."deleted" = false AND p.deleted = false AND p.invisibility = false AND p."latestRId" is null GROUP BY p."rId", p."createdAt" ORDER BY COALESCE(MAX(c."createdAt"), p."createdAt") DESC 
+        OFFSET ${offset} 
+        LIMIT ${limit};`;
+        const [count, rawPost] = await Promise.all([Post.SequelizePost.count({
+          where: {
+            commentsCount: {
+              [Op.gt]: 0
+            },
+            latestRId: null,
+            deleted: false,
+            invisibility: false
+          }
+        }), sequelize.query(findSql)])
+        const total = count;
+        const postRIds = rawPost[0].map(rawPost => rawPost.rId);
+        let posts = [];
+        if (postRIds.length > 0) {
+          posts = await Promise.all(postRIds.map(async rId => {
+            return await Post.getByRId(rId)
+          }))
+        }
+        ctx.body = {
+          total,
+          posts
+        };
+        return;
+    }
     const result = await Post.list(query);
     ctx.body = {
       total: result.total,
@@ -147,6 +176,9 @@ const getUserOptions = async ctx => {
   const type = settings['filter.type'];
   if (type === 'SUBSCRIPTION') {
     return { order: 'SUBSCRIPTION' }
+  }
+  if (type === 'LATEST') {
+    return { order: 'PUB_DATE' }
   }
   const popularityDisabled = !settings['filter.popularity.enabled'];
   if (popularityDisabled) {

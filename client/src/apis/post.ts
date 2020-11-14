@@ -2,7 +2,7 @@
 import qs from 'query-string';
 import request from '../request';
 
-export type FilterType = 'SUBSCRIPTION' | 'POPULARITY' | 'PUB_DATE';
+export type FilterType = 'SUBSCRIPTION' | 'POPULARITY' | 'LATEST';
 
 export interface IPostTopic {
   uuid: string;
