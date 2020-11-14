@@ -196,7 +196,9 @@ export default observer(() => {
     hasNextPage: feedStore.hasMorePosts,
     threshold: 350,
     onLoadMore: () => {
-      feedStore.setPage(feedStore.page + 1);
+      if (!feedStore.isFetching) {
+        feedStore.setPage(feedStore.page + 1);
+      }
     },
   });
 

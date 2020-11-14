@@ -576,13 +576,13 @@ exports.listTopicPosts = async ctx => {
 }
 
 exports.addFollower = async ctx => {
-  const user = ctx.verification.sequelizeUser;
+  const { user, sequelizeUser } = ctx.verification;
   const uuid = ctx.params.uuid;
   const topic = await Topic.get(uuid, {
     raw: true
   });
   assert(topic, Errors.ERR_NOT_FOUND('topic'));
-  await topic.addFollowers(user);
+  await topic.addFollowers(sequelizeUser);
   Log.create(user.id, `关注专题 ${topic.name} ${getHost()}/topics/${topic.uuid}`);
   (async () => {
     try {
