@@ -211,6 +211,9 @@ exports.removeContribution = async ctx => {
         return;
       }
       Log.create(user.id, `移除理由：${data.note || ''}`);
+      if (!data.note) {
+        return;
+      }
       const mixinRedirectUrl = `${getHost()}/posts/${post.rId}?action=OPEN_NOTIFICATION_MODAL&tab=3`;
       const authorUser = await User.getByAddress(post.author.address);
       await pushToNotificationQueue({
@@ -705,15 +708,15 @@ exports.listAuthors = async ctx => {
     offset,
     limit
   });
-  let derivedTopics = authors;
+  let derivedAuthors = authors;
 
-  if (user && derivedTopics.length > 0) {
-    derivedTopics = await appendFollowingStatus(derivedTopics, user);
+  if (user && derivedAuthors.length > 0) {
+    derivedAuthors = await appendFollowingStatus(derivedAuthors, user);
   }
 
   ctx.body = {
-    total: derivedTopics.length,
-    authors: derivedTopics,
+    total: derivedAuthors.length,
+    authors: derivedAuthors,
   };
 }
 

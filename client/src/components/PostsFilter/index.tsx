@@ -31,6 +31,10 @@ export default observer((props: IProps) => {
   const { userStore } = useStore();
   const selectorId = 'feed-filter';
   const { enableScroll = true } = props;
+  const showSubTabs =
+    (props.showPopularity && props.type === 'POPULARITY') ||
+    (props.showLatest && props.type === 'LATEST') ||
+    props.type === 'SUBSCRIPTION';
 
   const types = React.useMemo(() => props.tabs.map((tab) => tab.type), [props.tabs]);
 
@@ -246,15 +250,9 @@ export default observer((props: IProps) => {
   const placeholder = () => {
     let height = 0;
     if (isMobile) {
-      height =
-        (props.showPopularity && props.type === 'POPULARITY') || props.type === 'SUBSCRIPTION'
-          ? 75
-          : 40;
+      height = showSubTabs ? 75 : 40;
     } else {
-      height =
-        (props.showPopularity && props.type === 'POPULARITY') || props.type === 'SUBSCRIPTION'
-          ? 88
-          : 41;
+      height = showSubTabs ? 88 : 41;
     }
     return (
       <div>

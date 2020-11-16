@@ -6,6 +6,7 @@ const {
 } = require("../utils/validator");
 const Topic = require("./sequelize/topic");
 const Author = require('./sequelize/author');
+const { packAuthors } = require('./author');
 const Post = require('./sequelize/post');
 const User = require("./user");
 const Sequelize = require('sequelize');
@@ -78,7 +79,6 @@ exports.pickTopic = pickTopic;
 const listAuthors = async (uuid, options = {}) => {
   assert(uuid, Errors.ERR_IS_REQUIRED("uuid"));
   const authors = await Author.findAll({
-    attributes: ['address', 'nickname', 'avatar', 'cover', 'bio'],
     where: {
       status: "allow",
     },
@@ -102,7 +102,7 @@ const listAuthors = async (uuid, options = {}) => {
     offset: options.offset,
     limit: options.limit
   });
-  return authors.map(author => author.toJSON());
+  return await packAuthors(authors);
 }
 exports.listAuthors = listAuthors;
 

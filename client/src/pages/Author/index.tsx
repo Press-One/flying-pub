@@ -99,7 +99,7 @@ export default observer((props: any) => {
     if (feedStore.provider !== `author:${address}`) {
       feedStore.setProvider(`author:${address}`);
       feedStore.clear();
-      feedStore.setFilterType(tabs[0].type);
+      feedStore.setFilterType(tabs[1].type);
       window.scrollTo(0, 0);
     }
   }, [feedStore, address, tabs]);

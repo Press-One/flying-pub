@@ -253,7 +253,7 @@ export default observer((props: any) => {
     if (feedStore.provider !== `topic:${uuid}`) {
       feedStore.setProvider(`topic:${uuid}`);
       feedStore.clear();
-      feedStore.setFilterType(tabs[0].type);
+      feedStore.setFilterType(tabs[1].type);
       window.scrollTo(0, 0);
     }
   }, [feedStore, uuid, tabs]);
