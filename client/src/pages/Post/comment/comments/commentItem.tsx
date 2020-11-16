@@ -2,8 +2,8 @@ import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { ago, isMobile } from 'utils';
-import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
-import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
+import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteOutline from '@material-ui/icons/Close';
 import Img from 'components/Img';
 
@@ -119,7 +119,7 @@ export default class CommentItem extends React.Component<any, any> {
                       onClick={() => replyTo(comment)}
                     >
                       <span className="flex items-center text-16 md:text-18 pr-2 md:pr-1">
-                        <ModeCommentOutlined />
+                        <FontAwesomeIcon icon={faComment} />
                       </span>
                       {!isMobile && <span>回复</span>}
                     </span>
@@ -134,7 +134,7 @@ export default class CommentItem extends React.Component<any, any> {
                     onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
                   >
                     <span className="flex items-center text-16 md:text-18 pr-1 md">
-                      <ThumbUpAltOutlined />
+                      <FontAwesomeIcon icon={faThumbsUp} />
                     </span>
                     <span className="font-bold">{Number(comment.upVotesCount) || ''}</span>
                   </div>

@@ -23,6 +23,8 @@ import { resizeFullImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
+import { faEdit } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -232,6 +234,16 @@ export default observer((props: any) => {
     }
   };
 
+  const EditorEntry = () => {
+    return (
+      <div className="fixed top-0 right-0 pl-20 bg-white">
+        <div className="px-4 text-blue-400 text-22 flex items-center h-12 py-1">
+          <FontAwesomeIcon icon={faEdit} />
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -257,11 +269,12 @@ export default observer((props: any) => {
     if (isMobile) {
       disableBackgroundScroll(show);
     }
-  }
+  };
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
+        {isMyself && EditorEntry()}
         <div>
           <div className="flex items-stretch overflow-hidden relative pb-6 md:rounded-12">
             <div
@@ -288,7 +301,7 @@ export default observer((props: any) => {
                   onClick={() => {
                     if (isMyself) {
                       modalStore.openSettings('profile');
-                    } else if (state.author.avatar ) {
+                    } else if (state.author.avatar) {
                       showImageView(true);
                     }
                   }}
@@ -399,7 +412,7 @@ export default observer((props: any) => {
                       modalStore.openSettings('profile');
                     }}
                   >
-                    <div className="flex items-center text-18 mr-1">
+                    <div className="flex items-center text-16 mr-1">
                       <Edit />
                     </div>
                     编辑资料
@@ -620,14 +633,13 @@ export default observer((props: any) => {
           ref={ref}
           className={classNames(
             {
-              'hidden': !isMobile || !showImage,
+              hidden: !isMobile || !showImage,
             },
-            'mobile-viewer-container fixed bg-black'
+            'mobile-viewer-container fixed bg-black',
           )}
           onClick={() => showImageView(false)}
           //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-        >
-        </div>
+        ></div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}
           onMaskClick={() => showImageView(false)}
@@ -636,7 +648,7 @@ export default observer((props: any) => {
           visible={showImage}
           onClose={() => showImageView(false)}
           images={[{ src: resizeFullImage(state.author.avatar) }]}
-          container={ isMobile && !!ref.current ? ref.current : undefined }
+          container={isMobile && !!ref.current ? ref.current : undefined}
           noClose={isMobile}
         />
         <style jsx>{`

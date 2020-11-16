@@ -74,11 +74,13 @@ const Pub = () => {
   return (
     <div>
       <Route path="/editor" exact component={Editor} />
-      <Route
-        path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
-        exact
-        component={ManagementLayout}
-      />
+      {isPc && (
+        <Route
+          path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
+          exact
+          component={ManagementLayout}
+        />
+      )}
     </div>
   );
 };
@@ -94,11 +96,7 @@ const AppRouter = () => {
             exact
             component={Reader}
           />
-          {isPc && (
-            <div>
-              <Pub />
-            </div>
-          )}
+          <Pub />
           <Route path="/readerWallet" exact component={ReaderWalletModal} />
 
           <LoginModal />

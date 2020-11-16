@@ -1,6 +1,6 @@
 import * as EasyMDE from 'easymde';
 import marked from 'marked';
-import { initMathJax } from '../../utils';
+import { initMathJax, isPc } from 'utils';
 
 marked.setOptions({
   highlight: (code: string) => {
@@ -23,7 +23,7 @@ const options: EasyMDE.Options = {
     }, 0);
     return marked.parse(markdownPlaintext);
   },
-  toolbar: [
+  toolbar: isPc ? [
     {
       name: 'bold',
       action: EasyMDE.toggleBold,
@@ -70,7 +70,7 @@ const options: EasyMDE.Options = {
     },
     '|',
     'preview',
-  ],
+  ] : false,
 };
 
 export default options;

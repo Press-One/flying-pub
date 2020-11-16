@@ -7,13 +7,12 @@ import ImgUploader from './ImgUploader';
 import CoverUploader from './CoverUploader';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
-
+import classNames from 'classnames';
 import { Input, Tooltip } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import { CameraAlt } from '@material-ui/icons';
-
 import { useStore } from 'store';
-import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery, isPc } from 'utils';
+import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery, isPc, isMobile } from 'utils';
 import fileApi from 'apis/file';
 import authApi from 'apis/auth';
 import config from './config';
@@ -42,7 +41,7 @@ const MainEditor = (props: any = {}) => {
         autoFocus={!title}
         fullWidth
         required
-        placeholder="文章标题"
+        placeholder="标题"
         value={title}
         onChange={handleTitleChange}
         inputProps={{
@@ -170,18 +169,20 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     const toolbar: any = config.toolbar;
-    toolbar.splice(-2, 0, {
-      name: 'image',
-      action: (mde: any) => {
-        mdeRef.current = mde;
-        setShowImgUploader(true);
-      },
-      className: 'fa fa-camera',
-      title: '插入图片',
-    });
-    return () => {
-      toolbar.splice(-3, 1);
-    };
+    if (toolbar) {
+      toolbar.splice(-2, 0, {
+        name: 'image',
+        action: (mde: any) => {
+          mdeRef.current = mde;
+          setShowImgUploader(true);
+        },
+        className: 'fa fa-camera',
+        title: '插入图片',
+      });
+      return () => {
+        toolbar.splice(-3, 1);
+      };
+    }
   }, []);
 
   const wordCountDebounce = React.useCallback(
@@ -448,8 +449,15 @@ export default observer((props: any) => {
 
   return (
     <Fade in={true} timeout={500}>
-      <div className="p-editor max-w-1200 mx-auto flex justify-center relative">
-        {!isFetching && (
+      <div
+        className={classNames(
+          {
+            'mobile overflow-y-auto h-screen box-border': isMobile,
+          },
+          'p-editor max-w-1200 mx-auto flex justify-center relative',
+        )}
+      >
+        {isPc && !isFetching && (
           <div onClick={handleBack}>
             <nav className="p-editor-back flex items-center text-blue-400">
               <NavigateBefore />
@@ -458,7 +466,7 @@ export default observer((props: any) => {
           </div>
         )}
 
-        {(file.title || file.content) && (
+        {isPc && (file.title || file.content) && (
           <Fade in={true} timeout={500}>
             <div className="p-editor-save pt-5 flex">
               {!isPublished && (
@@ -493,53 +501,57 @@ export default observer((props: any) => {
               handleContentChange={handleContentChange}
               config={config}
             />
-            <div
-              className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
-              onClick={() => setShowCoverUploader(true)}
-            >
-              <div className="flex items-center h-8">
-                {file.cover && (
-                  <Tooltip
-                    title={
-                      <div>
-                        <Img
-                          src={file.cover}
-                          resizeWidth={250}
-                          useOriginalDefault
-                          alt="封面"
-                          width="250"
-                        />
+            {isPc && (
+              <div>
+                <div
+                  className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
+                  onClick={() => setShowCoverUploader(true)}
+                >
+                  <div className="flex items-center h-8">
+                    {file.cover && (
+                      <Tooltip
+                        title={
+                          <div>
+                            <Img
+                              src={file.cover}
+                              resizeWidth={250}
+                              useOriginalDefault
+                              alt="封面"
+                              width="250"
+                            />
+                          </div>
+                        }
+                        placement="left"
+                      >
+                        <div>
+                          <Img
+                            className="rounded mr-2"
+                            width="55px"
+                            src={file.cover}
+                            resizeWidth={55}
+                            alt="封面"
+                          />
+                        </div>
+                      </Tooltip>
+                    )}
+                    {!file.cover && (
+                      <div
+                        className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
+                        style={{ width: '55px', height: '31px', marginTop: '-2px' }}
+                      >
+                        <div className="flex items-center mt-1">
+                          <CameraAlt />
+                        </div>
                       </div>
-                    }
-                    placement="left"
-                  >
-                    <div>
-                      <Img
-                        className="rounded mr-2"
-                        width="55px"
-                        src={file.cover}
-                        resizeWidth={55}
-                        alt="封面"
-                      />
-                    </div>
-                  </Tooltip>
-                )}
-                {!file.cover && (
-                  <div
-                    className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
-                    style={{ width: '55px', height: '31px', marginTop: '-2px' }}
-                  >
-                    <div className="flex items-center mt-1">
-                      <CameraAlt />
-                    </div>
+                    )}
+                    {file.cover ? '更换封面' : '上传封面'}
+                  </div>
+                </div>
+                {wordCount > 0 && (
+                  <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
+                    {wordCount} 字
                   </div>
                 )}
-                {file.cover ? '更换封面' : '上传封面'}
-              </div>
-            </div>
-            {wordCount > 0 && (
-              <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
-                {wordCount} 字
               </div>
             )}
           </div>

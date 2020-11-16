@@ -15,7 +15,7 @@ import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
-import Drawer from '@material-ui/core/Drawer';
+import DrawerModal from 'components/DrawerModal';
 import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
@@ -26,6 +26,7 @@ export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [showBack, setShowBack] = React.useState(false);
+  const [hideRightPanel, setHideRightPanel] = React.useState(false);
   const {
     preloadStore,
     userStore,
@@ -51,6 +52,11 @@ export default observer((props: any) => {
   React.useEffect(() => {
     pushPath(pathname);
     setShowBack(pathname !== '/');
+    if (isMobile && (pathname.includes('/authors/') || pathname.includes('/posts/'))) {
+      setHideRightPanel(true);
+    } else {
+      setHideRightPanel(false);
+    }
   }, [pathname, pushPath]);
 
   if (!preloadStore.ready) {
@@ -66,7 +72,7 @@ export default observer((props: any) => {
       const { onClick } = props;
       return (
         <div
-          className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
+          className="py-4 text-gray-4a text-center border-b border-gray-ec bg-white text-16"
           onClick={onClick}
         >
           {props.children}
@@ -74,15 +80,16 @@ export default observer((props: any) => {
       );
     };
     return (
-      <Drawer
-        anchor="bottom"
+      <DrawerModal
+        smallRadius
+        hideCloseButton
         open={openDrawer}
         onClose={() => {
           setOpenDrawer(false);
           stopBodyScroll(false);
         }}
       >
-        <div className="bg-gray-300 leading-none">
+        <div className="bg-gray-f2 leading-none rounded-t-10">
           {!userStore.isLogin && (
             <div>
               <MenuItem
@@ -209,7 +216,7 @@ export default observer((props: any) => {
             </MenuItem>
           </div>
         </div>
-      </Drawer>
+      </DrawerModal>
     );
   };
 
@@ -339,36 +346,40 @@ export default observer((props: any) => {
                 >
                   <ArrowBackIos />
                 </div>
-                <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
-                  <HomeOutlined />
-                </Link>
+                {prevPath && prevPath !== '/' && (
+                  <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
+                    <HomeOutlined />
+                  </Link>
+                )}
               </div>
             )}
-            <div className="flex items-center">
-              {isMobile && settings['notification.enabled'] && userStore.isLogin && (
-                <Badge
-                  badgeContent={unread}
-                  className="mr-8 transform scale-90 cursor-pointer"
-                  color="error"
+            {!hideRightPanel && (
+              <div className="flex items-center">
+                {isMobile && settings['notification.enabled'] && userStore.isLogin && (
+                  <Badge
+                    badgeContent={unread}
+                    className="mr-8 transform scale-90 cursor-pointer"
+                    color="error"
+                    onClick={() => {
+                      modalStore.openNotification();
+                    }}
+                  >
+                    <div className="text-3xl flex items-center text-gray-88">
+                      <NotificationsOutlined />
+                    </div>
+                  </Badge>
+                )}
+                <div
+                  className="w-8 h-8 text-xl border border-gray-9b text-gray-88 flex justify-center items-center leading-none rounded"
                   onClick={() => {
-                    modalStore.openNotification();
+                    setOpenDrawer(true);
+                    stopBodyScroll(true);
                   }}
                 >
-                  <div className="text-3xl flex items-center icon-btn-color">
-                    <NotificationsOutlined />
-                  </div>
-                </Badge>
-              )}
-              <div
-                className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
-                onClick={() => {
-                  setOpenDrawer(true);
-                  stopBodyScroll(true);
-                }}
-              >
-                <MenuIcon />
+                  <MenuIcon />
+                </div>
               </div>
-            </div>
+            )}
           </div>
           {isMobile && mobileMenuView()}
         </div>
@@ -416,7 +427,7 @@ export default observer((props: any) => {
                           modalStore.openNotification();
                         }}
                       >
-                        <div className="text-3xl flex items-center icon-btn-color">
+                        <div className="text-3xl flex items-center text-gray-88">
                           <NotificationsOutlined />
                         </div>
                       </Badge>
@@ -447,13 +458,6 @@ export default observer((props: any) => {
             }}
           />
         )}
-        <style jsx>
-          {`
-            .icon-btn-color {
-              color: rgba(0, 0, 0, 0.54);
-            }
-          `}
-        </style>
         <style jsx global>{`
           .MuiIconButton-root {
             padding: 6px;

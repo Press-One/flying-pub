@@ -1,4 +1,16 @@
 .p-editor {
+  &.mobile {
+    .p-editor-input-area {
+      margin: 0;
+      padding: 16px 16px;
+    }
+    .CodeMirror {
+      height: auto;
+      border: none;
+      padding: 0;
+    }
+  }
+
   &-back {
     position: absolute;
     top: 0;
