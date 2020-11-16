@@ -59,7 +59,7 @@ export default observer((props: any) => {
       name: '热门',
     },
     {
-      type: 'PUB_DATE',
+      type: 'LATEST',
       name: '最新',
     },
   ];
@@ -99,7 +99,7 @@ export default observer((props: any) => {
     if (feedStore.provider !== `author:${address}`) {
       feedStore.setProvider(`author:${address}`);
       feedStore.clear();
-      feedStore.setFilterType(tabs[0].type);
+      feedStore.setFilterType(tabs[1].type);
       window.scrollTo(0, 0);
     }
   }, [feedStore, address, tabs]);
@@ -137,8 +137,9 @@ export default observer((props: any) => {
     }
     feedStore.setIsFetching(true);
     (async () => {
+      const order = feedStore.filterType === 'LATEST' ? feedStore.latestType : feedStore.filterType;
       const { total, posts } = await postApi.fetchPosts({
-        order: feedStore.filterType,
+        order,
         address,
         offset: feedStore.page * feedStore.limit,
         limit: feedStore.limit,

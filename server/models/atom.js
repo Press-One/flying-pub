@@ -158,6 +158,9 @@ const replacePost = async (rId, newRId) => {
       raw: true
     }),
   ]);
+  await Post.updateByRId(newRId, {
+    viewCount: post.viewCount
+  });
   const topics = await post.getTopics({
     where: {
       deleted: false

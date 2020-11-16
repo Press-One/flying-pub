@@ -51,65 +51,24 @@ exports.sync = async () => {
       count = ~~count;
       if (count > 0) {
         const postRId = countKey.split(':')[1];
-        const post = await Post.getByRId(postRId, {
-          ignoreDeleted: true,
-          ignoreInvisibility: true
+        const post = await Post.SequelizePost.findOne({
+          attributes: ['viewCount'],
+          where: {
+            rId: postRId
+          },
+          raw: true
         });
         assert(post, Errors.ERR_IS_REQUIRED('post'));
-        await Post.updateByRId(postRId, {
-          viewCount: count
-        });
+        if (~~post.viewCount < count) {
+          await Post.updateByRId(postRId, {
+            viewCount: count
+          });
+        }
         await Cache.pDel(TYPE, countKey);
       }
     }
   } catch (err) {
     console.log(err);
-  }
-}
-
-exports.setMinViewCount = async () => {
-  try {
-    const count = await Post.SequelizePost.count({
-      where: {
-        viewCount: {
-          [Op.lt]: 20
-        },
-        deleted: false,
-        invisibility: false
-      },
-    });
-    const posts = await Post.SequelizePost.findAll({
-      attributes: ['rId', 'viewCount'],
-      where: {
-        viewCount: {
-          [Op.lt]: 20
-        },
-        deleted: false,
-        invisibility: false
-      },
-      order: [
-        ['createdAt', 'DESC']
-      ],
-      limit: 100,
-      raw: true
-    });
-    if (posts.length === 0) {
-      return;
-    }
-    console.log(`【setMinViewCount】还有 ${count} 票文章需要处理`);
-    Promise.all(posts.map(async post => {
-      const increasedCount = _.random(20, 60);
-      const viewCount = ~~post.viewCount + increasedCount;
-      await Post.SequelizePost.update({
-        viewCount
-      }, {
-        where: {
-          rId: post.rId
-        }
-      })
-    }));
-  } catch (err) {
-    console.log({ err });
   }
 }
 
@@ -188,6 +147,49 @@ const addHotViewToPosts = async (posts, orderConfig = {}) => {
       await Cache.pDel(TYPE, YESTERDAY_COUNT_KEY);
     }
     await Cache.pSet(TYPE, TODAY_COUNT_KEY, count + 1);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+exports.addViewAfterPublishNewPost = async () => {
+  try {
+    if (!config.postView.viewCountAfterPublishNewPost) {
+      return;
+    }
+    const TYPE = 'PUBLISH_VIEW_ADDING';
+    const KEY = 'ALL_VISIBLE_POST_COUNT';
+    const count = ~~(await Cache.pGet(TYPE, KEY) || 0);
+    const allVisiblePostCount = await Post.SequelizePost.count({
+      where: {
+        latestRId: null,
+        deleted: false,
+        invisibility: false
+      }
+    });
+    if (allVisiblePostCount > count) {
+      console.log(`【addViewAfterPublishNewPost】有新的文章发布了`);
+      const { posts: pubDatePosts } = await Post.list({
+        offset: 1,
+        limit: 11,
+        order: 'PUB_DATE',
+        dropAuthor: false,
+        dayRange: null,
+      });
+      let counter = 0;
+      while (counter < config.postView.viewCountAfterPublishNewPost) {
+        try {
+          const randomPost = pubDatePosts[_.random(0, pubDatePosts.length - 1)]
+          console.log({ 'post.title': randomPost.title });
+          await trySave(`0.0.0.${_.random(10000)}`, randomPost.rId, ~~randomPost.viewCount);
+        } catch (err) {
+          console.log(err);
+        }
+        counter++;
+      }
+      await Cache.pSet(TYPE, KEY, allVisiblePostCount);
+      return;
+    }
   } catch (err) {
     console.log(err);
   }
