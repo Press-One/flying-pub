@@ -3,11 +3,10 @@ import { observer } from 'mobx-react-lite';
 import SimpleMDE from 'react-simplemde-editor';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
-import Help from '@material-ui/icons/Help';
-import MarkdownCheatSheetDialog from './MarkdownCheatSheetDialog';
 import ImgUploader from './ImgUploader';
 import CoverUploader from './CoverUploader';
 import Fade from '@material-ui/core/Fade';
+import debounce from 'lodash.debounce';
 
 import { Input, Tooltip } from '@material-ui/core';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
@@ -87,8 +86,8 @@ export default observer((props: any) => {
   const [isFetching, setIsFetching] = React.useState(true);
   const [showImgUploader, setShowImgUploader] = React.useState(false);
   const [showCoverUploader, setShowCoverUploader] = React.useState(false);
-  const [showMdCheatSheet, setShowMdCheatSheet] = React.useState(false);
   const [isFetchingPermission, setIsFetchingPermission] = React.useState(false);
+  const [wordCount, setWordCount] = React.useState(0);
   const mdeRef = React.useRef<any>(null);
   const hasPublishPermission = React.useRef(false);
   const isDirtyRef = React.useRef(false);
@@ -184,6 +183,19 @@ export default observer((props: any) => {
       toolbar.splice(-3, 1);
     };
   }, []);
+
+  const wordCountDebounce = React.useCallback(
+    debounce((content: string) => {
+      setWordCount((content || '').length);
+    }, 500),
+    [],
+  );
+
+  React.useEffect(() => {
+    (async () => {
+      wordCountDebounce(file.content);
+    })();
+  }, [file.content, wordCountDebounce]);
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     file.title = event.target.value;
@@ -434,14 +446,6 @@ export default observer((props: any) => {
     if (button[0]) button[0].setAttribute('title', '预览 (Cmd-P)');
   });
 
-  const openMdCheatSheet = () => {
-    setShowMdCheatSheet(true);
-  };
-
-  const closeMdCheatSheet = () => {
-    setShowMdCheatSheet(false);
-  };
-
   return (
     <Fade in={true} timeout={500}>
       <div className="p-editor max-w-1200 mx-auto flex justify-center relative">
@@ -490,10 +494,10 @@ export default observer((props: any) => {
               config={config}
             />
             <div
-              className="text-blue-400 absolute top-0 right-0 mt-24 pt-2 pb-2 px-4 text-14 cursor-pointer"
+              className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
               onClick={() => setShowCoverUploader(true)}
             >
-              <div className="flex items-center pt-1 h-8">
+              <div className="flex items-center h-8">
                 {file.cover && (
                   <Tooltip
                     title={
@@ -522,7 +526,7 @@ export default observer((props: any) => {
                 )}
                 {!file.cover && (
                   <div
-                    className="mr-2 text-xl flex items-center justify-center rounded bg-gray-200"
+                    className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
                     style={{ width: '55px', height: '31px', marginTop: '-2px' }}
                   >
                     <div className="flex items-center mt-1">
@@ -533,19 +537,11 @@ export default observer((props: any) => {
                 {file.cover ? '更换封面' : '上传封面'}
               </div>
             </div>
-            <div className="flex justify-between">
-              <div />
-              <div
-                className="md-ref flex items-center mt-2 help-color cursor-pointer"
-                onClick={openMdCheatSheet}
-              >
-                <div className="flex">
-                  <Help className="mr-1" />
-                </div>
-                Markdown 语法参考
+            {wordCount > 0 && (
+              <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
+                {wordCount} 字
               </div>
-            </div>
-            <MarkdownCheatSheetDialog open={showMdCheatSheet} cancel={closeMdCheatSheet} />
+            )}
           </div>
         )}
 

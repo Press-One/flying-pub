@@ -35,7 +35,7 @@
     margin-right: 140px;
 
     .MuiInput-root {
-      margin-bottom: 20px;
+      margin-bottom: 8px;
       font-size: 26px;
       font-weight: 500;
     }
@@ -59,7 +59,7 @@
       font-size: 16px;
       padding: 16px;
       line-height: 1.8;
-      height: calc(100vh - 175px);
+      height: calc(100vh - 135px);
     }
   }
 
@@ -69,6 +69,10 @@
     &:before {
       display: none;
     }
+  }
+
+  .word-count {
+    margin-left: 101%;  
   }
 }
 
