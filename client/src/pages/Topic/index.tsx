@@ -239,8 +239,7 @@ export default observer((props: any) => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
-        const order =
-          feedStore.filterType === 'LATEST' ? feedStore.latestType : feedStore.filterType;
+        const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
         const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
           order,
           offset: feedStore.page * feedStore.limit,
