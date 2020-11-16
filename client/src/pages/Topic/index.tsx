@@ -24,6 +24,8 @@ import Settings from '@material-ui/icons/Settings';
 import { toJS } from 'mobx';
 import { resizeImage } from 'utils';
 import Img from 'components/Img';
+import Viewer from 'react-viewer';
+import classNames from 'classnames';
 
 const TopView = observer(
   (props: {
@@ -33,6 +35,7 @@ const TopView = observer(
     unsubscribe: () => Promise<void>;
     openTopicManagerEntryModal: () => void;
     fetchTopic: any;
+    setShowImage: () => void;
   }) => {
     const { userStore, modalStore } = useStore();
     const state = useLocalStore(() => ({
@@ -97,6 +100,7 @@ const TopView = observer(
                 alt={topic.name}
                 useOriginalDefault
                 resizeWidth={isMobile ? 90 : 120}
+                onClick={() => { topic.cover && props.setShowImage() }}
               />
               <div className="ml-4 md:ml-5">
                 <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a">
@@ -216,6 +220,9 @@ export default observer((props: any) => {
       name: '最新收录',
     },
   ];
+
+  const [showImage, setShowImage] = React.useState(false);
+  const ref = React.useRef(document.createElement('div'));
 
   const fetchTopic = React.useCallback(() => {
     (async () => {
@@ -397,6 +404,7 @@ export default observer((props: any) => {
             feedStore.setFilterType(tabs[1].type);
             fetchTopicPosts();
           }}
+          setShowImage={() => setShowImage(true)}
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
@@ -556,6 +564,27 @@ export default observer((props: any) => {
               )}
             </div>
           )}
+          <div
+            ref={ref}
+            className={classNames(
+              {
+                'hidden': !isMobile || !showImage,
+              },
+              'mobile-viewer-container fixed'
+            )}
+            //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+          >
+          </div>
+          <Viewer
+            className={isMobile ? 'mobile-viewer' : ''}
+            onMaskClick={() => setShowImage(false)}
+            noNavbar={true}
+            noToolbar={true}
+            visible={showImage}
+            onClose={() => setShowImage(false)}
+            images={[{ src: resizeImage(state.topic.cover, 240) }]}
+            container={ isMobile && !!ref.current ? ref.current : undefined }
+          />
           <style jsx>{`
             .posts-container {
               min-height: 90vh;

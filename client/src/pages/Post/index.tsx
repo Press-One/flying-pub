@@ -72,6 +72,8 @@ export default observer((props: any) => {
     [user.address, post],
   );
 
+  const ref = React.useRef(document.createElement('div'));
+
   React.useEffect(() => {
     if (isFetchedPost) {
       (async () => {
@@ -136,9 +138,6 @@ export default observer((props: any) => {
         window.open(href);
         e.preventDefault();
       } else if (e.target.tagName === 'IMG') {
-        if (isMobile) {
-          return;
-        }
         setImgSrc(e.target.src);
         setShowImage(true);
       }
@@ -656,13 +655,26 @@ export default observer((props: any) => {
           </div>
         )}
         {(!isFetchedReward || !isFetchedComments) && renderLoading()}
+        <div
+          ref={ref}
+          className={classNames(
+            {
+              'hidden': !isMobile || !showImage,
+            },
+            'mobile-viewer-container fixed'
+          )}
+          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+        >
+        </div>
         <Viewer
+          className={isMobile ? 'mobile-viewer' : ''}
           onMaskClick={() => setShowImage(false)}
           noNavbar={true}
           noToolbar={true}
           visible={showImage}
           onClose={() => setShowImage(false)}
           images={[{ src: imgSrc }]}
+          container={ isMobile && !!ref.current ? ref.current : undefined }
         />
         <style jsx>{`
           .name-max-width {

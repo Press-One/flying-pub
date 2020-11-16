@@ -1,0 +1,13 @@
+.mobile-viewer-container {
+  width: 125vw;
+  height: 125vh;
+  top: -12.5vh;
+  left: -12.5vw;
+  z-index: 100;
+  .mobile-viewer {
+    .react-viewer-close {
+      top: 12.5vh;
+      right: 12.5vw;
+    } 
+  }
+}
