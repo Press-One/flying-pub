@@ -137,7 +137,7 @@ export default observer((props: any) => {
     }
     feedStore.setIsFetching(true);
     (async () => {
-      const order = feedStore.filterType === 'LATEST' ? feedStore.latestType : feedStore.filterType;
+      const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
       const { total, posts } = await postApi.fetchPosts({
         order,
         address,
