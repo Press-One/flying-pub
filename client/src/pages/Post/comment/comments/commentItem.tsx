@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { ago, isMobile } from 'utils';
+import { ago, isMobile, urlify } from 'utils';
 import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteOutline from '@material-ui/icons/Close';
@@ -167,9 +167,8 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
                 onClick={() => isMobile && replyTo(comment)}
                 ref={this.commentRef}
-              >
-                {comment.content}
-              </div>
+                dangerouslySetInnerHTML={{ __html: urlify(comment.content) }}
+              />
               {this.state.canExpand && (
                 <div
                   className="text-blue-400 cursor-pointer pt-1"
