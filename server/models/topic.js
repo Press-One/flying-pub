@@ -204,11 +204,16 @@ const getTopicOrderQuery = (options = {}) => {
 exports.getTopicOrderQuery = getTopicOrderQuery;
 
 exports.listPublicTopics = async (options = {}) => {
-  const { offset, limit } = options;
+  const { offset, limit, keyword } = options;
   const where = {
     deleted: false,
     contributionEnabled: true
   };
+  if (keyword) {
+    where.name = {
+      [Op.substring]: keyword
+    }
+  }
   if (options.currentUser) {
     where.userId = {
       [Op.not]: options.currentUser.id

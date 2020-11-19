@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog, Tab, Tabs } from '@material-ui/core';
+import { Dialog, Tab, Tabs, TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import classNames from 'classnames';
@@ -34,6 +34,7 @@ const TopicLists = observer((props: IProps) => {
     includedTopicUuidMap: {} as any,
     pendingTopicUuidMap: {} as any,
     showTopicEditorModal: false,
+    keyword: '',
   }));
 
   React.useEffect(() => {
@@ -62,6 +63,7 @@ const TopicLists = observer((props: IProps) => {
             : topicApi.fetchPublicTopics({
                 offset: state.page * LIMIT,
                 limit: LIMIT,
+                keyword: state.keyword,
               });
         const { total, topics } = await apiAction;
         state.topics.push(...(topics as ITopic[]));
@@ -133,144 +135,223 @@ const TopicLists = observer((props: IProps) => {
     }
   };
 
-  if (!state.isFetched) {
-    return (
+  const search = async () => {
+    if (state.page === 0) {
+      state.isFetched = false;
+      state.isFetching = true;
+      state.topics = [];
+      try {
+        const apiAction =
+          props.type === 'myTopics'
+            ? topicApi.fetchTopicsByUserAddress(userStore.user.address, {
+                offset: state.page * LIMIT,
+                limit: LIMIT,
+              })
+            : topicApi.fetchPublicTopics({
+                offset: state.page * LIMIT,
+                limit: LIMIT,
+                keyword: state.keyword,
+              });
+        const { total, topics } = await apiAction;
+        state.topics.push(...(topics as ITopic[]));
+        state.total = total as number;
+        state.hasMore = topics.length === LIMIT;
+      } catch (err) {
+        console.log(err);
+      }
+      state.isFetching = false;
+      state.isFetched = true;
+    } else {
+      state.isFetched = false;
+      state.page = 0;
+    }
+  };
+
+  const onKeyDown = (e: any) => {
+    if (e.keyCode === 13) {
+      //if (!state.keyword) {
+        //snackbarStore.show({
+          //message: '请输入要搜索的专题',
+          //type: 'error',
+        //});
+        //return;
+      //}
+      search();
+    }
+  };
+
+  const SearchInput = () => (
+    <div className="mt-2 -mb-2 flex items-center justify-center">
+      <TextField
+        className="po-input po-text-14 w-72"
+        placeholder="要搜索的专题"
+        value={state.keyword}
+        onChange={(e) => state.keyword = e.target.value }
+        onKeyDown={onKeyDown}
+        margin="dense"
+        variant="outlined"
+      />
+      <div className="relative">
+        <Button
+          size="mini"
+          className="ml-2"
+          onClick={() => {
+            //if (!state.keyword) {
+              //snackbarStore.show({
+                //message: '请输入要搜索的专题',
+                //type: 'error',
+              //});
+              //return;
+            //}
+            search();
+          }}
+        >
+          搜索
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {props.type === 'publicTopics' && 
+        SearchInput()
+      }
+      {state.isFetched ? 
+      <div className="mt-4 text-left overflow-y-auto box-content topics-container px-2">
+        <div className="border rounded-8 border-gray-d8 border-opacity-75 mb-2">
+          {state.topics.length === 0 && (
+            <div className="py-4 text-center text-gray-70 text-14">
+              {isMyTopicsList ? (
+                <div>
+                  你还没有专题，
+                  <span
+                    className="text-blue-400 cursor-pointer"
+                    onClick={() => (state.showTopicEditorModal = true)}
+                  >
+                    点击创建一个
+                  </span>{' '}
+                </div>
+              ) : (
+                '暂无专题'
+              )}
+            </div>
+          )}
+          <div className="flex items-start flex-wrap topics-list" ref={infiniteRef}>
+            {state.topics.map((topic, index: number) => {
+              const isTopicOwner = topic.user && topic.user.id === userStore.user.id;
+              return (
+                <div
+                  key={index}
+                  className={classNames(
+                    {
+                      'border-r': (index + 1) % 2 !== 0,
+                    },
+                    'px-4 py-3 flex items-center justify-between border-b border-gray-300 row box-border w-1/2',
+                  )}
+                >
+                  <a href={`/topics/${topic.uuid}`} rel="noopener noreferrer" target="_blank">
+                    <div className="flex items-center mr-2">
+                      <div className="w-10 h-10">
+                        <Img
+                          className="w-10 h-10 rounded"
+                          src={topic.cover}
+                          resizeWidth={40}
+                          alt="."
+                        />
+                      </div>
+                      <div className="ml-3">
+                        <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>
+                        {!isMyTopicsList && (
+                          <div className="text-12 text-gray-af">
+                            {topic.summary.post.count} 文章 · {topic.summary.follower.count} 关注
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </a>
+                  {!isTopicOwner && topic.reviewEnabled && !state.includedTopicUuidMap[topic.uuid] && (
+                    <div>
+                      {!state.pendingTopicUuidMap[topic.uuid] && (
+                        <Button size="mini" onClick={() => addContributionRequest(topic, post)}>
+                          投稿
+                        </Button>
+                      )}
+                      {state.pendingTopicUuidMap[topic.uuid] && (
+                        <Tooltip
+                          disableHoverListener={isMobile}
+                          placement="top"
+                          title="专题创建者将会审核你的投稿，一旦有了审核结果，你将收到通知提醒"
+                          arrow
+                        >
+                          <div>
+                            <Button
+                              size="mini"
+                              color="gray"
+                              onClick={() => removeContributionRequest(topic, post)}
+                            >
+                              待审核
+                            </Button>
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
+                  )}
+                  {(isTopicOwner || !topic.reviewEnabled) && !state.includedTopicUuidMap[topic.uuid] && (
+                    <Button size="mini" onClick={() => addContribution(topic, post)}>
+                      {isTopicOwner ? '收录' : '投稿'}
+                    </Button>
+                  )}
+                  {state.includedTopicUuidMap[topic.uuid] && (
+                    <Button
+                      size="mini"
+                      color="gray"
+                      outline
+                      onClick={() => removeContribution(topic, post)}
+                    >
+                      已投稿
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {state.isFetched && state.hasMore && (
+          <div className="py-8 flex items-center justify-center">
+            <Loading />
+          </div>
+        )}
+        {isMyTopicsList && state.topics.length > 0 && (
+          <div className="flex py-4 justify-center">
+            <Button
+              outline
+              size="small"
+              onClick={() => (state.showTopicEditorModal = true)}
+              className="text-blue-400 text-13 mt-1 cursor-pointer mr-12 md:mr-0"
+            >
+              新建专题
+            </Button>
+          </div>
+        )}
+        <TopicEditorModal
+          open={state.showTopicEditorModal}
+          close={() => (state.showTopicEditorModal = false)}
+          onChange={async (topic) => {
+            if (topic) {
+              state.topics.unshift(topic);
+              await sleep(400);
+              snackbarStore.show({
+                message: '专题已创建',
+              });
+            }
+          }}
+        />
+      </div> :
       <div className="pt-24 mt-2">
         <Loading />
       </div>
-    );
-  }
-
-  return (
-    <div className="mt-5 text-left overflow-y-auto box-content topics-container px-2">
-      <div className="border rounded-8 border-gray-d8 border-opacity-75 mb-2">
-        {state.topics.length === 0 && (
-          <div className="py-4 text-center text-gray-70 text-14">
-            {isMyTopicsList ? (
-              <div>
-                你还没有专题，
-                <span
-                  className="text-blue-400 cursor-pointer"
-                  onClick={() => (state.showTopicEditorModal = true)}
-                >
-                  点击创建一个
-                </span>{' '}
-              </div>
-            ) : (
-              '暂无专题'
-            )}
-          </div>
-        )}
-        <div className="flex items-start flex-wrap topics-list" ref={infiniteRef}>
-          {state.topics.map((topic, index: number) => {
-            const isTopicOwner = topic.user && topic.user.id === userStore.user.id;
-            return (
-              <div
-                key={index}
-                className={classNames(
-                  {
-                    'border-r': (index + 1) % 2 !== 0,
-                  },
-                  'px-4 py-3 flex items-center justify-between border-b border-gray-300 row box-border w-1/2',
-                )}
-              >
-                <a href={`/topics/${topic.uuid}`} rel="noopener noreferrer" target="_blank">
-                  <div className="flex items-center mr-2">
-                    <div className="w-10 h-10">
-                      <Img
-                        className="w-10 h-10 rounded"
-                        src={topic.cover}
-                        resizeWidth={40}
-                        alt="."
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-14 text-gray-70 truncate topic-name">{topic.name}</div>
-                      {!isMyTopicsList && (
-                        <div className="text-12 text-gray-af">
-                          {topic.summary.post.count} 文章 · {topic.summary.follower.count} 关注
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </a>
-                {!isTopicOwner && topic.reviewEnabled && !state.includedTopicUuidMap[topic.uuid] && (
-                  <div>
-                    {!state.pendingTopicUuidMap[topic.uuid] && (
-                      <Button size="mini" onClick={() => addContributionRequest(topic, post)}>
-                        投稿
-                      </Button>
-                    )}
-                    {state.pendingTopicUuidMap[topic.uuid] && (
-                      <Tooltip
-                        disableHoverListener={isMobile}
-                        placement="top"
-                        title="专题创建者将会审核你的投稿，一旦有了审核结果，你将收到通知提醒"
-                        arrow
-                      >
-                        <div>
-                          <Button
-                            size="mini"
-                            color="gray"
-                            onClick={() => removeContributionRequest(topic, post)}
-                          >
-                            待审核
-                          </Button>
-                        </div>
-                      </Tooltip>
-                    )}
-                  </div>
-                )}
-                {(isTopicOwner || !topic.reviewEnabled) && !state.includedTopicUuidMap[topic.uuid] && (
-                  <Button size="mini" onClick={() => addContribution(topic, post)}>
-                    {isTopicOwner ? '收录' : '投稿'}
-                  </Button>
-                )}
-                {state.includedTopicUuidMap[topic.uuid] && (
-                  <Button
-                    size="mini"
-                    color="gray"
-                    outline
-                    onClick={() => removeContribution(topic, post)}
-                  >
-                    已投稿
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {state.isFetched && state.hasMore && (
-        <div className="py-8 flex items-center justify-center">
-          <Loading />
-        </div>
-      )}
-      {isMyTopicsList && state.topics.length > 0 && (
-        <div className="flex py-4 justify-center">
-          <Button
-            outline
-            size="small"
-            onClick={() => (state.showTopicEditorModal = true)}
-            className="text-blue-400 text-13 mt-1 cursor-pointer mr-12 md:mr-0"
-          >
-            新建专题
-          </Button>
-        </div>
-      )}
-      <TopicEditorModal
-        open={state.showTopicEditorModal}
-        close={() => (state.showTopicEditorModal = false)}
-        onChange={async (topic) => {
-          if (topic) {
-            state.topics.unshift(topic);
-            await sleep(400);
-            snackbarStore.show({
-              message: '专题已创建',
-            });
-          }
-        }}
-      />
+      }
     </div>
   );
 });
