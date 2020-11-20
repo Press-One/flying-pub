@@ -19,7 +19,7 @@ import _ from 'lodash';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import { Edit } from '@material-ui/icons';
 import { toJS } from 'mobx';
-import { resizeFullImage } from 'utils';
+import { resizeFullImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
@@ -252,6 +252,13 @@ export default observer((props: any) => {
     );
   }
 
+  const showImageView = (show: boolean) => {
+    setShowImage(show);
+    if (isMobile) {
+      disableBackgroundScroll(show);
+    }
+  }
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -279,8 +286,11 @@ export default observer((props: any) => {
                   alt={state.author.nickname}
                   resizeWidth={isMobile ? 74 : 120}
                   onClick={() => {
-                    isMyself && modalStore.openSettings('profile');
-                    !isMyself && state.author.avatar && setShowImage(true);
+                    if (isMyself) {
+                      modalStore.openSettings('profile');
+                    } else if (state.author.avatar ) {
+                      showImageView(true);
+                    }
                   }}
                 />
                 <div
@@ -612,20 +622,22 @@ export default observer((props: any) => {
             {
               'hidden': !isMobile || !showImage,
             },
-            'mobile-viewer-container fixed'
+            'mobile-viewer-container fixed bg-black'
           )}
+          onClick={() => showImageView(false)}
           //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
         >
         </div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}
-          onMaskClick={() => setShowImage(false)}
+          onMaskClick={() => showImageView(false)}
           noNavbar={true}
           noToolbar={true}
           visible={showImage}
-          onClose={() => setShowImage(false)}
+          onClose={() => showImageView(false)}
           images={[{ src: resizeFullImage(state.author.avatar) }]}
           container={ isMobile && !!ref.current ? ref.current : undefined }
+          noClose={isMobile}
         />
         <style jsx>{`
           .nickname {

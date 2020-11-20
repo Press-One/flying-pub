@@ -217,3 +217,15 @@ export const scrollToElementById = (id: string, options: any = {}) => {
   }
   return commentEle;
 }
+
+export const disableBackgroundScroll = (disable: boolean) => {
+  if (disable) {
+    document.body.style.overflow = 'hidden';
+    if (document.body.scrollHeight > document.body.clientHeight) {
+      document.body.style.paddingRight = '15px';
+    }
+  } else {
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+}

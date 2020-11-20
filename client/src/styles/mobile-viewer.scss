@@ -1,6 +1,6 @@
 .mobile-viewer-container {
   width: 125vw;
-  height: 125vh;
+  height: calc(125vh + 84px);
   top: -12.5vh;
   left: -12.5vw;
   z-index: 100;
@@ -9,5 +9,9 @@
       top: 12.5vh;
       right: 12.5vw;
     } 
+    .circle-loading {
+      position: relative;
+      top: calc(12.5vh + 42px);
+    }
   }
 }

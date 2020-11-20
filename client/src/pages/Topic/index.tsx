@@ -22,7 +22,7 @@ import TopicIntroductionModal from './TopicIntroductionModal';
 import TopicManagerEntry from './TopicManagerEntry';
 import Settings from '@material-ui/icons/Settings';
 import { toJS } from 'mobx';
-import { resizeImage } from 'utils';
+import { resizeImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
@@ -386,6 +386,13 @@ export default observer((props: any) => {
     });
   };
 
+  const showImageView = (show: boolean) => {
+    setShowImage(show);
+    if (isMobile) {
+      disableBackgroundScroll(show);
+    }
+  }
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -403,7 +410,9 @@ export default observer((props: any) => {
             feedStore.setFilterType(tabs[1].type);
             fetchTopicPosts();
           }}
-          setShowImage={() => setShowImage(true)}
+          setShowImage={() => {
+            showImageView(true);
+          }}
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
@@ -569,20 +578,22 @@ export default observer((props: any) => {
               {
                 'hidden': !isMobile || !showImage,
               },
-              'mobile-viewer-container fixed'
+              'mobile-viewer-container fixed bg-black'
             )}
+            onClick={() => showImageView(false)}
             //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
           >
           </div>
           <Viewer
             className={isMobile ? 'mobile-viewer' : ''}
-            onMaskClick={() => setShowImage(false)}
+            onMaskClick={() => showImageView(false)}
             noNavbar={true}
             noToolbar={true}
             visible={showImage}
-            onClose={() => setShowImage(false)}
+            onClose={() => showImageView(false)}
             images={[{ src: resizeImage(state.topic.cover, 240) }]}
             container={ isMobile && !!ref.current ? ref.current : undefined }
+            noClose={isMobile}
           />
           <style jsx>{`
             .posts-container {
