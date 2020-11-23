@@ -13,7 +13,7 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Img from 'components/Img';
 import Tooltip from '@material-ui/core/Tooltip';
 
-const LIMIT = 20;
+const LIMIT = 25;
 
 interface IProps {
   type: string;
@@ -35,6 +35,7 @@ const TopicLists = observer((props: IProps) => {
     pendingTopicUuidMap: {} as any,
     showTopicEditorModal: false,
     keyword: '',
+    searchKeyword: '',
   }));
 
   React.useEffect(() => {
@@ -63,7 +64,7 @@ const TopicLists = observer((props: IProps) => {
             : topicApi.fetchPublicTopics({
                 offset: state.page * LIMIT,
                 limit: LIMIT,
-                keyword: state.keyword,
+                keyword: state.searchKeyword,
               });
         const { total, topics } = await apiAction;
         state.topics.push(...(topics as ITopic[]));
@@ -75,7 +76,7 @@ const TopicLists = observer((props: IProps) => {
       state.isFetching = false;
       state.isFetched = true;
     })();
-  }, [state, state.page, props.type, userStore.user.address]);
+  }, [state, state.page, props.type, userStore.user.address, state.searchKeyword]);
 
   const infiniteRef: any = useInfiniteScroll({
     loading: state.isFetching,
@@ -136,35 +137,10 @@ const TopicLists = observer((props: IProps) => {
   };
 
   const search = async () => {
-    if (state.page === 0) {
-      state.isFetched = false;
-      state.isFetching = true;
-      state.topics = [];
-      try {
-        const apiAction =
-          props.type === 'myTopics'
-            ? topicApi.fetchTopicsByUserAddress(userStore.user.address, {
-                offset: state.page * LIMIT,
-                limit: LIMIT,
-              })
-            : topicApi.fetchPublicTopics({
-                offset: state.page * LIMIT,
-                limit: LIMIT,
-                keyword: state.keyword,
-              });
-        const { total, topics } = await apiAction;
-        state.topics.push(...(topics as ITopic[]));
-        state.total = total as number;
-        state.hasMore = topics.length === LIMIT;
-      } catch (err) {
-        console.log(err);
-      }
-      state.isFetching = false;
-      state.isFetched = true;
-    } else {
-      state.isFetched = false;
-      state.page = 0;
-    }
+    state.topics = [];
+    state.page = 0;
+    state.isFetched = false;
+    state.searchKeyword = state.keyword;
   };
 
   const onKeyDown = (e: any) => {
@@ -192,7 +168,14 @@ const TopicLists = observer((props: IProps) => {
     <div>
       {props.type === 'publicTopics' && SearchInput()}
       {state.isFetched ? (
-        <div className="mt-4 text-left overflow-y-auto box-content topics-container px-2">
+        <div
+          className={classNames(
+            {
+              sm: props.type === 'publicTopics',
+            },
+            'mt-4 text-left overflow-y-auto box-content topics-container px-2',
+          )}
+        >
           <div className="border rounded-8 border-gray-d8 border-opacity-75 mb-2">
             {state.topics.length === 0 && (
               <div className="py-4 text-center text-gray-70 text-14">
@@ -403,7 +386,7 @@ const Contribution = observer(() => {
         </div>
       </div>
       {!state.isFetchingPost && (
-        <div className="absolute bottom-0 left-0 w-full flex items-center justify-center mb-3 pt-3 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 w-full flex items-center justify-center mb-3 pt-3 border-t border-gray-200 bg-white">
           <Button size="small" onClick={() => modalStore.closeContribution()}>
             完成
           </Button>
@@ -420,6 +403,9 @@ const Contribution = observer(() => {
         .contribution-modal .topics-container {
           height: 365px;
           width: 592px;
+        }
+        .contribution-modal .topics-container.sm {
+          height: 329px;
         }
         .contribution-modal .topics-list {
           width: 592px;
