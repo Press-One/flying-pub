@@ -731,5 +731,8 @@ exports.getPublicTopics = async ctx => {
     limit,
     keyword
   });
+  if (keyword) {
+    Log.create(currentUser.id, `搜索专题 ${keyword}`);
+  }
   ctx.body = result
 }
