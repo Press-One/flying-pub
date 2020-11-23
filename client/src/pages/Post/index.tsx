@@ -131,6 +131,9 @@ export default observer((props: any) => {
   }, [rId]);
   
   const showImageView = (show: boolean) => {
+    if (isMobile) {
+      return;
+    }
     setShowImage(show);
     if (isMobile) {
       disableBackgroundScroll(show);
