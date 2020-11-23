@@ -20,9 +20,22 @@ exports.get = async ctx => {
   });
   assert(authorUserWithRaw, Errors.ERR_NOT_FOUND('author'))
   const { user: authorUser, sequelizeUser } = authorUserWithRaw;
-  const { author, sequelizeAuthor } = await Author.getByAddress(address, {
+  let authorResult = await Author.getByAddress(address, {
     returnRaw: true
   });
+  if (!authorResult) {
+    try {
+      await Author.upsert(address, {
+        status: 'deny',
+      });
+      authorResult = await Author.getByAddress(address, {
+        returnRaw: true
+      });
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  const { author, sequelizeAuthor } = authorResult;
   assert(author, Errors.ERR_NOT_FOUND('author'))
 
   if (authorUser) {

@@ -14,6 +14,7 @@ const notify = async (payload, messageType = "private_message", channel = "all")
       data: payload,
       access_key: config.messageSystem.accessKey,
       project: config.messageSystem.project,
+      expired_at: parseInt(new Date().getTime() / 100) + 60 * 60 * 24 * 999
     };
     const sig = generateSignature(data);
     data["signature"] = sig;
