@@ -129,7 +129,7 @@ export default observer((props: any) => {
       setIsFetchedReward(true);
     })();
   }, [rId]);
-  
+
   const showImageView = (show: boolean) => {
     if (isMobile) {
       return;
@@ -138,7 +138,7 @@ export default observer((props: any) => {
     if (isMobile) {
       disableBackgroundScroll(show);
     }
-  }
+  };
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -570,7 +570,7 @@ export default observer((props: any) => {
               <div className="fixed -ml-8">
                 {VoteView(post)}
                 {CommentButtonView()}
-                {ShareButtonView()}
+                {!settingsStore.settings['permission.isPrivate'] && ShareButtonView()}
               </div>
             </div>
           </Fade>
@@ -669,14 +669,13 @@ export default observer((props: any) => {
           ref={ref}
           className={classNames(
             {
-              'hidden': !isMobile || !showImage,
+              hidden: !isMobile || !showImage,
             },
-            'mobile-viewer-container fixed bg-black'
+            'mobile-viewer-container fixed bg-black',
           )}
           onClick={() => showImageView(false)}
           //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-        >
-        </div>
+        ></div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}
           onMaskClick={() => showImageView(false)}
@@ -685,7 +684,7 @@ export default observer((props: any) => {
           visible={showImage}
           onClose={() => showImageView(false)}
           images={[{ src: imgSrc }]}
-          container={ isMobile && !!ref.current ? ref.current : undefined }
+          container={isMobile && !!ref.current ? ref.current : undefined}
           noClose={isMobile}
         />
         <style jsx>{`

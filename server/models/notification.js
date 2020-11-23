@@ -8,6 +8,7 @@ const JOB_ID_PREFIX = 'JOB_';
 const moment = require('moment');
 const Mixin = require('./mixin');
 const MessageSystem = require('./messageSystem');
+const Log = require('./log');
 
 exports.pushToNotificationQueue = async (data, options = {}) => {
   if (options.delaySeconds && options.delaySeconds > 0) {
@@ -44,7 +45,11 @@ exports.tryNotify = async () => {
           }
         }
         if (json.messageSystem) {
-          await MessageSystem.notify(json.messageSystem);
+          const isSuccess = await MessageSystem.notify(json.messageSystem);
+          if (!isSuccess) {
+            Log.createAnonymity('站内信', `无法发送，保留消息，等待重试`);
+            continue;
+          }
         }
         if (json.mixin) {
           await Mixin.notify(json.mixin);

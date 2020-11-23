@@ -42,6 +42,15 @@ export default observer((props: any) => {
           return;
         }
         if (settings['permission.isPrivate']) {
+          if (isWeChat && settings['mixinApp.onlyAllowedMobileDevice']) {
+            confirmDialogStore.show({
+              content: `请在 ${settings['mixinApp.name']} 中打开`,
+              cancelDisabled: true,
+              okText: '我知道了',
+              ok: () => confirmDialogStore.hide(),
+            });
+            return false;
+          }
           userStore.setShouldLogin();
           confirmDialogStore.show({
             content: '阅读文章之前请登录一下哦',

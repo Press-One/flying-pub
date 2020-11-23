@@ -25,9 +25,11 @@ const notify = async (payload, messageType = "private_message", channel = "all")
       body: data,
     }).promise();
     Log.createAnonymity('站内信', `成功发送 ${payload.sub_type} ${payload.message}`);
+    return true;
   } catch (e) {
     console.log(e);
     Log.createAnonymity('站内信', `无法发送 ${payload.sub_type} ${payload.message}`);
+    return false;
   }
 }
 
