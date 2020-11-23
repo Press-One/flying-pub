@@ -172,7 +172,7 @@ export default class CommentItem extends React.Component<any, any> {
               </div>
               {this.state.canExpand && (
                 <div
-                  className="link-color cursor-pointer mt-1"
+                  className="text-blue-400 cursor-pointer pt-1"
                   onClick={() => this.setState({ expand: !this.state.expand })}
                 >
                   {this.state.expand ? '收起' : '展开'}
