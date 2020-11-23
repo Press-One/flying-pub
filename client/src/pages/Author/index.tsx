@@ -19,8 +19,10 @@ import _ from 'lodash';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import { Edit } from '@material-ui/icons';
 import { toJS } from 'mobx';
-import { resizeFullImage } from 'utils';
+import { resizeFullImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
+import Viewer from 'react-viewer';
+import classNames from 'classnames';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -69,6 +71,9 @@ export default observer((props: any) => {
       name: '动态',
     });
   }
+
+  const [showImage, setShowImage] = React.useState(false);
+  const ref = React.useRef(document.createElement('div'));
 
   const fetchAuthor = React.useCallback(
     (type?: string) => {
@@ -247,6 +252,13 @@ export default observer((props: any) => {
     );
   }
 
+  const showImageView = (show: boolean) => {
+    setShowImage(show);
+    if (isMobile) {
+      disableBackgroundScroll(show);
+    }
+  }
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -274,7 +286,11 @@ export default observer((props: any) => {
                   alt={state.author.nickname}
                   resizeWidth={isMobile ? 74 : 120}
                   onClick={() => {
-                    isMyself && modalStore.openSettings('profile');
+                    if (isMyself) {
+                      modalStore.openSettings('profile');
+                    } else if (state.author.avatar ) {
+                      showImageView(true);
+                    }
                   }}
                 />
                 <div
@@ -600,6 +616,29 @@ export default observer((props: any) => {
             <Loading />
           </div>
         )}
+        <div
+          ref={ref}
+          className={classNames(
+            {
+              'hidden': !isMobile || !showImage,
+            },
+            'mobile-viewer-container fixed bg-black'
+          )}
+          onClick={() => showImageView(false)}
+          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+        >
+        </div>
+        <Viewer
+          className={isMobile ? 'mobile-viewer' : ''}
+          onMaskClick={() => showImageView(false)}
+          noNavbar={true}
+          noToolbar={true}
+          visible={showImage}
+          onClose={() => showImageView(false)}
+          images={[{ src: resizeFullImage(state.author.avatar) }]}
+          container={ isMobile && !!ref.current ? ref.current : undefined }
+          noClose={isMobile}
+        />
         <style jsx>{`
           .nickname {
             max-width: ${isMobile ? '230px' : 'auto'};

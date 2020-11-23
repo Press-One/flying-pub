@@ -724,10 +724,15 @@ exports.getPublicTopics = async ctx => {
   const currentUser = ctx.verification && ctx.verification.sequelizeUser;
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const keyword = ctx.query.keyword || '';
   const result = await Topic.listPublicTopics({
     currentUser,
     offset,
-    limit
+    limit,
+    keyword
   });
+  if (keyword) {
+    Log.create(currentUser.id, `搜索专题 ${keyword}`);
+  }
   ctx.body = result
 }

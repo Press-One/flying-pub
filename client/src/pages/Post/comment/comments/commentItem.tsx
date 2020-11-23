@@ -8,6 +8,42 @@ import DeleteOutline from '@material-ui/icons/Close';
 import Img from 'components/Img';
 
 export default class CommentItem extends React.Component<any, any> {
+  constructor(props: any) {
+    super(props);
+    this.state = {
+      canExpand: false,
+      expand: false,
+    };
+    this.commentRef = React.createRef();
+    this.setCanExpand = this.setCanExpand.bind(this);
+  }
+
+  private commentRef: any;
+
+  componentDidMount() {
+    this.setCanExpand();
+    window.addEventListener('resize', this.setCanExpand);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.setCanExpand);
+  }
+
+  setCanExpand() {
+    if (
+      this.commentRef.current &&
+      this.commentRef.current.scrollHeight > this.commentRef.current.clientHeight
+    ) {
+      this.setState({
+        canExpand: true,
+      });
+    } else {
+      this.setState({
+        canExpand: false,
+      });
+    }
+  }
+
   render() {
     const {
       hideDivider,
@@ -105,7 +141,7 @@ export default class CommentItem extends React.Component<any, any> {
                 </div>
               </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-2 pb-4 md:pb-5">
               <div className="mb-1">
                 {comment.replyComment && (
                   <div
@@ -123,11 +159,25 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
               </div>
               <div
-                className="comment-body comment text-gray-1e pb-4 md:pb-5 break-words whitespace-pre-wrap"
+                className={classNames(
+                  {
+                    'comment-expand': this.state.expand,
+                  },
+                  'comment-body comment text-gray-1e break-words whitespace-pre-wrap',
+                )}
                 onClick={() => isMobile && replyTo(comment)}
+                ref={this.commentRef}
               >
                 {comment.content}
               </div>
+              {this.state.canExpand && (
+                <div
+                  className="link-color cursor-pointer mt-1"
+                  onClick={() => this.setState({ expand: !this.state.expand })}
+                >
+                  {this.state.expand ? '收起' : '展开'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -147,6 +197,15 @@ export default class CommentItem extends React.Component<any, any> {
           .comment-body {
             font-size: 14px;
             line-height: 1.625;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -webkit-line-clamp: 10;
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+          }
+          .comment-expand {
+            max-height: unset !important;
+            -webkit-line-clamp: unset !important;
           }
         `}</style>
       </div>

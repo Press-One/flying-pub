@@ -24,7 +24,7 @@ import { IPost } from 'apis/post';
 import postApi from 'apis/post';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, initMathJax, getQuery } from 'utils';
+import { ago, isPc, isMobile, sleep, initMathJax, getQuery, disableBackgroundScroll } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
@@ -71,6 +71,8 @@ export default observer((props: any) => {
     () => post && post.author && user.address === post.author.address,
     [user.address, post],
   );
+
+  const ref = React.useRef(document.createElement('div'));
 
   React.useEffect(() => {
     if (isFetchedPost) {
@@ -127,6 +129,16 @@ export default observer((props: any) => {
       setIsFetchedReward(true);
     })();
   }, [rId]);
+  
+  const showImageView = (show: boolean) => {
+    if (isMobile) {
+      return;
+    }
+    setShowImage(show);
+    if (isMobile) {
+      disableBackgroundScroll(show);
+    }
+  }
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -136,11 +148,8 @@ export default observer((props: any) => {
         window.open(href);
         e.preventDefault();
       } else if (e.target.tagName === 'IMG') {
-        if (isMobile) {
-          return;
-        }
         setImgSrc(e.target.src);
-        setShowImage(true);
+        showImageView(true);
       }
     };
 
@@ -656,13 +665,28 @@ export default observer((props: any) => {
           </div>
         )}
         {(!isFetchedReward || !isFetchedComments) && renderLoading()}
+        <div
+          ref={ref}
+          className={classNames(
+            {
+              'hidden': !isMobile || !showImage,
+            },
+            'mobile-viewer-container fixed bg-black'
+          )}
+          onClick={() => showImageView(false)}
+          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+        >
+        </div>
         <Viewer
-          onMaskClick={() => setShowImage(false)}
+          className={isMobile ? 'mobile-viewer' : ''}
+          onMaskClick={() => showImageView(false)}
           noNavbar={true}
           noToolbar={true}
           visible={showImage}
-          onClose={() => setShowImage(false)}
+          onClose={() => showImageView(false)}
           images={[{ src: imgSrc }]}
+          container={ isMobile && !!ref.current ? ref.current : undefined }
+          noClose={isMobile}
         />
         <style jsx>{`
           .name-max-width {

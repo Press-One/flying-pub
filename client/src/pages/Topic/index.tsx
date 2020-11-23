@@ -22,8 +22,10 @@ import TopicIntroductionModal from './TopicIntroductionModal';
 import TopicManagerEntry from './TopicManagerEntry';
 import Settings from '@material-ui/icons/Settings';
 import { toJS } from 'mobx';
-import { resizeImage } from 'utils';
+import { resizeImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
+import Viewer from 'react-viewer';
+import classNames from 'classnames';
 
 const TopView = observer(
   (props: {
@@ -33,6 +35,7 @@ const TopView = observer(
     unsubscribe: () => Promise<void>;
     openTopicManagerEntryModal: () => void;
     fetchTopic: any;
+    setShowImage: () => void;
   }) => {
     const { userStore, modalStore } = useStore();
     const state = useLocalStore(() => ({
@@ -97,6 +100,7 @@ const TopView = observer(
                 alt={topic.name}
                 useOriginalDefault
                 resizeWidth={isMobile ? 90 : 120}
+                onClick={() => { topic.cover && props.setShowImage() }}
               />
               <div className="ml-4 md:ml-5">
                 <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a">
@@ -216,6 +220,9 @@ export default observer((props: any) => {
       name: '最新收录',
     },
   ];
+
+  const [showImage, setShowImage] = React.useState(false);
+  const ref = React.useRef(document.createElement('div'));
 
   const fetchTopic = React.useCallback(() => {
     (async () => {
@@ -379,6 +386,13 @@ export default observer((props: any) => {
     });
   };
 
+  const showImageView = (show: boolean) => {
+    setShowImage(show);
+    if (isMobile) {
+      disableBackgroundScroll(show);
+    }
+  }
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -395,6 +409,9 @@ export default observer((props: any) => {
             feedStore.clear();
             feedStore.setFilterType(tabs[1].type);
             fetchTopicPosts();
+          }}
+          setShowImage={() => {
+            showImageView(true);
           }}
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
@@ -555,6 +572,29 @@ export default observer((props: any) => {
               )}
             </div>
           )}
+          <div
+            ref={ref}
+            className={classNames(
+              {
+                'hidden': !isMobile || !showImage,
+              },
+              'mobile-viewer-container fixed bg-black'
+            )}
+            onClick={() => showImageView(false)}
+            //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
+          >
+          </div>
+          <Viewer
+            className={isMobile ? 'mobile-viewer' : ''}
+            onMaskClick={() => showImageView(false)}
+            noNavbar={true}
+            noToolbar={true}
+            visible={showImage}
+            onClose={() => showImageView(false)}
+            images={[{ src: resizeImage(state.topic.cover, 240) }]}
+            container={ isMobile && !!ref.current ? ref.current : undefined }
+            noClose={isMobile}
+          />
           <style jsx>{`
             .posts-container {
               min-height: 90vh;

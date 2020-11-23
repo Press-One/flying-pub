@@ -650,7 +650,7 @@ exports.syncMixinSnapshots = () => {
             const today = moment().format('YYYY-MM-DD');
             if (sessionLogNotificationDate !== today) {
               const hours = moment().format('HH');
-              if (hours === 10) {
+              if (hours === '10') {
                 await Cache.pSet(sessionLogNotificationKey, 'date', today);
                 Log.createAnonymity('SYNC_MIXIN_SNAPSHOTS_SESSION', JSON.stringify(session));
               }

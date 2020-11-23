@@ -37,7 +37,7 @@
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "react-simplemde-editor": "^4.1.0",
-    "react-viewer": "^2.10.2",
+    "react-viewer": "2.11.1",
     "remove-markdown": "^0.3.0",
     "rss-parser": "^3.7.2",
     "simplemde": "^1.11.2",

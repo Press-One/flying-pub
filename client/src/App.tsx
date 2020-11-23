@@ -31,6 +31,7 @@ import { StoreProvider } from './store';
 
 import './styles/tailwind.css';
 import './styles/base.scss';
+import './styles/mobile-viewer.scss';
 
 const Reader = () => {
   return (

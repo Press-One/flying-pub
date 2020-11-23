@@ -167,7 +167,7 @@ export default () => {
   return (
     <div className="p-topic max-w-1200 flex flex-col">
       <section className="p-topic-head flex items-center justify-between">
-        <div className="p-topic-head-title">文章权限</div>
+        <div className="p-topic-head-title">文章置顶</div>
       </section>
 
       <section className="p-topic-main flex flex-col max-w-1200">
