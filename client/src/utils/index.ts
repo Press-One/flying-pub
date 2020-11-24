@@ -250,6 +250,7 @@ export const limitImageWidth = (width: number, file: File) => {
     const objectURL = URL.createObjectURL(file);
     const img = new Image();
     img.onerror = (e: any) => {
+      URL.revokeObjectURL(objectURL);
       e.msg = 'INVALID_IMG';
       reject(e)
     };
