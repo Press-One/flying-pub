@@ -185,6 +185,19 @@ export default observer((props: any) => {
     })();
   }, [commentStore, rId]);
 
+  React.useEffect(() => {
+    if (ready && isFetchedPost) {
+      const postContent: any = document.getElementById('post-content');
+      const images = postContent.querySelectorAll('img');
+      for (const image of images) {
+        image.onerror = function () {
+          this.onerror = null;
+          this.src = `${this.src}#retry`;
+        };
+      }
+    }
+  }, [ready, isFetchedPost]);
+
   if (userStore.shouldLogin) {
     return null;
   }
