@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import Loading from 'components/Loading';
 import classNames from 'classnames';
 import Api from 'api';
-import { sleep } from 'utils';
+import { sleep, limitImageWidth } from 'utils';
 import { useStore } from 'store';
 
 export default observer((props: any) => {
@@ -24,17 +24,25 @@ export default observer((props: any) => {
     try {
       const tasks = [];
       for (const file of acceptedFiles) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('file_name', file.name);
-        tasks.push(uploadImage(formData));
+        tasks.push(new Promise(async (resovle, reject) => {
+          try {
+            const newFile: any = await limitImageWidth(750, file);
+            const formData = new FormData();
+            formData.append('file', newFile);
+            formData.append('file_name', newFile.name);
+            const result = await uploadImage(formData);
+            resovle(result);
+          } catch(err) {
+            reject(err);
+          }
+        }))
       }
       const result = await Promise.all(tasks);
       await sleep(200);
       uploadCallback(result);
     } catch (err) {
       snackbarStore.show({
-        message: '上传失败，请重新试一下',
+        message: err.msg === 'INVALID_IMG' ? '请上传有效的图片文件' : '上传失败，请重新试一下',
         type: 'error',
       });
     }
