@@ -184,7 +184,7 @@ exports.list = async (ctx) => {
   assert(fileRId, Errors.ERR_IS_REQUIRED("fileRId"));
   const userId = ctx.verification && ctx.verification.user.id;
   const offset = ~~ctx.query.offset || 0;
-  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const limit = ~~ctx.query.limit || 10;
   const result = await Comment.list({
     userId,
     objectId: fileRId,
