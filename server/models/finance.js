@@ -632,7 +632,9 @@ exports.syncMixinSnapshots = () => {
               data
             } = result;
             for (const i in data) {
-              session[currency].offset = data[i].created_at;
+              if (new Date(data[i].created_at) > new Date(session[currency].offset)) {
+                session[currency].offset = data[i].created_at;
+              }
               if (data[i].user_id) {
                 snapshots.push(data[i]);
               }
