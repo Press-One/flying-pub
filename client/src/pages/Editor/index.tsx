@@ -163,7 +163,7 @@ export default observer((props: any) => {
     mdeRef.current.codemirror.replaceSelection(
       breakLinePrefix +
         imgs
-          .map((img: any) => `![${img.filename}](${img.url}?image=&action=resize:w_750)`)
+          .map((img: any) => `![${img.filename}](${img.url})`)
           .join('\n'),
     );
     setShowImgUploader(false);
