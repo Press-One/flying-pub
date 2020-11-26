@@ -308,6 +308,7 @@ export default observer((props: IProps) => {
               </div>
             </div>
           )}
+          {isFromDrawer && !replyingComment && <div className="pt-1" />}
         </div>
         <div className="flex items-start pb-2 md:pb-0">
           <img
@@ -326,9 +327,8 @@ export default observer((props: IProps) => {
               placeholder="说点什么..."
               multiline
               fullWidth
-              autoFocus={isMobile}
               disabled={!isLogin}
-              rows={isPc ? 5 : 3}
+              rows={5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -379,7 +379,7 @@ export default observer((props: IProps) => {
               }, 400);
             }}
           >
-            说点什么...
+            写评论...
           </div>
           <div className="flex items-center py-1 text-gray-99 pr-3">
             {total > 0 && (
