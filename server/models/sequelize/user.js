@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./database');
+const UserExtra = require('./userExtra');
 
 const User = sequelize.define('users', {
   id: {
@@ -50,6 +51,17 @@ const User = sequelize.define('users', {
     unique: true,
     fields: ['address']
   }]
+});
+
+User.hasOne(UserExtra, {
+  as: 'UserExtra',
+  foreignKey: 'userId',
+  sourceKey: 'id'
+});
+
+UserExtra.belongsTo(User,{
+  foreignKey: 'userId',
+  targetKey: 'id'
 });
 
 module.exports = User;
