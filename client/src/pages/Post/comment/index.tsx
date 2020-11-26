@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import TextField from '@material-ui/core/TextField';
-import ThumbUp from '@material-ui/icons/ThumbUp';
-import CommentIcon from '@material-ui/icons/Comment';
+import { faCommentDots, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
 import BottomLine from 'components/BottomLine';
@@ -308,6 +308,7 @@ export default observer((props: IProps) => {
               </div>
             </div>
           )}
+          {isFromDrawer && !replyingComment && <div className="pt-1" />}
         </div>
         <div className="flex items-start pb-2 md:pb-0">
           <img
@@ -326,9 +327,8 @@ export default observer((props: IProps) => {
               placeholder="说点什么..."
               multiline
               fullWidth
-              autoFocus={isMobile}
               disabled={!isLogin}
-              rows={isPc ? 5 : 3}
+              rows={5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -370,7 +370,7 @@ export default observer((props: IProps) => {
       <Fade in={true} timeout={200}>
         <div className="fixed z-10 bottom-0 left-0 w-full py-2 border-t border-gray-300 bg-white flex items-center justify-between">
           <div
-            className="flex-1 ml-3 mr-3 rounded-lg bg-gray-200 text-gray-600 py-2 px-3"
+            className="flex-1 ml-3 mr-3 rounded-lg bg-gray-f2 text-gray-600 py-2 px-3"
             onClick={() => {
               setOpenDrawer(true);
               stopBodyScroll(true);
@@ -379,12 +379,12 @@ export default observer((props: IProps) => {
               }, 400);
             }}
           >
-            说点什么...
+            写评论...
           </div>
-          <div className="flex items-center py-1 text-gray-99 pr-3">
+          <div className="flex items-center py-1 text-gray-99">
             {total > 0 && (
               <div
-                className="text-xl px-4 relative"
+                className="text-xl px-4 mr-1 relative font-bold"
                 onClick={() => {
                   const commentSection = document.getElementById('comment-section');
                   if (commentSection) {
@@ -392,7 +392,7 @@ export default observer((props: IProps) => {
                   }
                 }}
               >
-                <CommentIcon />
+                <FontAwesomeIcon icon={faCommentDots} />
                 <span className="absolute top-0 right-0 comment-badge">{total}</span>
               </div>
             )}
@@ -402,10 +402,10 @@ export default observer((props: IProps) => {
                 {
                   'text-blue-400': feedStore.post.voted,
                 },
-                'text-xl px-4 relative',
+                'text-xl pl-4 pr-6 relative font-bold',
               )}
             >
-              <ThumbUp />
+              <FontAwesomeIcon icon={faThumbsUp} />
               {feedStore.post.upVotesCount > 0 && (
                 <span className="absolute top-0 right-0 like-badge">
                   {feedStore.post.upVotesCount}
@@ -438,10 +438,10 @@ export default observer((props: IProps) => {
         {!hasComments && isMobile && <div className="mt-10" />}
         {(hasComments || isPc) && (
           <div>
-            <div className="text-lg font-bold flex text-gray-700">
+            <div className="text-16 md:text-lg font-bold flex text-gray-700">
               <div className="flex items-center">
                 <span className="text-xl mr-2">
-                  <CommentIcon />
+                  <FontAwesomeIcon icon={faCommentDots} />
                 </span>{' '}
                 全部评论（{total}）
               </div>

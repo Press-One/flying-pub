@@ -1,6 +1,5 @@
 const Block = require('../models/sequelize/block');
 const File = require('./file');
-const socketIo = require('./socketIo');
 const {
   assert,
   Errors

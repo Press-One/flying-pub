@@ -1,3 +1,5 @@
+import { sleep, isMobile } from 'utils';
+
 export function createSnackbarStore() {
   return {
     open: false,
@@ -6,15 +8,18 @@ export function createSnackbarStore() {
     autoHideDuration: 2000,
     meta: {},
     show(options: any = {}) {
-      this.close();
-      setTimeout(() => {
-        const { message, duration = 2000, type, meta = {} } = options;
+      (async () => {
+        await sleep(options.delayDuration ? options.delayDuration : 150);
+        this.close();
+        const { message, duration = isMobile ? 1500 : 2000, type, meta = {} } = options;
         this.message = message;
         this.type = type || 'default';
         this.autoHideDuration = duration;
         this.open = true;
         this.meta = meta;
-      }, 100);
+        await sleep(duration);
+        this.close();
+      })();
     },
     close() {
       this.open = false;

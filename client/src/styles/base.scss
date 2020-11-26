@@ -101,6 +101,10 @@ ul {
   border-color: #63b3ed !important;
 }
 
+.MuiTextField-root.rounded fieldset {
+  border-radius: 100px;
+}
+
 /************************************** MATH JAX STYLES **************************************/
 .mjx-chtml {
   outline: 0;
@@ -271,12 +275,12 @@ ul {
 }
 
 /************************************** SCROLL BAR STYLES **************************************/
-.overflow-y-auto {
+.overflow-y-auto, body {
   overflow-y: scroll;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
 }
-.overflow-y-auto::-webkit-scrollbar { /* WebKit */
+.overflow-y-auto::-webkit-scrollbar, body::-webkit-scrollbar { /* WebKit */
   width: 0;
   height: 0;
   display: none;  /* Safari and Chrome */

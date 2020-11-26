@@ -37,6 +37,7 @@ export function createConfirmDialogStore() {
     hide() {
       this.open = false;
       this.loading = false;
+      this.cancel = null;
     },
     setLoading(status: boolean) {
       this.loading = status;

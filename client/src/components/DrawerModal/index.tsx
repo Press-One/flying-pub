@@ -7,15 +7,23 @@ interface Props {
   open: boolean;
   onClose: () => unknown;
   hideCloseButton?: boolean;
+  smallRadius?: boolean;
   darkMode?: boolean;
   children: React.ReactNode;
 }
 
 export default (props: Props) => {
-  const { open, onClose, hideCloseButton, darkMode = false } = props;
+  const { open, onClose, hideCloseButton, smallRadius, darkMode = false } = props;
   return (
     <Drawer anchor="bottom" open={open} onClose={onClose}>
-      <div className="content relative overflow-hidden bg-white">
+      <div
+        className={classNames(
+          {
+            'small-radius': smallRadius,
+          },
+          'content relative overflow-hidden bg-white',
+        )}
+      >
         {props.children}
         {!hideCloseButton && (
           <div
@@ -38,9 +46,12 @@ export default (props: Props) => {
             border-radius: 16px 16px 0 0;
             overflow: hidden !important;
           }
+          .content.small-radius {
+            border-radius: 10px 10px 0 0;
+          }
         `}</style>
         <style jsx global>{`
-          .MuiPaper-root {
+          .MuiDrawer-paper {
             background: none !important;
           }
         `}</style>

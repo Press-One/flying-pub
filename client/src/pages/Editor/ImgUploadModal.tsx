@@ -1,12 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Modal from '@material-ui/core/Modal';
+import Dialog from '@material-ui/core/Dialog';
+import DrawerModal from 'components/DrawerModal';
 import Button from 'components/Button';
 import { useDropzone } from 'react-dropzone';
 import Loading from 'components/Loading';
 import classNames from 'classnames';
 import Api from 'api';
-import { sleep, limitImageWidth } from 'utils';
+import { sleep, limitImageWidth, isMobile, isPc } from 'utils';
 import { useStore } from 'store';
 
 export default observer((props: any) => {
@@ -24,18 +25,20 @@ export default observer((props: any) => {
     try {
       const tasks = [];
       for (const file of acceptedFiles) {
-        tasks.push(new Promise(async (resovle, reject) => {
-          try {
-            const newFile: any = await limitImageWidth(750, file);
-            const formData = new FormData();
-            formData.append('file', newFile);
-            formData.append('file_name', newFile.name);
-            const result = await uploadImage(formData);
-            resovle(result);
-          } catch(err) {
-            reject(err);
-          }
-        }))
+        tasks.push(
+          new Promise(async (resovle, reject) => {
+            try {
+              const newFile: any = await limitImageWidth(750, file);
+              const formData = new FormData();
+              formData.append('file', newFile);
+              formData.append('file_name', newFile.name);
+              const result = await uploadImage(formData);
+              resovle(result);
+            } catch (err) {
+              reject(err);
+            }
+          }),
+        );
       }
       const result = await Promise.all(tasks);
       await sleep(200);
@@ -51,15 +54,15 @@ export default observer((props: any) => {
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  return (
-    <Modal open={open} onClose={close} className="flex justify-center items-center">
-      <div className="modal-content bg-white rounded-12 text-center p-8">
-        <div className="w-64 h-56 flex items-center justify-center border-4 border-dashed border-gray-400">
-          {loading && (
-            <div>
-              <Loading size={40} />
-            </div>
-          )}
+  const Main = () => (
+    <div className="bg-white rounded-12 text-center p-10 md:p-8">
+      <div className="h-52 md:w-64 md:h-56 flex items-center justify-center border-4 border-dashed border-gray-400">
+        {loading && (
+          <div>
+            <Loading size={40} />
+          </div>
+        )}
+        {isPc && (
           <div
             {...getRootProps({ className: 'dropzone' })}
             className={classNames({ hidden: loading })}
@@ -69,8 +72,31 @@ export default observer((props: any) => {
             <div className="text-xs text-gray-500 mt-2">或者</div>
             <Button className="mt-3">在本地文件中浏览</Button>
           </div>
-        </div>
+        )}
+        {isMobile && (
+          <div
+            {...getRootProps({ className: 'dropzone' })}
+            className={classNames({ hidden: loading })}
+          >
+            <input {...getInputProps()} />
+            <Button size="large">点击插入图片</Button>
+          </div>
+        )}
       </div>
-    </Modal>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <DrawerModal open={open} onClose={close}>
+        {Main()}
+      </DrawerModal>
+    );
+  }
+
+  return (
+    <Dialog open={open} onClose={close}>
+      {Main()}
+    </Dialog>
   );
 });

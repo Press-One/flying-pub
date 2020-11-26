@@ -11,12 +11,10 @@ import Pagination from '@material-ui/lab/Pagination';
 import { Paper, Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 import { pressOneLinkRegexp, wechatLinkRegexp } from 'utils/import';
 import PostImportDialog from 'components/PostImportDialog';
-import PublishDialog from 'components/PublishDialog';
 import ContributionModal from 'components/ContributionModal';
 import fileApi from 'apis/file';
 import importApi from 'apis/import';
 import { useStore } from 'store';
-import { isPc } from 'utils';
 import PostEntry from './postEntry';
 
 import './index.scss';
@@ -254,7 +252,6 @@ export default observer((props: RouteChildrenProps) => {
         />
       )}
 
-      {isPc && <PublishDialog />}
       <ContributionModal />
     </div>
   );

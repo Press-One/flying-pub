@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MenuIcon from '@material-ui/icons/Menu';
+import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -15,17 +15,18 @@ import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
 import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
-import Drawer from '@material-ui/core/Drawer';
+import DrawerMenu from 'components/DrawerMenu';
 import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, isMobile, sleep, stopBodyScroll, isPc } from 'utils';
+import { getApiEndpoint, isMobile, stopBodyScroll, isPc, isWeChat } from 'utils';
 import Img from 'components/Img';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [showBack, setShowBack] = React.useState(false);
+  const [hideRightPanel, setHideRightPanel] = React.useState(false);
   const {
     preloadStore,
     userStore,
@@ -33,12 +34,11 @@ export default observer((props: any) => {
     pathStore,
     settingsStore,
     notificationStore,
-    confirmDialogStore,
     walletStore,
   } = useStore();
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
-  const { user, isLogin } = userStore;
+  const { user, isLogin, canPublish } = userStore;
   const { pathname } = props.location;
   const unread = notificationStore.getUnread() || 0;
 
@@ -51,6 +51,11 @@ export default observer((props: any) => {
   React.useEffect(() => {
     pushPath(pathname);
     setShowBack(pathname !== '/');
+    if (isMobile && (pathname.includes('/authors/') || pathname.includes('/posts/'))) {
+      setHideRightPanel(true);
+    } else {
+      setHideRightPanel(false);
+    }
   }, [pathname, pushPath]);
 
   if (!preloadStore.ready) {
@@ -62,154 +67,84 @@ export default observer((props: any) => {
   const phoneBinded = userStore.profiles.some((v) => v.provider === 'phone');
 
   const mobileMenuView = () => {
-    const MenuItem = (props: any) => {
-      const { onClick } = props;
-      return (
-        <div
-          className="py-4 text-black text-center border-b border-gray-300 bg-white text-lg"
-          onClick={onClick}
-        >
-          {props.children}
-        </div>
-      );
-    };
     return (
-      <Drawer
-        anchor="bottom"
+      <DrawerMenu
         open={openDrawer}
         onClose={() => {
           setOpenDrawer(false);
-          stopBodyScroll(false);
         }}
-      >
-        <div className="bg-gray-300 leading-none">
-          {!userStore.isLogin && (
-            <div>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  handleOpenLogin();
-                }}
-              >
-                登录
-              </MenuItem>
-            </div>
-          )}
-          {userStore.isLogin && (
-            <div>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  props.history.push(`/authors/${userStore.user.address}`);
-                }}
-              >
-                我的主页
-              </MenuItem>
-              {walletStore.canSpendBalance && (
-                <MenuItem
-                  onClick={async () => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    modalStore.openWallet({
-                      tab: 'assets',
-                    });
-                  }}
-                >
-                  我的余额
-                </MenuItem>
-              )}
-              <MenuItem
-                onClick={async (e: React.MouseEvent) => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  confirmDialogStore.show({
-                    content: '目前仅支持电脑端写文章哦',
-                    cancelDisabled: true,
-                    okText: '我知道了',
-                    ok: () => {
-                      confirmDialogStore.hide();
-                    },
-                  });
-                }}
-              >
-                写文章
-              </MenuItem>
-              {walletStore.canSpendBalance && (
-                <MenuItem
-                  onClick={async () => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    modalStore.openWallet({
-                      tab: 'settings',
-                    });
-                  }}
-                >
-                  设置密码
-                </MenuItem>
-              )}
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  modalStore.openWallet({
-                    tab: 'receipts',
-                  });
-                }}
-              >
-                {walletStore.rewardOnly ? '打赏' : '所有交易'}记录
-              </MenuItem>
-              <MenuItem
-                onClick={async () => {
-                  setOpenDrawer(false);
-                  stopBodyScroll(false);
-                  await sleep(200);
-                  modalStore.openSettings('bind');
-                }}
-              >
-                账号绑定
-              </MenuItem>
-              {supportPhoneBinding && phoneBinded && (
-                <MenuItem
-                  onClick={async () => {
-                    setOpenDrawer(false);
-                    stopBodyScroll(false);
-                    await sleep(200);
-                    modalStore.openSettings('password');
-                  }}
-                >
-                  设置密码
-                </MenuItem>
-              )}
-              <MenuItem
-                onClick={async () => {
-                  modalStore.openPageLoading();
-                  window.location.href = logoutUrl;
-                }}
-              >
-                退出账号
-              </MenuItem>
-            </div>
-          )}
-          <div className="mt-1">
-            <MenuItem
-              onClick={() => {
-                setOpenDrawer(false);
-                stopBodyScroll(false);
-              }}
-            >
-              取消
-            </MenuItem>
-          </div>
-        </div>
-      </Drawer>
+        items={[
+          {
+            invisible: userStore.isLogin,
+            name: '登录',
+            onClick: () => {
+              handleOpenLogin();
+            },
+          },
+          {
+            invisible: !userStore.isLogin,
+            name: '我的主页',
+            onClick: () => {
+              props.history.push(`/authors/${userStore.user.address}`);
+            },
+          },
+          {
+            invisible: !userStore.isLogin || !walletStore.canSpendBalance,
+            name: '我的余额',
+            onClick: () => {
+              modalStore.openWallet({
+                tab: 'assets',
+              });
+            },
+          },
+          {
+            invisible: !userStore.isLogin || (isWeChat && !canPublish),
+            name: '写文章',
+            onClick: () => {
+              props.history.push(`/editor`);
+            },
+          },
+          {
+            invisible: !userStore.isLogin || !walletStore.canSpendBalance,
+            name: '设置密码',
+            onClick: () => {
+              modalStore.openSettings('password');
+            },
+          },
+          {
+            invisible: !userStore.isLogin,
+            name: walletStore.rewardOnly ? '打赏记录' : '所有交易记录',
+            onClick: () => {
+              modalStore.openWallet({
+                tab: 'receipts',
+              });
+            },
+          },
+          {
+            invisible: !userStore.isLogin,
+            name: '账号绑定',
+            onClick: () => {
+              modalStore.openSettings('bind');
+            },
+          },
+          {
+            invisible: !userStore.isLogin || !(supportPhoneBinding && phoneBinded),
+            name: '设置密码',
+            onClick: () => {
+              modalStore.openSettings('password');
+            },
+          },
+          {
+            invisible: !userStore.isLogin,
+            name: '退出账号',
+            onClick: () => {
+              modalStore.openPageLoading();
+              window.location.href = logoutUrl;
+            },
+            stayOpenAfterClick: true,
+          },
+        ]}
+      />
     );
   };
 
@@ -339,36 +274,40 @@ export default observer((props: any) => {
                 >
                   <ArrowBackIos />
                 </div>
-                <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
-                  <HomeOutlined />
-                </Link>
+                {prevPath && prevPath !== '/' && (
+                  <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
+                    <HomeOutlined />
+                  </Link>
+                )}
               </div>
             )}
-            <div className="flex items-center">
-              {isMobile && settings['notification.enabled'] && userStore.isLogin && (
-                <Badge
-                  badgeContent={unread}
-                  className="mr-8 transform scale-90 cursor-pointer"
-                  color="error"
+            {!hideRightPanel && (
+              <div className="flex items-center">
+                {isMobile && settings['notification.enabled'] && userStore.isLogin && (
+                  <Badge
+                    badgeContent={unread}
+                    className="mr-8 transform scale-90 cursor-pointer"
+                    color="error"
+                    onClick={() => {
+                      modalStore.openNotification();
+                    }}
+                  >
+                    <div className="text-3xl flex items-center text-gray-88">
+                      <NotificationsOutlined />
+                    </div>
+                  </Badge>
+                )}
+                <div
+                  className="w-8 h-8 text-28 text-gray-88 flex justify-center items-center leading-none"
                   onClick={() => {
-                    modalStore.openNotification();
+                    setOpenDrawer(true);
+                    stopBodyScroll(true);
                   }}
                 >
-                  <div className="text-3xl flex items-center icon-btn-color">
-                    <NotificationsOutlined />
-                  </div>
-                </Badge>
-              )}
-              <div
-                className="w-8 h-8 text-xl border border-gray-600 text-gray-600 flex justify-center items-center leading-none rounded"
-                onClick={() => {
-                  setOpenDrawer(true);
-                  stopBodyScroll(true);
-                }}
-              >
-                <MenuIcon />
+                  <MoreHoriz />
+                </div>
               </div>
-            </div>
+            )}
           </div>
           {isMobile && mobileMenuView()}
         </div>
@@ -416,7 +355,7 @@ export default observer((props: any) => {
                           modalStore.openNotification();
                         }}
                       >
-                        <div className="text-3xl flex items-center icon-btn-color">
+                        <div className="text-3xl flex items-center text-gray-88">
                           <NotificationsOutlined />
                         </div>
                       </Badge>
@@ -429,7 +368,7 @@ export default observer((props: any) => {
                       </div>
                     )}
                     <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                      <MenuIcon />
+                      <MoreHoriz />
                     </IconButton>
                     {pcMenuView()}
                   </div>
@@ -447,13 +386,6 @@ export default observer((props: any) => {
             }}
           />
         )}
-        <style jsx>
-          {`
-            .icon-btn-color {
-              color: rgba(0, 0, 0, 0.54);
-            }
-          `}
-        </style>
         <style jsx global>{`
           .MuiIconButton-root {
             padding: 6px;

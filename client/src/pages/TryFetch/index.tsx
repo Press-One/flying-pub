@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import { sleep, isMobile, isWeChat, getQuery } from 'utils';
 import Api from 'api';
+import authApi from 'apis/auth';
 import settingsApi from 'apis/settings';
 
 export default observer((props: any) => {
@@ -37,6 +38,7 @@ export default observer((props: any) => {
         });
 
         socketStore.init(user.id);
+        fetchPermission();
       } catch (err) {
         if (getQuery('action') === 'PERMISSION_DENY') {
           return;
@@ -70,6 +72,15 @@ export default observer((props: any) => {
       }
       userStore.setIsFetched(true);
       return true;
+    };
+
+    const fetchPermission = async () => {
+      try {
+        await authApi.checkPermission();
+        userStore.setCanPublish();
+      } catch (err) {
+        console.log(err);
+      }
     };
 
     (async () => {

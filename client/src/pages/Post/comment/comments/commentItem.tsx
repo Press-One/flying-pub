@@ -1,9 +1,9 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { ago, isMobile } from 'utils';
-import ThumbUpAltOutlined from '@material-ui/icons/ThumbUpAltOutlined';
-import ModeCommentOutlined from '@material-ui/icons/ModeCommentOutlined';
+import { ago, isMobile, urlify } from 'utils';
+import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteOutline from '@material-ui/icons/Close';
 import Img from 'components/Img';
 
@@ -112,14 +112,14 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
               </div>
               <div className="relative">
-                <div className="flex items-center text-gray-88 leading-none absolute top-0 right-0 -mt-1 md:-mt-3">
+                <div className="flex items-center text-gray-9b leading-none absolute top-0 right-0 -mt-1 md:-mt-3">
                   {!isOwner && (
                     <span
-                      className="flex items-center cursor-pointer text-xs p-1 w-12 md:w-16 justify-end"
+                      className="flex items-center cursor-pointer text-xs px-1 pt-2-px pb-3-px w-12 md:w-16 justify-end"
                       onClick={() => replyTo(comment)}
                     >
                       <span className="flex items-center text-16 md:text-18 pr-2 md:pr-1">
-                        <ModeCommentOutlined />
+                        <FontAwesomeIcon icon={faComment} />
                       </span>
                       {!isMobile && <span>回复</span>}
                     </span>
@@ -129,12 +129,12 @@ export default class CommentItem extends React.Component<any, any> {
                       {
                         'text-blue-400': comment.voted,
                       },
-                      'flex items-center justify-end cursor-pointer p-1 pr-0 w-12 md:w-16',
+                      'flex items-center justify-end cursor-pointer pl-1 pt-2-px pb-3-px pr-0 w-12 md:w-16',
                     )}
                     onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
                   >
                     <span className="flex items-center text-16 md:text-18 pr-1 md">
-                      <ThumbUpAltOutlined />
+                      <FontAwesomeIcon icon={faThumbsUp} />
                     </span>
                     <span className="font-bold">{Number(comment.upVotesCount) || ''}</span>
                   </div>
@@ -167,9 +167,8 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
                 onClick={() => isMobile && replyTo(comment)}
                 ref={this.commentRef}
-              >
-                {comment.content}
-              </div>
+                dangerouslySetInnerHTML={{ __html: urlify(comment.content) }}
+              />
               {this.state.canExpand && (
                 <div
                   className="text-blue-400 cursor-pointer pt-1"

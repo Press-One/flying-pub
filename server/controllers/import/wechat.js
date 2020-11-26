@@ -97,8 +97,10 @@ const fetchWechatPost = async url => {
         sha1.update(imageBuffer)
         const imageHash = sha1.digest('hex')
 
-        const folder = 'images/';
-        const response = await bucket.putObject(`${folder}${imageHash}${ext}`, {
+        const folder = '';
+        const now = new Date();
+        const prefix = now.getMonth() + 1 + '' + now.getDate();
+        const response = await bucket.putObject(`${folder}${imageHash.slice(0, 4)}${prefix}${ext}`, {
           'Content-Type': mimetype,
           'body': imageBuffer,
         })

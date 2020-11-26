@@ -24,6 +24,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import UserListModal from './components/UserListModal';
 import TopicListModal from './components/TopicListModal';
 import GlobalQueryHandler from './components/GlobalQueryHandler';
+import PublishDialog from './components/PublishDialog';
 
 import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
 
@@ -74,11 +75,13 @@ const Pub = () => {
   return (
     <div>
       <Route path="/editor" exact component={Editor} />
-      <Route
-        path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
-        exact
-        component={ManagementLayout}
-      />
+      {isPc && (
+        <Route
+          path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
+          exact
+          component={ManagementLayout}
+        />
+      )}
     </div>
   );
 };
@@ -94,11 +97,7 @@ const AppRouter = () => {
             exact
             component={Reader}
           />
-          {isPc && (
-            <div>
-              <Pub />
-            </div>
-          )}
+          <Pub />
           <Route path="/readerWallet" exact component={ReaderWalletModal} />
 
           <LoginModal />
@@ -113,6 +112,7 @@ const AppRouter = () => {
           <GlobalQueryHandler />
           <UserListModal />
           <TopicListModal />
+          <PublishDialog />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

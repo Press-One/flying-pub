@@ -1,7 +1,7 @@
 import React from 'react';
 import { Folder } from '@material-ui/icons';
 import { useStore } from 'store';
-import _ from 'lodash';
+import { every } from 'lodash';
 import { isMobile } from 'utils';
 import Img from 'components/Img';
 
@@ -75,7 +75,7 @@ export default (props: Props) => {
     }
   };
 
-  if (_.every(folders, (folder) => folder.hide === true)) {
+  if (every(folders, (folder) => folder.hide === true)) {
     if (isMobile) {
       return <div className="py-20 text-center text-gray-99">空空如也~</div>;
     }

@@ -17,16 +17,19 @@ const {
 
 exports.list = async ctx => {
   const {
-    offset = 0, limit = 10
+    offset = 0, limit = 10, type
   } = ctx.query;
   const {
     user
   } = ctx.verification;
   const files = await File.list(user.address, {
+    type,
     offset,
     limit: Math.min(~~limit, 50),
   });
-  const total = await File.count(user.address);
+  const total = await File.count(user.address, {
+    type
+  });
   ctx.body = {
     total,
     files

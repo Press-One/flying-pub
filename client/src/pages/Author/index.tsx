@@ -1,28 +1,40 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
+import { Link } from 'react-router-dom';
+import { useStore } from 'store';
 import Fade from '@material-ui/core/Fade';
 import Tooltip from '@material-ui/core/Tooltip';
-import { useStore } from 'store';
 import Button from 'components/Button';
 import Posts from 'components/Posts';
 import Loading from 'components/Loading';
 import FolderGrid from 'components/FolderGrid';
 import Filter from 'components/PostsFilter';
+import TopicEditorModal from 'components/TopicEditorModal';
+import DraftModal from './DraftModal';
 import subscriptionApi from 'apis/subscription';
 import authorApi from 'apis/author';
-import { isMobile, isPc, getDefaultAvatar, getDefaultDeprecatedAvatar, sleep } from 'utils';
+import {
+  isMobile,
+  isPc,
+  getDefaultAvatar,
+  getDefaultDeprecatedAvatar,
+  sleep,
+  isWeChat,
+} from 'utils';
 import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
-import TopicEditorModal from 'components/TopicEditorModal';
 import postApi from 'apis/post';
-import _ from 'lodash';
-import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
-import { Edit } from '@material-ui/icons';
+import { isEmpty } from 'lodash';
 import { toJS } from 'mobx';
 import { resizeFullImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
+import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
+import { Edit } from '@material-ui/icons';
+import { faFileAlt } from '@fortawesome/free-regular-svg-icons';
+import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -43,6 +55,7 @@ export default observer((props: any) => {
     showTopicEditorModal: false,
     loadingOthers: false,
     showPosts: false,
+    showDraftModal: false,
   }));
   const loading = React.useMemo(() => state.isFetchingAuthor || !preloadStore.ready, [
     state.isFetchingAuthor,
@@ -130,16 +143,7 @@ export default observer((props: any) => {
     fetchAuthor();
   }, [state, address, feedStore, fetchAuthor]);
 
-  React.useEffect(() => {
-    if (!feedStore.filterType) {
-      return;
-    }
-    if (feedStore.isFetching) {
-      return;
-    }
-    if (!feedStore.isNew && !feedStore.willLoadingPage) {
-      return;
-    }
+  const fetchPosts = React.useCallback(() => {
     feedStore.setIsFetching(true);
     (async () => {
       const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
@@ -154,7 +158,20 @@ export default observer((props: any) => {
       feedStore.setIsFetching(false);
       feedStore.setIsFetched(true);
     })();
-  }, [address, state, feedStore.page, feedStore.filterType, feedStore]);
+  }, [feedStore, address]);
+
+  React.useEffect(() => {
+    if (!feedStore.filterType) {
+      return;
+    }
+    if (feedStore.isFetching) {
+      return;
+    }
+    if (!feedStore.isNew && !feedStore.willLoadingPage) {
+      return;
+    }
+    fetchPosts();
+  }, [address, state, feedStore.page, feedStore.filterType, feedStore, fetchPosts]);
 
   React.useEffect(() => {
     if (isMyself) {
@@ -232,6 +249,42 @@ export default observer((props: any) => {
     }
   };
 
+  const DraftEntry = () => {
+    return (
+      <div>
+        <div className="absolute top-0 right-0 pl-20 -mt-12 z-10">
+          <div
+            className="px-6 text-gray-99 text-28 flex items-center h-12 py-1"
+            onClick={() => (state.showDraftModal = true)}
+          >
+            <FontAwesomeIcon icon={faFileAlt} />
+          </div>
+        </div>
+        <DraftModal
+          open={state.showDraftModal}
+          close={() => {
+            state.showDraftModal = false;
+            feedStore.clear();
+            feedStore.filterType = 'LATEST';
+            fetchPosts();
+          }}
+        />
+      </div>
+    );
+  };
+
+  const EditorEntry = () => {
+    return (
+      <div className="fixed bottom-0 right-0 m-4 z-10">
+        <Link to={`/editor`}>
+          <div className="text-20 flex items-center justify-center w-12 h-12 rounded-full bg-blue-400 text-white">
+            <FontAwesomeIcon icon={faPen} />
+          </div>
+        </Link>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -242,7 +295,7 @@ export default observer((props: any) => {
     );
   }
 
-  if (state.isFetchedAuthor && _.isEmpty(state.author)) {
+  if (state.isFetchedAuthor && isEmpty(state.author)) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
@@ -257,11 +310,17 @@ export default observer((props: any) => {
     if (isMobile) {
       disableBackgroundScroll(show);
     }
-  }
+  };
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div className="w-full md:w-916 md:m-auto">
+      <div className="w-full md:w-916 md:m-auto relative">
+        {isMobile && isMyself && !(isWeChat && !userStore.canPublish) && (
+          <div>
+            {DraftEntry()}
+            {EditorEntry()}
+          </div>
+        )}
         <div>
           <div className="flex items-stretch overflow-hidden relative pb-6 md:rounded-12">
             <div
@@ -288,7 +347,7 @@ export default observer((props: any) => {
                   onClick={() => {
                     if (isMyself) {
                       modalStore.openSettings('profile');
-                    } else if (state.author.avatar ) {
+                    } else if (state.author.avatar) {
                       showImageView(true);
                     }
                   }}
@@ -399,7 +458,7 @@ export default observer((props: any) => {
                       modalStore.openSettings('profile');
                     }}
                   >
-                    <div className="flex items-center text-18 mr-1">
+                    <div className="flex items-center text-16 mr-1">
                       <Edit />
                     </div>
                     编辑资料
@@ -620,14 +679,13 @@ export default observer((props: any) => {
           ref={ref}
           className={classNames(
             {
-              'hidden': !isMobile || !showImage,
+              hidden: !isMobile || !showImage,
             },
-            'mobile-viewer-container fixed bg-black'
+            'mobile-viewer-container fixed bg-black',
           )}
           onClick={() => showImageView(false)}
           //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-        >
-        </div>
+        ></div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}
           onMaskClick={() => showImageView(false)}
@@ -636,7 +694,7 @@ export default observer((props: any) => {
           visible={showImage}
           onClose={() => showImageView(false)}
           images={[{ src: resizeFullImage(state.author.avatar) }]}
-          container={ isMobile && !!ref.current ? ref.current : undefined }
+          container={isMobile && !!ref.current ? ref.current : undefined}
           noClose={isMobile}
         />
         <style jsx>{`

@@ -28,6 +28,7 @@ export interface IPost {
   topics: IPostTopic[];
   pendingTopicUuids?: string[];
   voted: boolean;
+  fileId: number;
   author: {
     address: string;
     nickname: string;

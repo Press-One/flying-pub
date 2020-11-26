@@ -4,6 +4,7 @@ const {
 } = Sequelize;
 const moment = require('moment');
 const Post = require('./sequelize/post');
+const File = require('./sequelize/file');
 const { getTopicOrderQuery } = require('./topic');
 const Topic = require('./sequelize/topic');
 const Author = require('./sequelize/author');
@@ -89,6 +90,17 @@ const packPost = async (post, options = {}) => {
 
   const cachedViewCount = await View.getCountByRId(postJson.rId);
   postJson.viewCount = cachedViewCount || ~~postJson.viewCount;
+
+  const file = await File.findOne({
+    attributes: ['id'],
+    where: {
+      rId: postJson.rId
+    },
+    raw: true
+  });
+  if (file) {
+    postJson.fileId = ~~file.id;
+  }
 
   return postJson;
 }
