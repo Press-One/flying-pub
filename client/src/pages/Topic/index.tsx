@@ -100,7 +100,9 @@ const TopView = observer(
                 alt={topic.name}
                 useOriginalDefault
                 resizeWidth={isMobile ? 90 : 120}
-                onClick={() => { topic.cover && props.setShowImage() }}
+                onClick={() => {
+                  topic.cover && props.setShowImage();
+                }}
               />
               <div className="ml-4 md:ml-5">
                 <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a">
@@ -391,7 +393,7 @@ export default observer((props: any) => {
     if (isMobile) {
       disableBackgroundScroll(show);
     }
-  }
+  };
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
@@ -476,27 +478,6 @@ export default observer((props: any) => {
                 </div>
               </div>
 
-              <FolderGrid
-                folders={[
-                  {
-                    hide: state.topic.summary?.author?.count === 0,
-                    topicUuid: state.topic.uuid,
-                    type: 'TOPIC_AUTHORS',
-                    title: '包含的作者',
-                    content: `${state.topic.summary?.author?.count}个`,
-                    gallery: state.topic.summary?.author?.preview || [],
-                  },
-                  {
-                    hide: state.topic.summary.follower.count === 0,
-                    topicUuid: state.topic.uuid,
-                    type: 'TOPIC_FOLLOWERS',
-                    title: '关注的人',
-                    content: `${state.topic.summary.follower.count}个`,
-                    gallery: state.topic.summary.follower.preview,
-                  },
-                ]}
-              />
-
               {isMyself && (
                 <div className="bg-white rounded-12 pb-2 mb-3 text-gray-4a">
                   <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
@@ -531,6 +512,27 @@ export default observer((props: any) => {
                   </div>
                 </div>
               )}
+
+              <FolderGrid
+                folders={[
+                  {
+                    hide: state.topic.summary?.author?.count === 0,
+                    topicUuid: state.topic.uuid,
+                    type: 'TOPIC_AUTHORS',
+                    title: '包含的作者',
+                    content: `${state.topic.summary?.author?.count}个`,
+                    gallery: state.topic.summary?.author?.preview || [],
+                  },
+                  {
+                    hide: state.topic.summary.follower.count === 0,
+                    topicUuid: state.topic.uuid,
+                    type: 'TOPIC_FOLLOWERS',
+                    title: '关注的人',
+                    content: `${state.topic.summary.follower.count}个`,
+                    gallery: state.topic.summary.follower.preview,
+                  },
+                ]}
+              />
             </div>
           )}
           {isMyself && (
@@ -576,14 +578,13 @@ export default observer((props: any) => {
             ref={ref}
             className={classNames(
               {
-                'hidden': !isMobile || !showImage,
+                hidden: !isMobile || !showImage,
               },
-              'mobile-viewer-container fixed bg-black'
+              'mobile-viewer-container fixed bg-black',
             )}
             onClick={() => showImageView(false)}
             //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-          >
-          </div>
+          ></div>
           <Viewer
             className={isMobile ? 'mobile-viewer' : ''}
             onMaskClick={() => showImageView(false)}
@@ -592,7 +593,7 @@ export default observer((props: any) => {
             visible={showImage}
             onClose={() => showImageView(false)}
             images={[{ src: resizeImage(state.topic.cover, 240) }]}
-            container={ isMobile && !!ref.current ? ref.current : undefined }
+            container={isMobile && !!ref.current ? ref.current : undefined}
             noClose={isMobile}
           />
           <style jsx>{`
