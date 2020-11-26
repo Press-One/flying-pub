@@ -112,10 +112,10 @@ export default class CommentItem extends React.Component<any, any> {
                 )}
               </div>
               <div className="relative">
-                <div className="flex items-center text-gray-88 leading-none absolute top-0 right-0 -mt-1 md:-mt-3">
+                <div className="flex items-center text-gray-9b leading-none absolute top-0 right-0 -mt-1 md:-mt-3">
                   {!isOwner && (
                     <span
-                      className="flex items-center cursor-pointer text-xs p-1 w-12 md:w-16 justify-end"
+                      className="flex items-center cursor-pointer text-xs px-1 pt-2-px pb-3-px w-12 md:w-16 justify-end"
                       onClick={() => replyTo(comment)}
                     >
                       <span className="flex items-center text-16 md:text-18 pr-2 md:pr-1">
@@ -129,7 +129,7 @@ export default class CommentItem extends React.Component<any, any> {
                       {
                         'text-blue-400': comment.voted,
                       },
-                      'flex items-center justify-end cursor-pointer p-1 pr-0 w-12 md:w-16',
+                      'flex items-center justify-end cursor-pointer pl-1 pt-2-px pb-3-px pr-0 w-12 md:w-16',
                     )}
                     onClick={() => (comment.voted ? resetVote(comment.id) : upVote(comment.id))}
                   >

@@ -129,7 +129,8 @@ export default observer((props: any) => {
           ''
         )}
       </TableCell>
-      {(localStorage.getItem('VIEW_COUNT_ENABLED') || settingsStore.settings.extra['postView.visible']) && (
+      {(localStorage.getItem('VIEW_COUNT_ENABLED') ||
+        settingsStore.settings.extra['postView.visible']) && (
         <TableCell>
           <span className="gray-color">{file.postViewCount || ''}</span>
         </TableCell>
@@ -223,7 +224,7 @@ export default observer((props: any) => {
               <MenuItem
                 onClick={(e) => {
                   confirmDialogStore.show({
-                    content: '文章删除后将无法找回，确定要删除吗？',
+                    content: '删除后无法找回，确定删除吗？',
                     ok: async () => {
                       confirmDialogStore.hide();
                       await sleep(300);

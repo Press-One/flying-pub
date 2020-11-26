@@ -6,7 +6,7 @@ interface Props {
   className?: string;
   onClick?: () => unknown;
   fullWidth?: boolean;
-  size?: 'normal' | 'small' | 'mini';
+  size?: 'large' | 'normal' | 'small' | 'mini';
   color?: 'primary' | 'gray' | 'red' | 'green' | 'white';
   disabled?: boolean;
   children?: React.ReactNode;
@@ -36,9 +36,7 @@ export default (props: Props) => {
         className,
         {
           'w-full': fullWidth,
-          normal: size === 'normal',
-          small: size === 'small',
-          mini: size === 'mini',
+          [size]: size,
           'bg-blue-400 text-white': !outline && color === 'primary',
           'bg-gray-bd text-white': !outline && color === 'gray',
           'bg-green-500 text-white': !outline && color === 'green',
@@ -90,6 +88,17 @@ export default (props: Props) => {
         }
         .button.normal.outline {
           padding: 8px 23px;
+        }
+        .button.large {
+          font-size: 14px;
+          padding: 11px 24px;
+        }
+        .button.large.w-full {
+          font-size: 15px;
+          padding: 11px 24px;
+        }
+        .button.large.outline {
+          padding: 10px 23px;
         }
         .button[disabled] {
           color: rgba(0, 0, 0, 0.26);

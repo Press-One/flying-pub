@@ -153,7 +153,7 @@ const TopicLists = observer((props: IProps) => {
     <div className="mt-2 -mb-2 flex items-center justify-center">
       <TextField
         className="po-input po-text-14 w-72"
-        placeholder="搜索"
+        placeholder="搜索专题"
         size="small"
         value={state.keyword}
         onChange={(e) => (state.keyword = e.target.value)}

@@ -24,6 +24,7 @@ import ConfirmDialog from './components/ConfirmDialog';
 import UserListModal from './components/UserListModal';
 import TopicListModal from './components/TopicListModal';
 import GlobalQueryHandler from './components/GlobalQueryHandler';
+import PublishDialog from './components/PublishDialog';
 
 import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
 
@@ -111,6 +112,7 @@ const AppRouter = () => {
           <GlobalQueryHandler />
           <UserListModal />
           <TopicListModal />
+          <PublishDialog />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

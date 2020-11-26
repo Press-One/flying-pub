@@ -14,14 +14,17 @@ import ThumbUp from '@material-ui/icons/ThumbUp';
 import CommentIcon from '@material-ui/icons/Comment';
 import ShareIcon from '@material-ui/icons/Share';
 import Badge from '@material-ui/core/Badge';
+import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
+import DrawerMenu from 'components/DrawerMenu';
 
 import CommentApi from 'apis/comment';
 import Comment from './comment';
 import { IPost } from 'apis/post';
 import postApi from 'apis/post';
+import fileApi from 'apis/file';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
 import { ago, isPc, isMobile, sleep, initMathJax, getQuery, disableBackgroundScroll } from 'utils';
@@ -51,6 +54,7 @@ export default observer((props: any) => {
     snackbarStore,
     settingsStore,
   } = useStore();
+
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
   const { isLogin, user } = userStore;
@@ -63,6 +67,7 @@ export default observer((props: any) => {
   const [isFetchedReward, setIsFetchedReward] = React.useState(false);
   const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
   const [isFetchedComments, setIsFetchedComments] = React.useState(false);
+  const [showMenu, setShowMenu] = React.useState(false);
   const [isBan, setIsBan] = React.useState(false);
   const noReward = rewardSummary.users.length === 0;
   const { rId } = props.match.params;
@@ -97,7 +102,9 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const post: IPost = await postApi.fetchPost(rId);
+        const post: IPost = await postApi.fetchPost(rId, {
+          withPendingTopicUuids: true,
+        });
         if (post.latestRId) {
           window.location.replace(`/posts/${post.latestRId}${window.location.search}`);
           return;
@@ -115,7 +122,9 @@ export default observer((props: any) => {
 
   const syncTopics = async () => {
     try {
-      const resPost: IPost = await postApi.fetchPost(rId);
+      const resPost: IPost = await postApi.fetchPost(rId, {
+        withPendingTopicUuids: true,
+      });
       post.topics = resPost.topics || [];
     } catch (err) {}
   };
@@ -571,6 +580,115 @@ export default observer((props: any) => {
     );
   };
 
+  const Menu = () => (
+    <div>
+      <div className="absolute top-0 right-0 -mt-16 z-10">
+        <div
+          className="px-5 text-gray-88 text-28 flex items-center h-12 py-1"
+          onClick={() => setShowMenu(true)}
+        >
+          <MoreHoriz />
+        </div>
+      </div>
+      <DrawerMenu
+        open={showMenu}
+        onClose={() => {
+          setShowMenu(false);
+        }}
+        items={[
+          {
+            name: '编辑',
+            onClick: () => {
+              props.history.push(`/editor?id=${post.fileId}`);
+            },
+          },
+          {
+            name: '投稿',
+            onClick: () => {
+              modalStore.openTopicList({
+                post,
+                userAddress: userStore.user.address,
+                title: '开放投稿的专题',
+                type: 'CONTRIBUTION_TO_PUBLIC_TOPICS',
+                onClose: async () => {
+                  try {
+                    const updatedPost: IPost = await postApi.fetchPost(post.rId, {
+                      withPendingTopicUuids: true,
+                    });
+                    setPost(updatedPost);
+                  } catch (err) {
+                    console.log(err);
+                  }
+                },
+              });
+            },
+          },
+          {
+            name: '隐藏',
+            onClick: () => {
+              confirmDialogStore.show({
+                content: '隐藏后的文章对他人不可见',
+                ok: async () => {
+                  try {
+                    await fileApi.hideFile(post.fileId);
+                    confirmDialogStore.hide();
+                    await sleep(100);
+                    setShowMenu(false);
+                    await sleep(200);
+                    feedStore.clear();
+                    feedStore.setFilterType('LATEST');
+                    props.history.push(`/authors/${userStore.user.address}`);
+                    await sleep(200);
+                    snackbarStore.show({
+                      message: '文章已经隐藏，已经放到草稿箱',
+                    });
+                  } catch (err) {
+                    snackbarStore.show({
+                      message: '隐藏失败',
+                      type: 'error',
+                    });
+                  }
+                },
+              });
+            },
+            stayOpenAfterClick: true,
+          },
+          {
+            name: '删除',
+            onClick: () => {
+              confirmDialogStore.show({
+                content: '删除后无法找回，确定删除吗？',
+                ok: async () => {
+                  try {
+                    await fileApi.deleteFile(post.fileId);
+                    confirmDialogStore.hide();
+                    await sleep(100);
+                    setShowMenu(false);
+                    await sleep(200);
+                    feedStore.clear();
+                    feedStore.setFilterType('LATEST');
+                    props.history.push(`/authors/${userStore.user.address}`);
+                    await sleep(200);
+                    snackbarStore.show({
+                      message: '文章已经删除',
+                    });
+                  } catch (err) {
+                    snackbarStore.show({
+                      message: '删除失败',
+                      type: 'error',
+                    });
+                  }
+                },
+              });
+            },
+            className: 'text-red-400',
+            stayOpenAfterClick: true,
+          },
+        ]}
+      />
+    </div>
+  );
+
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="px-4 md:px-0 md:w-7/12 m-auto relative post-page">
@@ -588,28 +706,31 @@ export default observer((props: any) => {
             </div>
           </Fade>
         )}
-        <h2 className={`text-xl md:text-2xl text-gray-900 md:font-bold pt-0 pb-0`}>{post.title}</h2>
-        <div className={`flex items-center gray mt-2 info ${isMobile ? ' text-sm' : ''}`}>
-          <Link to={`/authors/${post.author.address}`}>
-            <div className="flex items-center">
-              <div className="flex items-center w-6 h-6 mr-2">
-                <Img
-                  className="w-6 h-6 rounded-full border border-gray-300"
-                  src={post.author.avatar}
-                  alt={post.author.nickname}
-                />
+        {isMyself && isMobile && Menu()}
+        <h2 className={`text-xl md:text-2xl text-gray-900 font-bold pt-0 pb-0`}>{post.title}</h2>
+        <div className="flex items-center justify-between mt-2">
+          <div className={`flex items-center gray info ${isMobile ? ' text-sm' : ''}`}>
+            <Link to={`/authors/${post.author.address}`}>
+              <div className="flex items-center">
+                <div className="flex items-center w-6 h-6 mr-2">
+                  <Img
+                    className="w-6 h-6 rounded-full border border-gray-300"
+                    src={post.author.avatar}
+                    alt={post.author.nickname}
+                  />
+                </div>
+                <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
+                  {post.author.nickname}
+                </span>
               </div>
-              <span className={classNames({ 'name-max-width': isMobile }, 'mr-5 truncate')}>
-                {post.author.nickname}
-              </span>
-            </div>
-          </Link>
-          <span className="mr-5">{ago(post.pubDate)}</span>
-          {(localStorage.getItem('VIEW_COUNT_ENABLED') ||
-            settingsStore.settings.extra['postView.visible']) && (
-            <span className="mr-5">阅读 {post.viewCount}</span>
-          )}
-          {isMyself && !isMobile && <Link to={`/editor?rId=${post.rId}`}>编辑</Link>}
+            </Link>
+            <span className="mr-5">{ago(post.pubDate)}</span>
+            {(localStorage.getItem('VIEW_COUNT_ENABLED') ||
+              settingsStore.settings.extra['postView.visible']) && (
+              <span className="mr-5">阅读 {post.viewCount}</span>
+            )}
+            {isMyself && !isMobile && <Link to={`/editor?id=${post.fileId}`}>编辑</Link>}
+          </div>
         </div>
         <div
           id="post-content"
@@ -687,7 +808,6 @@ export default observer((props: any) => {
             'mobile-viewer-container fixed bg-black',
           )}
           onClick={() => showImageView(false)}
-          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
         ></div>
         <Viewer
           className={isMobile ? 'mobile-viewer' : ''}

@@ -68,6 +68,14 @@ const options: EasyMDE.Options = {
       className: 'fa fa-link',
       title: '链接',
     },
+    {
+      name: 'image',
+      action: () => {
+        console.log('will be replaced');
+      },
+      className: 'fa fa-image',
+      title: '插入图片',
+    },
     '|',
     'preview',
   ] : false,

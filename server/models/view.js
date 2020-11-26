@@ -171,7 +171,7 @@ exports.addViewAfterPublishNewPost = async () => {
       console.log(`【addViewAfterPublishNewPost】有新的文章发布了`);
       const { posts: pubDatePosts } = await Post.list({
         offset: 1,
-        limit: 11,
+        limit: config.postView.viewPostCountAfterPublishNewPost || 6,
         order: 'PUB_DATE',
         dropAuthor: false,
         dayRange: null,

@@ -51,7 +51,7 @@ export default (props: Props) => {
           }
         `}</style>
         <style jsx global>{`
-          .MuiPaper-root {
+          .MuiDrawer-paper {
             background: none !important;
           }
         `}</style>

@@ -14,7 +14,7 @@ import TopicEditorModal from 'components/TopicEditorModal';
 import Loading from 'components/Loading';
 import topicApi, { ITopic } from 'apis/topic';
 import { FilterType } from 'apis/post';
-import _ from 'lodash';
+import { isEmpty } from 'lodash';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import marked from 'marked';
 import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
@@ -355,7 +355,7 @@ export default observer((props: any) => {
     );
   }
 
-  if (state.isFetchedTopic && _.isEmpty(state.topic)) {
+  if (state.isFetchedTopic && isEmpty(state.topic)) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
@@ -367,7 +367,7 @@ export default observer((props: any) => {
 
   const onDelete = () => {
     confirmDialogStore.show({
-      content: `专题删除后将无法找回，确定要删除吗？`,
+      content: `删除后无法找回，确定删除吗？`,
       okText: '确定',
       contentClassName: 'text-left',
       ok: async () => {

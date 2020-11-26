@@ -79,7 +79,7 @@ export default observer((props: any) => {
       setTimeout(() => {
         state.avatarDialogOpen = false;
       });
-      state.avatar = state.avatarTemp;
+      state.avatar = newUrl;
     };
 
     run().finally(() => {

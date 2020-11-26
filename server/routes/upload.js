@@ -53,7 +53,7 @@ router.post('/', upload.single('file'), async (ctx) => {
     let qingConfig = new Config(config.qingCloud.accessKeyId, config.qingCloud.secretAccessKey);
     let bucket = new QingStor(qingConfig).Bucket(config.qingCloud.bucketName, config.qingCloud.zone);
     const pPutObject = util.promisify(bucket.putObject.bind(bucket));
-    const folder = 'images/';
+    const folder = '';
     const file = await fs.promises.readFile(path)
     const hash = crypto.createHash('sha256');
     hash.update(file);

@@ -56,7 +56,7 @@ const PostEntry = observer((props: IPostProps) => {
     <div>
       <div id={post.rId} />
       <div className="border-b border-gray-200 py-10-px md:px-0 md:py-5 leading-none post cursor-pointer bg-white">
-        <div className="flex justify-between items-start px-4">
+        <div className="flex justify-between items-start px-4 relative">
           <div className="text-gray-88 box-border flex-1">
             <div
               className={classNames(

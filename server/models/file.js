@@ -8,6 +8,8 @@ const Post = require('./post');
 const Block = require('./block');
 const config = require('../config');
 const ase256cbcCrypto = require('../utils/ase256cbcCrypto');
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 const FILE_STATUS = {
   DRAFT: 'draft',
@@ -123,11 +125,12 @@ exports.create = async (userAddress, data) => {
 
 exports.list = async (userAddress, options = {}) => {
   const {
+    type,
     offset,
     limit,
   } = options;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
-  const files = await File.findAll({
+  const query = {
     attributes: {
       exclude: ['content', 'encryptedContent'],
     },
@@ -141,7 +144,15 @@ exports.list = async (userAddress, options = {}) => {
     order: [
       ['createdAt', 'DESC']
     ]
-  });
+  };
+  if (type === 'DRAFT') {
+    query.where[Op.or] = [{
+      rId: null
+    }, {
+      invisibility: true
+    }]
+  }
+  const files = await File.findAll(query);
   const list = await Promise.all(
     files.map((file) => {
       return packFile(file, {
@@ -152,15 +163,24 @@ exports.list = async (userAddress, options = {}) => {
   return list;
 };
 
-exports.count = async userAddress => {
+exports.count = async (userAddress, options = {}) => {
+  const { type } = options;
   assert(userAddress, Errors.ERR_IS_REQUIRED("userAddress"));
-  const count = await File.count({
+  const query = {
     where: {
       userAddress,
       deleted: false,
       topicAddress: config.topic.address
     },
-  });
+  };
+  if (type === 'DRAFT') {
+    query.where[Op.or] = [{
+      rId: null
+    }, {
+      invisibility: true
+    }]
+  }
+  const count = await File.count(query);
   return count;
 }
 

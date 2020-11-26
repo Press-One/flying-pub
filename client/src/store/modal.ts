@@ -14,7 +14,7 @@ interface IUserListData {
 type ITopicListData = {
   post?: IPost;
   title: string;
-  type: 'CREATED_TOPICS' | 'FOLLOWING_TOPICS' | 'CONTRIBUTION_TO_MY_TOPICS' | 'CONTRIBUTED_TOPICS',
+  type: 'CREATED_TOPICS' | 'FOLLOWING_TOPICS' | 'CONTRIBUTION_TO_MY_TOPICS' | 'CONTRIBUTED_TOPICS' | 'CONTRIBUTION_TO_PUBLIC_TOPICS',
   userAddress?: string;
   onClose?: () => void;
 }

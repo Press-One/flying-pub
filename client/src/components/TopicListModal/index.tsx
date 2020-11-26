@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog } from '@material-ui/core';
+import { Dialog, TextField } from '@material-ui/core';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import TopicEditorModal from 'components/TopicEditorModal';
@@ -12,6 +12,7 @@ import useInfiniteScroll from 'react-infinite-scroll-hook';
 import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
 import Img from 'components/Img';
+import classNames from 'classnames';
 
 const LIMIT = 15;
 
@@ -26,14 +27,20 @@ const TopicList = observer(() => {
     topics: [] as ITopic[],
     showTopicEditorModal: false,
     isFetching: true,
+    isFetched: false,
     includedTopicUuidMap: {} as any,
+    pendingTopicUuidMap: {} as any,
+    keyword: '',
+    searchKeyword: '',
   }));
   const { modalStore, userStore, snackbarStore } = useStore();
   const { data } = modalStore.topicList;
+  const post = data.post as IPost;
   const isCreatedTopics = data.type === 'CREATED_TOPICS';
   const isFollowingTopics = data.type === 'FOLLOWING_TOPICS';
   const isContributionToMyTopics = data.type === 'CONTRIBUTION_TO_MY_TOPICS';
-  const isContributedToMyTopics = data.type === 'CONTRIBUTED_TOPICS';
+  const isContributedTopics = data.type === 'CONTRIBUTED_TOPICS';
+  const isContributionToPublicTopics = data.type === 'CONTRIBUTION_TO_PUBLIC_TOPICS';
   const isMyself = userStore.isLogin && userStore.user.address === data.userAddress;
   const loading = React.useMemo(() => state.total === 0 && state.isFetching, [
     state.total,
@@ -53,8 +60,8 @@ const TopicList = observer(() => {
             offset: state.page * LIMIT,
             limit: LIMIT,
           });
-        } else if (isContributedToMyTopics) {
-          res = await postApi.fetchPostTopics((data.post as IPost).rId, {
+        } else if (isContributedTopics) {
+          res = await postApi.fetchPostTopics(post.rId, {
             offset: state.page * LIMIT,
             limit: LIMIT,
           });
@@ -62,6 +69,12 @@ const TopicList = observer(() => {
           res = await topicApi.fetchFollowingTopicsByUserAddress(data.userAddress as string, {
             offset: state.page * LIMIT,
             limit: LIMIT,
+          });
+        } else if (isContributionToPublicTopics) {
+          res = await topicApi.fetchPublicTopics({
+            offset: state.page * LIMIT,
+            limit: LIMIT,
+            keyword: state.searchKeyword,
           });
         }
         state.topics.push(...(res.topics as ITopic[]));
@@ -71,15 +84,19 @@ const TopicList = observer(() => {
         console.log(err);
       }
       state.isFetching = false;
+      state.isFetched = true;
     })();
   }, [
     state,
     data,
+    post,
     state.page,
+    state.searchKeyword,
     isCreatedTopics,
     isContributionToMyTopics,
-    isContributedToMyTopics,
+    isContributedTopics,
     isFollowingTopics,
+    isContributionToPublicTopics,
   ]);
 
   React.useEffect(() => {
@@ -98,12 +115,17 @@ const TopicList = observer(() => {
   });
 
   React.useEffect(() => {
-    if (data.post) {
-      for (const topic of data.post.topics) {
+    if (post) {
+      for (const topic of post.topics) {
         state.includedTopicUuidMap[topic.uuid] = true;
       }
+      if (post.pendingTopicUuids) {
+        for (const uuid of post.pendingTopicUuids) {
+          state.pendingTopicUuidMap[uuid] = true;
+        }
+      }
     }
-  }, [data.post, state]);
+  }, [post, state]);
 
   const addContribution = async (topic: ITopic, post: IPost) => {
     try {
@@ -129,6 +151,30 @@ const TopicList = observer(() => {
     }
   };
 
+  const addContributionRequest = async (topic: ITopic, post: IPost) => {
+    try {
+      await topicApi.addContributionRequest(topic.uuid, post.rId);
+      state.pendingTopicUuidMap[topic.uuid] = true;
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
+      console.log(err);
+    }
+  };
+
+  const removeContributionRequest = async (topic: ITopic, post: IPost) => {
+    try {
+      await topicApi.removeContributionRequest(topic.uuid, post.rId);
+      state.pendingTopicUuidMap[topic.uuid] = false;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const subscribe = async (topic: ITopic) => {
     try {
       await topicApi.subscribe(topic.uuid);
@@ -149,6 +195,42 @@ const TopicList = observer(() => {
     }
   };
 
+  const search = async () => {
+    if (state.keyword === state.searchKeyword) {
+      return;
+    }
+    state.isFetched = false;
+    state.page = 0;
+    state.topics = [];
+    state.total = 0;
+    state.searchKeyword = state.keyword;
+  };
+
+  const onKeyDown = (e: any) => {
+    if (e.keyCode === 13) {
+      search();
+      e.target.blur();
+    }
+  };
+
+  const SearchInput = () => (
+    <div className="mt-2 -mb-2 flex items-center justify-center pb-3">
+      <form action="/">
+        <TextField
+          className="po-input po-text-14 w-72 rounded"
+          placeholder="搜索专题"
+          size="small"
+          value={state.keyword}
+          onChange={(e) => (state.keyword = e.target.value)}
+          onKeyDown={onKeyDown}
+          margin="dense"
+          variant="outlined"
+          type="search"
+        />
+      </form>
+    </div>
+  );
+
   return (
     <div className="bg-white rounded-12 text-gray-4a">
       <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 text-gray-4a flex justify-between items-center">
@@ -162,31 +244,44 @@ const TopicList = observer(() => {
           </span>
         )}
       </div>
-      <div className="w-full md:w-400-px h-60-vh md:h-400-px overflow-y-auto">
+      <div
+        ref={infiniteRef}
+        className={classNames(
+          {
+            'h-90-vh': isContributionToPublicTopics,
+          },
+          'w-full md:w-400-px h-60-vh md:h-400-px overflow-y-auto',
+        )}
+      >
+        {state.isFetched && isContributionToPublicTopics && SearchInput()}
         {loading && (
           <div className="pt-24 flex items-center justify-center">
             <Loading />
           </div>
         )}
         {!loading && (
-          <div ref={infiniteRef}>
-            {!state.hasTopics && (
-              <div className="py-20 text-center text-gray-70 text-14">
-                {isMyself ? (
-                  <div>
-                    你还没有专题，
-                    <span
-                      className="text-blue-400 cursor-pointer"
-                      onClick={() => (state.showTopicEditorModal = true)}
-                    >
-                      点击创建一个
-                    </span>{' '}
-                  </div>
-                ) : (
-                  '暂无专题'
-                )}
-              </div>
-            )}
+          <div>
+            {(isCreatedTopics || isContributionToMyTopics || isContributionToPublicTopics) &&
+              state.isFetched &&
+              !state.hasTopics && (
+                <div className="py-20 text-center text-gray-500 text-14">
+                  {!state.searchKeyword && isMyself ? (
+                    <div>
+                      你还没有专题，
+                      <span
+                        className="text-blue-400 cursor-pointer"
+                        onClick={() => (state.showTopicEditorModal = true)}
+                      >
+                        点击创建一个
+                      </span>{' '}
+                    </div>
+                  ) : state.searchKeyword ? (
+                    '没有搜索到相关的专题'
+                  ) : (
+                    '暂无专题'
+                  )}
+                </div>
+              )}
             {state.topics.map((topic) => (
               <div
                 className="px-5 py-4 flex items-center justify-between border-gray-300 border-b"
@@ -212,7 +307,7 @@ const TopicList = observer(() => {
                     </div>
                   </div>
                 </ModalLink>
-                {(isContributedToMyTopics || isFollowingTopics || isCreatedTopics) && (
+                {(isContributedTopics || isFollowingTopics || isCreatedTopics) && (
                   <div>
                     {topic.following ? (
                       <Button size="small" onClick={() => unsubscribe(topic)} outline>
@@ -230,16 +325,55 @@ const TopicList = observer(() => {
                     <Button
                       size="small"
                       outline
-                      color="red"
-                      onClick={() => removeContribution(topic, data.post as IPost)}
+                      color="gray"
+                      onClick={() => removeContribution(topic, post)}
                     >
-                      移除
+                      已收录
                     </Button>
                   ) : (
-                    <Button size="small" onClick={() => addContribution(topic, data.post as IPost)}>
+                    <Button size="small" onClick={() => addContribution(topic, post)}>
                       收录
                     </Button>
                   ))}
+                {isContributionToPublicTopics && (
+                  <div>
+                    {topic.reviewEnabled && !state.includedTopicUuidMap[topic.uuid] && (
+                      <div>
+                        {!state.pendingTopicUuidMap[topic.uuid] && (
+                          <Button size="small" onClick={() => addContributionRequest(topic, post)}>
+                            投稿
+                          </Button>
+                        )}
+                        {state.pendingTopicUuidMap[topic.uuid] && (
+                          <div>
+                            <Button
+                              size="small"
+                              color="gray"
+                              onClick={() => removeContributionRequest(topic, post)}
+                            >
+                              待审核
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {!topic.reviewEnabled && !state.includedTopicUuidMap[topic.uuid] && (
+                      <Button size="small" onClick={() => addContribution(topic, post)}>
+                        投稿
+                      </Button>
+                    )}
+                    {state.includedTopicUuidMap[topic.uuid] && (
+                      <Button
+                        size="small"
+                        color="gray"
+                        outline
+                        onClick={() => removeContribution(topic, post)}
+                      >
+                        已投稿
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
             {state.hasMore && (

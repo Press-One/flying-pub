@@ -3,6 +3,7 @@ export function createUserStore() {
     isFetched: false,
     isLogin: false,
     shouldLogin: false,
+    canPublish: false,
     user: {
       mixinAccount: {},
     } as Record<string, any>,
@@ -22,6 +23,9 @@ export function createUserStore() {
     },
     setShouldLogin() {
       this.shouldLogin = true;
+    },
+    setCanPublish() {
+      this.canPublish = true;
     }
   };
 }

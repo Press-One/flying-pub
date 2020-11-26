@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface IProps {
-  threshold: number;
-  callback: (yes: boolean) => void;
+  threshold?: number;
+  callback?: (yes: boolean) => void;
 }
 
 export default (props: IProps) => {
@@ -12,7 +12,9 @@ export default (props: IProps) => {
     const callback = () => {
       const scrollElement = document.scrollingElement || document.documentElement;
       const scrollTop = scrollElement.scrollTop;
-      props.callback(scrollTop >= props.threshold);
+      if (props.callback && props.threshold) {
+        props.callback(scrollTop >= props.threshold);
+      }
       setScrollTop(scrollElement.scrollTop);
       console.log({ scrollTop });
     };

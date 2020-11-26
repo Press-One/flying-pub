@@ -370,7 +370,7 @@ export default observer((props: IProps) => {
       <Fade in={true} timeout={200}>
         <div className="fixed z-10 bottom-0 left-0 w-full py-2 border-t border-gray-300 bg-white flex items-center justify-between">
           <div
-            className="flex-1 ml-3 mr-3 rounded-lg bg-gray-200 text-gray-600 py-2 px-3"
+            className="flex-1 ml-3 mr-3 rounded-lg bg-gray-f2 text-gray-600 py-2 px-3"
             onClick={() => {
               setOpenDrawer(true);
               stopBodyScroll(true);
@@ -384,7 +384,7 @@ export default observer((props: IProps) => {
           <div className="flex items-center py-1 text-gray-99">
             {total > 0 && (
               <div
-                className="text-xl px-4 relative font-bold"
+                className="text-xl px-4 mr-1 relative font-bold"
                 onClick={() => {
                   const commentSection = document.getElementById('comment-section');
                   if (commentSection) {

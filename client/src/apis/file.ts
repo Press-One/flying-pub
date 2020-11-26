@@ -1,5 +1,15 @@
 import request from '../request';
 import qs from 'query-string';
+import { isMobile } from 'utils';
+
+export interface EditableFile {
+  title: string;
+  content: string;
+  cover?: string;
+  status?: string;
+  id?: number;
+  invisibility?: boolean;
+}
 
 export interface IFile {
   content: string;
@@ -21,9 +31,9 @@ export interface IFile {
 }
 
 export default {
-  getFiles(p: { offset: number; limit: number }) {
+  getFiles(p: { offset: number; limit: number, type?: string }) {
     return request(`/api/files?${qs.stringify(p)}`, {
-      minPendingDuration: 300
+      minPendingDuration: isMobile ? 500 : 300
     });
   },
   createDraft(file: any) {
@@ -48,7 +58,7 @@ export default {
   },
   getFile(id: any) {
     return request(`/api/files/${id}`, {
-      minPendingDuration: 300
+      minPendingDuration: 500
     });
   },
   getFileByRId(rId: any) {

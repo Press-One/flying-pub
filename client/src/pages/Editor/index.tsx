@@ -1,63 +1,17 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
-import SimpleMDE from 'react-simplemde-editor';
-import Button from 'components/Button';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import ImgUploader from './ImgUploader';
-import CoverUploader from './CoverUploader';
+import CoverUploadModal from './CoverUploadModal';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
-import classNames from 'classnames';
-import { Input, Tooltip } from '@material-ui/core';
-import NavigateBefore from '@material-ui/icons/NavigateBefore';
-import { CameraAlt } from '@material-ui/icons';
 import { useStore } from 'store';
 import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery, isPc, isMobile } from 'utils';
-import fileApi from 'apis/file';
-import authApi from 'apis/auth';
-import config from './config';
+import fileApi, { EditableFile } from 'apis/file';
 import * as EditorStorage from './Storage';
-import Img from 'components/Img';
-
-import 'easymde/dist/easymde.min.css';
-import './index.scss';
+import PcEditor from './PcEditor';
+import MobileEditor from './MobileEditor';
 
 const MAX_CONTENT_LENGTH = 20000;
-
-interface File {
-  title: string;
-  content: string;
-  cover?: string;
-  status?: string;
-  id?: number;
-  invisibility?: boolean;
-}
-
-const MainEditor = (props: any = {}) => {
-  const { title, handleTitleChange, content, handleContentChange, config } = props;
-  return (
-    <div className="-mt-2">
-      <Input
-        autoFocus={!title}
-        fullWidth
-        required
-        placeholder="标题"
-        value={title}
-        onChange={handleTitleChange}
-        inputProps={{
-          maxLength: 50,
-        }}
-      />
-
-      <SimpleMDE
-        className="p-editor-markdown"
-        value={content}
-        onChange={handleContentChange}
-        options={config}
-      />
-    </div>
-  );
-};
 
 export default observer((props: any) => {
   const {
@@ -67,8 +21,11 @@ export default observer((props: any) => {
     settingsStore,
     publishDialogStore,
     confirmDialogStore,
+    pathStore,
+    preloadStore,
   } = useStore();
   const { settings } = settingsStore;
+  const { prevPath } = pathStore;
 
   if (userStore.isFetched && !userStore.isLogin) {
     setTimeout(() => {
@@ -77,21 +34,20 @@ export default observer((props: any) => {
   }
 
   const id = getQuery('id') ? Number(getQuery('id')) : 0;
-  const [file, setFile] = React.useState({
-    title: EditorStorage.get(id, 'TITLE') || '',
-    content: EditorStorage.get(id, 'CONTENT') || '',
-    cover: EditorStorage.get(id, 'COVER') || '',
-  } as File);
-  const [isFetching, setIsFetching] = React.useState(true);
-  const [showImgUploader, setShowImgUploader] = React.useState(false);
-  const [showCoverUploader, setShowCoverUploader] = React.useState(false);
-  const [isFetchingPermission, setIsFetchingPermission] = React.useState(false);
-  const [wordCount, setWordCount] = React.useState(0);
-  const mdeRef = React.useRef<any>(null);
-  const hasPublishPermission = React.useRef(false);
+  const state = useLocalStore(() => ({
+    file: {
+      title: '',
+      content: '',
+      cover: '',
+    } as EditableFile,
+    isFetching: true,
+    isSaving: false,
+    showCoverUploadModal: false,
+    wordCount: 0,
+  }));
   const isDirtyRef = React.useRef(false);
-  const idRef = React.useRef(id);
-  const isPublished = file.status === 'published' || file.status === 'pending';
+  const idRef = React.useRef<any>(id);
+  const isPublished = state.file.status === 'published' || state.file.status === 'pending';
 
   React.useEffect(() => {
     (async () => {
@@ -99,6 +55,12 @@ export default observer((props: any) => {
         const rId = getQuery('rId');
         if (rId) {
           const file = await fileApi.getFileByRId(rId);
+          state.file.title = file.title;
+          state.file.content = file.content;
+          state.file.cover = file.cover;
+          state.file.status = file.status;
+          state.file.id = file.id;
+          state.file.invisibility = file.invisibility;
           removeQuery('rId');
           setQuery({
             id: file.id,
@@ -108,125 +70,68 @@ export default observer((props: any) => {
         }
         const id = getQuery('id');
         if (id) {
-          let file = await fileApi.getFile(id);
-          file.title = EditorStorage.get(id, 'TITLE') || file.title;
-          file.content = EditorStorage.get(id, 'CONTENT') || file.content;
-          file.cover = EditorStorage.get(id, 'COVER') || file.cover;
-          setFile(file);
+          const file = await fileApi.getFile(id);
+          state.file.title = EditorStorage.get(id, 'TITLE') || file.title;
+          state.file.content = EditorStorage.get(id, 'CONTENT') || file.content;
+          state.file.cover = EditorStorage.get(id, 'COVER') || file.cover;
+          state.file.status = file.status;
+          state.file.id = file.id;
+          state.file.invisibility = file.invisibility;
         } else {
           const hasCachedContent =
             EditorStorage.get(id, 'TITLE') ||
             EditorStorage.get(id, 'CONTENT') ||
             EditorStorage.get(id, 'COVER');
+          state.file.title = EditorStorage.get(id, 'TITLE') || '';
+          state.file.content = EditorStorage.get(id, 'CONTENT') || '';
+          state.file.cover = EditorStorage.get(id, 'COVER') || '';
           if (hasCachedContent) {
             isDirtyRef.current = true;
-            setTimeout(() => {
-              snackbarStore.show({
-                message: '已为你恢复上次未保存的内容...',
-                duration: 3000,
-              });
-            }, 2000);
+            if (isPc) {
+              setTimeout(() => {
+                snackbarStore.show({
+                  message: '已为你恢复上次未保存的内容...',
+                  duration: 3000,
+                });
+              }, 2000);
+            }
           }
         }
       } catch (err) {}
-      setIsFetching(false);
+      state.isFetching = false;
     })();
-  }, [snackbarStore]);
-
-  React.useEffect(() => {
-    (async () => {
-      setIsFetchingPermission(true);
-      try {
-        await authApi.checkPermission();
-        hasPublishPermission.current = true;
-      } catch (err) {
-        hasPublishPermission.current = false;
-      }
-      setIsFetchingPermission(false);
-    })();
-  }, []);
-
-  const uploadCallback = (imgs: any = []) => {
-    if (!mdeRef.current) {
-      console.error('mde not exist');
-      return;
-    }
-    if (imgs.length === 0) {
-      console.error('imgs is empty');
-      return;
-    }
-    const pos = mdeRef.current.codemirror.getCursor();
-    mdeRef.current.codemirror.setSelection(pos, pos);
-    const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-    mdeRef.current.codemirror.replaceSelection(
-      breakLinePrefix +
-        imgs
-          .map((img: any) => `![${img.filename}](${img.url})`)
-          .join('\n'),
-    );
-    setShowImgUploader(false);
-  };
-
-  React.useEffect(() => {
-    const toolbar: any = config.toolbar;
-    if (toolbar) {
-      toolbar.splice(-2, 0, {
-        name: 'image',
-        action: (mde: any) => {
-          mdeRef.current = mde;
-          setShowImgUploader(true);
-        },
-        className: 'fa fa-camera',
-        title: '插入图片',
-      });
-      return () => {
-        toolbar.splice(-3, 1);
-      };
-    }
-  }, []);
+  }, [snackbarStore, state]);
 
   const wordCountDebounce = React.useCallback(
     debounce((content: string) => {
-      setWordCount((content || '').length);
-    }, 500),
+      state.wordCount = (content || '').length;
+    }, 250),
     [],
   );
 
   React.useEffect(() => {
     (async () => {
-      wordCountDebounce(file.content);
+      wordCountDebounce(state.file.content);
     })();
-  }, [file.content, wordCountDebounce]);
+  }, [state.file.content, wordCountDebounce]);
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    file.title = event.target.value;
-    setFile({ ...file });
+    state.file.title = event.target.value;
     isDirtyRef.current = true;
     EditorStorage.set(idRef.current, 'TITLE', event.target.value);
   };
 
   const handleContentChange = (value: string) => {
-    file.content = value;
-    setFile({ ...file });
+    state.file.content = value;
     isDirtyRef.current = true;
     EditorStorage.set(idRef.current, 'CONTENT', value);
   };
 
-  const handleBack = async () => {
-    if (!isPublished && isDirtyRef.current && file.title && file.content) {
-      snackbarStore.show({
-        message: '正在保存草稿...',
-        duration: 5000,
-      });
-      await handleSave({
-        strict: false,
-      });
-      snackbarStore.close();
-    }
-    props.history.push('/dashboard');
+  const handleCoverChange = (url: string) => {
+    state.file.cover = url;
+    isDirtyRef.current = true;
+    EditorStorage.set(idRef.current, 'COVER', url);
   };
-
-  const [isSaving, setIsSaving] = React.useState(false);
 
   const handleSave = async (options: any) => {
     if (!isDirtyRef.current) {
@@ -234,32 +139,36 @@ export default observer((props: any) => {
     }
     const { strict = true } = options;
     try {
-      if (file.title && file.content) {
+      if (state.file.title && state.file.content) {
         isDirtyRef.current = false;
-        if (file.content.length > MAX_CONTENT_LENGTH) {
+        if (state.file.content.length > MAX_CONTENT_LENGTH) {
           snackbarStore.show({
             message: '内容最多 2 万字',
             type: 'error',
           });
           return;
         }
-        setIsSaving(true);
-        let param: File = {
-          title: file.title,
-          content: file.content,
-          cover: file.cover,
+        state.isSaving = true;
+        let param: EditableFile = {
+          title: state.file.title,
+          content: state.file.content,
+          cover: state.file.cover,
         };
         const isUpdating = !!idRef.current;
         if (isUpdating) {
-          const res = await fileApi.updateFile(file.id, param);
-          setFile(res.updatedFile);
+          const res = await fileApi.updateFile(state.file.id, param);
+          state.file.title = res.updatedFile.title;
+          state.file.content = res.updatedFile.content;
+          state.file.cover = res.updatedFile.cover;
           fileStore.updateFile(res.updatedFile);
           EditorStorage.remove(idRef.current, 'TITLE');
           EditorStorage.remove(idRef.current, 'CONTENT');
           EditorStorage.remove(idRef.current, 'COVER');
         } else {
           const res = await fileApi.createDraft(param);
-          setFile(res);
+          state.file.title = res.title;
+          state.file.content = res.content;
+          state.file.cover = res.cover;
           EditorStorage.remove(idRef.current, 'TITLE');
           EditorStorage.remove(idRef.current, 'CONTENT');
           EditorStorage.remove(idRef.current, 'COVER');
@@ -272,7 +181,7 @@ export default observer((props: any) => {
         if (!strict) {
           return;
         }
-        if (file.title)
+        if (state.file.title)
           snackbarStore.show({
             message: '内容不能为空',
             type: 'error',
@@ -292,34 +201,35 @@ export default observer((props: any) => {
         type: 'error',
       });
     } finally {
-      setIsSaving(false);
+      state.isSaving = false;
     }
   };
 
   const handlePublish = async () => {
-    if (isSaving) {
+    if (state.isSaving) {
       return;
     }
     if (confirmDialogStore.loading) {
       return;
     }
     try {
-      if (file.title && file.content) {
+      if (state.file.title && state.file.content) {
         isDirtyRef.current = false;
         confirmDialogStore.setLoading(true);
-        let param: File = {
-          title: file.title,
-          content: file.content,
-          cover: file.cover,
+        let param: EditableFile = {
+          title: state.file.title,
+          content: state.file.content,
+          cover: state.file.cover,
         };
         const isUpdating = !!idRef.current;
+        let rId = '';
         if (isUpdating) {
-          const isDraft = file.status === 'draft';
+          const isDraft = state.file.status === 'draft';
           const isReplacement = !isDraft;
-          if (file.invisibility) {
-            await fileApi.showFile(file.id);
+          if (state.file.invisibility) {
+            await fileApi.showFile(state.file.id);
           }
-          const res = await fileApi.updateFile(file.id, param, isDraft);
+          const res = await fileApi.updateFile(state.file.id, param, isDraft);
           if (isDraft) {
             fileStore.updateFile(res.updatedFile);
             publishDialogStore.show(res.updatedFile);
@@ -329,18 +239,20 @@ export default observer((props: any) => {
               duration: 2000,
             });
           }
+          rId = res.updatedFile.rId;
         } else {
           const res = await fileApi.createFile(param);
           publishDialogStore.show(res);
+          rId = res.rId;
         }
         EditorStorage.remove(idRef.current, 'TITLE');
         EditorStorage.remove(idRef.current, 'CONTENT');
         EditorStorage.remove(idRef.current, 'COVER');
         confirmDialogStore.setLoading(false);
         confirmDialogStore.hide();
-        props.history.push('/dashboard');
+        props.history.push(isPc ? '/dashboard' : `posts/${rId}`);
       } else {
-        if (file.title)
+        if (state.file.title)
           snackbarStore.show({
             message: '内容不能为空',
             type: 'error',
@@ -360,8 +272,8 @@ export default observer((props: any) => {
     }
   };
 
-  const handleClickOpen = async () => {
-    if (isFetchingPermission) {
+  const handlePublishClickOpen = async () => {
+    if (!preloadStore.ready) {
       return;
     }
     const mixinProfile = userStore.profiles.find((v) => v.provider === 'mixin');
@@ -389,7 +301,7 @@ export default observer((props: any) => {
       return;
     }
 
-    if (!hasPublishPermission.current) {
+    if (!userStore.canPublish) {
       confirmDialogStore.show({
         contentClassName: 'text-left',
         content: settings['permission.denyText'],
@@ -428,7 +340,7 @@ export default observer((props: any) => {
     `
       : '';
     let content = `确定${isPublished ? '更新' : '发布'}文章吗？${rulePostLink}`;
-    if (file.invisibility) {
+    if (state.file.invisibility) {
       content = '这篇文章目前已隐藏，更新文章将重新发布，并且对所有人可见，确定更新吗？';
     }
     isDirtyRef.current = false;
@@ -441,50 +353,50 @@ export default observer((props: any) => {
     });
   };
 
-  // previewIcon
-  React.useEffect(() => {
-    let button = document.getElementsByClassName('preview');
-    if (button[0]) button[0].setAttribute('title', '预览 (Cmd-P)');
-  });
+  const goBack = () => {
+    if (isPc) {
+      prevPath ? props.history.goBack() : props.history.push('/dashboard');
+    } else {
+      prevPath ? props.history.goBack() : props.history.push(`/authors/${userStore.user.address}`);
+    }
+  };
+
+  const handleBack = async () => {
+    if (!isPublished && isDirtyRef.current && state.file.title && state.file.content) {
+      confirmDialogStore.show({
+        content: '要保存这份草稿吗？',
+        cancelText: '不保存',
+        okText: '保存',
+        cancel: async () => {
+          confirmDialogStore.hide();
+          await sleep(100);
+          goBack();
+        },
+        ok: async () => {
+          confirmDialogStore.setLoading(true);
+          await handleSave({
+            strict: false,
+          });
+          confirmDialogStore.setLoading(false);
+          confirmDialogStore.hide();
+          await sleep(100);
+          goBack();
+          await sleep(350);
+          snackbarStore.show({
+            message: '草稿已保存，点击右上角的图标可以查看草稿',
+            duration: 2500,
+          });
+        },
+      });
+    } else {
+      goBack();
+    }
+  };
 
   return (
     <Fade in={true} timeout={500}>
-      <div
-        className={classNames(
-          {
-            'mobile overflow-y-auto h-screen box-border': isMobile,
-          },
-          'p-editor max-w-1200 mx-auto flex justify-center relative',
-        )}
-      >
-        {isPc && !isFetching && (
-          <div onClick={handleBack}>
-            <nav className="p-editor-back flex items-center text-blue-400">
-              <NavigateBefore />
-              文章
-            </nav>
-          </div>
-        )}
-
-        {isPc && (file.title || file.content) && (
-          <Fade in={true} timeout={500}>
-            <div className="p-editor-save pt-5 flex">
-              {!isPublished && (
-                <div onClick={handleSave}>
-                  <Button outline className="mr-5" isDoing={isSaving} isDone={!isSaving}>
-                    保存草稿
-                  </Button>
-                </div>
-              )}
-
-              <div onClick={handleClickOpen}>
-                <Button>{isPublished ? '更新文章' : '发布'}</Button>
-              </div>
-            </div>
-          </Fade>
-        )}
-
-        {isFetching && (
+      <div>
+        {state.isFetching && (
           <div className="h-screen flex justify-center items-center">
             <div className="-mt-20">
               <Loading />
@@ -492,86 +404,47 @@ export default observer((props: any) => {
           </div>
         )}
 
-        {!isFetching && (
-          <div className="p-editor-input-area relative">
-            <MainEditor
-              title={file.title}
-              handleTitleChange={handleTitleChange}
-              content={file.content}
-              handleContentChange={handleContentChange}
-              config={config}
-            />
+        {!state.isFetching && (
+          <div>
             {isPc && (
-              <div>
-                <div
-                  className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
-                  onClick={() => setShowCoverUploader(true)}
-                >
-                  <div className="flex items-center h-8">
-                    {file.cover && (
-                      <Tooltip
-                        title={
-                          <div>
-                            <Img
-                              src={file.cover}
-                              resizeWidth={250}
-                              useOriginalDefault
-                              alt="封面"
-                              width="250"
-                            />
-                          </div>
-                        }
-                        placement="left"
-                      >
-                        <div>
-                          <Img
-                            className="rounded mr-2"
-                            width="55px"
-                            src={file.cover}
-                            resizeWidth={55}
-                            alt="封面"
-                          />
-                        </div>
-                      </Tooltip>
-                    )}
-                    {!file.cover && (
-                      <div
-                        className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
-                        style={{ width: '55px', height: '31px', marginTop: '-2px' }}
-                      >
-                        <div className="flex items-center mt-1">
-                          <CameraAlt />
-                        </div>
-                      </div>
-                    )}
-                    {file.cover ? '更换封面' : '上传封面'}
-                  </div>
-                </div>
-                {wordCount > 0 && (
-                  <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
-                    {wordCount} 字
-                  </div>
-                )}
-              </div>
+              <PcEditor
+                file={state.file}
+                handleTitleChange={handleTitleChange}
+                handleContentChange={handleContentChange}
+                openCoverUploadModal={() => (state.showCoverUploadModal = true)}
+                wordCount={state.wordCount}
+                handlePublishClickOpen={handlePublishClickOpen}
+                handleBack={handleBack}
+                isFetching={state.isFetching}
+                isSaving={state.isSaving}
+                isPublished={isPublished}
+                handleSave={handleSave}
+              />
+            )}
+
+            {isMobile && (
+              <MobileEditor
+                file={state.file}
+                handleTitleChange={handleTitleChange}
+                handleContentChange={handleContentChange}
+                openCoverUploadModal={() => (state.showCoverUploadModal = true)}
+                wordCount={state.wordCount}
+                handlePublishClickOpen={handlePublishClickOpen}
+                handleBack={handleBack}
+                isFetching={state.isFetching}
+                isSaving={state.isSaving}
+                isPublished={isPublished}
+                handleSave={handleSave}
+              />
             )}
           </div>
         )}
 
-        <ImgUploader
-          open={showImgUploader}
-          close={() => setShowImgUploader(false)}
-          uploadCallback={uploadCallback}
-        />
-
-        <CoverUploader
-          open={showCoverUploader}
-          close={() => setShowCoverUploader(false)}
-          cover={file.cover}
-          setCover={(url: string) => {
-            file.cover = url;
-            EditorStorage.set(idRef.current, 'COVER', url);
-            setShowCoverUploader(false);
-          }}
+        <CoverUploadModal
+          open={state.showCoverUploadModal}
+          close={() => (state.showCoverUploadModal = false)}
+          cover={state.file.cover}
+          setCover={handleCoverChange}
         />
       </div>
     </Fade>

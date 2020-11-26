@@ -37,7 +37,11 @@ export default observer(() => {
             }
       }
       open={open}
-      onClose={() => confirmDialogStore.hide()}
+      onClose={() => {
+        if (!cancel) {
+          confirmDialogStore.hide();
+        }
+      }}
       className="flex justify-center items-center"
     >
       <DialogTitle>
