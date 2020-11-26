@@ -381,11 +381,13 @@ export default observer((props: any) => {
           confirmDialogStore.hide();
           await sleep(100);
           goBack();
-          await sleep(350);
-          snackbarStore.show({
-            message: '草稿已保存，点击右上角的图标可以查看草稿',
-            duration: 2500,
-          });
+          if (isMobile) {
+            await sleep(350);
+            snackbarStore.show({
+              message: '草稿已保存，点击右上角的图标可以查看草稿',
+              duration: 2500,
+            });
+          }
         },
       });
     } else {

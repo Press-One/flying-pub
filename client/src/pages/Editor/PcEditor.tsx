@@ -10,6 +10,7 @@ import Img from 'components/Img';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import Button from 'components/Button';
 import Fade from '@material-ui/core/Fade';
+import { useStore } from 'store';
 
 import 'easymde/dist/easymde.min.css';
 import './index.scss';
@@ -29,6 +30,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
+  const { snackbarStore } = useStore();
   const state = useLocalStore(() => ({
     showImgUploadModal: false,
   }));
@@ -50,6 +52,10 @@ export default observer((props: IProps) => {
       breakLinePrefix + images.map((img: any) => `![图片](${img.url})`).join('\n'),
     );
     state.showImgUploadModal = false;
+    snackbarStore.show({
+      delayDuration: 500,
+      message: '图片插入成功，点击预览可查看效果',
+    });
   };
 
   React.useEffect(() => {
