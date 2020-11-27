@@ -84,7 +84,7 @@ const DraftEntry = observer((props: { file: IFile; refreshPosts: () => void }) =
             invisible: file.invisibility,
             name: '编辑',
             onClick: () => {
-              history.push(`/write?id=${file.id}`);
+              history.push(`/editor?id=${file.id}`);
             },
           },
           {

@@ -599,7 +599,7 @@ export default observer((props: any) => {
           {
             name: '编辑',
             onClick: () => {
-              props.history.push(`/write?id=${post.fileId}`);
+              props.history.push(`/editor?id=${post.fileId}`);
             },
           },
           {
@@ -729,7 +729,7 @@ export default observer((props: any) => {
               settingsStore.settings.extra['postView.visible']) && (
               <span className="mr-5">阅读 {post.viewCount}</span>
             )}
-            {isMyself && !isMobile && <Link to={`/write?id=${post.fileId}`}>编辑</Link>}
+            {isMyself && !isMobile && <Link to={`/editor?id=${post.fileId}`}>编辑</Link>}
           </div>
         </div>
         <div
