@@ -10,8 +10,8 @@ import ButtonOutlined from 'components/ButtonOutlined';
 import TopicLabels, { IncludedButton } from 'components/TopicLabels';
 import Fade from '@material-ui/core/Fade';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
-import ThumbUp from '@material-ui/icons/ThumbUp';
-import CommentIcon from '@material-ui/icons/Comment';
+import { faCommentDots, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ShareIcon from '@material-ui/icons/Share';
 import Badge from '@material-ui/core/Badge';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
@@ -501,7 +501,7 @@ export default observer((props: any) => {
               'flex items-center text-xl transform scale-90',
             )}
           >
-            <ThumbUp />
+            <FontAwesomeIcon icon={faThumbsUp} />
           </div>
         </Badge>
       </div>
@@ -531,7 +531,7 @@ export default observer((props: any) => {
           invisible={!isFetchedComments || !Number(commentStore.total)}
         >
           <div className={classNames('text-gray-600 flex items-center text-xl')}>
-            <CommentIcon />
+            <FontAwesomeIcon icon={faCommentDots} />
           </div>
         </Badge>
       </div>
@@ -826,6 +826,9 @@ export default observer((props: any) => {
           }
           .gray {
             color: #aea9ae;
+          }
+          .post-page :global(.small-icon-badge .MuiBadge-root) {
+            width: 17px;
           }
           .post-page :global(.badge-visible .MuiBadge-anchorOriginTopRightRectangle) {
             transform: scale(0.9) translate(50%, -50%);

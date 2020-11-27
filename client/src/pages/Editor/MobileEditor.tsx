@@ -40,20 +40,20 @@ export default observer((props: IProps) => {
     toolbarTop: 0 as any,
     showImgUploadModal: false,
     showPreviewModal: false,
-    editorHeight: (window as any).outerHeight - 48 - 42,
+    editorHeight: (window as any).visualViewport.height - 48 - 42,
     typing: false,
   }));
   const textareaRef = React.useRef<any>(null);
 
   const getIsKeyboardActive = () =>
-    (window as any).visualViewport.height < (window as any).outerHeight;
+    (window as any).visualViewport.height + 150 < (window as any).outerHeight;
 
   const tryAdjustToolbarPosition = React.useCallback(() => {
     if (getIsKeyboardActive()) {
       state.editorHeight = (window as any).visualViewport.height - 42;
       state.typing = true;
     } else {
-      state.editorHeight = (window as any).outerHeight - 48 - 42;
+      state.editorHeight = (window as any).visualViewport.height - 48 - 42;
       state.typing = false;
     }
     setTimeout(() => {

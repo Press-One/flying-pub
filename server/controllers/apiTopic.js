@@ -499,6 +499,7 @@ exports.rejectContributionRequest = async ctx => {
     }
   });
   Log.create(user.id, `拒绝收录，给专题 ${topic.uuid} ${topic.name} 收录 ${post.title} ${getHost()}/posts/${post.rId}`);
+  Log.create(user.id, `拒绝理由：${data.note || '无'}`);
   (async () => {
     try {
       const pendingCount = await getPendingContributionRequestCount(topic.userId);

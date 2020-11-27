@@ -504,7 +504,8 @@ const updateReceiptByUuid = async (uuid, data) => {
           amount: parseFloat(updatedReceipt.amount),
           currency: updatedReceipt.currency,
         })
-      })
+      });
+      Log.create(userId, `被打赏的文章 ${config.settings['site.url'] || config.serviceRoot}/posts/${file.rId}`);
     } catch (e) {
       console.log(e);
     }
