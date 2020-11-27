@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./database');
 
-const UserExtra = sequelize.define('users_extra', {
+const UserExtra = sequelize.define('users_extras', {
   id: {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -23,7 +23,6 @@ const UserExtra = sequelize.define('users_extra', {
     unique: true,
     fields: ['userId']
   }],
-  freezeTableName: true
 });
 
 module.exports = UserExtra;
