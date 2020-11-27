@@ -33,7 +33,7 @@ exports.get = async ctx => {
       user.SSO.pub.address
     );
   }
-  const [mixinWalletClientId, mixinAccount, conversation, reviewEnabledTopic, userExtra] = await Promise.all([
+  const [mixinWalletClientId, mixinAccount, conversation, reviewEnabledTopic] = await Promise.all([
     Wallet.getMixinClientIdByUserAddress(
       user.address
     ),
@@ -45,8 +45,7 @@ exports.get = async ctx => {
         userId: user.id,
         reviewEnabled: true
       }
-    }),
-    sequelizeUser.getUserExtra()
+    })
   ]);
   user.mixinWalletClientId = mixinWalletClientId;
   user.mixinAccount = mixinAccount;
@@ -54,7 +53,6 @@ exports.get = async ctx => {
     ...user,
     notificationEnabled: !!conversation,
     topicReviewEnabled: !!reviewEnabledTopic,
-    newFeatRecord: userExtra && userExtra.newFeatRecord ? userExtra.newFeatRecord : '[]',
   };
 };
 
