@@ -4,6 +4,7 @@ const {
   getPublicUser,
   put,
   setPassword,
+  addNewFeatRecord,
 } = require('../controllers/apiUser');
 const {
   ensureAuthorization,
@@ -13,5 +14,6 @@ router.get('/', ensureAuthorization(), get);
 router.get('/:id', getPublicUser);
 router.put('/', ensureAuthorization(), put);
 router.put('/password', ensureAuthorization(), setPassword);
+router.put('/new_feat_record', ensureAuthorization(), addNewFeatRecord);
 
 module.exports = router;

@@ -223,4 +223,7 @@ export default {
       body: { payload: { sticky: false } },
     });
   },
+  addNewFeatRecord(feat: string) {
+    return request(`/api/user/new_feat_record`, { method: 'PUT', body: { feat }});
+  },
 };

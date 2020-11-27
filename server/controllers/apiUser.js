@@ -158,3 +158,32 @@ exports.setPassword = async (ctx) => {
     success: true
   };
 }
+
+// add alread used new feat record
+exports.addNewFeatRecord = async (ctx) => {
+  const {
+    sequelizeUser,
+  } = ctx.verification;
+
+  const {
+    feat,
+  } = ctx.request.body || {};
+  assert(feat, Errors.ERR_IS_REQUIRED('feat'));
+
+  const userExtra = await sequelizeUser.getUserExtra();
+
+  if (!userExtra) {
+    sequelizeUser.createUserExtra({newFeatRecord: JSON.stringify([feat])})
+  } else {
+    let newFeatRecord = userExtra.newFeatRecord ? JSON.parse(userExtra.newFeatRecord) : [];
+    if (!newFeatRecord.includes(feat)) {
+      newFeatRecord.push(feat);
+      userExtra.newFeatRecord = JSON.stringify(newFeatRecord);
+      await userExtra.save();
+    }
+  }
+
+  ctx.body = {
+    success: true
+  };
+}
