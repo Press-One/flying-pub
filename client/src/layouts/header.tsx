@@ -101,7 +101,7 @@ export default observer((props: any) => {
             invisible: !userStore.isLogin || (isWeChat && !canPublish),
             name: '写文章',
             onClick: () => {
-              props.history.push(`/editor`);
+              props.history.push(`/write`);
             },
           },
           {

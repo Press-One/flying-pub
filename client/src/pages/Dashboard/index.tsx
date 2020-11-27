@@ -49,7 +49,7 @@ const useImportDialog = (props: any) => {
       .then(
         (file) => {
           setTimeout(() => {
-            props.history.push(`/editor?id=${file.id}`);
+            props.history.push(`/write?id=${file.id}`);
           });
         },
         (err) => {
@@ -205,7 +205,7 @@ export default observer((props: RouteChildrenProps) => {
             </Button>
           )}
 
-          <Link to="/editor">
+          <Link to="/write">
             <Button>写文章</Button>
           </Link>
         </div>

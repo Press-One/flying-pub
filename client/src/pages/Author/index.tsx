@@ -278,7 +278,7 @@ export default observer((props: any) => {
   const EditorEntry = () => {
     return (
       <div className="fixed bottom-0 right-0 m-4 z-10">
-        <Link to={`/editor`}>
+        <Link to={`/write`}>
           <div className="text-20 flex items-center justify-center w-12 h-12 rounded-full bg-blue-400 text-white">
             <FontAwesomeIcon icon={faPen} />
           </div>

@@ -43,7 +43,7 @@ export default observer((props: any) => {
   };
 
   const editFile = (fileId: number) => {
-    props.history.push(`/editor?id=${fileId}`);
+    props.history.push(`/write?id=${fileId}`);
   };
 
   const showFile = (id: number) => {

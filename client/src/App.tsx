@@ -74,7 +74,7 @@ const Reader = () => {
 const Pub = () => {
   return (
     <div>
-      <Route path="/editor" exact component={Editor} />
+      <Route path="/write" exact component={Editor} />
       {isPc && (
         <Route
           path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
