@@ -98,6 +98,8 @@ export const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
 
 export const isFirefox = navigator.userAgent.indexOf("Firefox") > 0;
 
+export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 export const getImageWidth = (width: number) => {
   return (window.devicePixelRatio || 1) * width
 }

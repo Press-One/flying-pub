@@ -1,7 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { ago, isMobile, urlify } from 'utils';
+import { ago, isMobile, urlify, isSafari, isIPhone } from 'utils';
 import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteOutline from '@material-ui/icons/Close';
@@ -13,6 +13,7 @@ export default class CommentItem extends React.Component<any, any> {
     this.state = {
       canExpand: false,
       expand: false,
+      readyToFold: isSafari || isIPhone ? false : true,
     };
     this.commentRef = React.createRef();
     this.setCanExpand = this.setCanExpand.bind(this);
@@ -23,6 +24,16 @@ export default class CommentItem extends React.Component<any, any> {
   componentDidMount() {
     this.setCanExpand();
     window.addEventListener('resize', this.setCanExpand);
+    if (isSafari || isIPhone) {
+      setTimeout(() => {
+        this.setState({
+          readyToFold: true,
+        });
+        setTimeout(() => {
+          this.setCanExpand();
+        }, 0);
+      }, 400);
+    }
   }
 
   componentWillUnmount() {
@@ -162,6 +173,7 @@ export default class CommentItem extends React.Component<any, any> {
                 className={classNames(
                   {
                     'comment-expand': this.state.expand,
+                    'comment-fold': !this.state.expand && this.state.readyToFold,
                   },
                   'comment-body comment text-gray-1e break-words whitespace-pre-wrap',
                 )}
@@ -196,6 +208,8 @@ export default class CommentItem extends React.Component<any, any> {
           .comment-body {
             font-size: 14px;
             line-height: 1.625;
+          }
+          .comment-fold {
             overflow: hidden;
             text-overflow: ellipsis;
             -webkit-line-clamp: 10;
