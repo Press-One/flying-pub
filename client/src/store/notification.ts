@@ -1,3 +1,5 @@
+import { isPc } from 'utils';
+
 export enum NotificationType {
   ARTICLE = 'ARTICLE',
   COMMENT = 'COMMENT',
@@ -62,7 +64,7 @@ export function createNotificationStore() {
     isFirstFetching: true,
     lastReadMsgId: 0,
     connected: false,
-    limit: 15,
+    limit: isPc ? 15 : 10,
     loading: false,
     messages: [] as Notification[],
     summary: {} as any,

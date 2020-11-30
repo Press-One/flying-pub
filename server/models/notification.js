@@ -32,8 +32,20 @@ exports.tryNotify = async () => {
   const keys = await Cache.pFindKeys(TYPE, `${JOB_ID_PREFIX}*`);
   while (keys.length > 0) {
     try {
-      const id = keys.shift().match(/JOB_(.*)/)[0];
-      const data = await Cache.pGet(TYPE, id);
+      const [key, id] = keys.shift().match(/JOB_(.*)/);
+      const DONE_KEY = `${id}_DONE`;
+      const PENDING_KEY = `${id}_PENDING`;
+      const isDone = await Cache.pGet(TYPE, DONE_KEY);
+      if (isDone) {
+        await Cache.pDel(TYPE, key);
+        await Cache.pDel(TYPE, PENDING_KEY);
+        continue;
+      }
+      const isPending = await Cache.pGet(TYPE, PENDING_KEY);
+      if (isPending) {
+        continue;
+      }
+      const data = await Cache.pGet(TYPE, key);
       if (data) {
         const json = JSON.parse(data);
         const {
@@ -44,18 +56,22 @@ exports.tryNotify = async () => {
             continue;
           }
         }
+        await Cache.pSetWithExpired(TYPE, PENDING_KEY, '1', 60, true);
         if (json.messageSystem) {
           const isSuccess = await MessageSystem.notify(json.messageSystem);
           if (!isSuccess) {
             Log.createAnonymity('站内信', `无法发送，保留消息，等待重试`);
+            await Cache.pDel(TYPE, PENDING_KEY);
             continue;
           }
         }
         if (json.mixin) {
           await Mixin.notify(json.mixin);
         }
+        await Cache.pDel(TYPE, PENDING_KEY);
       }
-      await Cache.pDel(TYPE, id);
+      await Cache.pDel(TYPE, key);
+      await Cache.pSetWithExpired(TYPE, DONE_KEY, '1', 60, true);
       await sleep(200);
     } catch (err) {
       console.log(err);

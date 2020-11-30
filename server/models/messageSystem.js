@@ -23,6 +23,7 @@ const notify = async (payload, messageType = "private_message", channel = "all")
       method: "POST",
       json: true,
       body: data,
+      timeout: 5000
     }).promise();
     Log.createAnonymity('站内信', `成功发送 ${payload.sub_type} ${payload.message}`);
     return true;

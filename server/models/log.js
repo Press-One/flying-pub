@@ -49,6 +49,7 @@ const sendToBot = async (data, options = {}) => {
   await request({
     uri: config.bot.url,
     method: 'post',
+    timeout: 10000,
     json: true,
     body: {
       payload: data
@@ -59,6 +60,7 @@ const sendToBot = async (data, options = {}) => {
     await request({
       uri: config.bot.mixin.url,
       method: 'post',
+      timeout: 10000,
       json: true,
       body: {
         payload: {

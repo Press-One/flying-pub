@@ -121,7 +121,7 @@ var get = function (type, id, callback) {
       try {
         value = JSON.parse(reply);
       } catch (err) {
-        return callback(err);
+        return callback(null, value);
       }
       callback(null, value);
     });

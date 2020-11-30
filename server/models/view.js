@@ -187,7 +187,7 @@ exports.addViewAfterPublishNewPost = async () => {
         }
         counter++;
       }
-      await Cache.pSet(TYPE, KEY, allVisiblePostCount);
+      await Cache.pSet(TYPE, KEY, `${allVisiblePostCount}`);
       return;
     }
   } catch (err) {
