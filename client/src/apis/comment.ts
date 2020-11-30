@@ -27,6 +27,21 @@ export default {
     const path = `/api/comments/${id}`;
     return request(path, {
       method: 'DELETE',
+      minPendingDuration: 500
+    });
+  },
+  stick(id: number) {
+    const path = `/api/comments/${id}/stick`;
+    return request(path, {
+      method: 'POST',
+      minPendingDuration: 500
+    });
+  },
+  unstick(id: number) {
+    const path = `/api/comments/${id}/unstick`;
+    return request(path, {
+      method: 'POST',
+      minPendingDuration: 500
     });
   },
   batchCommentIds(ids: string[]) {

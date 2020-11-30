@@ -1,9 +1,12 @@
 export function createCommentStore() {
-  let defaultComments: any = [];
-
   return {
     total: 0,
-    comments: defaultComments,
+    comments: [] as any,
+    get stickyComments () {
+      return this.comments
+      .filter((comment: any) => comment.sticky)
+      .sort((a: any, b: any) => new Date(a.updatedAt) < new Date(b.updatedAt) ? 1 : -1);
+    },
     setTotal(total: number) {
       this.total = total;
     },
@@ -26,5 +29,15 @@ export function createCommentStore() {
       this.comments = this.comments.filter((comment: any) => comment.id !== commentId);
       this.total = this.total - 1;
     },
+    stickComment(commentId: number) {
+      const comment = this.comments.find((comment: any) => comment.id === commentId);
+      comment.sticky = true;
+      comment.updatedAt = new Date().toISOString();
+    },
+    unstickComment(commentId: number) {
+      const comment = this.comments.find((comment: any) => comment.id === commentId);
+      comment.sticky = false;
+      comment.updatedAt = new Date().toISOString();
+    }
   };
 }

@@ -170,7 +170,6 @@ export default observer((props: any) => {
               <Settings className="text-base" />
             </IconButton>
             <Menu
-              id="dashboard-post-menu"
               anchorEl={anchorEl}
               keepMounted
               open={Boolean(anchorEl)}
@@ -273,11 +272,6 @@ export default observer((props: any) => {
       <style jsx>{`
         .title {
           max-width: 16rem;
-        }
-      `}</style>
-      <style jsx global>{`
-        #dashboard-post-menu .MuiMenuItem-root {
-          font-size: 14px !important;
         }
       `}</style>
     </TableRow>

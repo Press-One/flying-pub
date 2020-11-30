@@ -29,6 +29,10 @@ const Comment = sequelize.define('comments', {
   deleted: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  sticky: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,

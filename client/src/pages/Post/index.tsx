@@ -409,6 +409,7 @@ export default observer((props: any) => {
     return (
       <div className="pb-10">
         <Comment
+          isMyself={isMyself}
           fileRId={post.rId}
           alwaysShowCommentEntry
           tryVote={() => {

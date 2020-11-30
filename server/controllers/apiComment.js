@@ -177,6 +177,34 @@ exports.remove = async (ctx) => {
   ctx.body = deletedComment;
 };
 
+exports.stick = async (ctx) => {
+  const userId = ctx.verification.user.id;
+  const id = ~~ctx.params.id;
+  const comment = await Comment.get(id, {
+    userId,
+  });
+  assert(comment, Errors.ERR_NOT_FOUND('comment'));
+  await Comment.update(id, {
+    sticky: true
+  });
+  Log.create(userId, `置顶评论 ${id}`);
+  ctx.body = true;
+};
+
+exports.unstick = async (ctx) => {
+  const userId = ctx.verification.user.id;
+  const id = ~~ctx.params.id;
+  const comment = await Comment.get(id, {
+    userId,
+  });
+  assert(comment, Errors.ERR_NOT_FOUND('comment'));
+  await Comment.update(id, {
+    sticky: false
+  });
+  Log.create(userId, `取消置顶评论 ${id}`);
+  ctx.body = true;
+};
+
 exports.list = async (ctx) => {
   const {
     fileRId

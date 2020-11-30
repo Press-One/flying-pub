@@ -26,6 +26,7 @@ import CommentApi from 'apis/comment';
 import Api from 'api';
 
 interface IProps {
+  isMyself: boolean;
   fileRId: number;
   alwaysShowCommentEntry: boolean;
   tryVote: () => void;
@@ -40,7 +41,7 @@ export default observer((props: IProps) => {
     modalStore,
     confirmDialogStore,
   } = useStore();
-  const { total, comments } = commentStore;
+  const { total, stickyComments, comments } = commentStore;
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
@@ -252,28 +253,19 @@ export default observer((props: IProps) => {
     setIsVoting(false);
   };
 
-  const tryDeleteComment = async (commentId: number) => {
-    confirmDialogStore.show({
-      content: '确定删除这条评论？',
-      ok: async () => {
-        confirmDialogStore.setLoading(true);
-        await sleep(500);
-        await deleteComment(commentId);
-        confirmDialogStore.hide();
-      },
-    });
+  const deleteComment = async (commentId: number) => {
+    await CommentApi.delete(commentId);
+    commentStore.removeComment(commentId);
   };
 
-  const deleteComment = async (commentId: number) => {
-    try {
-      await CommentApi.delete(commentId);
-      commentStore.removeComment(commentId);
-    } catch (e) {
-      snackbarStore.show({
-        message: '删除失败，请稍后重试',
-        type: 'error',
-      });
-    }
+  const stickComment = async (commentId: number) => {
+    await CommentApi.stick(commentId);
+    commentStore.stickComment(commentId);
+  };
+
+  const unstickComment = async (commentId: number) => {
+    await CommentApi.unstick(commentId);
+    commentStore.unstickComment(commentId);
   };
 
   const handleEditorChange = (event: any) => {
@@ -446,7 +438,7 @@ export default observer((props: IProps) => {
                 全部评论（{total}）
               </div>
             </div>
-            <div className="mt-6" />
+            <div className="mt-2" />
           </div>
         )}
         {isPc &&
@@ -485,12 +477,16 @@ export default observer((props: IProps) => {
             <Comments
               user={user}
               comments={comments || []}
-              tryDeleteComment={tryDeleteComment}
+              stickyComments={stickyComments || []}
+              deleteComment={deleteComment}
+              stickComment={stickComment}
+              unstickComment={unstickComment}
               replyTo={replyTo}
               upVote={upVote}
               resetVote={resetVote}
               selectComment={selectComment}
               selectedId={selectedCommentId}
+              canStick={props.isMyself}
             />
           </div>
         )}
