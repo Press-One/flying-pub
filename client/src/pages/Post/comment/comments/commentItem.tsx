@@ -153,7 +153,7 @@ export default observer((props: any) => {
           highlight: highlight,
           'border-b border-gray-200 duration-500 ease-in-out transition-all': !hideDivider,
         },
-        'comment-item pt-4 px-4',
+        'comment-item pt-4 md:pt-5 md:pb-1 px-4',
       )}
       id={`comment_${comment.id}`}
     >
@@ -171,7 +171,7 @@ export default observer((props: any) => {
         </div>
         <div className="ml-3 md:ml-4" style={{ paddingLeft: '36px' }}>
           <div className="flex justify-between items-start md:items-center">
-            <div className="flex items-center leading-none text-14">
+            <div className="flex items-center leading-none text-14 text-gray-99">
               <div className="relative">
                 <div className="flex items-center">
                   <Link to={`/authors/${comment.user.address}`}>
@@ -191,6 +191,8 @@ export default observer((props: any) => {
                   </div>
                 )}
               </div>
+              {isPc && <span className="mx-1 w-2 text-center opacity-75">·</span>}
+              {isPc && <span className="text-12">{ago(comment.createdAt)}</span>}
             </div>
             <div className="relative">
               <div className="flex items-center text-gray-9b leading-none absolute top-0 right-0 md:-mt-3">
@@ -237,8 +239,8 @@ export default observer((props: any) => {
               </div>
             </div>
           </div>
-          <div className="text-12 text-gray-bd mt-4-px">{ago(comment.createdAt)}</div>
-          <div className="mt-4-px md:mt-5-px pb-3 md:pb-3">
+          {isMobile && <div className="text-12 text-gray-bd mt-4-px">{ago(comment.createdAt)}</div>}
+          <div className="mt-4-px md:mt-2 pb-3">
             <div className="mb-4-px md:mb-1">
               {comment.replyComment && (
                 <div
