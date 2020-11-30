@@ -2,24 +2,18 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { ago, isMobile, urlify, isSafari, isIPhone, sleep, isPc } from 'utils';
+import { ago, isMobile, urlify, isSafari, isIPhone, isPc } from 'utils';
 import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import Img from 'components/Img';
-import DrawerMenu from 'components/DrawerMenu';
-import { useStore } from 'store';
-import { Menu, MenuItem } from '@material-ui/core';
 
 export default observer((props: any) => {
   const state = useLocalStore(() => ({
     canExpand: false,
     expand: false,
     readyToFold: isSafari || isIPhone ? false : true,
-    showMenu: false,
-    anchorEl: null,
   }));
-  const { snackbarStore, confirmDialogStore } = useStore();
   const commentRef = React.useRef<any>();
 
   React.useEffect(() => {
@@ -46,103 +40,17 @@ export default observer((props: any) => {
     };
   }, [state]);
 
-  const handleMenuClick = (e: any) => {
-    state.anchorEl = e.currentTarget;
-  };
-
-  const handleMenuClose = () => {
-    state.anchorEl = null;
-  };
-
-  const tryStick = async () => {
-    confirmDialogStore.show({
-      content: '确定置顶这条评论？',
-      ok: async () => {
-        try {
-          confirmDialogStore.setLoading(true);
-          await stickComment(comment.id);
-          confirmDialogStore.hide();
-          await sleep(100);
-          state.showMenu = false;
-          state.anchorEl = null;
-          await sleep(200);
-          selectComment(comment.id);
-        } catch (err) {
-          snackbarStore.show({
-            message: '置顶失败',
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
-  const tryUnstick = () => {
-    confirmDialogStore.show({
-      content: '取消置顶这条评论？',
-      ok: async () => {
-        try {
-          confirmDialogStore.setLoading(true);
-          await unstickComment(comment.id);
-          confirmDialogStore.hide();
-          await sleep(100);
-          state.showMenu = false;
-          state.anchorEl = null;
-          await sleep(200);
-          snackbarStore.show({
-            message: '评论已取消置顶',
-            duration: 1000,
-          });
-          await sleep(800);
-          selectComment(comment.id);
-        } catch (err) {
-          snackbarStore.show({
-            message: '取消置顶失败',
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
-  const tryDelete = () => {
-    confirmDialogStore.show({
-      content: '确定删除这条评论？',
-      ok: async () => {
-        try {
-          confirmDialogStore.setLoading(true);
-          await deleteComment(comment.id);
-          confirmDialogStore.hide();
-          await sleep(100);
-          state.showMenu = false;
-          state.anchorEl = null;
-          await sleep(200);
-          snackbarStore.show({
-            message: '评论已删除',
-          });
-        } catch (err) {
-          snackbarStore.show({
-            message: '删除失败',
-            type: 'error',
-          });
-        }
-      },
-    });
-  };
-
   const {
     hideDivider,
     user,
     replyTo,
     upVote,
     resetVote,
-    deleteComment,
-    stickComment,
-    unstickComment,
     comment,
     selectComment,
     highlight,
     canStick,
+    openCommentMenu,
   } = props;
   const isOwner = !!user && comment.userId === user.id;
 
@@ -171,8 +79,8 @@ export default observer((props: any) => {
         </div>
         <div className="ml-3 md:ml-4" style={{ paddingLeft: '36px' }}>
           <div className="flex justify-between items-start md:items-center">
-            <div className="flex items-center leading-none text-14 text-gray-99">
-              <div className="relative">
+            <div className="flex items-center leading-none text-14 text-gray-99 relative">
+              <div>
                 <div className="flex items-center">
                   <Link to={`/authors/${comment.user.address}`}>
                     <span
@@ -185,14 +93,21 @@ export default observer((props: any) => {
                     </span>
                   </Link>
                 </div>
-                {comment.sticky && (
-                  <div className="py-3-px px-6-px bg-gray-bf text-white rounded text-12 w-9 absolute top-label">
-                    置顶
-                  </div>
-                )}
               </div>
               {isPc && <span className="mx-1 w-2 text-center opacity-75">·</span>}
               {isPc && <span className="text-12">{ago(comment.createdAt)}</span>}
+              {comment.sticky && (
+                <div
+                  className={classNames(
+                    {
+                      md: isPc,
+                    },
+                    'py-3-px px-6-px bg-gray-bf text-white rounded text-12 w-9 absolute top-label',
+                  )}
+                >
+                  置顶
+                </div>
+              )}
             </div>
             <div className="relative">
               <div className="flex items-center text-gray-9b leading-none absolute top-0 right-0 md:-mt-3">
@@ -200,11 +115,7 @@ export default observer((props: any) => {
                   <span
                     className="flex items-center cursor-pointer text-xs px-1 pt-2-px pb-3-px w-12 md:w-16 justify-end more"
                     onClick={(e) => {
-                      if (isMobile) {
-                        state.showMenu = true;
-                      } else {
-                        handleMenuClick(e);
-                      }
+                      openCommentMenu(comment, e);
                     }}
                   >
                     <span className="flex items-center text-18 pr-2 md:pr-1">
@@ -279,79 +190,6 @@ export default observer((props: any) => {
             )}
           </div>
         </div>
-        {isMobile && (
-          <DrawerMenu
-            open={state.showMenu}
-            onClose={() => {
-              state.showMenu = false;
-            }}
-            items={[
-              {
-                invisible: !canStick || comment.sticky,
-                name: '置顶',
-                onClick: tryStick,
-                stayOpenAfterClick: true,
-              },
-              {
-                invisible: !canStick || !comment.sticky,
-                name: '取消置顶',
-                onClick: tryUnstick,
-                className: 'text-red-400',
-                stayOpenAfterClick: true,
-              },
-              {
-                invisible: !isOwner,
-                name: '删除',
-                onClick: tryDelete,
-                className: 'text-red-400',
-                stayOpenAfterClick: true,
-              },
-            ]}
-          />
-        )}
-        {isPc && (
-          <Menu
-            anchorEl={state.anchorEl}
-            keepMounted
-            open={Boolean(state.anchorEl)}
-            onClose={handleMenuClose}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center',
-            }}
-            PaperProps={{
-              style: {
-                width: 100,
-              },
-            }}
-          >
-            {canStick && !comment.sticky && (
-              <MenuItem onClick={tryStick}>
-                <div className="flex items-center text-gray-700 leading-none py-1">
-                  <span className="font-bold">置顶</span>
-                </div>
-              </MenuItem>
-            )}
-            {canStick && comment.sticky && (
-              <MenuItem onClick={tryUnstick}>
-                <div className="flex items-center text-gray-700 leading-none py-1">
-                  <span className="font-bold">取消置顶</span>
-                </div>
-              </MenuItem>
-            )}
-            {isOwner && (
-              <MenuItem onClick={tryDelete}>
-                <div className="flex items-center text-gray-700 leading-none py-1">
-                  <span className="font-bold">删除</span>
-                </div>
-              </MenuItem>
-            )}
-          </Menu>
-        )}
       </div>
       <style jsx>{`
         .name-max-width {
@@ -387,6 +225,9 @@ export default observer((props: any) => {
         .top-label {
           top: -2px;
           right: -42px;
+        }
+        .top-label.md {
+          right: -48px;
         }
       `}</style>
     </div>
