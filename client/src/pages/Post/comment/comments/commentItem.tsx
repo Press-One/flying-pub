@@ -153,7 +153,7 @@ export default observer((props: any) => {
           highlight: highlight,
           'border-b border-gray-200 duration-500 ease-in-out transition-all': !hideDivider,
         },
-        'comment-item pt-4 md:pt-6 px-4',
+        'comment-item pt-4 px-4',
       )}
       id={`comment_${comment.id}`}
     >
@@ -238,7 +238,7 @@ export default observer((props: any) => {
             </div>
           </div>
           <div className="text-12 text-gray-bd mt-4-px">{ago(comment.createdAt)}</div>
-          <div className="mt-4-px md:mt-2 pb-3 md:pb-5">
+          <div className="mt-4-px md:mt-5-px pb-3 md:pb-3">
             <div className="mb-4-px md:mb-1">
               {comment.replyComment && (
                 <div
