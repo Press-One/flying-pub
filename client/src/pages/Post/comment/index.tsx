@@ -438,7 +438,7 @@ export default observer((props: IProps) => {
                 全部评论（{total}）
               </div>
             </div>
-            <div className="mt-2" />
+            <div className="mt-2 md:mt-5" />
           </div>
         )}
         {isPc &&
