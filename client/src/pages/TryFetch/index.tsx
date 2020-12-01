@@ -78,9 +78,7 @@ export default observer((props: any) => {
       try {
         await authApi.checkPermission();
         userStore.setCanPublish();
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     };
 
     (async () => {
