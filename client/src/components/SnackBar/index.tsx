@@ -26,8 +26,8 @@ export default observer(() => {
       <div>
         {snackbarStore.open && (
           <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center snackbar-container">
-            <div className="bg-black p-8 max-w-5xl rounded-12 text-white mask">
-              <div className="text-50 flex items-center justify-center">
+            <div className="bg-black py-6 px-8 max-w-5xl rounded-12 text-white mask">
+              <div className="text-46 flex items-center justify-center pt-1">
                 <FontAwesomeIcon
                   icon={snackbarStore.type === 'error' ? faTimesCircle : faCheckCircle}
                 />
@@ -42,10 +42,10 @@ export default observer(() => {
           }
           .content {
             max-width: 200px;
-            min-width: 150px;
+            min-width: 120px;
           }
           .mask {
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.86);
           }
         `}</style>
       </div>

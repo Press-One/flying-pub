@@ -38,7 +38,8 @@ const ConfirmContent = observer(
         </div>
         <div className={`w-auto ${isMyself ? 'md:w-64' : 'md:w-400-px'}`}>
           <div className="flex items-start mt-8">
-            文章：《<div className="truncate m-w-56">{props.post.title}</div>》
+            文章：《<div className={`"truncate title ${isPc ? 'md' : ''}"`}>{props.post.title}</div>
+            》
           </div>
           {props.post.author && (
             <div className="mt-3">
@@ -84,6 +85,14 @@ const ConfirmContent = observer(
             确定
           </Button>
         </div>
+        <style jsx>{`
+          .title {
+            max-width: 60vw;
+          }
+          .title.md {
+            max-width: 180px;
+          }
+        `}</style>
       </div>
     );
   },
