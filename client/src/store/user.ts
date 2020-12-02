@@ -14,7 +14,9 @@ export function createUserStore() {
     setUser(user: any) {
       this.user = user;
       this.isLogin = true;
-      this.newFeatRecord = JSON.parse(user.newFeatRecord);
+      if (user && user.newFeatRecord) {
+        this.newFeatRecord = JSON.parse(user.newFeatRecord);
+      }
     },
     setProfiles(profiles: any) {
       this.profiles = profiles;
