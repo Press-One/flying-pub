@@ -91,7 +91,7 @@ const createFile = async (user, data, options = {}) => {
               userId: user.id,
               text: `${truncate(file.title)}`,
               url: postUrl,
-              desc: '已发布',
+              desc: config.settings['site.name'],
             },
           })
         } catch (err) {
@@ -217,7 +217,7 @@ exports.update = async ctx => {
               userId: user.id,
               text: `${truncate(file.title)}`,
               url: postUrl,
-              desc: '已发布',
+              desc: config.settings['site.name'],
             },
           })
         } catch (err) {
