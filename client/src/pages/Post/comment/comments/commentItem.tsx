@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
-import { ago, isMobile, urlify, isSafari, isIPhone, isPc } from 'utils';
+import { isMobile, urlify, isSafari, isIPhone, isPc } from 'utils';
 import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
@@ -137,7 +137,7 @@ export default observer((props: any) => {
                 </div>
               </div>
               {isPc && <span className="mx-1 w-2 text-center opacity-75">·</span>}
-              {isPc && <span className="text-12">{ago(comment.createdAt)}</span>}
+              {isPc && <span className="text-12">{comment.ago}</span>}
               {comment.sticky && (
                 <div
                   className={classNames(
@@ -209,7 +209,7 @@ export default observer((props: any) => {
               </div>
             </div>
           </div>
-          {isMobile && <div className="text-12 text-gray-bd mt-4-px">{ago(comment.createdAt)}</div>}
+          {isMobile && <div className="text-12 text-gray-bd mt-4-px">{comment.ago}</div>}
           <div
             className={classNames(
               {

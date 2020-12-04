@@ -1,4 +1,4 @@
-import { isPc, isMobile } from 'utils';
+import { isPc, isMobile, ago } from 'utils';
 import _ from 'lodash';
 
 export function createCommentStore() {
@@ -63,11 +63,13 @@ export function createCommentStore() {
       this.commentMap = {} as any;
       this.commentIdsSet.clear();
       for (const comment of comments) {
+        comment.ago = ago(comment.createdAt);
         this.commentMap[comment.id] = comment;
         this.commentIdsSet.add(comment.id);
       }
     },
     addComment(comment: any) {
+      comment.ago = ago(comment.createdAt);
       this.commentMap[comment.id] = comment;
       this.commentIdsSet.add(comment.id);
       if (comment.threadId) {
