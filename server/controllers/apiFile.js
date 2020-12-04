@@ -89,8 +89,9 @@ const createFile = async (user, data, options = {}) => {
           await pushToNotificationQueue({
             mixin: {
               userId: user.id,
-              text: `《${truncate(file.title)}》已发布`,
-              url: postUrl
+              text: `${truncate(file.title)}`,
+              url: postUrl,
+              desc: '已发布',
             },
           })
         } catch (err) {
@@ -214,8 +215,9 @@ exports.update = async ctx => {
           await pushToNotificationQueue({
             mixin: {
               userId: user.id,
-              text: `《${truncate(file.title)}》已发布`,
-              url: postUrl
+              text: `${truncate(file.title)}`,
+              url: postUrl,
+              desc: '已发布',
             },
           })
         } catch (err) {

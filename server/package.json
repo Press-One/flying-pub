@@ -51,7 +51,7 @@
     "koa-views": "^6.2.1",
     "lodash": "^4.17.20",
     "mathjs": "^6.2.3",
-    "mixin-node": "^1.0.25",
+    "mixin-node": "^1.0.32",
     "mysql2": "1.7.0",
     "passport-github2": "^0.1.11",
     "passport-mixin": "^0.1.24",
