@@ -11,6 +11,7 @@ import { useStore } from 'store';
 import TopicContributionModal from './TopicContributionModal';
 import TopicPostManagerModal from './TopicPostManagerModal';
 import TopicEditorModal from 'components/TopicEditorModal';
+import DrawerMenu from 'components/DrawerMenu';
 import Loading from 'components/Loading';
 import topicApi, { ITopic } from 'apis/topic';
 import { FilterType } from 'apis/post';
@@ -19,7 +20,6 @@ import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import marked from 'marked';
 import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
 import TopicIntroductionModal from './TopicIntroductionModal';
-import TopicManagerEntry from './TopicManagerEntry';
 import Settings from '@material-ui/icons/Settings';
 import { toJS } from 'mobx';
 import { resizeImage, disableBackgroundScroll } from 'utils';
@@ -33,7 +33,7 @@ const TopView = observer(
     topic: ITopic;
     subscribe: () => Promise<void>;
     unsubscribe: () => Promise<void>;
-    openTopicManagerEntryModal: () => void;
+    openTopicManagerMenu: () => void;
     fetchTopic: any;
     setShowImage: () => void;
   }) => {
@@ -132,7 +132,7 @@ const TopView = observer(
             {isMobile && props.isMyself && (
               <div
                 className="settings-btn text-24 absolute bottom-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"
-                onClick={() => props.openTopicManagerEntryModal()}
+                onClick={() => props.openTopicManagerMenu()}
               >
                 <Settings />
               </div>
@@ -199,7 +199,7 @@ export default observer((props: any) => {
     showTopicEditorModal: false,
     topic: {} as ITopic,
     isFetchedTopic: false,
-    showTopicManagerEntryModal: false,
+    showTopicManagerMenu: false,
     showPosts: false,
   }));
   const { snackbarStore, userStore, preloadStore, confirmDialogStore, feedStore } = useStore();
@@ -405,7 +405,7 @@ export default observer((props: any) => {
           topic={state.topic}
           subscribe={subscribe}
           unsubscribe={unsubscribe}
-          openTopicManagerEntryModal={() => (state.showTopicManagerEntryModal = true)}
+          openTopicManagerMenu={() => (state.showTopicManagerMenu = true)}
           fetchTopic={() => {
             fetchTopic();
             feedStore.setIsFetched(false);
@@ -562,16 +562,31 @@ export default observer((props: any) => {
                 }}
               />
               {isMobile && (
-                <TopicManagerEntry
-                  topic={props.topic}
-                  open={state.showTopicManagerEntryModal}
-                  close={() => {
-                    state.showTopicManagerEntryModal = false;
+                <DrawerMenu
+                  open={state.showTopicManagerMenu}
+                  onClose={() => {
+                    state.showTopicManagerMenu = false;
                     fetchTopic();
                   }}
-                  onEdit={() => (state.showTopicEditorModal = true)}
-                  onDelete={onDelete}
-                  onRemove={() => (state.showTopicPostManagerModal = true)}
+                  items={[
+                    {
+                      name: '编辑',
+                      onClick: () => {
+                        state.showTopicEditorModal = true;
+                      },
+                    },
+                    {
+                      name: '管理文章',
+                      onClick: () => {
+                        state.showTopicPostManagerModal = true;
+                      },
+                    },
+                    {
+                      name: '删除',
+                      onClick: onDelete,
+                      className: 'text-red-400',
+                    },
+                  ]}
                 />
               )}
             </div>
@@ -585,7 +600,6 @@ export default observer((props: any) => {
               'mobile-viewer-container fixed bg-black',
             )}
             onClick={() => showImageView(false)}
-            //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
           ></div>
           <Viewer
             className={isMobile ? 'mobile-viewer' : ''}

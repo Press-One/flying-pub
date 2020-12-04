@@ -1,6 +1,6 @@
 import * as EasyMDE from 'easymde';
 import marked from 'marked';
-import { initMathJax, isPc } from 'utils';
+import { isPc } from 'utils';
 
 marked.setOptions({
   highlight: (code: string) => {
@@ -18,9 +18,6 @@ const options: EasyMDE.Options = {
     drawTable: 'Cmd-Alt-T',
   },
   previewRender: (markdownPlaintext: string, previewElement: HTMLElement) => {
-    setTimeout(() => {
-      initMathJax(previewElement);
-    }, 0);
     return marked.parse(markdownPlaintext);
   },
   toolbar: isPc ? [

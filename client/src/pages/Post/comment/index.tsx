@@ -17,31 +17,25 @@ import {
   stopBodyScroll,
   isMobile,
   isPc,
-  initMathJax,
   getQuery,
-  scrollToHere,
   scrollToElementById,
+  getScrollTop,
+  scrollToHere,
 } from 'utils';
 import CommentApi from 'apis/comment';
 import Api from 'api';
 
 interface IProps {
   isMyself: boolean;
+  authorAddress: string;
   fileRId: number;
   alwaysShowCommentEntry: boolean;
   tryVote: () => void;
 }
 
 export default observer((props: IProps) => {
-  const {
-    commentStore,
-    feedStore,
-    snackbarStore,
-    userStore,
-    modalStore,
-    confirmDialogStore,
-  } = useStore();
-  const { total, stickyComments, comments } = commentStore;
+  const { commentStore, feedStore, snackbarStore, userStore, modalStore } = useStore();
+  const { total } = commentStore;
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
@@ -56,6 +50,10 @@ export default observer((props: IProps) => {
   const [isVoting, setIsVoting] = React.useState(false);
   const { fileRId, alwaysShowCommentEntry } = props;
   const [selectedCommentId, setSelectedCommentId] = React.useState(getQuery('commentId') || '0');
+  const cachedScrollTop = React.useRef(0);
+  const [visualViewportHeight, setVisualViewportHeight] = React.useState(
+    (window as any).visualViewport.height,
+  );
 
   React.useEffect(() => {
     setValue(localStorage.getItem('COMMENT_CONTENT') || '');
@@ -77,45 +75,64 @@ export default observer((props: IProps) => {
     };
   }, []);
 
+  const getIsKeyboardActive = () =>
+    (window as any).visualViewport.height + 150 < (window as any).outerHeight;
+
   React.useEffect(() => {
-    initMathJax(document.getElementById('comments'));
+    if (isMobile) {
+      if (isDrawerCreatingComment || !getIsKeyboardActive()) {
+        (async () => {
+          await sleep(1);
+          if (cachedScrollTop.current > 0) {
+            scrollToHere(cachedScrollTop.current);
+          }
+          cachedScrollTop.current = 0;
+        })();
+      }
+    }
+  }, [visualViewportHeight, isDrawerCreatingComment]);
+
+  React.useEffect(() => {
+    commentStore.setOpenEditorEntryDrawer(openDrawer);
+    if (isMobile) {
+      if (openDrawer) {
+        cachedScrollTop.current = getScrollTop();
+      }
+    }
+  }, [openDrawer, commentStore, cachedScrollTop]);
+
+  React.useEffect(() => {
+    if (isPc) {
+      return;
+    }
+    const timer = setInterval(() => {
+      setVisualViewportHeight((window as any).visualViewport.height);
+    }, 100);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const selectComment = React.useCallback(
-    (selectedCommentId, scrollOptions: any = {}) => {
+    (selectedCommentId, options: any = {}) => {
       (async () => {
-        setSelectedCommentId(selectedCommentId);
-        const element: any = scrollToElementById(`#comment_${selectedCommentId}`, scrollOptions);
+        setSelectedCommentId(`${selectedCommentId}`);
+        if (options.isNewComment) {
+          options.useScrollIntoView = true;
+          options.disabledScrollIfVisible = isPc;
+        }
+        const element: any = scrollToElementById(`#comment_${selectedCommentId}`, options);
         modalStore.closePageLoading();
         if (!element) {
-          await sleep(200);
-          confirmDialogStore.show({
-            content: '这条评论已经被 Ta 删除了',
-            cancelDisabled: true,
-            okText: '我知道了',
-            ok: () => {
-              confirmDialogStore.hide();
-            },
-          });
-          setSelectedCommentId('');
-        } else {
-          await sleep(2000);
           setSelectedCommentId('');
         }
+        await sleep(options.isNewComment ? 1000 : 1500);
+        setSelectedCommentId('');
       })();
     },
-    [modalStore, confirmDialogStore],
+    [modalStore, commentStore],
   );
-
-  React.useEffect(() => {
-    if (!selectedCommentId || selectedCommentId === '0') {
-      return;
-    }
-    (async () => {
-      await sleep(500);
-      selectComment(selectedCommentId);
-    })();
-  }, [selectedCommentId, selectComment]);
 
   const reply = async () => {
     if (isCreatingComment || isDrawerCreatingComment) {
@@ -123,10 +140,6 @@ export default observer((props: IProps) => {
     }
     const _value = ((openDrawer ? drawerReplyValue : value) || '').trim();
     if (!_value) {
-      snackbarStore.show({
-        message: '请输入发布内容',
-        type: 'error',
-      });
       return;
     }
     forceBlur();
@@ -141,6 +154,7 @@ export default observer((props: IProps) => {
       const mentionsUserIds = getMentionUserIds(_value, commentStore.comments);
       if (replyingComment) {
         comment.replyId = replyingComment.id;
+        comment.threadId = replyingComment.threadId || replyingComment.id;
         if (!mentionsUserIds.includes(replyingComment.user.id)) {
           mentionsUserIds.push(replyingComment.user.id);
         }
@@ -149,11 +163,9 @@ export default observer((props: IProps) => {
         ...comment,
         options: { mentionsUserIds },
       });
-      await sleep(500);
       commentStore.addComment(newComment);
-      initMathJax(document.getElementById('comments'));
       feedStore.updatePost(feedStore.post.rId, {
-        commentsCount: commentStore.total,
+        commentsCount: total,
       });
       openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
@@ -167,7 +179,23 @@ export default observer((props: IProps) => {
       if (replyingComment) {
         localStorage.removeItem(`COMMENT_REPLY:${replyingComment.id}_CONTENT`);
       }
-      scrollToHere(99999);
+      const silent = !(
+        isMobile &&
+        replyingComment &&
+        !replyingComment.threadId &&
+        !commentStore.openSubCommentPage
+      );
+      if (silent) {
+        await sleep(100);
+        selectComment(newComment.id, {
+          useScrollIntoView: true,
+          isNewComment: true,
+        });
+      }
+      snackbarStore.show({
+        message: '发布成功',
+        duration: 1000,
+      });
     } catch (e) {
       if (e.status === 404) {
         const message = e.message.includes('post')
@@ -287,15 +315,14 @@ export default observer((props: IProps) => {
   const renderEditor = (options: any = {}) => {
     const { user, valueState, isDoing, isDone, isFromDrawer, replyingComment } = options;
     return (
-      <div className="mt-2 comment-editor-container">
+      <div className="mt-2 md:mt-0 comment-editor-container">
         <div className="mb-2">
           {isFromDrawer && replyingComment && (
-            <div style={{ marginLeft: isMobile ? '1px' : '36px' }} className="md:pl-3">
+            <div style={{ marginLeft: isMobile ? '1px' : '36px' }} className="md:pl-3 pt-1">
               <div
-                className="border-blue-300 pl-2 text-12 cursor-pointer"
+                className="border-gray-bd pl-2 text-12 cursor-pointer"
                 style={{ borderLeftWidth: '3px' }}
               >
-                <div className="text-blue-400">{replyingComment.user.nickname}</div>
                 <div className="truncate text-gray-99">{replyingComment.content}</div>
               </div>
             </div>
@@ -304,7 +331,7 @@ export default observer((props: IProps) => {
         </div>
         <div className="flex items-start pb-2 md:pb-0">
           <img
-            className="hidden md:block mr-3 rounded"
+            className="hidden md:block mr-3 rounded-full"
             src={
               user && user.avatar ? user.avatar : 'https://static-assets.xue.cn/images/435d111.jpg'
             }
@@ -316,11 +343,13 @@ export default observer((props: IProps) => {
             <TextField
               id="comment-text-field"
               className="po-input po-text-14 textarea"
-              placeholder="说点什么..."
+              placeholder={
+                replyingComment ? `回复 ${replyingComment.user.nickname}` : '说点什么...'
+              }
               multiline
               fullWidth
               disabled={!isLogin}
-              rows={5}
+              rows={isMobile ? 3 : 5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -335,9 +364,15 @@ export default observer((props: IProps) => {
                 </span>
               </div>
             )}
-            <div className="mt-1 md:mt-2"></div>
+            <div className="mt-1"></div>
             <div className="text-right">
-              <Button onClick={() => reply()} size="small" isDoing={isDoing} isDone={isDone}>
+              <Button
+                onClick={() => reply()}
+                size="small"
+                isDoing={isDoing}
+                isDone={isDone}
+                color={valueState ? 'primary' : 'gray'}
+              >
                 发布
               </Button>
             </div>
@@ -360,70 +395,86 @@ export default observer((props: IProps) => {
   const renderFixedCommentEntry = () => {
     return (
       <Fade in={true} timeout={200}>
-        <div className="fixed z-10 bottom-0 left-0 w-full py-2 border-t border-gray-300 bg-white flex items-center justify-between">
+        <div className="fixed entry bottom-0 left-0 w-full py-2 border-t border-gray-300 bg-white flex items-center justify-between">
           <div
-            className="flex-1 ml-3 mr-3 rounded-lg bg-gray-f2 text-gray-600 py-2 px-3"
+            className={classNames(
+              {
+                'mx-4': commentStore.openSubCommentPage,
+              },
+              'flex-1 mx-3 rounded-lg bg-gray-f2 text-gray-88 py-2 px-3',
+            )}
             onClick={() => {
-              setOpenDrawer(true);
-              stopBodyScroll(true);
-              setTimeout(() => {
-                setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
-              }, 400);
+              if (commentStore.selectedTopComment) {
+                replyTo(commentStore.selectedTopComment);
+              } else {
+                setOpenDrawer(true);
+                stopBodyScroll(true);
+                setTimeout(() => {
+                  setDrawerReplyValue(localStorage.getItem('COMMENT_CONTENT') || '');
+                }, 400);
+              }
             }}
           >
-            写评论...
+            {commentStore.openSubCommentPage
+              ? `回复 ${commentStore.selectedTopComment.user.nickname}`
+              : '写评论...'}
           </div>
-          <div className="flex items-center py-1 text-gray-99">
-            {total > 0 && (
+          {!commentStore.openSubCommentPage && (
+            <div className="flex items-center py-1 text-gray-99">
+              {total > 0 && (
+                <div
+                  className="text-xl px-4 mr-1 relative font-bold"
+                  onClick={() => {
+                    const commentSection = document.getElementById('comment-section');
+                    if (commentSection) {
+                      commentSection.scrollIntoView();
+                    }
+                  }}
+                >
+                  <FontAwesomeIcon icon={faCommentDots} />
+                  <span className="absolute top-0 right-0 comment-badge">{total}</span>
+                </div>
+              )}
               <div
-                className="text-xl px-4 mr-1 relative font-bold"
-                onClick={() => {
-                  const commentSection = document.getElementById('comment-section');
-                  if (commentSection) {
-                    commentSection.scrollIntoView();
-                  }
-                }}
+                onClick={() => props.tryVote()}
+                className={classNames(
+                  {
+                    'text-blue-400': feedStore.post.voted,
+                  },
+                  'text-xl pl-4 pr-6 relative font-bold',
+                )}
               >
-                <FontAwesomeIcon icon={faCommentDots} />
-                <span className="absolute top-0 right-0 comment-badge">{total}</span>
+                <FontAwesomeIcon icon={faThumbsUp} />
+                {feedStore.post.upVotesCount > 0 && (
+                  <span className="absolute top-0 right-0 like-badge">
+                    {feedStore.post.upVotesCount}
+                  </span>
+                )}
               </div>
-            )}
-            <div
-              onClick={() => props.tryVote()}
-              className={classNames(
-                {
-                  'text-blue-400': feedStore.post.voted,
-                },
-                'text-xl pl-4 pr-6 relative font-bold',
-              )}
-            >
-              <FontAwesomeIcon icon={faThumbsUp} />
-              {feedStore.post.upVotesCount > 0 && (
-                <span className="absolute top-0 right-0 like-badge">
-                  {feedStore.post.upVotesCount}
-                </span>
-              )}
             </div>
-            <style jsx>{`
-              .comment-badge {
-                font-size: 12px;
-                top: -3px;
-                left: 38px;
-              }
-              .like-badge {
-                font-size: 12px;
-                top: -3px;
-                left: 37px;
-              }
-            `}</style>
-          </div>
+          )}
+          <style jsx>{`
+            .comment-badge {
+              font-size: 12px;
+              top: -3px;
+              left: 38px;
+            }
+            .like-badge {
+              font-size: 12px;
+              top: -3px;
+              left: 37px;
+            }
+            .entry {
+              z-index: 1001;
+            }
+          `}</style>
         </div>
       </Fade>
     );
   };
 
   const renderMain = () => {
-    const hasComments = comments.length > 0;
+    const hasComments = total > 0;
     return (
       <div className="pb-8 md:pb-0 comment" id="comment-section">
         {hasComments && isMobile && <div className="mt-8 pb-4 border-t border-gray-300" />}
@@ -438,7 +489,7 @@ export default observer((props: IProps) => {
                 全部评论（{total}）
               </div>
             </div>
-            <div className="mt-2" />
+            <div className="mt-2 md:mt-5" />
           </div>
         )}
         {isPc &&
@@ -460,7 +511,7 @@ export default observer((props: IProps) => {
           }}
         >
           <div className="container m-auto">
-            <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-5">
+            <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-3">
               {renderEditor({
                 user,
                 valueState: drawerReplyValue,
@@ -476,8 +527,6 @@ export default observer((props: IProps) => {
           <div id="comments" className="overflow-hidden -mx-4">
             <Comments
               user={user}
-              comments={comments || []}
-              stickyComments={stickyComments || []}
               deleteComment={deleteComment}
               stickComment={stickComment}
               unstickComment={unstickComment}
@@ -486,12 +535,13 @@ export default observer((props: IProps) => {
               resetVote={resetVote}
               selectComment={selectComment}
               selectedId={selectedCommentId}
-              canStick={props.isMyself}
+              isAuthor={props.isMyself}
+              authorAddress={props.authorAddress}
             />
           </div>
         )}
         {hasComments && <BottomLine />}
-        {isPc && hasComments && comments.length > 3 && (
+        {isPc && hasComments && total > 3 && (
           <div className="text-center mt-2">
             <span
               className="py-3 text-blue-400 cursor-pointer"
@@ -508,7 +558,10 @@ export default observer((props: IProps) => {
           </div>
         )}
 
-        {isMobile && (openCommentEntry || alwaysShowCommentEntry) && renderFixedCommentEntry()}
+        {isMobile &&
+          (openCommentEntry || alwaysShowCommentEntry) &&
+          !commentStore.openEditorEntryDrawer &&
+          renderFixedCommentEntry()}
       </div>
     );
   };

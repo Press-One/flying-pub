@@ -22,6 +22,9 @@ const Comment = sequelize.define('comments', {
   replyId: {
     type: Sequelize.BIGINT,
   },
+  threadId: {
+    type: Sequelize.BIGINT,
+  },
   upVotesCount: {
     type: Sequelize.BIGINT,
     defaultValue: 0

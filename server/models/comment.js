@@ -19,20 +19,6 @@ const packComment = async (comment, options = {}) => {
   const voted = !!userId && (await Vote.isVoted(userId, "comments", comment.id));
   commentJson.voted = voted;
   delete commentJson.deleted;
-  if (comment.replyId) {
-    const replyComment = await Comment.findOne({
-      where: {
-        id: comment.replyId,
-        deleted: false
-      }
-    });
-    if (replyComment) {
-      const user = await User.get(replyComment.userId);
-      const replyCommentJson = replyComment.toJSON();
-      replyCommentJson.user = _.pick(user, ['nickname']);
-      commentJson.replyComment = replyCommentJson;
-    }
-  }
   return commentJson;
 };
 
@@ -126,6 +112,9 @@ exports.list = async options => {
     limit
   } = options;
   const comments = await Comment.findAll({
+    attributes: {
+      exclude: ['objectId', 'objectType']
+    },
     where: {
       objectId,
       deleted: false

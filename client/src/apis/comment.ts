@@ -9,6 +9,7 @@ export default {
       body: {
         payload: comment,
       },
+      minPendingDuration: 500
     });
   },
   get(id: number) {
