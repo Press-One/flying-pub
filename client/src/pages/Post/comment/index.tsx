@@ -131,7 +131,7 @@ export default observer((props: IProps) => {
         setSelectedCommentId('');
       })();
     },
-    [modalStore, commentStore],
+    [modalStore],
   );
 
   const reply = async () => {
