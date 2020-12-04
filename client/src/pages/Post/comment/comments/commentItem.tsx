@@ -87,7 +87,7 @@ export default observer((props: any) => {
   if (isPreview) {
     return (
       <div
-        className="text-gray-1e mt-4-px"
+        className="text-gray-1e mt-4-px break-words"
         dangerouslySetInnerHTML={{ __html: `${previewContentPrefix}${comment.content}` }}
       />
     );
