@@ -103,7 +103,7 @@ export default observer((props: any) => {
           'md:pt-4': isPcSubComment,
           'md:pb-1': !isTopComment,
         },
-        'comment-item pt-4 pr-4 duration-500 ease-in-out transition-all',
+        'comment-item pt-4 pr-4 duration-500 ease-in-out',
       )}
       id={`comment_${comment.id}`}
     >
@@ -313,6 +313,9 @@ export default observer((props: any) => {
         }
         .top-label.md {
           right: -48px;
+        }
+        .comment-item {
+          transition-property: background-color;
         }
         .comment-item .more-entry.md {
           display: none;

@@ -92,7 +92,12 @@ export default observer((props: any) => {
           selectComment(selectedId, {
             useScrollIntoView: true,
           });
-          await sleep(300);
+          await sleep(200);
+          selectComment(selectedComment.threadId, {
+            useScrollIntoView: true,
+            silent: true,
+          });
+          await sleep(100);
           state.showTopCommentLoading = false;
         }
       } else {
@@ -321,8 +326,9 @@ export default observer((props: any) => {
 
   const Comments = (comments: any, options: any = {}) => {
     return comments.map((comment: any, index: number) => {
-      const isLast =
-        index === (options.isSticky ? options.topCommentLength === 0 : comments.length - 1);
+      const isLast = options.isSticky
+        ? options.topCommentLength === 0
+        : index === comments.length - 1;
       const highlight = Number(selectedId) === Number(comment.id);
       const hasSubComments = subCommentsGroupMap[comment.id];
       const noSubComments = !hasSubComments;
@@ -364,10 +370,9 @@ export default observer((props: any) => {
                     'bg-gray-f7 rounded md:bg-none p-3 pb-10-px mt-2 mr-4': isMobile,
                   })}
                   onClick={() => {
-                    commentStore.setSelectedTopComment(comment);
-                    commentStore.setOpenSubCommentPage(true);
-                    if (isPc && temporaryPreviewMap[comment.id]) {
-                      delete temporaryPreviewMap[comment.id];
+                    if (isMobile) {
+                      commentStore.setSelectedTopComment(comment);
+                      commentStore.setOpenSubCommentPage(true);
                     }
                   }}
                 >
@@ -478,7 +483,13 @@ export default observer((props: any) => {
                   {isPc &&
                     !state.showSubCommentsMap[comment.id] &&
                     temporaryPreviewMap[comment.id] && (
-                      <div className="-mt-3">
+                      <div
+                        className={classNames({
+                          '-mt-3':
+                            subCommentsGroupMap[comment.id].length >
+                            (temporaryPreviewMap[comment.id] || []).length,
+                        })}
+                      >
                         {temporaryPreviewMap[comment.id].map((subComment: any, index: number) => {
                           const isLast = index === temporaryPreviewMap[comment.id].length - 1;
                           const highlight = Number(selectedId) === Number(subComment.id);

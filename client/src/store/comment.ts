@@ -3,11 +3,10 @@ import _ from 'lodash';
 
 export function createCommentStore() {
   return {
-    total: 0,
     previewCount: isPc ? 0 : 2,
     commentMap: {} as any,
     commentIdsSet: new Set(),
-    temporaryPreviewMap: {} as any,
+    temporaryPreviewMapIdsSet: {} as any,
     openSubCommentPage: false,
     selectedTopComment: null as any,
     openEditorEntryDrawer: false,
@@ -24,6 +23,9 @@ export function createCommentStore() {
     },
     get subCommentsGroupMap () {
       const map: any = _.groupBy(this.comments, (comment: any) => {
+        if (comment.threadId && !this.commentMap[comment.threadId]) {
+          return 0;
+        }
         return comment.threadId || 0;
       });
       delete map[0];
@@ -36,8 +38,26 @@ export function createCommentStore() {
       }
       return previewMap;
     },
-    setTotal(total: number) {
-      this.total = total;
+    get temporaryPreviewMap() {
+      const temporaryPreviewMap: any = {};
+      for (const threadId in this.temporaryPreviewMapIdsSet) {
+        temporaryPreviewMap[threadId] = Array.from(this.temporaryPreviewMapIdsSet[threadId]).map((id: any) => this.commentMap[id]);
+      }
+      return temporaryPreviewMap;
+    },
+    get total() {
+      let total = 0;
+      for (const commentId of this.commentIds) {
+        const comment = this.commentMap[commentId];
+        if (comment) {
+          if (comment.threadId && !this.commentMap[comment.threadId]) {
+            total += 0;
+          } else {
+            total++;
+          }
+        }
+      }
+      return total
     },
     setComments(comments: any) {
       this.commentMap = {} as any;
@@ -50,17 +70,15 @@ export function createCommentStore() {
     addComment(comment: any) {
       this.commentMap[comment.id] = comment;
       this.commentIdsSet.add(comment.id);
-      this.total = this.total + 1;
       if (comment.threadId) {
         const previewIds = this.commentPreviewMap[comment.threadId].map((comment: any) => comment.id);
         if (isMobile && previewIds.includes(comment.id)) {
           return;
         }
-        if (this.temporaryPreviewMap[comment.threadId]) {
-          this.temporaryPreviewMap[comment.threadId].push(comment);
-        } else {
-          this.temporaryPreviewMap[comment.threadId] = [comment]
+        if (!this.temporaryPreviewMapIdsSet[comment.threadId]) {
+          this.temporaryPreviewMapIdsSet[comment.threadId] = new Set();
         }
+        this.temporaryPreviewMapIdsSet[comment.threadId].add(comment.id);
       }
     },
     updateComment(updatedComment: any) {
@@ -68,9 +86,13 @@ export function createCommentStore() {
       this.commentMap[updatedComment.id].voted = updatedComment.voted;
     },
     removeComment(commentId: number) {
+      if (this.commentMap[commentId].threadId) {
+        if (this.temporaryPreviewMapIdsSet[this.commentMap[commentId].threadId]) {
+          this.temporaryPreviewMapIdsSet[this.commentMap[commentId].threadId].delete(commentId)
+        }
+      }
       delete this.commentMap[commentId];
       this.commentIdsSet.delete(commentId);
-      this.total = this.total - 1;
     },
     stickComment(commentId: number) {
       const comment = this.commentMap[commentId];

@@ -52,7 +52,7 @@ export default observer((props: IProps) => {
   const [selectedCommentId, setSelectedCommentId] = React.useState(getQuery('commentId') || '0');
   const cachedScrollTop = React.useRef(0);
   const [visualViewportHeight, setVisualViewportHeight] = React.useState(
-    (window as any).visualViewport.height,
+    (window as any).outerHeight,
   );
 
   React.useEffect(() => {
@@ -79,16 +79,17 @@ export default observer((props: IProps) => {
     (window as any).visualViewport.height + 150 < (window as any).outerHeight;
 
   React.useEffect(() => {
-    if (isMobile) {
-      if (isDrawerCreatingComment || !getIsKeyboardActive()) {
-        (async () => {
-          await sleep(1);
-          if (cachedScrollTop.current > 0) {
-            scrollToHere(cachedScrollTop.current);
-          }
-          cachedScrollTop.current = 0;
-        })();
-      }
+    if (isPc) {
+      return;
+    }
+    if (isDrawerCreatingComment || !getIsKeyboardActive()) {
+      (async () => {
+        await sleep(1);
+        if (cachedScrollTop.current > 0) {
+          scrollToHere(cachedScrollTop.current);
+        }
+        cachedScrollTop.current = 0;
+      })();
     }
   }, [visualViewportHeight, isDrawerCreatingComment]);
 
@@ -117,6 +118,10 @@ export default observer((props: IProps) => {
   const selectComment = React.useCallback(
     (selectedCommentId, options: any = {}) => {
       (async () => {
+        if (options.silent) {
+          scrollToElementById(`#comment_${selectedCommentId}`, options);
+          return;
+        }
         setSelectedCommentId(`${selectedCommentId}`);
         if (options.isNewComment) {
           options.useScrollIntoView = true;

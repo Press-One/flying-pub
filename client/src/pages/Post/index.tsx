@@ -184,7 +184,6 @@ export default observer((props: any) => {
           limit: '1000',
         };
         const res = await CommentApi.list(rId, pagination);
-        commentStore.setTotal(res['total']);
         commentStore.setComments(res['comments']);
         setIsFetchedComments(true);
       } catch (err) {
