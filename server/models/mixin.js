@@ -107,9 +107,12 @@ const tryCreateConversation = async (userId, msgObj) => {
 
 const trySendToUser = async (userId, text, options = {}) => {
   const {
-    url
+    url,
+    desc,
   } = options;
-  if (url) {
+  if (desc) {
+    await trySendCard(userId, `{"app_id": "${config.provider.mixin.clientId}", "icon_url": "${config.logo || config.settings['site.logo']}", "title": "${text}", "description": "${desc}", "action": "${url}"}`);
+  } else if (url) {
     await trySendButton(userId, `[{ "label": "${text}", "color": "#4A90E2", "action": "${url}" }]`);
   } else {
     await trySendText(userId, text);
@@ -147,6 +150,20 @@ const trySendButton = async (userId, text) => {
   await mixin.sendButton(text, options);
 }
 
+const trySendCard = async (userId, text) => {
+  const conversation = await Conversation.get(userId);
+  if (!conversation) {
+    return false;
+  }
+  const options = {
+    data: {
+      conversation_id: conversation.conversationId,
+      user_id: conversation.mixinAccountId,
+    }
+  };
+  await mixin.sendCard(text, options);
+}
+
 exports.tryConnect = async () => {
   if (!enabled) {
     enabled = true;
@@ -161,7 +178,8 @@ exports.tryConnect = async () => {
 exports.notify = async data => {
   try {
     await trySendToUser(data.userId, data.text, {
-      url: data.url
+      url: data.url,
+      desc: data.desc,
     });
   } catch (e) {
     console.log(e);
