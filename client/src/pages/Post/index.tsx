@@ -27,7 +27,7 @@ import postApi from 'apis/post';
 import fileApi from 'apis/file';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, initMathJax, getQuery, disableBackgroundScroll } from 'utils';
+import { ago, isPc, isMobile, sleep, getQuery, disableBackgroundScroll } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
@@ -111,7 +111,6 @@ export default observer((props: any) => {
         }
         document.title = post.title;
         setPost(post);
-        initMathJax(document.getElementById('post-content'));
       } catch (err) {
         modalStore.closePageLoading();
         setIsBan(err.message === 'Post has been deleted');
@@ -410,6 +409,7 @@ export default observer((props: any) => {
       <div className="pb-10">
         <Comment
           isMyself={isMyself}
+          authorAddress={post.author.address}
           fileRId={post.rId}
           alwaysShowCommentEntry
           tryVote={() => {

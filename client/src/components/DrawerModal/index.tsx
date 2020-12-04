@@ -9,13 +9,26 @@ interface Props {
   hideCloseButton?: boolean;
   smallRadius?: boolean;
   darkMode?: boolean;
+  useCustomZIndex?: boolean;
   children: React.ReactNode;
 }
 
 export default (props: Props) => {
-  const { open, onClose, hideCloseButton, smallRadius, darkMode = false } = props;
+  const {
+    open,
+    onClose,
+    hideCloseButton,
+    smallRadius,
+    darkMode = false,
+    useCustomZIndex = false,
+  } = props;
   return (
-    <Drawer anchor="bottom" open={open} onClose={onClose}>
+    <Drawer
+      anchor="bottom"
+      open={open}
+      onClose={onClose}
+      ModalProps={{ className: useCustomZIndex ? 'custom-z-index' : '' }}
+    >
       <div
         className={classNames(
           {
@@ -53,6 +66,9 @@ export default (props: Props) => {
         <style jsx global>{`
           .MuiDrawer-paper {
             background: none !important;
+          }
+          .custom-z-index {
+            z-index: 1000 !important;
           }
         `}</style>
       </div>

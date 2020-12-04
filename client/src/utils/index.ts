@@ -1,8 +1,6 @@
 import qs from 'query-string';
 import moment from 'moment';
 
-export { initMathJax } from './mathJax';
-
 export { default as Endpoint } from './endpoint';
 
 export const getQueryObject = () => {
@@ -154,6 +152,11 @@ export const getDefaultDeprecatedAvatar = () => 'https://static.press.one/pub/av
 
 export const getDefaultAvatar = () => 'https://static-assets.xue.cn/images/435d111.jpg';
 
+export const getScrollTop = () => {
+  const scrollElement = document.scrollingElement || document.documentElement;
+  return scrollElement.scrollTop;
+}
+
 export const scrollToHere = (top: number) => {
   const scrollElement = document.scrollingElement || document.documentElement;
   try {
@@ -205,6 +208,16 @@ export const scrollToElementById = (id: string, options: any = {}) => {
   }
   const scrollElement: any = document.scrollingElement || document.documentElement;
   const top = commentEle.offsetTop;
+  if (options.disabledScrollIfVisible) {
+    if (!checkVisible(commentEle)) {
+      scrollElement.scrollTop = top - window.innerHeight - commentEle.scrollHeight + 300;
+    }
+    return commentEle;
+  }
+  if (options.useScrollIntoView) {
+    commentEle.scrollIntoView();
+    return commentEle;
+  }
   if (options.behavior) {
     try {
       scrollElement.scrollTo({
@@ -218,6 +231,12 @@ export const scrollToElementById = (id: string, options: any = {}) => {
     scrollElement.scrollTop = top;
   }
   return commentEle;
+}
+
+const checkVisible = (element: any) => {
+  var rect = element.getBoundingClientRect();
+  var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
 }
 
 export const disableBackgroundScroll = (disable: boolean) => {

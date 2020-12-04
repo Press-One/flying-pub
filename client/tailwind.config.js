@@ -15,6 +15,11 @@ module.exports = {
             (_v, i) => [`${(i + 1)}-px`, `${(i + 1)}px`],
           )
         ),
+        ...Object.fromEntries(
+          Array(10).fill(0).map(
+            (_v, i) => [`-${(i + 1)}-px`, `-${(i + 1)}px`],
+          )
+        ),
       },
       padding: {
         ...Object.fromEntries(
