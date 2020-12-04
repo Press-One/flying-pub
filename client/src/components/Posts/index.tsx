@@ -142,7 +142,14 @@ const PostEntry = observer((props: IPostProps) => {
                           {!hideAuthor && (
                             <span className="w-5 md:w-6 text-center opacity-75"></span>
                           )}
-                          <div className="flex items-center text-13 md:text-14 -mt-2-px md:mt-0">
+                          <div
+                            className={classNames(
+                              {
+                                'md:-mt-2-px': hideAuthor,
+                              },
+                              'flex items-center text-13 md:text-14 -mt-2-px md:mt-0',
+                            )}
+                          >
                             <FontAwesomeIcon icon={faThumbsUp} />
                           </div>
                           <span className="font-bold ml-2-px">{post.upVotesCount}</span>
