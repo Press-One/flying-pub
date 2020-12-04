@@ -566,6 +566,10 @@ export default observer((props: IProps) => {
         {isMobile &&
           (openCommentEntry || alwaysShowCommentEntry) &&
           !commentStore.openEditorEntryDrawer &&
+          !(
+            commentStore.openSubCommentPage &&
+            commentStore.selectedTopComment.user.address === user.address
+          ) &&
           renderFixedCommentEntry()}
       </div>
     );
