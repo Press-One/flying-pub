@@ -72,7 +72,7 @@ export function createCommentStore() {
       comment.ago = ago(comment.createdAt);
       this.commentMap[comment.id] = comment;
       this.commentIdsSet.add(comment.id);
-      if (comment.threadId) {
+      if (comment.threadId && !this.openSubCommentPage) {
         const previewIds = this.commentPreviewMap[comment.threadId].map((comment: any) => comment.id);
         if (isMobile && previewIds.includes(comment.id)) {
           return;
