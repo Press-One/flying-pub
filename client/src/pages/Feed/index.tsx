@@ -178,6 +178,7 @@ export default observer(() => {
       } catch (err) {}
       feedStore.setIsFetching(false);
       feedStore.setIsFetched(true);
+      feedStore.setPendingNewPage(false);
     })();
   }, [
     feedStore.page,
@@ -196,7 +197,8 @@ export default observer(() => {
     hasNextPage: feedStore.hasMorePosts,
     threshold: 350,
     onLoadMore: () => {
-      if (!feedStore.isFetching) {
+      if (!feedStore.isFetching && !feedStore.pendingNewPage) {
+        feedStore.setPendingNewPage(true);
         feedStore.setPage(feedStore.page + 1);
       }
     },

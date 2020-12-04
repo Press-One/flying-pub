@@ -100,6 +100,13 @@ export default observer((props: any) => {
   }, [rId, commentStore]);
 
   React.useEffect(() => {
+    return () => {
+      commentStore.setOpenSubCommentPage(false);
+      commentStore.setSelectedTopComment(null);
+    };
+  }, [commentStore]);
+
+  React.useEffect(() => {
     (async () => {
       try {
         const post: IPost = await postApi.fetchPost(rId, {

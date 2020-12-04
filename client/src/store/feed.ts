@@ -25,6 +25,7 @@ export function createFeedStore() {
     isFetched: false,
     isNew: true,
     willLoadingPage: false,
+    pendingNewPage: false,
     belongedAuthor: ({} as IAuthor),
     belongedTopic: ({} as ITopic),
     hasMorePosts: false,
@@ -164,6 +165,9 @@ export function createFeedStore() {
     },
     markSyncedFromSettings() {
       this.syncedFromSettings = true;
+    },
+    setPendingNewPage(status: boolean) {
+      this.pendingNewPage = status;
     }
   };
 }

@@ -254,6 +254,7 @@ export default observer((props: any) => {
       }
       feedStore.setIsFetching(false);
       feedStore.setIsFetched(true);
+      feedStore.setPendingNewPage(false);
     })();
   }, [feedStore, uuid]);
 
@@ -312,7 +313,8 @@ export default observer((props: any) => {
     hasNextPage: feedStore.hasMorePosts,
     threshold: 350,
     onLoadMore: () => {
-      if (!feedStore.isFetching) {
+      if (!feedStore.isFetching && !feedStore.pendingNewPage) {
+        feedStore.setPendingNewPage(true);
         feedStore.setPage(feedStore.page + 1);
       }
     },
@@ -420,7 +422,7 @@ export default observer((props: any) => {
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
-            <div className="bg-white md:px-5 pb-8 md:rounded-12 h-screen md:h-auto">
+            <div className="bg-white md:px-5 pb-8 md:rounded-12">
               <Filter
                 provider="topic"
                 onChange={handleFilterChange}
