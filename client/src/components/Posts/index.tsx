@@ -7,6 +7,8 @@ import { isMobile, ago, getImageWidth } from 'utils';
 import TopicLabels from 'components/TopicLabels';
 import Tooltip from '@material-ui/core/Tooltip';
 import Img from 'components/Img';
+import { faCommentDots, faThumbsUp, faEye } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const AVATAR_RATIO = isMobile ? 1 : 3 / 2;
 
@@ -125,28 +127,41 @@ const PostEntry = observer((props: IPostProps) => {
                     >
                       {post.viewCount > 0 && localStorage.getItem('VIEW_COUNT_ENABLED') && (
                         <div className="flex items-center">
-                          {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}
-                          <span className="font-bold mr-1">{post.viewCount}</span>阅读
-                          <span className="w-3 text-center opacity-75">·</span>
+                          {!hideAuthor && (
+                            <span className="w-5 md:w-6 text-center opacity-75"></span>
+                          )}
+                          <div className="flex items-center text-14 md:text-15">
+                            <FontAwesomeIcon icon={faEye} />
+                          </div>
+                          <span className="font-bold mr-1">{post.viewCount}</span>
+                          <span className="w-5 md:w-6 text-center opacity-75"></span>
                         </div>
                       )}
                       {post.upVotesCount > 0 && (
                         <div className="flex items-center">
-                          {!hideAuthor && <span className="w-3 text-center opacity-75">·</span>}
-                          <span className="font-bold mr-1">{post.upVotesCount}</span>赞
+                          {!hideAuthor && (
+                            <span className="w-5 md:w-6 text-center opacity-75"></span>
+                          )}
+                          <div className="flex items-center text-13 md:text-14 -mt-2-px md:mt-0">
+                            <FontAwesomeIcon icon={faThumbsUp} />
+                          </div>
+                          <span className="font-bold ml-2-px">{post.upVotesCount}</span>
                         </div>
                       )}
                       {post.commentsCount > 0 && (
                         <div className="flex items-center">
                           {(post.upVotesCount > 0 || !hideAuthor) && (
-                            <span className="w-3 text-center opacity-75">·</span>
+                            <span className="w-5 md:w-6 text-center opacity-75"></span>
                           )}
-                          <span className="font-bold mr-1">{post.commentsCount} </span>评论
+                          <div className="flex items-center text-14 md:text-15">
+                            <FontAwesomeIcon icon={faCommentDots} />
+                          </div>
+                          <span className="font-bold ml-1">{post.commentsCount}</span>
                         </div>
                       )}
                       {(post.upVotesCount > 0 || post.commentsCount > 0 || !hideAuthor) &&
-                        !isMobile && <span className="w-3 text-center opacity-75">·</span>}
-                      {!isMobile && <div>{ago(post.pubDate)}</div>}
+                        !isMobile && <span className="w-5 md:w-6 text-center opacity-75"></span>}
+                      {!isMobile && <div className="text-gray-af">{ago(post.pubDate)}</div>}
                     </div>
                   </Link>
                 </div>
