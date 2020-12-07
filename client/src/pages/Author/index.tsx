@@ -20,6 +20,7 @@ import {
   getDefaultDeprecatedAvatar,
   sleep,
   isWeChat,
+  getApiEndpoint,
 } from 'utils';
 import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
@@ -31,10 +32,11 @@ import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
-import { Edit } from '@material-ui/icons';
-import { faFileAlt } from '@fortawesome/free-regular-svg-icons';
-import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { Edit, Settings } from '@material-ui/icons';
+import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import DrawerMenu from 'components/DrawerMenu';
+import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -47,6 +49,9 @@ export default observer((props: any) => {
     preloadStore,
     feedStore,
     confirmDialogStore,
+    walletStore,
+    settingsStore,
+    pathStore,
   } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
@@ -56,11 +61,14 @@ export default observer((props: any) => {
     loadingOthers: false,
     showPosts: false,
     showDraftModal: false,
+    showMainMenu: false,
+    showSettingsMenu: false,
   }));
   const loading = React.useMemo(() => state.isFetchingAuthor || !preloadStore.ready, [
     state.isFetchingAuthor,
     preloadStore.ready,
   ]);
+  const { prevPath } = pathStore;
   const { isLogin, user } = userStore;
   const { address } = props.match.params;
   const isMyself = isLogin && userStore.user.address === address;
@@ -257,17 +265,111 @@ export default observer((props: any) => {
     }
   };
 
-  const DraftEntry = () => {
+  const Menu = () => {
+    const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
+    const supportPhoneBinding = !!settingsStore.settings['auth.providers']?.includes('phone');
+    const hasPhoneBinding = userStore.profiles.some((v) => v.provider === 'phone');
     return (
       <div>
-        <div className="absolute top-0 right-0 pl-20 -mt-12 z-10">
-          <div
-            className="px-6 text-gray-99 text-28 flex items-center h-12 py-1"
-            onClick={() => (state.showDraftModal = true)}
-          >
-            <FontAwesomeIcon icon={faFileAlt} />
+        <div className="absolute top-0 left-0 z-10 w-full">
+          <div className="flex items-center justify-between text-gray-f2 h-12 pb-1 pt-2 pr-1">
+            <div className="flex items-center">
+              <div
+                className="flex items-center p-2 pl-5 text-20"
+                onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
+              >
+                <ArrowBackIos />
+              </div>
+            </div>
+            {isMyself && (
+              <div className="flex items-center">
+                <div
+                  className="pl-5 pr-3 flex items-center text-26"
+                  onClick={() => (state.showSettingsMenu = true)}
+                >
+                  <Settings />
+                </div>
+                <div
+                  className="pl-5 pr-4 flex items-center text-24"
+                  onClick={() => (state.showMainMenu = true)}
+                >
+                  <FontAwesomeIcon icon={faBars} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
+        <DrawerMenu
+          open={state.showMainMenu}
+          onClose={() => {
+            state.showMainMenu = false;
+          }}
+          items={[
+            {
+              invisible: isWeChat && !userStore.canPublish,
+              name: '草稿箱',
+              onClick: () => {
+                state.showDraftModal = true;
+              },
+            },
+            {
+              invisible: !userStore.isLogin,
+              name: walletStore.rewardOnly ? '打赏记录' : '所有交易记录',
+              onClick: () => {
+                modalStore.openWallet({
+                  tab: 'receipts',
+                });
+              },
+            },
+          ]}
+        />
+        <DrawerMenu
+          open={state.showSettingsMenu}
+          onClose={() => {
+            state.showSettingsMenu = false;
+          }}
+          items={[
+            {
+              invisible: !walletStore.canSpendBalance,
+              name: '余额',
+              onClick: () => {
+                modalStore.openWallet({
+                  tab: 'assets',
+                });
+              },
+            },
+            {
+              invisible: !walletStore.canSpendBalance,
+              name: '设置密码',
+              onClick: () => {
+                modalStore.openSettings('password');
+              },
+            },
+            {
+              invisible: !userStore.isLogin,
+              name: '账号绑定',
+              onClick: () => {
+                modalStore.openSettings('bind');
+              },
+            },
+            {
+              invisible: !(supportPhoneBinding && hasPhoneBinding),
+              name: '设置密码',
+              onClick: () => {
+                modalStore.openSettings('password');
+              },
+            },
+            {
+              invisible: !userStore.isLogin,
+              name: '退出账号',
+              onClick: () => {
+                modalStore.openPageLoading();
+                window.location.href = logoutUrl;
+              },
+              stayOpenAfterClick: true,
+            },
+          ]}
+        />
         <DraftModal
           open={state.showDraftModal}
           close={() => {
@@ -323,14 +425,14 @@ export default observer((props: any) => {
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto relative">
-        {isMobile && isMyself && !(isWeChat && !userStore.canPublish) && (
+        {isMobile && (
           <div>
-            {DraftEntry()}
-            {EditorEntry()}
+            {Menu()}
+            {isMyself && !(isWeChat && !userStore.canPublish) && EditorEntry()}
           </div>
         )}
         <div>
-          <div className="flex items-stretch overflow-hidden relative pb-6 md:rounded-12">
+          <div className="flex items-stretch overflow-hidden relative pt-8 md:pt-0 pb-6 md:rounded-12">
             <div
               className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center md:rounded-12"
               style={{

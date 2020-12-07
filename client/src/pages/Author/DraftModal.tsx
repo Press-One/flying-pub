@@ -212,7 +212,7 @@ const Drafts = observer(() => {
 
   return (
     <div className="py-8 bg-white rounded-12 text-gray-4a">
-      <div className="font-bold items-center text-18 flex justify-center">草稿</div>
+      <div className="font-bold items-center text-18 flex justify-center">草稿箱</div>
       <div className="mt-3 h-80-vh overflow-y-auto" ref={infiniteRef}>
         {!state.isFetched && (
           <div className="pt-24 flex items-center justify-center">

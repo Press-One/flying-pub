@@ -13,18 +13,18 @@ import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import HomeOutlined from '@material-ui/icons/HomeOutlined';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
+import { faUser } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
-import DrawerMenu from 'components/DrawerMenu';
 import Badge from '@material-ui/core/Badge';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import { getApiEndpoint, isMobile, stopBodyScroll, isPc, isWeChat } from 'utils';
+import { getApiEndpoint, isMobile, isPc } from 'utils';
 import Img from 'components/Img';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [openDrawer, setOpenDrawer] = React.useState(false);
   const [showBack, setShowBack] = React.useState(false);
   const [hideRightPanel, setHideRightPanel] = React.useState(false);
   const {
@@ -38,7 +38,7 @@ export default observer((props: any) => {
   } = useStore();
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
-  const { user, isLogin, canPublish } = userStore;
+  const { user, isLogin } = userStore;
   const { pathname } = props.location;
   const unread = notificationStore.getUnread() || 0;
 
@@ -51,102 +51,22 @@ export default observer((props: any) => {
   React.useEffect(() => {
     pushPath(pathname);
     setShowBack(pathname !== '/');
-    if (isMobile && (pathname.includes('/authors/') || pathname.includes('/posts/'))) {
+    if (isMobile && pathname.includes('/posts/')) {
       setHideRightPanel(true);
     } else {
       setHideRightPanel(false);
     }
   }, [pathname, pushPath]);
 
+  if (isMobile && (pathname.includes('/authors/') || pathname.includes('/topics/'))) {
+    return null;
+  }
+
   if (!preloadStore.ready) {
     return isMobile ? <div className="h-12" /> : <div style={{ height: 53 }} />;
   }
 
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
-  const supportPhoneBinding = !!settingsStore.settings['auth.providers']?.includes('phone');
-  const phoneBinded = userStore.profiles.some((v) => v.provider === 'phone');
-
-  const mobileMenuView = () => {
-    return (
-      <DrawerMenu
-        open={openDrawer}
-        onClose={() => {
-          setOpenDrawer(false);
-        }}
-        items={[
-          {
-            invisible: userStore.isLogin,
-            name: '登录',
-            onClick: () => {
-              handleOpenLogin();
-            },
-          },
-          {
-            invisible: !userStore.isLogin,
-            name: '我的主页',
-            onClick: () => {
-              props.history.push(`/authors/${userStore.user.address}`);
-            },
-          },
-          {
-            invisible: !userStore.isLogin || !walletStore.canSpendBalance,
-            name: '我的余额',
-            onClick: () => {
-              modalStore.openWallet({
-                tab: 'assets',
-              });
-            },
-          },
-          {
-            invisible: !userStore.isLogin || (isWeChat && !canPublish),
-            name: '写文章',
-            onClick: () => {
-              props.history.push(`/editor`);
-            },
-          },
-          {
-            invisible: !userStore.isLogin || !walletStore.canSpendBalance,
-            name: '设置密码',
-            onClick: () => {
-              modalStore.openSettings('password');
-            },
-          },
-          {
-            invisible: !userStore.isLogin,
-            name: walletStore.rewardOnly ? '打赏记录' : '所有交易记录',
-            onClick: () => {
-              modalStore.openWallet({
-                tab: 'receipts',
-              });
-            },
-          },
-          {
-            invisible: !userStore.isLogin,
-            name: '账号绑定',
-            onClick: () => {
-              modalStore.openSettings('bind');
-            },
-          },
-          {
-            invisible: !userStore.isLogin || !(supportPhoneBinding && phoneBinded),
-            name: '设置密码',
-            onClick: () => {
-              modalStore.openSettings('password');
-            },
-          },
-          {
-            invisible: !userStore.isLogin,
-            name: '退出账号',
-            onClick: () => {
-              modalStore.openPageLoading();
-              window.location.href = logoutUrl;
-            },
-            stayOpenAfterClick: true,
-          },
-        ]}
-      />
-    );
-  };
 
   const pcMenuView = () => {
     return (
@@ -250,67 +170,80 @@ export default observer((props: any) => {
   return (
     <Fade in={true} timeout={isMobile ? 400 : 1500}>
       <div>
-        <div className="md:hidden">
-          <div className="border-t border-gray-300 border-opacity-50" />
-          <div className="flex justify-between items-center py-1 px-3 border-b border-gray-200 h-12">
-            {!showBack && (
-              <Link to="/">
+        {isMobile && (
+          <div>
+            <div className="border-t border-gray-300 border-opacity-50" />
+            <div className="flex justify-between items-center py-1 px-3 border-b border-gray-200 h-12">
+              {!showBack && (
+                <Link to="/">
+                  <div className="flex items-center">
+                    <img
+                      className="rounded-md"
+                      src={settings['site.logo']}
+                      alt="logo"
+                      width="36"
+                      height="36"
+                    />
+                  </div>
+                </Link>
+              )}
+              {showBack && (
                 <div className="flex items-center">
-                  <img
-                    className="rounded-md"
-                    src={settings['site.logo']}
-                    alt="logo"
-                    width="36"
-                    height="36"
-                  />
-                </div>
-              </Link>
-            )}
-            {showBack && (
-              <div className="flex items-center">
-                <div
-                  className="flex items-center text-xl text-gray-700 p-2"
-                  onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
-                >
-                  <ArrowBackIos />
-                </div>
-                {prevPath && prevPath !== '/' && (
-                  <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
-                    <HomeOutlined />
-                  </Link>
-                )}
-              </div>
-            )}
-            {!hideRightPanel && (
-              <div className="flex items-center">
-                {isMobile && settings['notification.enabled'] && userStore.isLogin && (
-                  <Badge
-                    badgeContent={unread}
-                    className="mr-8 transform scale-90 cursor-pointer"
-                    color="error"
-                    onClick={() => {
-                      modalStore.openNotification();
-                    }}
+                  <div
+                    className="flex items-center text-xl text-gray-700 p-2"
+                    onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
                   >
-                    <div className="text-3xl flex items-center text-gray-88">
-                      <NotificationsOutlined />
-                    </div>
-                  </Badge>
-                )}
-                <div
-                  className="w-8 h-8 text-28 text-gray-88 flex justify-center items-center leading-none"
-                  onClick={() => {
-                    setOpenDrawer(true);
-                    stopBodyScroll(true);
-                  }}
-                >
-                  <MoreHoriz />
+                    <ArrowBackIos />
+                  </div>
+                  {prevPath && prevPath !== '/' && (
+                    <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
+                      <HomeOutlined />
+                    </Link>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
+              {!hideRightPanel && (
+                <div className="flex items-center">
+                  {isMobile && settings['notification.enabled'] && userStore.isLogin && (
+                    <Badge
+                      badgeContent={unread}
+                      className="mr-8 transform scale-90 cursor-pointer"
+                      color="error"
+                      onClick={() => {
+                        modalStore.openNotification();
+                      }}
+                    >
+                      <div className="text-3xl flex items-center text-gray-88">
+                        <NotificationsOutlined />
+                      </div>
+                    </Badge>
+                  )}
+                  {!userStore.isLogin && (
+                    <div
+                      className="text-26 text-gray-af flex justify-center items-center leading-none pl-2 pr-1"
+                      onClick={() => {
+                        handleOpenLogin();
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUser} />
+                    </div>
+                  )}
+                  {userStore.isLogin && (
+                    <div className="pr-1">
+                      <Link to={`/authors/${user.address}`}>
+                        <Img
+                          src={user.avatar}
+                          className="w-7 h-7 rounded-full border border-gray-f2"
+                          alt="头像"
+                        />
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          {isMobile && mobileMenuView()}
-        </div>
+        )}
         {isPc && (
           <div className="py-2 border-b border-gray-300">
             <div className="container mx-auto">

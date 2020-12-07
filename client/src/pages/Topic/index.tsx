@@ -26,6 +26,7 @@ import { resizeImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
+import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 
 const TopView = observer(
   (props: {
@@ -36,13 +37,15 @@ const TopView = observer(
     openTopicManagerMenu: () => void;
     fetchTopic: any;
     setShowImage: () => void;
+    history: any;
   }) => {
-    const { userStore, modalStore } = useStore();
+    const { userStore, modalStore, pathStore } = useStore();
     const state = useLocalStore(() => ({
       showTopicContributionModal: false,
       showTopicIntroductionModal: false,
     }));
     const topic = props.topic;
+    const { prevPath } = pathStore;
 
     const Buttons = () => (
       <div className="flex items-start">
@@ -56,7 +59,7 @@ const TopView = observer(
               }
               state.showTopicContributionModal = true;
             }}
-            size={isMobile ? 'small' : 'normal'}
+            size={isMobile ? 'mini' : 'normal'}
             color="green"
           >
             {props.isMyself ? '收录' : '投稿'}
@@ -66,13 +69,13 @@ const TopView = observer(
           <Button
             outline
             color={isMobile ? 'white' : 'primary'}
-            size={isMobile ? 'small' : 'normal'}
+            size={isMobile ? 'mini' : 'normal'}
             onClick={props.unsubscribe}
           >
             已关注
           </Button>
         ) : (
-          <Button onClick={props.subscribe} size={isMobile ? 'small' : 'normal'}>
+          <Button onClick={props.subscribe} size={isMobile ? 'mini' : 'normal'}>
             关注
           </Button>
         )}
@@ -80,7 +83,38 @@ const TopView = observer(
     );
 
     return (
-      <div className="flex items-stretch overflow-hidden relative pb-2 md:pb-4 md:rounded-12 bg-white">
+      <div
+        className={classNames(
+          {
+            sm: isMobile,
+          },
+          'flex items-stretch overflow-hidden relative topic-page pb-2 md:pb-4 md:rounded-12 bg-white',
+        )}
+      >
+        {isMobile && (
+          <div className="absolute top-0 left-0 z-30 w-full">
+            <div className="flex items-center justify-between text-gray-f2 h-12 pb-1 pt-2">
+              <div className="flex items-center">
+                <div
+                  className="flex items-center p-2 pl-5 text-20"
+                  onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
+                >
+                  <ArrowBackIos />
+                </div>
+              </div>
+              <div>
+                {props.isMyself && (
+                  <div
+                    className="pl-5 pr-4 flex items-center text-26"
+                    onClick={() => props.openTopicManagerMenu()}
+                  >
+                    <Settings />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         <div
           className="absolute top-0 left-0 w-full h-full overflow-hidden bg-cover bg-center cover"
           style={{
@@ -105,7 +139,7 @@ const TopView = observer(
                 }}
               />
               <div className="ml-4 md:ml-5">
-                <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a">
+                <div className="font-bold text-18 md:text-22 leading-6 md:leading-none text-white md:text-gray-4a pt-1 md:pt-0">
                   {topic.name}
                 </div>
                 <div className="mt-5-px md:mt-9-px text-14 md:text-15 flex items-center text-white md:text-gray-9b pb-2">
@@ -129,14 +163,6 @@ const TopView = observer(
               </div>
             </div>
             {isPc && <div className="pt-2 mt-16 mr-3">{Buttons()}</div>}
-            {isMobile && props.isMyself && (
-              <div
-                className="settings-btn text-24 absolute bottom-0 right-0 mr-12 z-20 text-white opacity-75 flex items-center justify-center"
-                onClick={() => props.openTopicManagerMenu()}
-              >
-                <Settings />
-              </div>
-            )}
           </div>
           {isMobile && (
             <div
@@ -172,6 +198,9 @@ const TopView = observer(
           />
         )}
         <style jsx>{`
+          .topic-page.sm {
+            padding-top: 24px;
+          }
           .cover {
             height: ${isMobile ? '100%' : '160px'};
           }
@@ -419,6 +448,7 @@ export default observer((props: any) => {
           setShowImage={() => {
             showImageView(true);
           }}
+          history={props.history}
         />
         <div className="mt-3 md:pb-10 flex justify-between items-start">
           <div className="w-full md:w-8/12 box-border md:pr-3">
