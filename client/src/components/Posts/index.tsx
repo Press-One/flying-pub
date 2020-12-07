@@ -163,7 +163,7 @@ const PostEntry = observer((props: IPostProps) => {
                           <div className="flex items-center text-14 md:text-15">
                             <FontAwesomeIcon icon={faCommentDots} />
                           </div>
-                          <span className="font-bold ml-1">{post.commentsCount}</span>
+                          <span className="font-bold ml-3-px md:ml-1">{post.commentsCount}</span>
                         </div>
                       )}
                       {(post.upVotesCount > 0 || post.commentsCount > 0 || !hideAuthor) &&

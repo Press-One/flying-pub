@@ -168,6 +168,9 @@ const getUserOptions = async ctx => {
     return query;
   }
   if (query.order && query.dayRange) {
+    const dayRangeOptions = settings['filter.dayRangeOptions'];
+    const isValidDayRange = query.dayRange && dayRangeOptions.includes(query.dayRange);
+    query.dayRange = isValidDayRange ? query.dayRange : dayRangeOptions[0];
     return query;
   }
   const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
