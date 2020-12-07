@@ -90,8 +90,8 @@ export default observer((props: any) => {
             if (isPc) {
               setTimeout(() => {
                 snackbarStore.show({
-                  message: '已为你恢复上次未保存的内容...',
-                  duration: 3000,
+                  message: '恢复上次未保存的内容',
+                  duration: 2000,
                 });
               }, 2000);
             }
@@ -197,7 +197,7 @@ export default observer((props: any) => {
         return;
       }
       snackbarStore.show({
-        message: err.message || '保存草稿失败，请稍后重试',
+        message: '貌似出错了，请等会再试一试呢 ~',
         type: 'error',
       });
     } finally {
@@ -266,7 +266,7 @@ export default observer((props: any) => {
     } catch (err) {
       confirmDialogStore.setLoading(false);
       snackbarStore.show({
-        message: err.message || '保存草稿失败，请稍后重试',
+        message: '貌似出错了，请等会再试一试呢 ~',
         type: 'error',
       });
     }

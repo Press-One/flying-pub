@@ -302,6 +302,8 @@ exports.update = async ctx => {
 }
 
 exports.listTopics = async ctx => {
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
   const currentUser = ctx.verification && ctx.verification.sequelizeUser;
   const rId = ctx.params.id;
   const post = await Post.getByRId(rId, {
@@ -312,8 +314,15 @@ exports.listTopics = async ctx => {
     where: {
       deleted: false,
     },
+    offset,
+    limit,
     ...Topic.getTopicOrderQuery(),
     joinTableAttributes: []
+  });
+  const count = await post.countTopics({
+    where: {
+      deleted: false,
+    },
   });
   const derivedTopics = await Promise.all(topics.map(async topic => {
     return await Topic.pickTopic(topic, {
@@ -321,7 +330,7 @@ exports.listTopics = async ctx => {
     });
   }));
   ctx.body = {
-    total: derivedTopics.length,
+    total: count,
     topics: derivedTopics
   }
 }

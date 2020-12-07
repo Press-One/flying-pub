@@ -157,6 +157,9 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
+    if (!post) {
+      return;
+    }
     const bindClickEvent = (e: any) => {
       if (e.target.tagName === 'A') {
         const href = e.target.getAttribute('href');
@@ -181,7 +184,7 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, []);
+  }, [post]);
 
   React.useEffect(() => {
     (async () => {
@@ -200,7 +203,7 @@ export default observer((props: any) => {
   }, [commentStore, rId]);
 
   React.useEffect(() => {
-    if (ready && isFetchedPost) {
+    if (ready && isFetchedPost && post) {
       const postContent: any = document.getElementById('post-content');
       const images = postContent.querySelectorAll('img');
       for (const image of images) {
@@ -210,7 +213,7 @@ export default observer((props: any) => {
         };
       }
     }
-  }, [ready, isFetchedPost]);
+  }, [ready, isFetchedPost, post]);
 
   if (userStore.shouldLogin) {
     return null;
