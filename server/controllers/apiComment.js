@@ -218,7 +218,7 @@ exports.list = async (ctx) => {
     Comment.list({
       userId,
       objectId: fileRId,
-      includedCommentId,
+      includedCommentId: offset === 0 ? includedCommentId : 0,
       offset,
       limit,
     }),
