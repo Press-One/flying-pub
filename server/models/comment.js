@@ -24,10 +24,6 @@ const packComment = async (comment, options = {}) => {
   commentJson.voted = voted;
   delete commentJson.deleted;
   delete commentJson.version;
-  if (fromList) {
-    delete commentJson.objectId;
-    delete commentJson.objectType;
-  }
 
   if (isSubComment && commentJson.replyId && commentJson.replyId !== commentJson.threadId) {
     const replyComment = await Comment.findOne({
@@ -62,6 +58,11 @@ const packComment = async (comment, options = {}) => {
         })
       );
     }
+  }
+
+  if (fromList) {
+    delete commentJson.objectId;
+    delete commentJson.objectType;
   }
 
   return commentJson;
