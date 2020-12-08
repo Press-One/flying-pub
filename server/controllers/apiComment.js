@@ -207,19 +207,23 @@ exports.unstick = async (ctx) => {
 
 exports.list = async (ctx) => {
   const {
-    fileRId
+    fileRId,
+    includedCommentId
   } = ctx.query;
   assert(fileRId, Errors.ERR_IS_REQUIRED("fileRId"));
   const userId = ctx.verification && ctx.verification.user.id;
   const offset = ~~ctx.query.offset || 0;
   const limit = ~~ctx.query.limit || 10;
-  const result = await Comment.list({
-    userId,
-    objectId: fileRId,
-    offset,
-    limit,
-  });
-  const total = await Comment.count(fileRId);
+  const [result, total] = await Promise.all([
+    Comment.list({
+      userId,
+      objectId: fileRId,
+      includedCommentId,
+      offset,
+      limit,
+    }),
+    Comment.count(fileRId)
+  ])
   ctx.body = {
     total,
     comments: result,

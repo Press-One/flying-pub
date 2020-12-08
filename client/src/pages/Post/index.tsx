@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { observer } from 'mobx-react-lite';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import Viewer from 'react-viewer';
 import marked from 'marked';
 import BackButton from 'components/BackButton';
@@ -19,7 +19,6 @@ import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import DrawerMenu from 'components/DrawerMenu';
-
 import CommentApi from 'apis/comment';
 import Comment from './comment';
 import { IPost } from 'apis/post';
@@ -33,6 +32,7 @@ import Api from 'api';
 import Popover from '@material-ui/core/Popover';
 import QRCode from 'qrcode.react';
 import Img from 'components/Img';
+import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -42,6 +42,8 @@ marked.setOptions({
     return require('highlight.js').highlightAuto(code).value;
   },
 });
+
+const COMMENTS_LIMIT = isMobile ? 10 : 15;
 
 export default observer((props: any) => {
   const {
@@ -58,20 +60,26 @@ export default observer((props: any) => {
   const { ready } = preloadStore;
   const { post, setPost } = feedStore;
   const { isLogin, user } = userStore;
-  const [isFetchedPost, setIsFetchedPost] = React.useState(false);
-  const [showExtra, setShowExtra] = React.useState(false);
-  const [voting, setVoting] = React.useState(false);
-  const [showImage, setShowImage] = React.useState(false);
-  const [imgSrc, setImgSrc] = React.useState('');
-  const [openRewardModal, setOpenRewardModal] = React.useState(false);
-  const [isFetchedReward, setIsFetchedReward] = React.useState(false);
-  const [rewardSummary, setRewardSummary] = React.useState({ amountMap: {}, users: [] });
-  const [isFetchedComments, setIsFetchedComments] = React.useState(false);
-  const [showMenu, setShowMenu] = React.useState(false);
-  const [isBan, setIsBan] = React.useState(false);
-  const noReward = rewardSummary.users.length === 0;
+  const state = useLocalStore(() => ({
+    isFetchedPost: false,
+    showExtra: false,
+    voting: false,
+    showImage: false,
+    imgSrc: '',
+    openRewardModal: false,
+    isFetchedReward: false,
+    rewardSummary: { amountMap: {}, users: [] },
+    isFetchingComments: false,
+    isFetchedComments: false,
+    commentPage: 0,
+    hasMoreComments: true,
+    isBan: false,
+    anchorEl: null as any,
+    showMenu: false,
+  }));
+
+  const noReward = state.rewardSummary.users.length === 0;
   const { rId } = props.match.params;
-  const [anchorEl, setAnchorEl] = React.useState(null as any);
   const isMyself = React.useMemo(
     () => post && post.author && user.address === post.author.address,
     [user.address, post],
@@ -80,13 +88,13 @@ export default observer((props: any) => {
   const ref = React.useRef(document.createElement('div'));
 
   React.useEffect(() => {
-    if (isFetchedPost) {
+    if (state.isFetchedPost) {
       (async () => {
         await sleep(200);
-        setShowExtra(true);
+        state.showExtra = true;
       })();
     }
-  }, [isFetchedPost]);
+  }, [state, state.isFetchedPost]);
 
   React.useEffect(() => {
     const commentId = getQuery('commentId');
@@ -96,8 +104,8 @@ export default observer((props: any) => {
   }, [modalStore]);
 
   React.useEffect(() => {
-    setRewardSummary({ amountMap: {}, users: [] });
-  }, [rId, commentStore]);
+    state.rewardSummary = { amountMap: {}, users: [] };
+  }, [rId, commentStore, state]);
 
   React.useEffect(() => {
     return () => {
@@ -120,11 +128,11 @@ export default observer((props: any) => {
         setPost(post);
       } catch (err) {
         modalStore.closePageLoading();
-        setIsBan(err.message === 'Post has been deleted');
+        state.isBan = err.message === 'Post has been deleted';
       }
-      setIsFetchedPost(true);
+      state.isFetchedPost = true;
     })();
-  }, [rId, setPost, modalStore]);
+  }, [rId, setPost, modalStore, state]);
 
   const syncTopics = async () => {
     try {
@@ -138,22 +146,24 @@ export default observer((props: any) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const rewardSummary = await FeedApi.getRewardSummary(rId);
-        setRewardSummary(rewardSummary);
+        state.rewardSummary = await FeedApi.getRewardSummary(rId);
       } catch (err) {}
-      setIsFetchedReward(true);
+      state.isFetchedReward = true;
     })();
-  }, [rId]);
+  }, [rId, state]);
 
-  const showImageView = (show: boolean) => {
-    if (isMobile) {
-      return;
-    }
-    setShowImage(show);
-    if (isMobile) {
-      disableBackgroundScroll(show);
-    }
-  };
+  const showImageView = React.useCallback(
+    (show: boolean) => {
+      if (isMobile) {
+        return;
+      }
+      state.showImage = show;
+      if (isMobile) {
+        disableBackgroundScroll(show);
+      }
+    },
+    [state],
+  );
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -166,7 +176,7 @@ export default observer((props: any) => {
         window.open(href);
         e.preventDefault();
       } else if (e.target.tagName === 'IMG') {
-        setImgSrc(e.target.src);
+        state.imgSrc = e.target.src;
         showImageView(true);
       }
     };
@@ -184,42 +194,63 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, [post]);
+  }, [post, state, showImageView]);
 
   React.useEffect(() => {
+    state.isFetchingComments = true;
     (async () => {
       try {
-        const pagination = {
-          offset: 0,
-          limit: '1000',
+        const options = {
+          offset: state.commentPage * COMMENTS_LIMIT,
+          limit: COMMENTS_LIMIT,
+          includedCommentId: getQuery('commentId'),
         };
-        const res = await CommentApi.list(rId, pagination);
-        commentStore.setComments(res['comments']);
-        setIsFetchedComments(true);
+        const res = await CommentApi.list(rId, options);
+        if (state.commentPage === 0) {
+          commentStore.reset();
+        }
+        commentStore.setTotal(res.total);
+        commentStore.addComments(res.comments);
+        commentStore.setHasMoreComments(res.comments.length >= COMMENTS_LIMIT);
+        state.isFetchedComments = true;
       } catch (err) {
         console.log(err);
       }
+      state.isFetchingComments = false;
     })();
-  }, [commentStore, rId]);
+  }, [commentStore, rId, state, state.commentPage]);
+
+  const infiniteRef: any = useWindowInfiniteScroll({
+    loading: state.isFetchingComments,
+    hasNextPage: commentStore.hasMoreComments,
+    threshold: 350,
+    onLoadMore: () => {
+      if (!state.isFetchingComments) {
+        state.commentPage += 1;
+      }
+    },
+  });
 
   React.useEffect(() => {
-    if (ready && isFetchedPost && post) {
+    if (ready && state.isFetchedPost && post) {
       const postContent: any = document.getElementById('post-content');
-      const images = postContent.querySelectorAll('img');
-      for (const image of images) {
-        image.onerror = function () {
-          this.onerror = null;
-          this.src = `${this.src}#retry`;
-        };
+      if (postContent) {
+        const images = postContent.querySelectorAll('img');
+        for (const image of images) {
+          image.onerror = function () {
+            this.onerror = null;
+            this.src = `${this.src}#retry`;
+          };
+        }
       }
     }
-  }, [ready, isFetchedPost, post]);
+  }, [ready, state.isFetchedPost, post]);
 
   if (userStore.shouldLogin) {
     return null;
   }
 
-  if (!ready || !isFetchedPost) {
+  if (!ready || !state.isFetchedPost) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30">
@@ -229,7 +260,7 @@ export default observer((props: any) => {
     );
   }
 
-  if (isBan || !post) {
+  if (state.isBan || !post) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
@@ -248,11 +279,10 @@ export default observer((props: any) => {
   };
 
   const onCloseRewardModal = async (isSuccess: boolean) => {
-    setOpenRewardModal(false);
+    state.openRewardModal = false;
     if (isSuccess) {
       await sleep(200);
-      const rewardSummary = await FeedApi.getRewardSummary(rId);
-      setRewardSummary(rewardSummary);
+      state.rewardSummary = await FeedApi.getRewardSummary(rId);
     }
   };
 
@@ -283,7 +313,7 @@ export default observer((props: any) => {
       });
       return;
     }
-    setOpenRewardModal(true);
+    state.openRewardModal = true;
   };
 
   const RewardView = () => {
@@ -299,7 +329,7 @@ export default observer((props: any) => {
             </div>
           )}
         </div>
-        {!noReward && <RewardSummary summary={rewardSummary} />}
+        {!noReward && <RewardSummary summary={state.rewardSummary} />}
       </div>
     );
   };
@@ -415,7 +445,7 @@ export default observer((props: any) => {
 
   const CommentView = () => {
     return (
-      <div className="pb-10">
+      <div className="pb-10" ref={infiniteRef}>
         <Comment
           isMyself={isMyself}
           authorAddress={post.author.address}
@@ -425,15 +455,20 @@ export default observer((props: any) => {
             post.voted ? resetVote(post.rId) : createVote(post.rId);
           }}
         />
+        {state.isFetchedComments && state.isFetchingComments && (
+          <div className="pb-12 md:pb-0 md:pt-10">
+            <Loading />
+          </div>
+        )}
       </div>
     );
   };
 
   const createVote = async (rId: string) => {
-    if (voting) {
+    if (state.voting) {
       return;
     }
-    setVoting(true);
+    state.voting = true;
     try {
       const { upVotesCount, voted } = await Api.createVote({
         objectType: 'posts',
@@ -453,7 +488,7 @@ export default observer((props: any) => {
       }
       console.log(err);
     }
-    setVoting(false);
+    state.voting = false;
   };
 
   const resetVote = async (rId: string) => {
@@ -461,10 +496,10 @@ export default observer((props: any) => {
       modalStore.openLogin();
       return;
     }
-    if (voting) {
+    if (state.voting) {
       return;
     }
-    setVoting(true);
+    state.voting = true;
     try {
       const { upVotesCount, voted } = await Api.deleteVote({
         objectType: 'posts',
@@ -483,7 +518,7 @@ export default observer((props: any) => {
       }
       console.log(err);
     }
-    setVoting(false);
+    state.voting = false;
   };
 
   const VoteView = (post: IPost) => {
@@ -538,7 +573,7 @@ export default observer((props: any) => {
       >
         <Badge
           badgeContent={Number(commentStore.total) || 0}
-          invisible={!isFetchedComments || !Number(commentStore.total)}
+          invisible={!state.isFetchedComments || !Number(commentStore.total)}
         >
           <div className={classNames('text-gray-600 flex items-center text-xl')}>
             <FontAwesomeIcon icon={faCommentDots} />
@@ -559,7 +594,7 @@ export default observer((props: any) => {
         )}
         aria-describedby="share-qrcode"
         onClick={(event) => {
-          setAnchorEl(anchorEl ? null : event.currentTarget);
+          state.anchorEl = state.anchorEl ? null : event.currentTarget;
         }}
       >
         <div className={classNames('text-gray-600 flex items-center text-xl')}>
@@ -567,8 +602,8 @@ export default observer((props: any) => {
         </div>
         <Popover
           id="share-qrcode"
-          open={!!anchorEl}
-          anchorEl={anchorEl}
+          open={!!state.anchorEl}
+          anchorEl={state.anchorEl}
           anchorOrigin={{ vertical: 'center', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: -20 }}
         >
@@ -595,15 +630,15 @@ export default observer((props: any) => {
       <div className="absolute top-0 right-0 -mt-16 z-10">
         <div
           className="px-5 text-gray-88 text-28 flex items-center h-12 py-1"
-          onClick={() => setShowMenu(true)}
+          onClick={() => (state.showMenu = true)}
         >
           <MoreHoriz />
         </div>
       </div>
       <DrawerMenu
-        open={showMenu}
+        open={state.showMenu}
         onClose={() => {
-          setShowMenu(false);
+          state.showMenu = false;
         }}
         items={[
           {
@@ -643,7 +678,7 @@ export default observer((props: any) => {
                     await fileApi.hideFile(post.fileId);
                     confirmDialogStore.hide();
                     await sleep(100);
-                    setShowMenu(false);
+                    state.showMenu = false;
                     await sleep(200);
                     feedStore.clear();
                     feedStore.setFilterType('LATEST');
@@ -673,7 +708,7 @@ export default observer((props: any) => {
                     await fileApi.deleteFile(post.fileId);
                     confirmDialogStore.hide();
                     await sleep(100);
-                    setShowMenu(false);
+                    state.showMenu = false;
                     await sleep(200);
                     feedStore.clear();
                     feedStore.setFilterType('LATEST');
@@ -705,7 +740,7 @@ export default observer((props: any) => {
         <div className="hidden md:block fixed">
           <BackButton history={props.history} />
         </div>
-        {isPc && showExtra && (
+        {isPc && state.showExtra && (
           <Fade in={true} timeout={500}>
             <div className="absolute top-0 left-0 -ml-24 mt-24">
               <div className="fixed -ml-8">
@@ -787,11 +822,11 @@ export default observer((props: any) => {
             }
           </div>
         )}
-        {isFetchedReward && isFetchedComments && (
+        {state.isFetchedReward && state.isFetchedComments && (
           <div>
             <div
               className={classNames({
-                invisible: !showExtra,
+                invisible: !state.showExtra,
               })}
             >
               {post.paymentUrl && RewardView()}
@@ -800,7 +835,7 @@ export default observer((props: any) => {
               {CommentView()}
             </div>
             <RewardModal
-              open={openRewardModal}
+              open={state.openRewardModal}
               onClose={onCloseRewardModal}
               toAddress={post.author.address}
               toAuthor={post.author.nickname}
@@ -808,12 +843,12 @@ export default observer((props: any) => {
             />
           </div>
         )}
-        {(!isFetchedReward || !isFetchedComments) && renderLoading()}
+        {(!state.isFetchedReward || !state.isFetchedComments) && renderLoading()}
         <div
           ref={ref}
           className={classNames(
             {
-              hidden: !isMobile || !showImage,
+              hidden: !isMobile || !state.showImage,
             },
             'mobile-viewer-container fixed bg-black',
           )}
@@ -824,9 +859,9 @@ export default observer((props: any) => {
           onMaskClick={() => showImageView(false)}
           noNavbar={true}
           noToolbar={true}
-          visible={showImage}
+          visible={state.showImage}
           onClose={() => showImageView(false)}
-          images={[{ src: imgSrc }]}
+          images={[{ src: state.imgSrc }]}
           container={isMobile && !!ref.current ? ref.current : undefined}
           noClose={isMobile}
         />

@@ -16,13 +16,15 @@ export default {
     const path = `/api/comments/${id}`;
     return request(path);
   },
-  list(fileRId: number, pagination: any = null) {
+  list(fileRId: number, options: any = null) {
     let query = '';
-    if (pagination) {
-      query = `?${stringify({ fileRId, ...pagination })}`;
+    if (options) {
+      query = `?${stringify({ fileRId, ...options })}`;
     }
     const path = `/api/comments${query}`;
-    return request(path);
+    return request(path, {
+      minPendingDuration: options.offset === 0 ? 0 : 300
+    });
   },
   delete(id: number) {
     const path = `/api/comments/${id}`;

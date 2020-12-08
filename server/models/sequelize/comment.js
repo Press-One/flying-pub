@@ -36,6 +36,10 @@ const Comment = sequelize.define('comments', {
   sticky: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  version: {
+    type: Sequelize.INTEGER,
+    defaultValue: 0
   }
 }, {
   timestamps: true,

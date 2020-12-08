@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 export function createCommentStore() {
   return {
+    total: 0,
     previewCount: isPc ? 0 : 2,
     commentMap: {} as any,
     commentIdsSet: new Set(),
@@ -10,6 +11,7 @@ export function createCommentStore() {
     openSubCommentPage: false,
     selectedTopComment: null as any,
     openEditorEntryDrawer: false,
+    hasMoreComments: false,
     get comments() {
       return this.commentIds.map((rId: string) => this.commentMap[rId]);
     },
@@ -45,27 +47,32 @@ export function createCommentStore() {
       }
       return temporaryPreviewMap;
     },
-    get total() {
-      let total = 0;
-      for (const commentId of this.commentIds) {
-        const comment = this.commentMap[commentId];
-        if (comment) {
-          if (comment.threadId && !this.commentMap[comment.threadId]) {
-            total += 0;
-          } else {
-            total++;
-          }
-        }
-      }
-      return total
-    },
-    setComments(comments: any) {
+    reset() {
       this.commentMap = {} as any;
       this.commentIdsSet.clear();
+      this.total = 0;
+    },
+    setTotal(total: number) {
+      this.total = total;
+    },
+    setHasMoreComments(hasMoreComments: boolean) {
+      this.hasMoreComments = hasMoreComments;
+    },
+    addComments(comments: any) {
       for (const comment of comments) {
+        if (this.commentIdsSet.has(comment.id)) {
+          continue;
+        }
         comment.ago = ago(comment.createdAt);
         this.commentMap[comment.id] = comment;
         this.commentIdsSet.add(comment.id);
+        if (comment.comments) {
+          for (const subComment of comment.comments) {
+            subComment.ago = ago(subComment.createdAt);
+            this.commentMap[subComment.id] = subComment;
+            this.commentIdsSet.add(subComment.id);
+          }
+        }
       }
     },
     addComment(comment: any) {
@@ -82,6 +89,7 @@ export function createCommentStore() {
         }
         this.temporaryPreviewMapIdsSet[comment.threadId].add(comment.id);
       }
+      this.total += 1;
     },
     updateComment(updatedComment: any) {
       this.commentMap[updatedComment.id].upVotesCount = updatedComment.upVotesCount;
@@ -95,6 +103,7 @@ export function createCommentStore() {
       }
       delete this.commentMap[commentId];
       this.commentIdsSet.delete(commentId);
+      this.total -= 1;
     },
     stickComment(commentId: number) {
       const comment = this.commentMap[commentId];

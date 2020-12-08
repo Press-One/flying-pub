@@ -71,10 +71,6 @@ export default observer((props: any) => {
   const isAuthor = authorAddress === user.address;
   const canStick = isAuthor && !comment.threadId;
 
-  if (comment.replyId) {
-    comment.replyComment = commentStore.commentMap[comment.replyId];
-  }
-
   const contentPrefix =
     comment.threadId && comment.replyComment && comment.threadId !== comment.replyComment.id
       ? `回复 <span class="text-gray-88">${comment.replyComment.user.nickname}</span>：`

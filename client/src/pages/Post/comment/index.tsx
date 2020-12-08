@@ -35,7 +35,7 @@ interface IProps {
 
 export default observer((props: IProps) => {
   const { commentStore, feedStore, snackbarStore, userStore, modalStore } = useStore();
-  const { total } = commentStore;
+  const { total, hasMoreComments } = commentStore;
   const { user, isLogin } = userStore;
 
   const [value, setValue] = React.useState('');
@@ -170,7 +170,7 @@ export default observer((props: IProps) => {
       });
       commentStore.addComment(newComment);
       feedStore.updatePost(feedStore.post.rId, {
-        commentsCount: total,
+        commentsCount: commentStore.total,
       });
       openDrawer ? setIsDrawerCreatedComment(true) : setIsCreatedComment(true);
       if (openDrawer) {
@@ -289,6 +289,9 @@ export default observer((props: IProps) => {
   const deleteComment = async (commentId: number) => {
     await CommentApi.delete(commentId);
     commentStore.removeComment(commentId);
+    feedStore.updatePost(feedStore.post.rId, {
+      commentsCount: commentStore.total,
+    });
   };
 
   const stickComment = async (commentId: number) => {
@@ -545,8 +548,8 @@ export default observer((props: IProps) => {
             />
           </div>
         )}
-        {hasComments && <BottomLine />}
-        {isPc && hasComments && total > 3 && (
+        {!hasMoreComments && <BottomLine />}
+        {isPc && !hasMoreComments && total > 3 && (
           <div className="text-center mt-2">
             <span
               className="py-3 text-blue-400 cursor-pointer"
