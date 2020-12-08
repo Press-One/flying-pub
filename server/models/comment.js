@@ -184,7 +184,8 @@ exports.list = async options => {
         where: {
           id: includedCommentId,
           deleted: false
-        }
+        },
+        raw: true
       });
       if (comment) {
         if (comment.threadId) {
@@ -192,7 +193,8 @@ exports.list = async options => {
             where: {
               id: comment.threadId,
               deleted: false,
-            }
+            },
+            raw: true
           });
           if (threadComment) {
             threadComments.push(threadComment);
