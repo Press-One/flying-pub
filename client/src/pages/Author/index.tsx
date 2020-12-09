@@ -10,7 +10,7 @@ import Loading from 'components/Loading';
 import FolderGrid from 'components/FolderGrid';
 import Filter from 'components/PostsFilter';
 import TopicEditorModal from 'components/TopicEditorModal';
-import DraftModal from './DraftModal';
+import DraftsModal from './DraftsModal';
 import subscriptionApi from 'apis/subscription';
 import authorApi from 'apis/author';
 import {
@@ -60,7 +60,7 @@ export default observer((props: any) => {
     showTopicEditorModal: false,
     loadingOthers: false,
     showPosts: false,
-    showDraftModal: false,
+    showDraftsModal: false,
     showMainMenu: false,
     showSettingsMenu: false,
   }));
@@ -284,13 +284,13 @@ export default observer((props: any) => {
             {isMyself && (
               <div className="flex items-center">
                 <div
-                  className="pl-5 pr-3 flex items-center text-26"
+                  className="pl-5 pr-3 flex items-center text-26 py-2"
                   onClick={() => (state.showSettingsMenu = true)}
                 >
                   <Settings />
                 </div>
                 <div
-                  className="pl-5 pr-4 flex items-center text-24"
+                  className="pl-5 pr-4 flex items-center text-24 py-2"
                   onClick={() => (state.showMainMenu = true)}
                 >
                   <FontAwesomeIcon icon={faBars} />
@@ -316,7 +316,13 @@ export default observer((props: any) => {
               invisible: isWeChat && !userStore.canPublish,
               name: '草稿箱',
               onClick: () => {
-                state.showDraftModal = true;
+                state.showDraftsModal = true;
+              },
+            },
+            {
+              name: '收藏夹',
+              onClick: () => {
+                modalStore.openFavorites();
               },
             },
             {
@@ -377,10 +383,10 @@ export default observer((props: any) => {
             },
           ]}
         />
-        <DraftModal
-          open={state.showDraftModal}
+        <DraftsModal
+          open={state.showDraftsModal}
           close={() => {
-            state.showDraftModal = false;
+            state.showDraftsModal = false;
             feedStore.clear();
             feedStore.filterType = 'LATEST';
             fetchPosts();

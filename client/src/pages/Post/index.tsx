@@ -10,7 +10,8 @@ import ButtonOutlined from 'components/ButtonOutlined';
 import TopicLabels, { IncludedButton } from 'components/TopicLabels';
 import Fade from '@material-ui/core/Fade';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
-import { faCommentDots, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ShareIcon from '@material-ui/icons/Share';
 import Badge from '@material-ui/core/Badge';
@@ -63,7 +64,7 @@ export default observer((props: any) => {
   const state = useLocalStore(() => ({
     isFetchedPost: false,
     showExtra: false,
-    voting: false,
+    posting: false,
     showImage: false,
     imgSrc: '',
     openRewardModal: false,
@@ -454,6 +455,9 @@ export default observer((props: any) => {
           tryVote={() => {
             post.voted ? resetVote(post.rId) : createVote(post.rId);
           }}
+          tryFavorite={() => {
+            post.favorite ? unfavorite(post.rId) : favorite(post.rId);
+          }}
         />
         {state.isFetchedComments && state.isFetchingComments && (
           <div className="pb-12 md:pb-0 md:pt-10">
@@ -465,10 +469,10 @@ export default observer((props: any) => {
   };
 
   const createVote = async (rId: string) => {
-    if (state.voting) {
+    if (state.posting) {
       return;
     }
-    state.voting = true;
+    state.posting = true;
     try {
       const { upVotesCount, voted } = await Api.createVote({
         objectType: 'posts',
@@ -488,18 +492,14 @@ export default observer((props: any) => {
       }
       console.log(err);
     }
-    state.voting = false;
+    state.posting = false;
   };
 
   const resetVote = async (rId: string) => {
-    if (!isLogin) {
-      modalStore.openLogin();
+    if (state.posting) {
       return;
     }
-    if (state.voting) {
-      return;
-    }
-    state.voting = true;
+    state.posting = true;
     try {
       const { upVotesCount, voted } = await Api.deleteVote({
         objectType: 'posts',
@@ -518,7 +518,55 @@ export default observer((props: any) => {
       }
       console.log(err);
     }
-    state.voting = false;
+    state.posting = false;
+  };
+
+  const favorite = async (rId: string) => {
+    if (state.posting) {
+      return;
+    }
+    state.posting = true;
+    try {
+      await postApi.favorite(rId);
+      feedStore.updatePost(post.rId, {
+        favorite: true,
+      });
+      await sleep(100);
+      snackbarStore.show({
+        message: '已添加到收藏夹',
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
+      console.log(err);
+    }
+    state.posting = false;
+  };
+
+  const unfavorite = async (rId: string) => {
+    if (state.posting) {
+      return;
+    }
+    state.posting = true;
+    try {
+      await postApi.unfavorite(rId);
+      feedStore.updatePost(post.rId, {
+        favorite: false,
+      });
+    } catch (err) {
+      if (err.status === 404) {
+        snackbarStore.show({
+          message: '文章已经被作者删除了',
+          type: 'error',
+        });
+      }
+      console.log(err);
+    }
+    state.posting = false;
   };
 
   const VoteView = (post: IPost) => {
@@ -583,6 +631,35 @@ export default observer((props: any) => {
     );
   };
 
+  const FavoriteButtonView = () => {
+    return (
+      <div
+        className={classNames(
+          {
+            'border-yellow-500 active': post.favorite,
+            'border-gray-400': !post.favorite,
+          },
+          'mt-6 rounded-full border flex justify-center items-center cursor-pointer w-10 h-10',
+        )}
+        onClick={() => {
+          post.favorite ? unfavorite(post.rId) : favorite(post.rId);
+        }}
+      >
+        <div
+          className={classNames(
+            {
+              'text-yellow-500': post.favorite,
+              'text-gray-600': !post.favorite,
+            },
+            'flex items-center text-xl transform scale-90 ml-1-px',
+          )}
+        >
+          <FontAwesomeIcon icon={post.favorite ? faSolidStar : faStar} />
+        </div>
+      </div>
+    );
+  };
+
   const ShareButtonView = () => {
     return (
       <div
@@ -626,112 +703,114 @@ export default observer((props: any) => {
   };
 
   const Menu = () => (
-    <div>
-      <div className="absolute top-0 right-0 -mt-16 z-10">
-        <div
-          className="px-5 text-gray-88 text-28 flex items-center h-12 py-1"
-          onClick={() => (state.showMenu = true)}
-        >
-          <MoreHoriz />
+    <Fade in={true} timeout={800}>
+      <div>
+        <div className="absolute top-0 right-0 -mt-16 z-10">
+          <div
+            className="px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pl-20"
+            onClick={() => (state.showMenu = true)}
+          >
+            <MoreHoriz />
+          </div>
         </div>
+        <DrawerMenu
+          open={state.showMenu}
+          onClose={() => {
+            state.showMenu = false;
+          }}
+          items={[
+            {
+              name: '编辑',
+              onClick: () => {
+                props.history.push(`/editor?id=${post.fileId}`);
+              },
+            },
+            {
+              name: '投稿',
+              onClick: () => {
+                modalStore.openTopicList({
+                  post,
+                  userAddress: userStore.user.address,
+                  title: '开放投稿的专题',
+                  type: 'CONTRIBUTION_TO_PUBLIC_TOPICS',
+                  onClose: async () => {
+                    try {
+                      const updatedPost: IPost = await postApi.fetchPost(post.rId, {
+                        withPendingTopicUuids: true,
+                      });
+                      setPost(updatedPost);
+                    } catch (err) {
+                      console.log(err);
+                    }
+                  },
+                });
+              },
+            },
+            {
+              name: '隐藏',
+              onClick: () => {
+                confirmDialogStore.show({
+                  content: '隐藏后的文章对他人不可见',
+                  ok: async () => {
+                    try {
+                      await fileApi.hideFile(post.fileId);
+                      confirmDialogStore.hide();
+                      await sleep(100);
+                      state.showMenu = false;
+                      await sleep(200);
+                      feedStore.clear();
+                      feedStore.setFilterType('LATEST');
+                      props.history.push(`/authors/${userStore.user.address}`);
+                      await sleep(200);
+                      snackbarStore.show({
+                        message: '文章已经隐藏，已经放到草稿箱',
+                      });
+                    } catch (err) {
+                      snackbarStore.show({
+                        message: '隐藏失败',
+                        type: 'error',
+                      });
+                    }
+                  },
+                });
+              },
+              stayOpenAfterClick: true,
+            },
+            {
+              name: '删除',
+              onClick: () => {
+                confirmDialogStore.show({
+                  content: '删除后无法找回，确定删除吗？',
+                  ok: async () => {
+                    try {
+                      await fileApi.deleteFile(post.fileId);
+                      confirmDialogStore.hide();
+                      await sleep(100);
+                      state.showMenu = false;
+                      await sleep(200);
+                      feedStore.clear();
+                      feedStore.setFilterType('LATEST');
+                      props.history.push(`/authors/${userStore.user.address}`);
+                      await sleep(200);
+                      snackbarStore.show({
+                        message: '文章已经删除',
+                      });
+                    } catch (err) {
+                      snackbarStore.show({
+                        message: '删除失败',
+                        type: 'error',
+                      });
+                    }
+                  },
+                });
+              },
+              className: 'text-red-400',
+              stayOpenAfterClick: true,
+            },
+          ]}
+        />
       </div>
-      <DrawerMenu
-        open={state.showMenu}
-        onClose={() => {
-          state.showMenu = false;
-        }}
-        items={[
-          {
-            name: '编辑',
-            onClick: () => {
-              props.history.push(`/editor?id=${post.fileId}`);
-            },
-          },
-          {
-            name: '投稿',
-            onClick: () => {
-              modalStore.openTopicList({
-                post,
-                userAddress: userStore.user.address,
-                title: '开放投稿的专题',
-                type: 'CONTRIBUTION_TO_PUBLIC_TOPICS',
-                onClose: async () => {
-                  try {
-                    const updatedPost: IPost = await postApi.fetchPost(post.rId, {
-                      withPendingTopicUuids: true,
-                    });
-                    setPost(updatedPost);
-                  } catch (err) {
-                    console.log(err);
-                  }
-                },
-              });
-            },
-          },
-          {
-            name: '隐藏',
-            onClick: () => {
-              confirmDialogStore.show({
-                content: '隐藏后的文章对他人不可见',
-                ok: async () => {
-                  try {
-                    await fileApi.hideFile(post.fileId);
-                    confirmDialogStore.hide();
-                    await sleep(100);
-                    state.showMenu = false;
-                    await sleep(200);
-                    feedStore.clear();
-                    feedStore.setFilterType('LATEST');
-                    props.history.push(`/authors/${userStore.user.address}`);
-                    await sleep(200);
-                    snackbarStore.show({
-                      message: '文章已经隐藏，已经放到草稿箱',
-                    });
-                  } catch (err) {
-                    snackbarStore.show({
-                      message: '隐藏失败',
-                      type: 'error',
-                    });
-                  }
-                },
-              });
-            },
-            stayOpenAfterClick: true,
-          },
-          {
-            name: '删除',
-            onClick: () => {
-              confirmDialogStore.show({
-                content: '删除后无法找回，确定删除吗？',
-                ok: async () => {
-                  try {
-                    await fileApi.deleteFile(post.fileId);
-                    confirmDialogStore.hide();
-                    await sleep(100);
-                    state.showMenu = false;
-                    await sleep(200);
-                    feedStore.clear();
-                    feedStore.setFilterType('LATEST');
-                    props.history.push(`/authors/${userStore.user.address}`);
-                    await sleep(200);
-                    snackbarStore.show({
-                      message: '文章已经删除',
-                    });
-                  } catch (err) {
-                    snackbarStore.show({
-                      message: '删除失败',
-                      type: 'error',
-                    });
-                  }
-                },
-              });
-            },
-            className: 'text-red-400',
-            stayOpenAfterClick: true,
-          },
-        ]}
-      />
-    </div>
+    </Fade>
   );
 
   return (
@@ -746,6 +825,7 @@ export default observer((props: any) => {
               <div className="fixed -ml-8">
                 {VoteView(post)}
                 {CommentButtonView()}
+                {FavoriteButtonView()}
                 {!settingsStore.settings['permission.isPrivate'] && ShareButtonView()}
               </div>
             </div>

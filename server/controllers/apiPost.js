@@ -12,6 +12,7 @@ const {
   Errors,
   throws
 } = require('../utils/validator');
+const Log = require("../models/log");
 
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
@@ -23,6 +24,7 @@ exports.get = async ctx => {
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
+    withFavorite: true,
     withContent: !dropContent,
     withPaymentUrl: true,
     ignoreDeleted: true,
@@ -332,5 +334,69 @@ exports.listTopics = async ctx => {
   ctx.body = {
     total: count,
     topics: derivedTopics
+  }
+}
+
+exports.favorite = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const rId = ctx.params.id;
+  const post = await Post.getByRId(rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await post.addFavoriteUsers(sequelizeUser);
+  const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+  Log.create(sequelizeUser.id, `收藏文章 ${postUrl}`);
+  ctx.body = true;
+}
+
+exports.unfavorite = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const rId = ctx.params.id;
+  const post = await Post.getByRId(rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await post.removeFavoriteUsers(sequelizeUser);
+  const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+  Log.create(sequelizeUser.id, `取消收藏文章 ${postUrl}`);
+  ctx.body = true;
+}
+
+exports.listFavorites = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const where = {
+    deleted: false,
+    invisibility: false
+  };
+  const total = await sequelizeUser.countFavoritePosts({
+    where
+  });
+  const posts = await sequelizeUser.getFavoritePosts({
+    attributes: {
+      exclude: ['content'],
+    },
+    where,
+    joinTableAttributes: [],
+    offset,
+    limit,
+    include: [{
+      model: Author.SequelizeAuthor,
+      where: {
+        status: 'allow'
+      }
+    }],
+    order: [[Sequelize.literal('posts_users_favorites."createdAt"'), 'DESC']]
+  });
+  const derivedPosts = await Promise.all(posts.map(async post => {
+    return await Post.packPost(post, {
+      withTopic:false
+    });
+  }));
+  ctx.body = {
+    total,
+    posts: derivedPosts
   }
 }

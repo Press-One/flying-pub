@@ -29,6 +29,7 @@ export interface IPost {
   pendingTopicUuids?: string[];
   voted: boolean;
   fileId: number;
+  favorite: boolean;
   author: {
     address: string;
     nickname: string;
@@ -60,6 +61,21 @@ export default {
   fetchPostTopics(rId: string, options = {}) {
     return request(`/api/posts/${rId}/topics?${qs.stringify(options)}`, {
       minPendingDuration: 300
+    });
+  },
+  fetchFavorites(options = {}) {
+    return request(`/api/posts/favorite?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  favorite(rId: string) {
+    return request(`/api/posts/${rId}/favorite`, {
+      method: 'POST'
+    });
+  },
+  unfavorite(rId: string) {
+    return request(`/api/posts/${rId}/unfavorite`, {
+      method: 'POST'
     });
   },
 };

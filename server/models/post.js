@@ -27,6 +27,7 @@ const packPost = async (post, options = {}) => {
   const {
     userId,
     withVoted = false,
+    withFavorite = false,
     withPaymentUrl = false,
     withTopic = true,
     dropAuthor = false,
@@ -53,6 +54,7 @@ const packPost = async (post, options = {}) => {
   if (!withPaymentUrl) {
     delete postJson.paymentUrl;
   }
+
   if (includeAuthor) {
     if (dropAuthor) {
       delete postJson.author;
@@ -69,10 +71,21 @@ const packPost = async (post, options = {}) => {
       postJson.author = await packAuthor(postJson.author);
     }
   }
+
   if (withVoted) {
     const voted = !!userId && await Vote.isVoted(userId, 'posts', postJson.rId);
     postJson.voted = voted;
   }
+
+  if (withFavorite) {
+    const count = await post.countFavoriteUsers({
+      where: {
+        id: userId
+      }
+    });
+    postJson.favorite = count > 0;
+  }
+
   postJson.upVotesCount = ~~postJson.upVotesCount;
   postJson.commentsCount = ~~postJson.commentsCount;
 

@@ -77,6 +77,10 @@ export function createModalStore() {
       open: false,
       data: {} as IContributionData
     },
+    favorites: {
+      open: false,
+      data: {},
+    },
     setAuthProviders(authProviders: string[]) {
       this.authProviders = authProviders;
     },
@@ -192,6 +196,14 @@ export function createModalStore() {
       if (this.contribution.data.onClose) {
         this.contribution.data.onClose();
       }
+      stopBodyScroll(false);
+    },
+    openFavorites() {
+      this.favorites.open = true;
+      stopBodyScroll(true);
+    },
+    closeFavorites() {
+      this.favorites.open = false;
       stopBodyScroll(false);
     },
   };

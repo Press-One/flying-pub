@@ -168,6 +168,9 @@ const replacePost = async (rId, newRId) => {
   });
   await newPost.addTopics(topics);
   await post.removeTopics(topics);
+  const favoriteUsers = await post.getFavoriteUsers();
+  await newPost.addFavoriteUsers(favoriteUsers);
+  await post.removeFavoriteUsers(favoriteUsers);
   return true;
 };
 

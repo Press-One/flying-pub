@@ -1,7 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import TextField from '@material-ui/core/TextField';
-import { faCommentDots, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
@@ -31,6 +32,7 @@ interface IProps {
   fileRId: number;
   alwaysShowCommentEntry: boolean;
   tryVote: () => void;
+  tryFavorite: () => void;
 }
 
 export default observer((props: IProps) => {
@@ -429,6 +431,17 @@ export default observer((props: IProps) => {
           </div>
           {!commentStore.openSubCommentPage && (
             <div className="flex items-center py-1 text-gray-99">
+              <div
+                onClick={() => props.tryFavorite()}
+                className={classNames(
+                  {
+                    'text-yellow-500': feedStore.post.favorite,
+                  },
+                  'text-xl px-4 relative duration-200 ease-in-out transition-all',
+                )}
+              >
+                <FontAwesomeIcon icon={feedStore.post.favorite ? faSolidStar : faStar} />
+              </div>
               {total > 0 && (
                 <div
                   className="text-xl px-4 mr-1 relative font-bold"
