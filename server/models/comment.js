@@ -13,7 +13,6 @@ const packComment = async (comment, options = {}) => {
   const {
     userId,
     withSubComments,
-    isSubComment,
     fromList
   } = options;
   assert(comment, Errors.ERR_NOT_FOUND("comment"));
@@ -25,7 +24,7 @@ const packComment = async (comment, options = {}) => {
   delete commentJson.deleted;
   delete commentJson.version;
 
-  if (isSubComment && commentJson.replyId && commentJson.replyId !== commentJson.threadId) {
+  if (commentJson.replyId && commentJson.threadId && commentJson.replyId !== commentJson.threadId) {
     const replyComment = await Comment.findOne({
       attributes: ['id', 'userId', 'threadId'],
       where: {
@@ -52,7 +51,6 @@ const packComment = async (comment, options = {}) => {
         subComments.map(comment => {
           return packComment(comment, {
             userId,
-            isSubComment: true,
             fromList: true
           });
         })

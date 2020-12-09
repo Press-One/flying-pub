@@ -307,6 +307,13 @@ export default observer((props: any) => {
           items={[
             {
               invisible: isWeChat && !userStore.canPublish,
+              name: '写文章',
+              onClick: () => {
+                props.history.push(`/editor`);
+              },
+            },
+            {
+              invisible: isWeChat && !userStore.canPublish,
               name: '草稿箱',
               onClick: () => {
                 state.showDraftModal = true;
