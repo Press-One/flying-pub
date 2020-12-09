@@ -44,7 +44,6 @@ const PostEntry = observer((props: IPostProps) => {
     },
   } = props;
   const isMobileMode = props.postsProps.isMobileMode || isMobile;
-  const pcQueryPrefix = isMobileMode ? '_disabled_' : 'md:';
   const AVATAR_RATIO = isMobileMode ? 1 : 3 / 2;
   const coverWidth = smallCoverSize ? (isMobileMode ? 86 : 120) : isMobileMode ? 86 : 150;
   const state = useLocalStore(() => ({
@@ -66,7 +65,12 @@ const PostEntry = observer((props: IPostProps) => {
     <div>
       <div id={post.rId} />
       <div
-        className={`border-b border-gray-200 py-10-px ${pcQueryPrefix}px-0 ${pcQueryPrefix}py-5 leading-none post cursor-pointer bg-white`}
+        className={classNames(
+          {
+            'md:px-0 md:py-5': !isMobileMode,
+          },
+          `border-b border-gray-200 py-10-px leading-none post cursor-pointer bg-white`,
+        )}
       >
         <div className="flex justify-between items-start px-4 relative">
           <div className="text-gray-88 box-border flex-1">
@@ -91,14 +95,27 @@ const PostEntry = observer((props: IPostProps) => {
                     className={classNames(
                       {
                         'w-90-vw': isMobile && !post.cover,
+                        'md:tracking-normal md:pb-2': !isMobileMode,
                       },
-                      `tracking-wide ${pcQueryPrefix}tracking-normal text-base font-bold ${pcQueryPrefix}pb-2`,
+                      `tracking-wide text-base font-bold`,
                     )}
                   >
-                    <div className={`title leading-snug ${pcQueryPrefix}leading-normal`}>
+                    <div
+                      className={classNames(
+                        {
+                          'md:leading-normal': !isMobileMode,
+                        },
+                        `title leading-snug`,
+                      )}
+                    >
                       {styleStickyEnabled && post.sticky && (
                         <span
-                          className={`bg-red-600 text-white px-1 ${pcQueryPrefix}px-2 rounded-sm round leading-none mr-2 font-normal sticky`}
+                          className={classNames(
+                            {
+                              'md:px-2': !isMobileMode,
+                            },
+                            `bg-red-600 text-white px-1 rounded-sm round leading-none mr-2 font-normal sticky`,
+                          )}
                         >
                           置顶
                         </span>
@@ -128,7 +145,14 @@ const PostEntry = observer((props: IPostProps) => {
                   </ModalLink>
                 )}
               </div>
-              <div className={`text-12 ${pcQueryPrefix}text-13 text-gray-99 ${pcQueryPrefix}pt-1`}>
+              <div
+                className={classNames(
+                  {
+                    'md:text-13 md:pt-1': !isMobileMode,
+                  },
+                  `text-12 text-gray-99`,
+                )}
+              >
                 <div className="flex items-center">
                   {post.author && !hideAuthor && (
                     <ModalLink
@@ -138,7 +162,14 @@ const PostEntry = observer((props: IPostProps) => {
                       to={`/authors/${post.author.address}`}
                     >
                       <div className="flex items-center z-10">
-                        <div className={`flex items-center w-5 h-5 mr-1 ${pcQueryPrefix}mr-2`}>
+                        <div
+                          className={classNames(
+                            {
+                              'md:mr-2': !isMobileMode,
+                            },
+                            `flex items-center w-5 h-5 mr-1`,
+                          )}
+                        >
                           <Img
                             className="w-5 h-5 rounded-full border border-gray-300"
                             src={post.author.avatar}
@@ -156,7 +187,12 @@ const PostEntry = observer((props: IPostProps) => {
                           {post.author && post.author.nickname}
                         </div>
                         <span
-                          className={`w-5 ${pcQueryPrefix}w-6 mr-3-px ${pcQueryPrefix}mr-0`}
+                          className={classNames(
+                            {
+                              'md:w-6 md:mr-0': !isMobileMode,
+                            },
+                            `w-5 mr-3-px`,
+                          )}
                         ></span>
                       </div>
                     </ModalLink>
@@ -171,12 +207,24 @@ const PostEntry = observer((props: IPostProps) => {
                   >
                     {post.viewCount > 0 && localStorage.getItem('VIEW_COUNT_ENABLED') && (
                       <div className="flex items-center">
-                        <div className={`flex items-center text-14 ${pcQueryPrefix}text-15`}>
+                        <div
+                          className={classNames(
+                            {
+                              'md:text-15': !isMobileMode,
+                            },
+                            `flex items-center text-14`,
+                          )}
+                        >
                           <FontAwesomeIcon icon={faEye} />
                         </div>
                         <span className="font-bold mr-1">{post.viewCount}</span>
                         <span
-                          className={`w-5 ${pcQueryPrefix}w-6 mr-3-px ${pcQueryPrefix}mr-0`}
+                          className={classNames(
+                            {
+                              'md:w-6 md:mr-0': !isMobileMode,
+                            },
+                            `w-5 mr-3-px`,
+                          )}
                         ></span>
                       </div>
                     )}
@@ -186,28 +234,53 @@ const PostEntry = observer((props: IPostProps) => {
                           className={classNames(
                             {
                               'md:-mt-2-px': !isMobileMode && hideAuthor,
+                              'md:text-14 md:mt-0': !isMobileMode,
                             },
-                            `flex items-center text-13 ${pcQueryPrefix}text-14 -mt-2-px ${pcQueryPrefix}mt-0`,
+                            `flex items-center text-13 -mt-2-px`,
                           )}
                         >
                           <FontAwesomeIcon icon={faThumbsUp} />
                         </div>
                         <span className="font-bold ml-2-px">{post.upVotesCount}</span>
                         <span
-                          className={`w-5 ${pcQueryPrefix}w-6 mr-3-px ${pcQueryPrefix}mr-0`}
+                          className={classNames(
+                            {
+                              'md:w-6 md:mr-0': !isMobileMode,
+                            },
+                            `w-5 mr-3-px`,
+                          )}
                         ></span>
                       </div>
                     )}
                     {post.commentsCount > 0 && (
                       <div className="flex items-center">
-                        <div className={`flex items-center text-14 ${pcQueryPrefix}text-15`}>
+                        <div
+                          className={classNames(
+                            {
+                              'md:text-15': !isMobileMode,
+                            },
+                            `flex items-center text-14`,
+                          )}
+                        >
                           <FontAwesomeIcon icon={faCommentDots} />
                         </div>
-                        <span className={`font-bold ml-3-px ${pcQueryPrefix}ml-1`}>
+                        <span
+                          className={classNames(
+                            {
+                              'md:ml-1': !isMobileMode,
+                            },
+                            `font-bold ml-3-px`,
+                          )}
+                        >
                           {post.commentsCount}
                         </span>
                         <span
-                          className={`w-5 ${pcQueryPrefix}w-6 mr-3-px ${pcQueryPrefix}mr-0`}
+                          className={classNames(
+                            {
+                              'md:w-6 md:mr-0': !isMobileMode,
+                            },
+                            `w-5 mr-3-px`,
+                          )}
                         ></span>
                       </div>
                     )}
@@ -215,7 +288,12 @@ const PostEntry = observer((props: IPostProps) => {
                     {showFavorite && (
                       <div className="flex items-center">
                         <div
-                          className={`flex items-center text-14 ${pcQueryPrefix}text-15 -mt-2-px ${pcQueryPrefix}mt-0 pr-2 py-1 text-yellow-500`}
+                          className={classNames(
+                            {
+                              'md:text-15 md:mt-0': !isMobileMode,
+                            },
+                            `flex items-center text-14 -mt-2-px pr-2 py-1 text-yellow-500`,
+                          )}
                           onClick={() => {
                             onClickFavorite && onClickFavorite(post);
                           }}
@@ -231,13 +309,27 @@ const PostEntry = observer((props: IPostProps) => {
                     <TopicLabels topics={post.topics} post={post} maxListCount={1} />
                   </div>
                 )}
-                {!showTopics && !hideAuthor && <div className={`pb-0 ${pcQueryPrefix}pb-1`} />}
+                {!showTopics && !hideAuthor && (
+                  <div
+                    className={classNames(
+                      {
+                        'md:pb-1': !isMobileMode,
+                      },
+                      `pb-0`,
+                    )}
+                  />
+                )}
               </div>
             </div>
           </div>
           {post.cover && (
             <div
-              className={`cover ml-5 ${pcQueryPrefix}ml-8 cover-container rounded`}
+              className={classNames(
+                {
+                  'md:ml-8': !isMobileMode,
+                },
+                `cover ml-5 cover-container rounded`,
+              )}
               style={{
                 backgroundImage: state.useOriginalCover
                   ? `url(${post.cover})`
