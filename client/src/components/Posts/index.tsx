@@ -217,7 +217,7 @@ const PostEntry = observer((props: IPostProps) => {
                         >
                           <FontAwesomeIcon icon={faEye} />
                         </div>
-                        <span className="font-bold mr-1">{post.viewCount}</span>
+                        <span className="font-bold ml-4-px">{post.viewCount}</span>
                         <span
                           className={classNames(
                             {

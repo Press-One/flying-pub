@@ -58,7 +58,10 @@ exports.sync = async () => {
           },
           raw: true
         });
-        assert(post, Errors.ERR_IS_REQUIRED('post'));
+        if (!post) {
+          await Cache.pDel(TYPE, countKey);
+          continue;
+        }
         if (~~post.viewCount < count) {
           await Post.updateByRId(postRId, {
             viewCount: count
@@ -177,9 +180,18 @@ exports.addViewAfterPublishNewPost = async () => {
         dayRange: null,
       });
       let counter = 0;
+      const ratioPubDatePosts = [];
+      for (const post of pubDatePosts) {
+        const point = (~~post.upVotesCount + ~~post.commentsCount) + 1;
+        let pushCount = Math.min(point, 3);
+        while (pushCount > 0) {
+          ratioPubDatePosts.push(post);
+          pushCount--;
+        }
+      }
       while (counter < config.postView.viewCountAfterPublishNewPost) {
         try {
-          const randomPost = pubDatePosts[_.random(0, pubDatePosts.length - 1)]
+          const randomPost = ratioPubDatePosts[_.random(0, ratioPubDatePosts.length - 1)]
           console.log({ 'post.title': randomPost.title });
           await trySave(`0.0.0.${_.random(10000)}`, randomPost.rId, ~~randomPost.viewCount);
         } catch (err) {
