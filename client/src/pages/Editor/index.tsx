@@ -384,7 +384,7 @@ export default observer((props: any) => {
           if (isMobile) {
             await sleep(350);
             snackbarStore.show({
-              message: '草稿已保存，点击右上角的菜单可以进入草稿箱',
+              message: '草稿已保存，点击右上角的菜单可进入草稿箱',
               duration: 2500,
             });
           }

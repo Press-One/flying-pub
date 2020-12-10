@@ -19,7 +19,7 @@ import {
   stopBodyScroll,
   isMobile,
   isPc,
-  isMI8,
+  isMI,
   getQuery,
   scrollToElementById,
   getScrollTop,
@@ -361,7 +361,7 @@ export default observer((props: IProps) => {
               multiline
               fullWidth
               disabled={!isLogin}
-              rows={isMobile && !isMI8 ? 3 : 5}
+              rows={isMobile && !isMI ? 3 : 5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -523,7 +523,7 @@ export default observer((props: IProps) => {
             isCreated: isCreatedComment,
           })}
         {hasComments && isPc && <div className="mt-8" />}
-        {!isMI8 && (
+        {!isMI && (
           <DrawerModal
             hideCloseButton
             open={openDrawer}
@@ -548,7 +548,7 @@ export default observer((props: IProps) => {
             </div>
           </DrawerModal>
         )}
-        {isMI8 && (
+        {isMI && (
           <Modal
             open={openDrawer}
             onClose={() => {
