@@ -98,7 +98,7 @@ exports.create = async (ctx) => {
               })
             }, {
               jobName: `comment_${comment.id}`,
-              delaySeconds: 10
+              delaySeconds: 20
             })
           }
         } catch (err) {
@@ -135,7 +135,7 @@ exports.create = async (ctx) => {
             })
           }, {
             jobName: `comment_${comment.id}`,
-            delaySeconds: 10
+            delaySeconds: 20
           })
         }
 
