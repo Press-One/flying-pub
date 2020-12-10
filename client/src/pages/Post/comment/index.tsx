@@ -22,6 +22,7 @@ import {
   scrollToElementById,
   getScrollTop,
   scrollToHere,
+  getViewport,
 } from 'utils';
 import CommentApi from 'apis/comment';
 import Api from 'api';
@@ -77,8 +78,7 @@ export default observer((props: IProps) => {
     };
   }, []);
 
-  const getIsKeyboardActive = () =>
-    (window as any).visualViewport.height + 150 < (window as any).outerHeight;
+  const getIsKeyboardActive = () => getViewport().height + 150 < (window as any).outerHeight;
 
   React.useEffect(() => {
     if (isPc) {
@@ -109,7 +109,7 @@ export default observer((props: IProps) => {
       return;
     }
     const timer = setInterval(() => {
-      setVisualViewportHeight((window as any).visualViewport.height);
+      setVisualViewportHeight(getViewport().height);
     }, 100);
 
     return () => {

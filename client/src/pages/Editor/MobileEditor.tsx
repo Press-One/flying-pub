@@ -3,7 +3,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { TextField } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
 import autosize from 'autosize';
-import { scrollToHere, sleep } from 'utils';
+import { scrollToHere, sleep, getViewport } from 'utils';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import { faImage, faEye } from '@fortawesome/free-regular-svg-icons';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
@@ -33,27 +33,26 @@ export default observer((props: IProps) => {
   const state = useLocalStore(() => ({
     selectionStart: 0,
     autoSized: false,
-    visualViewportHeight: (window as any).visualViewport.height,
+    visualViewportHeight: getViewport().height,
     alwaysShowToolbar: false,
     showToolbar: true,
     toolbarBottom: 0 as any,
     toolbarTop: 0 as any,
     showImgUploadModal: false,
     showPreviewModal: false,
-    editorHeight: (window as any).visualViewport.height - 48 - 42,
+    editorHeight: getViewport().height - 48 - 42,
     typing: false,
   }));
   const textareaRef = React.useRef<any>(null);
 
-  const getIsKeyboardActive = () =>
-    (window as any).visualViewport.height + 150 < (window as any).outerHeight;
+  const getIsKeyboardActive = () => getViewport().height + 150 < (window as any).outerHeight;
 
   const tryAdjustToolbarPosition = React.useCallback(() => {
     if (getIsKeyboardActive()) {
-      state.editorHeight = (window as any).visualViewport.height - 42;
+      state.editorHeight = getViewport().height - 42;
       state.typing = true;
     } else {
-      state.editorHeight = (window as any).visualViewport.height - 48 - 42;
+      state.editorHeight = getViewport().height - 48 - 42;
       state.typing = false;
     }
     setTimeout(() => {
@@ -74,7 +73,7 @@ export default observer((props: IProps) => {
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      state.visualViewportHeight = (window as any).visualViewport.height;
+      state.visualViewportHeight = getViewport().height;
     }, 100);
 
     return () => {
@@ -202,9 +201,8 @@ export default observer((props: IProps) => {
           const element: any = document.querySelector('.mobile-editor');
           const elementScrollTop = element.scrollTop;
           setTimeout(() => {
-            if (cursorY > (window as any).visualViewport.height) {
-              const scrollTop =
-                elementScrollTop + (cursorY - (window as any).visualViewport.height) + 100;
+            if (cursorY > getViewport().height) {
+              const scrollTop = elementScrollTop + (cursorY - getViewport().height) + 100;
               element.scrollTop = scrollTop;
             }
           }, 200);
