@@ -297,25 +297,14 @@ export const urlify = (text: string) => {
 }
 
 export const getViewport = () => {
-  const isInput = (el: any) => {
-    var tagName = el && el.tagName && el.tagName.toLowerCase();
-    return (tagName == 'input' && el.type != 'button' && el.type != 'radio' && el.type != 'checkbox') || (tagName == 'textarea');
-  };
   if ((window as any).visualViewport) {
-      return {
-        width: (window as any).visualViewport.width,
-        height: (window as any).visualViewport.height
-      };
+    return {
+      width: (window as any).visualViewport.width,
+      height: (window as any).visualViewport.height
+    };
   }
-  const viewport = {
+  return {
     width: (window as any).innerWidth || (document.scrollingElement || document.documentElement).clientWidth,
     height: (window as any).innerHeight || (document.scrollingElement || document.documentElement).clientHeight
   };
-  if (/iPod|iPhone|iPad/.test(navigator.platform) && isInput(document.activeElement)) {
-    return {
-      width: viewport.width,
-      height: viewport.height * (viewport.height > viewport.width ? 0.66 : 0.45)
-    };
-  }
-  return viewport;
 }
