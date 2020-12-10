@@ -98,6 +98,8 @@ export const isFirefox = navigator.userAgent.indexOf("Firefox") > 0;
 
 export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+export const isMI8 = /MI 8 UD/i.test(navigator.userAgent);
+
 export const getImageWidth = (width: number) => {
   return (window.devicePixelRatio || 1) * width
 }

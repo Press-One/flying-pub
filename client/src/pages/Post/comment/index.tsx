@@ -6,6 +6,7 @@ import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
+import Modal from 'components/Modal';
 import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
@@ -18,6 +19,7 @@ import {
   stopBodyScroll,
   isMobile,
   isPc,
+  isMI8,
   getQuery,
   scrollToElementById,
   getScrollTop,
@@ -359,7 +361,7 @@ export default observer((props: IProps) => {
               multiline
               fullWidth
               disabled={!isLogin}
-              rows={isMobile ? 3 : 5}
+              rows={isMobile && !isMI8 ? 3 : 5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -521,18 +523,47 @@ export default observer((props: IProps) => {
             isCreated: isCreatedComment,
           })}
         {hasComments && isPc && <div className="mt-8" />}
-        <DrawerModal
-          hideCloseButton
-          open={openDrawer}
-          onClose={() => {
-            setDrawerReplyValue('');
-            setReplyingComment(null);
-            setOpenDrawer(false);
-            stopBodyScroll(false);
-          }}
-        >
-          <div className="container m-auto">
-            <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-3">
+        {!isMI8 && (
+          <DrawerModal
+            hideCloseButton
+            open={openDrawer}
+            onClose={() => {
+              setDrawerReplyValue('');
+              setReplyingComment(null);
+              setOpenDrawer(false);
+              stopBodyScroll(false);
+            }}
+          >
+            <div className="container m-auto">
+              <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-3">
+                {renderEditor({
+                  user,
+                  valueState: drawerReplyValue,
+                  isDoing: isDrawerCreatingComment,
+                  isCreated: isDrawerCreatedComment,
+                  replyingComment,
+                  isFromDrawer: true,
+                })}
+              </div>
+            </div>
+          </DrawerModal>
+        )}
+        {isMI8 && (
+          <Modal
+            open={openDrawer}
+            onClose={() => {
+              setDrawerReplyValue('');
+              setReplyingComment(null);
+              setOpenDrawer(false);
+              stopBodyScroll(false);
+            }}
+          >
+            <div
+              className="w-90-vw px-5 pb-1 box-border bg-white rounded-12 md:pt-2"
+              style={{
+                marginTop: '-52vh',
+              }}
+            >
               {renderEditor({
                 user,
                 valueState: drawerReplyValue,
@@ -542,8 +573,8 @@ export default observer((props: IProps) => {
                 isFromDrawer: true,
               })}
             </div>
-          </div>
-        </DrawerModal>
+          </Modal>
+        )}
         {hasComments && (
           <div id="comments" className="overflow-hidden -mx-4">
             <Comments
