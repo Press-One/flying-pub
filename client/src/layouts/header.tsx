@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, isMobile, isPc } from 'utils';
 import Img from 'components/Img';
+import { SearchInput } from './SearchInput';
 
 export default observer((props: any) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -272,6 +273,7 @@ export default observer((props: any) => {
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
+                    {isPc && settings.extra['search.enabled'] && <SearchInput className="mr-8" />}
                     {isPc && (
                       <Link to="/dashboard">
                         <Button size="small" className="mr-5">

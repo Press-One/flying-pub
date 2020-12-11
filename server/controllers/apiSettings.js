@@ -15,7 +15,7 @@ exports.get = async ctx => {
     'messageSystem.project': config.messageSystem.project,
     'messageSystem.endpoint': config.messageSystem.url.split('/').slice(0, 3).join('/'),
     'postView.visible': config.postView && config.postView.visible,
-    'search.enable': config.search && config.search.enabled,
+    'search.enabled': config.search && config.search.enabled,
   }
   ctx.body = {
     ...config.settings,
