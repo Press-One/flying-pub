@@ -2,6 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import SimpleMDE from 'react-simplemde-editor';
 import config from './config';
+import LinkModal from './LinkModal';
 import ImgUploadModal from './ImgUploadModal';
 import { TextField, Tooltip } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
@@ -32,9 +33,25 @@ interface IProps {
 export default observer((props: IProps) => {
   const { snackbarStore } = useStore();
   const state = useLocalStore(() => ({
+    showLinkModal: false,
     showImgUploadModal: false,
   }));
   const mdeRef = React.useRef<any>(null);
+
+  const insertLink = (link: string) => {
+    if (!mdeRef.current) {
+      console.error('mde not exist');
+      state.showLinkModal = false;
+      return;
+    }
+    state.showLinkModal = false;
+    mdeRef.current.codemirror.replaceSelection(`${link}`);
+    snackbarStore.show({
+      delayDuration: 500,
+      message: '链接插入成功，点预览可查看效果',
+      duration: 2000,
+    });
+  };
 
   const uploadCallback = (images: any = []) => {
     if (!mdeRef.current) {
@@ -54,12 +71,19 @@ export default observer((props: IProps) => {
     state.showImgUploadModal = false;
     snackbarStore.show({
       delayDuration: 500,
-      message: '图片插入成功，点击预览可查看效果',
+      message: '图片插入成功，点预览可查看效果',
+      duration: 2000,
     });
   };
 
   React.useEffect(() => {
     const toolbar: any = config.toolbar;
+    const linkToolbarItem = toolbar.find((item: any) => item.name === 'link');
+    linkToolbarItem.action = (mde: any) => {
+      mdeRef.current = mde;
+      mdeRef.current.selection = mdeRef.current.codemirror.getSelection();
+      state.showLinkModal = true;
+    };
     const imageToolbarItem = toolbar.find((item: any) => item.name === 'image');
     imageToolbarItem.action = (mde: any) => {
       mdeRef.current = mde;
@@ -71,6 +95,37 @@ export default observer((props: IProps) => {
     let button = document.getElementsByClassName('preview');
     if (button[0]) button[0].setAttribute('title', '预览 (Cmd-P)');
   });
+
+  React.useEffect(() => {
+    document.title = props.file.title || '写文章';
+  }, [props.file.title]);
+
+  React.useEffect(() => {
+    const bindClickEvent = (e: any) => {
+      if (e.target.tagName === 'A') {
+        const href = e.target.getAttribute('href');
+        if (href) {
+          window.open(href);
+        }
+        e.preventDefault();
+      }
+    };
+
+    setTimeout(() => {
+      const previewContainer = document.querySelector('.p-editor-markdown');
+      console.log({ previewContainer });
+      if (previewContainer) {
+        previewContainer.addEventListener('click', bindClickEvent);
+      }
+    }, 2000);
+
+    return () => {
+      const previewContainer = document.querySelector('.p-editor-markdown');
+      if (previewContainer) {
+        previewContainer.addEventListener('click', bindClickEvent);
+      }
+    };
+  }, []);
 
   return (
     <div className="p-editor max-w-1200 mx-auto flex justify-center relative">
@@ -120,6 +175,13 @@ export default observer((props: IProps) => {
             value={props.file.content}
             onChange={props.handleContentChange}
             options={config}
+          />
+
+          <LinkModal
+            open={state.showLinkModal}
+            close={() => (state.showLinkModal = false)}
+            text={mdeRef.current ? mdeRef.current.selection : ''}
+            insertLink={insertLink}
           />
 
           <ImgUploadModal
