@@ -1,0 +1,34 @@
+@import '~/style/colors'
+
+.search-page
+  .search-box
+    max-width: 600px
+
+  // .search-toolbar
+  //   max-width: 650px
+
+  .truncate-lines
+    text-overflow: ellipsis
+    overflow: hidden
+    display: -webkit-box
+    -webkit-line-clamp: 2
+    -webkit-box-orient: vertical
+
+  .yx_hl
+    color: $dark-peach-color
+
+  .searched-code
+    font-family: "Roboto Mono"
+
+  .MuiPaginationItem-page
+    color: $gray-color
+
+    &.Mui-selected
+      background: $link-color
+      color: #fff
+      border-color: $link-color
+
+    &:hover
+      background: none
+      color: $link-color
+      border-color: $link-color

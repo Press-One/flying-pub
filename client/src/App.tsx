@@ -9,6 +9,7 @@ import TryFetch from './pages/TryFetch';
 import ManagementLayout from './pages/ManagementLayout';
 import Editor from './pages/Editor';
 import Topic from './pages/Topic';
+import Search from './pages/Search';
 
 import LoginModal from 'components/LoginModal';
 import PhoneLoginModal from 'components/PhoneLoginModal';
@@ -39,7 +40,7 @@ const Reader = () => {
     <div>
       <Route path="/" component={Header} />
       <Route
-        path={['/', '/authors/:address', '/topics/:address']}
+        path={['/', '/authors/:address', '/topics/:address', '/search']}
         exact
         component={() => (
           <div>
@@ -48,6 +49,7 @@ const Reader = () => {
                 <Route path="/" exact component={Feed} />
                 <Route path="/authors/:address" exact component={Author} />
                 <Route path="/topics/:uuid" exact component={Topic} />
+                <Route path="/search" exact component={Search} />
               </div>
             </div>
           </div>
@@ -93,7 +95,7 @@ const AppRouter = () => {
         <div>
           <Route path="/" component={TryFetch} />
           <Route
-            path={['/', '/posts/:rId', '/authors/:address', '/topics/:address', '/subscriptions']}
+            path={['/', '/posts/:rId', '/authors/:address', '/topics/:address', '/subscriptions', '/search']}
             exact
             component={Reader}
           />
