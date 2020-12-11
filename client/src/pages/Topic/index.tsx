@@ -270,12 +270,19 @@ export default observer((props: any) => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
-        const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
-        const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
-          order,
-          offset: feedStore.page * feedStore.limit,
-          limit: feedStore.limit,
-        });
+        let fetchPostsPromise;
+        if (feedStore.filterType === 'POPULARITY') {
+          fetchPostsPromise = topicApi.fetchTopicPostsByPopularity(uuid, {
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        } else {
+          fetchPostsPromise = topicApi.fetchTopicPosts(uuid, {
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        }
+        const { total, posts } = await fetchPostsPromise;
         feedStore.setTotal(total);
         feedStore.addPosts(posts);
       } catch (err) {

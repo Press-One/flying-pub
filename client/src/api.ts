@@ -94,10 +94,10 @@ export default {
       },
     });
   },
-  fetchSubscriptions() {
+  fetchPostsBySubscriptions() {
     return request(`/api/subscriptions/follower`);
   },
-  fetchSubscription(address: string) {
+  fetchPostsBySubscription(address: string) {
     return request(`/api/subscriptions/following/${address}`);
   },
   subscribe(address: string) {

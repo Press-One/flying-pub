@@ -124,6 +124,9 @@ export default observer(() => {
       state.isFetchedStickyPosts = true;
       return;
     }
+    if (state.isFetchedStickyPosts) {
+      return;
+    }
     (async () => {
       state.isFetchingStickyPosts = true;
       try {
@@ -150,21 +153,34 @@ export default observer(() => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
-        const { filterType, optionsForFetching, limit } = feedStore;
+        const { filterType, filterDayRange, latestType, subscriptionType, limit } = feedStore;
         let fetchPostsPromise;
         if (ready) {
-          fetchPostsPromise =
-            filterType === 'SUBSCRIPTION'
-              ? postApi.fetchSubscription({
-                  ...optionsForFetching,
-                  offset: feedStore.page * limit,
-                  limit,
-                })
-              : postApi.fetchPosts({
-                  ...optionsForFetching,
-                  offset: feedStore.page * limit,
-                  limit,
-                });
+          if (filterType === 'SUBSCRIPTION') {
+            fetchPostsPromise = postApi.fetchPostsBySubscription({
+              type: subscriptionType,
+              offset: feedStore.page * limit,
+              limit,
+            });
+          } else if (filterType === 'POPULARITY') {
+            fetchPostsPromise = postApi.fetchPostsByPopularity({
+              dayRange: filterDayRange,
+              offset: feedStore.page * limit,
+              limit,
+            });
+          } else if (filterType === 'LATEST') {
+            if (latestType === 'LATEST_COMMENT') {
+              fetchPostsPromise = postApi.fetchPostsByLatestComment({
+                offset: feedStore.page * limit,
+                limit,
+              });
+            } else if (latestType === 'PUB_DATE') {
+              fetchPostsPromise = postApi.fetchPosts({
+                offset: feedStore.page * limit,
+                limit,
+              });
+            }
+          }
         } else {
           fetchPostsPromise = postApi.fetchPostsByUserSettings({
             offset: 0,

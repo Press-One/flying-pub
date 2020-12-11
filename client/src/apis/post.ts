@@ -38,13 +38,23 @@ export interface IPost {
 }
 
 export default {
-  fetchSubscription(options: any = {}) {
+  fetchPosts(options: any = {}) {
+    return request(`/api/posts?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  fetchPostsBySubscription(options: any = {}) {
     return request(`/api/posts/subscription?${qs.stringify(options)}`, {
       minPendingDuration: 300
     });
   },
-  fetchPosts(options: any = {}) {
-    return request(`/api/posts?${qs.stringify(options)}`, {
+  fetchPostsByPopularity(options: any = {}) {
+    return request(`/api/posts/popularity?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  fetchPostsByLatestComment(options: any = {}) {
+    return request(`/api/posts/latest_comment?${qs.stringify(options)}`, {
       minPendingDuration: 300
     });
   },

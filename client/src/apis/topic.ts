@@ -175,6 +175,12 @@ export default {
       minPendingDuration: 300
     });
   },
+  fetchTopicPostsByPopularity(uuid: string, options = {}) {
+    return request(`/api/topics/${uuid}/posts/popularity?${qs.stringify(options)}`, {
+      method: 'GET',
+      minPendingDuration: 300
+    });
+  },
   fetchPublicTopics(options = {}) {
     return request(`/api/topics/public?${qs.stringify(options)}`, {
       method: 'GET',

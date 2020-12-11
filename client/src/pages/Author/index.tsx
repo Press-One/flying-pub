@@ -155,13 +155,21 @@ export default observer((props: any) => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
-        const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
-        const { total, posts } = await postApi.fetchPosts({
-          order,
-          address,
-          offset: feedStore.page * feedStore.limit,
-          limit: feedStore.limit,
-        });
+        let fetchPostsPromise;
+        if (feedStore.filterType === 'POPULARITY') {
+          fetchPostsPromise = postApi.fetchPostsByPopularity({
+            address,
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        } else {
+          fetchPostsPromise = postApi.fetchPosts({
+            address,
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        }
+        const { total, posts } = await fetchPostsPromise;
         feedStore.setTotal(total);
         feedStore.addPosts(posts);
       } catch (err) {
