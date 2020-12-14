@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { Input, InputAdornment } from '@material-ui/core';
 import { Search } from '@material-ui/icons';
+import { useHistory } from "react-router-dom";
 
 import './index.sass';
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export const SearchInput = observer((props: Props) => {
+  const history = useHistory();
   const state = useLocalStore(() => ({
     width: 0,
     value: '',
@@ -25,7 +27,7 @@ export const SearchInput = observer((props: Props) => {
 
   const handleSearch = () => {
     if (state.value.trim()) {
-      window.open(`/hub/app/search?query=${state.value.trim()}`, '_blank', 'noopener');
+      history.push(`/search?query=${state.value.trim()}`);
     }
   };
 

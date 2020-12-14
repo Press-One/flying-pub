@@ -1,30 +1,29 @@
 import React from 'react';
+import { observer, useLocalStore } from 'mobx-react-lite';
 import classNames from 'classnames';
-import { action, observable } from 'mobx';
-import { stringify } from 'query-string';
-import { defineComponent, onMounted } from '@firefox-pro-coding/react-composition-api';
+import { action } from 'mobx';
 import { Button } from '@material-ui/core';
 import Pagination, { PaginationProps } from '@material-ui/lab/Pagination';
 
-import * as Utils from '@/utils';
-import history from '@/history';
-import SubPage from '@/components/SubPage';
-import Loading from '@/components/Loading';
+import { getQuery, setQuery } from 'utils';
+import SubPage from 'components/SubPage';
+import Loading from 'components/Loading';
 
-import { SearchService } from '@/service/search';
-import { snackbarService } from '@/service/snackbar';
+import { useStore } from 'store';
+import { SearchService } from 'service/search';
 import { SearchInput } from './helper/SearchInput';
 
 import './index.sass';
 
-export default defineComponent(() => {
-  const state = observable({
+export default observer(() => {
+  const { snackbarStore } = useStore();
+  const state = useLocalStore(() => ({
     page: 0,
     limit: 20 as const,
 
-    query: String(Utils.getQuery('query') || ''),
-    searchType: String(Utils.getQuery('type') || 'default') as 'default' | 'code' | 'section',
-    language: String(Utils.getQuery('language') || 'all'),
+    query: String(getQuery('query') || ''),
+    searchType: String(getQuery('type') || 'default') as 'default' | 'code' | 'section',
+    language: String(getQuery('language') || 'all'),
 
     isSearched: false,
     get showLoading() {
@@ -33,7 +32,7 @@ export default defineComponent(() => {
     get queryLanguage() {
       return this.language === 'all' ? undefined : this.language;
     },
-  });
+  }));
 
   const search = action(async (newPage: number = 0) => {
     if (!state.query) {
@@ -41,13 +40,11 @@ export default defineComponent(() => {
     }
     state.isSearched = true;
     state.page = newPage;
-    history.replace(
-      `/hub/app/search?${stringify({
-        query: state.query,
-        type: state.searchType,
-        language: state.queryLanguage,
-      })}`,
-    );
+    setQuery({
+      query: state.query,
+      type: state.searchType,
+      language: state.queryLanguage,
+    });
     await SearchService.search({
       cy_tenantid: 'book.xue.cn',
       c: state.searchType,
@@ -63,7 +60,10 @@ export default defineComponent(() => {
 
   const handleSearch = () => {
     if (!state.query) {
-      snackbarService.error('请输入要搜索的内容');
+      snackbarStore.show({
+        message: '请输入要搜索的内容',
+        type: 'error',
+      });
       return;
     }
     search();
@@ -71,7 +71,10 @@ export default defineComponent(() => {
 
   const handleEnter = () => {
     if (!state.query) {
-      snackbarService.error('请输入要搜索的内容');
+      snackbarStore.show({
+        message: '请输入要搜索的内容',
+        type: 'error',
+      });
       return;
     }
     search();
@@ -82,13 +85,14 @@ export default defineComponent(() => {
     window.scrollTo(0, 0);
   };
 
-  onMounted(() => {
-    if (state.query) {
-      search();
-    }
-  });
+  //onMounted(() => {
+    //if (state.query) {
+      //search();
+    //}
+  //});"
+  console.log('test');
 
-  return () => (
+  return (
     <SubPage renderTitle={() => <div>搜索</div>}>
       <div className="search-page">
         <div className="search-box mx-auto">
@@ -159,7 +163,7 @@ export default defineComponent(() => {
           </div>
         </div>
 
-        {!state.isSearched && !Utils.getQuery('query') && (
+        {!state.isSearched && !getQuery('query') && (
           <div className="pt-12 pb-16 mt-6 text-gray-99 text-center">
             搜索你感兴趣的内容
           </div>
@@ -180,18 +184,19 @@ export default defineComponent(() => {
                     在书库中搜索到 <strong>{SearchService.state.total}</strong> 条结果
                   </div>
                   {SearchService.state.resultItems.map((resultItem, index) => {
-                    const path = resultItem.bookPath + '/' + resultItem.uri;
-                    const readerUrl = Utils.getReaderUrl({
-                      bookId: resultItem.bookId,
-                      path,
-                    });
+                    //const path = resultItem.bookPath + '/' + resultItem.uri;
+                    //const readerUrl = Utils.getReaderUrl({
+                      //bookId: resultItem.bookId,
+                      //path,
+                    //});
+                    const readerUrl = '';
                     return (
                       <div key={index}>
                         <div className="border-t border-gray-e8 pt-3 pb-5 py-5 px-10 text-14">
                           <a
                             className="flex items-center leading-none py-2 font-bold nice-blue-color text-16"
                             href={readerUrl}
-                            target="_blank"
+                            //target="_blank"
                           >
                             <div>《{resultItem.bookName}》章节：</div>
                             {/* eslint-disable-next-line react/no-danger */}
@@ -231,7 +236,7 @@ export default defineComponent(() => {
             )}
             {state.showLoading && (
               <div className="pt-2">
-                <Loading spaceSize="large" />
+                <Loading />
               </div>
             )}
           </div>
