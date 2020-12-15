@@ -26,6 +26,7 @@ import TopicListModal from './components/TopicListModal';
 import GlobalQueryHandler from './components/GlobalQueryHandler';
 import PublishDialog from './components/PublishDialog';
 import FavoritesModal from './components/FavoritesModal';
+import NotificationModal from './components/NotificationModal';
 
 import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
 
@@ -115,6 +116,7 @@ const AppRouter = () => {
           <TopicListModal />
           <PublishDialog />
           <FavoritesModal />
+          <NotificationModal />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

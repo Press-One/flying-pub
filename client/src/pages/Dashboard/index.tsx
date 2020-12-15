@@ -3,7 +3,6 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { RouteChildrenProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import Loading from 'components/Loading';
-import NotificationModal from 'components/NotificationModal';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import Badge from '@material-ui/core/Badge';
 import Button from 'components/Button';
@@ -240,15 +239,6 @@ export default observer((props: RouteChildrenProps) => {
           open={importDialogVisible}
           cancel={handleImportDialogClose}
           ok={handleImportDialogConfirm}
-        />
-      )}
-      {settings['notification.enabled'] && (
-        <NotificationModal
-          open={modalStore.notification.open}
-          close={() => {
-            modalStore.closeNotification();
-            notificationStore.reset();
-          }}
         />
       )}
 

@@ -8,9 +8,10 @@ import classNames from 'classnames';
 import { useStore } from 'store';
 import { ExtraNotificationType } from 'store/notification';
 
-export default observer((props: any) => {
-  const { open, close } = props;
-  const { socketStore, notificationStore } = useStore();
+export default observer(() => {
+  const { socketStore, notificationStore, modalStore, settingsStore } = useStore();
+  const { settings } = settingsStore;
+  const { open } = modalStore.notification;
 
   React.useEffect(() => {
     if (socketStore.isReady) {
@@ -21,6 +22,15 @@ export default observer((props: any) => {
       });
     }
   }, [socketStore, socketStore.isReady, notificationStore]);
+
+  if (!settings['notification.enabled']) {
+    return null;
+  }
+
+  const close = () => {
+    modalStore.closeNotification();
+    notificationStore.reset();
+  };
 
   if (isMobile) {
     return (

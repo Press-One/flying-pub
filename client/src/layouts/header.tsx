@@ -8,7 +8,6 @@ import People from '@material-ui/icons/People';
 import Star from '@material-ui/icons/Star';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
-import NotificationModal from 'components/NotificationModal';
 import Button from 'components/Button';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import HomeOutlined from '@material-ui/icons/HomeOutlined';
@@ -317,15 +316,6 @@ export default observer((props: any) => {
               </div>
             </div>
           </div>
-        )}
-        {settings['notification.enabled'] && (
-          <NotificationModal
-            open={modalStore.notification.open}
-            close={() => {
-              modalStore.closeNotification();
-              notificationStore.reset();
-            }}
-          />
         )}
         <style jsx global>{`
           .MuiIconButton-root {
