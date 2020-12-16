@@ -44,6 +44,7 @@ export default observer((props: any) => {
       await sleep(200);
       uploadCallback(result);
     } catch (err) {
+      console.log(err);
       snackbarStore.show({
         message: err.msg === 'INVALID_IMG' ? '请上传有效的图片文件' : '上传失败，请重新试一下',
         type: 'error',

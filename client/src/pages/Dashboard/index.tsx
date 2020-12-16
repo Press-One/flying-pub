@@ -48,7 +48,7 @@ const useImportDialog = (props: any) => {
       .then(
         (file) => {
           setTimeout(() => {
-            props.history.push(`/editor?id=${file.id}`);
+            props.history.push(`/editor?id=${file.id}&action=triggerPreview`);
           });
         },
         (err) => {

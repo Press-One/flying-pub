@@ -10,6 +10,7 @@ import fileApi, { EditableFile } from 'apis/file';
 import * as EditorStorage from './Storage';
 import PcEditor from './PcEditor';
 import MobileEditor from './MobileEditor';
+import EditorJs from './EditorJs';
 
 const MAX_CONTENT_LENGTH = 20000;
 
@@ -23,6 +24,7 @@ export default observer((props: any) => {
     confirmDialogStore,
     pathStore,
     preloadStore,
+    modalStore,
   } = useStore();
   const { settings } = settingsStore;
   const { prevPath } = pathStore;
@@ -39,15 +41,35 @@ export default observer((props: any) => {
       title: '',
       content: '',
       cover: '',
+      mimeType: '',
     } as EditableFile,
     isFetching: true,
     isSaving: false,
     showCoverUploadModal: false,
     wordCount: 0,
+    get contentStorageKey() {
+      return this.file.mimeType === 'text/markdown' ? `CONTENT` : `EDITOR_JS_CONTENT`;
+    },
   }));
   const isDirtyRef = React.useRef(false);
   const idRef = React.useRef<any>(id);
   const isPublished = state.file.status === 'published' || state.file.status === 'pending';
+
+  React.useEffect(() => {
+    if (isMobile && !state.isFetching && state.file.mimeType !== 'text/markdown') {
+      state.isFetching = true;
+      confirmDialogStore.show({
+        content: '这篇文章用新版编辑器创建的，目前只能在电脑上编辑噢',
+        cancelDisabled: true,
+        okText: '我知道了',
+        ok: async () => {
+          confirmDialogStore.hide();
+          await sleep(100);
+          goBack();
+        },
+      });
+    }
+  }, [state.isFetching, state.file.mimeType]);
 
   React.useEffect(() => {
     (async () => {
@@ -72,28 +94,30 @@ export default observer((props: any) => {
         if (id) {
           const file = await fileApi.getFile(id);
           state.file.title = EditorStorage.get(id, 'TITLE') || file.title;
-          state.file.content = EditorStorage.get(id, 'CONTENT') || file.content;
+          state.file.content = EditorStorage.get(id, state.contentStorageKey) || file.content;
           state.file.cover = EditorStorage.get(id, 'COVER') || file.cover;
+          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || file.mimeType;
           state.file.status = file.status;
           state.file.id = file.id;
           state.file.invisibility = file.invisibility;
         } else {
           const hasCachedContent =
             EditorStorage.get(id, 'TITLE') ||
-            EditorStorage.get(id, 'CONTENT') ||
+            EditorStorage.get(id, state.contentStorageKey) ||
             EditorStorage.get(id, 'COVER');
           state.file.title = EditorStorage.get(id, 'TITLE') || '';
-          state.file.content = EditorStorage.get(id, 'CONTENT') || '';
+          state.file.content = EditorStorage.get(id, state.contentStorageKey) || '';
           state.file.cover = EditorStorage.get(id, 'COVER') || '';
+          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || 'text/markdown';
           if (hasCachedContent) {
             isDirtyRef.current = true;
             if (isPc) {
               setTimeout(() => {
                 snackbarStore.show({
                   message: '恢复上次未保存的内容',
-                  duration: 2000,
+                  duration: 1500,
                 });
-              }, 2000);
+              }, 1000);
             }
           }
         }
@@ -115,6 +139,17 @@ export default observer((props: any) => {
     })();
   }, [state.file.content, wordCountDebounce]);
 
+  React.useEffect(() => {
+    if (!state.isFetching && getQuery('action') === 'triggerPreview') {
+      const previewButton: any = document.querySelector('.preview');
+      console.log({ previewButton });
+      if (previewButton) {
+        previewButton.click();
+      }
+      removeQuery('action');
+    }
+  }, [state.isFetching]);
+
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     state.file.title = event.target.value;
     isDirtyRef.current = true;
@@ -124,13 +159,33 @@ export default observer((props: any) => {
   const handleContentChange = (value: string) => {
     state.file.content = value;
     isDirtyRef.current = true;
-    EditorStorage.set(idRef.current, 'CONTENT', value);
+    EditorStorage.set(idRef.current, state.contentStorageKey, value);
   };
 
   const handleCoverChange = (url: string) => {
     state.file.cover = url;
     isDirtyRef.current = true;
     EditorStorage.set(idRef.current, 'COVER', url);
+  };
+
+  const toggleMimeType = async () => {
+    modalStore.openPageLoading();
+    if (state.file.mimeType === 'text/markdown') {
+      state.file.mimeType = 'application/json';
+    } else {
+      state.file.mimeType = 'text/markdown';
+    }
+    EditorStorage.set(idRef.current, 'MIME_TYPE', state.file.mimeType);
+    state.file.content = EditorStorage.get(idRef.current, state.contentStorageKey) || '';
+    await sleep(1000);
+    modalStore.closePageLoading();
+  };
+
+  const cleanStorageData = () => {
+    EditorStorage.remove(idRef.current, 'TITLE');
+    EditorStorage.remove(idRef.current, 'CONTENT');
+    EditorStorage.remove(idRef.current, 'EDITOR_JS_CONTENT');
+    EditorStorage.remove(idRef.current, 'COVER');
   };
 
   const handleSave = async (options: any) => {
@@ -153,6 +208,7 @@ export default observer((props: any) => {
           title: state.file.title,
           content: state.file.content,
           cover: state.file.cover,
+          mimeType: state.file.mimeType,
         };
         const isUpdating = !!idRef.current;
         if (isUpdating) {
@@ -161,17 +217,13 @@ export default observer((props: any) => {
           state.file.content = res.updatedFile.content;
           state.file.cover = res.updatedFile.cover;
           fileStore.updateFile(res.updatedFile);
-          EditorStorage.remove(idRef.current, 'TITLE');
-          EditorStorage.remove(idRef.current, 'CONTENT');
-          EditorStorage.remove(idRef.current, 'COVER');
+          cleanStorageData();
         } else {
           const res = await fileApi.createDraft(param);
           state.file.title = res.title;
           state.file.content = res.content;
           state.file.cover = res.cover;
-          EditorStorage.remove(idRef.current, 'TITLE');
-          EditorStorage.remove(idRef.current, 'CONTENT');
-          EditorStorage.remove(idRef.current, 'COVER');
+          cleanStorageData();
           idRef.current = Number(res.id);
           setQuery({
             id: res.id,
@@ -220,6 +272,7 @@ export default observer((props: any) => {
           title: state.file.title,
           content: state.file.content,
           cover: state.file.cover,
+          mimeType: state.file.mimeType,
         };
         const isUpdating = !!idRef.current;
         let rId = '';
@@ -246,7 +299,7 @@ export default observer((props: any) => {
           rId = res.rId;
         }
         EditorStorage.remove(idRef.current, 'TITLE');
-        EditorStorage.remove(idRef.current, 'CONTENT');
+        EditorStorage.remove(idRef.current, state.contentStorageKey);
         EditorStorage.remove(idRef.current, 'COVER');
         confirmDialogStore.setLoading(false);
         confirmDialogStore.hide();
@@ -370,6 +423,7 @@ export default observer((props: any) => {
         cancel: async () => {
           confirmDialogStore.hide();
           await sleep(100);
+          cleanStorageData();
           goBack();
         },
         ok: async () => {
@@ -420,7 +474,9 @@ export default observer((props: any) => {
                 isFetching={state.isFetching}
                 isSaving={state.isSaving}
                 isPublished={isPublished}
+                isUpdating={!!idRef.current}
                 handleSave={handleSave}
+                toggleMimeType={toggleMimeType}
               />
             )}
 

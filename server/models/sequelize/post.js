@@ -68,6 +68,9 @@ const Post = sequelize.define('posts', {
   invisibility: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  mimeType: {
+    type: Sequelize.STRING
   }
 }, {
   timestamps: true,

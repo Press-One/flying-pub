@@ -34,15 +34,10 @@ import Popover from '@material-ui/core/Popover';
 import QRCode from 'qrcode.react';
 import Img from 'components/Img';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
+import editorJsDataToHTML from './editorJsDataToHTML';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
-
-marked.setOptions({
-  highlight: (code: string) => {
-    return require('highlight.js').highlightAuto(code).value;
-  },
-});
 
 const COMMENTS_LIMIT = isMobile ? 10 : 15;
 
@@ -87,6 +82,22 @@ export default observer((props: any) => {
   );
 
   const ref = React.useRef(document.createElement('div'));
+
+  const postHTMLContent = React.useMemo(() => {
+    if (!post) {
+      return '';
+    }
+    if (post.mimeType === 'application/json') {
+      return editorJsDataToHTML(JSON.parse(post.content));
+    } else {
+      marked.setOptions({
+        highlight: (code: string) => {
+          return require('highlight.js').highlightAuto(code).value;
+        },
+      });
+      return marked.parse(post.content);
+    }
+  }, [post]);
 
   React.useEffect(() => {
     if (state.isFetchedPost) {
@@ -860,7 +871,7 @@ export default observer((props: any) => {
         <div
           id="post-content"
           className={`mt-3 md:mt-4 text-base md:text-lg markdown-body pb-6 px-2 md:px-0 overflow-hidden`}
-          dangerouslySetInnerHTML={{ __html: marked.parse(post.content) }}
+          dangerouslySetInnerHTML={{ __html: postHTMLContent }}
         />
         <div className="mt-1 pb-2 px-2 md:px-0">
           <div className="border-l-4 border-blue-400 pl-3 text-gray-9b mt-2 md:mt-0">
@@ -974,11 +985,7 @@ export default observer((props: any) => {
             background: #63b3ed;
           }
           .post-page .markdown-body {
-            color: #333;
             font-size: 16px;
-            line-height: 1.65;
-            font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC',
-              'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif;
           }
         `}</style>
       </div>

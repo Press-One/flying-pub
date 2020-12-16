@@ -276,11 +276,7 @@ export default observer((props: IProps) => {
           height: 95vh;
         }
         .markdown-body {
-          color: #333;
           font-size: 16px;
-          line-height: 1.65;
-          font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC',
-            'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif;
         }
       `}</style>
     </div>

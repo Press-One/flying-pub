@@ -115,7 +115,8 @@ const pickPost = async chainPost => {
     cover,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(published)
+    pubDate: new Date(published),
+    mimeType: JSON.parse(block.meta).mime.split(';')[0]
   };
   const author = {
     address: block.user_address,

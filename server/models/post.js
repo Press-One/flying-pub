@@ -396,6 +396,7 @@ exports.create = async data => {
     paymentUrl: Joi.optional(),
     pubDate: Joi.date(),
     status: Joi.string().trim(),
+    mimeType: Joi.string().trim(),
   });
   await Post.create(verifiedData);
   return true;

@@ -12,6 +12,9 @@ import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import Button from 'components/Button';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
+import { isPc } from 'utils';
+import EditorJs from './EditorJs';
+import { sleep } from 'utils';
 
 import 'easymde/dist/easymde.min.css';
 import './index.scss';
@@ -27,16 +30,21 @@ interface IProps {
   isFetching: boolean;
   isSaving: boolean;
   isPublished: boolean;
+  isUpdating: boolean;
   wordCount: number;
+  toggleMimeType: () => void;
 }
 
 export default observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, modalStore, confirmDialogStore } = useStore();
   const state = useLocalStore(() => ({
     showLinkModal: false,
     showImgUploadModal: false,
+    showSwitchEditorButton: true,
   }));
+  const editorType = props.file.mimeType === 'text/markdown' ? 'markdown' : 'editorJs';
   const mdeRef = React.useRef<any>(null);
+  const imageBlockOptions = React.useRef<any>({});
 
   const insertLink = (link: string) => {
     if (!mdeRef.current) {
@@ -54,6 +62,11 @@ export default observer((props: IProps) => {
   };
 
   const uploadCallback = (images: any = []) => {
+    if (imageBlockOptions.current.insertImageCallback) {
+      imageBlockOptions.current.insertImageCallback(images[0].url);
+      state.showImgUploadModal = false;
+      return;
+    }
     if (!mdeRef.current) {
       console.error('mde not exist');
       return;
@@ -170,12 +183,25 @@ export default observer((props: IProps) => {
             }}
           />
 
-          <SimpleMDE
-            className="p-editor-markdown"
-            value={props.file.content}
-            onChange={props.handleContentChange}
-            options={config}
-          />
+          {!modalStore.showPageLoading && editorType === 'markdown' && (
+            <SimpleMDE
+              className="p-editor-markdown"
+              value={props.file.content}
+              onChange={props.handleContentChange}
+              options={config}
+            />
+          )}
+
+          {!modalStore.showPageLoading && editorType === 'editorJs' && (
+            <EditorJs
+              data={props.file.content ? JSON.parse(props.file.content) : null}
+              onChange={props.handleContentChange}
+              openImgUploadModal={(options: any = {}) => {
+                state.showImgUploadModal = true;
+                imageBlockOptions.current = options;
+              }}
+            />
+          )}
 
           <LinkModal
             open={state.showLinkModal}
@@ -186,59 +212,94 @@ export default observer((props: IProps) => {
 
           <ImgUploadModal
             open={state.showImgUploadModal}
-            close={() => (state.showImgUploadModal = false)}
+            close={() => {
+              state.showImgUploadModal = false;
+              imageBlockOptions.current.cancelCallback();
+            }}
             uploadCallback={uploadCallback}
           />
 
-          <div>
-            <div
-              className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
-              onClick={props.openCoverUploadModal}
-            >
-              <div className="flex items-center h-8">
-                {props.file.cover && (
-                  <Tooltip
-                    title={
+          {!isPc && (
+            <div>
+              <div
+                className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
+                onClick={props.openCoverUploadModal}
+              >
+                <div className="flex items-center h-8">
+                  {props.file.cover && (
+                    <Tooltip
+                      title={
+                        <div>
+                          <Img
+                            src={props.file.cover}
+                            resizeWidth={250}
+                            useOriginalDefault
+                            alt="封面"
+                            width="250"
+                          />
+                        </div>
+                      }
+                      placement="left"
+                    >
                       <div>
                         <Img
+                          className="rounded mr-2"
+                          width="55px"
                           src={props.file.cover}
-                          resizeWidth={250}
-                          useOriginalDefault
+                          resizeWidth={55}
                           alt="封面"
-                          width="250"
                         />
                       </div>
-                    }
-                    placement="left"
-                  >
-                    <div>
-                      <Img
-                        className="rounded mr-2"
-                        width="55px"
-                        src={props.file.cover}
-                        resizeWidth={55}
-                        alt="封面"
-                      />
+                    </Tooltip>
+                  )}
+                  {!props.file.cover && (
+                    <div
+                      className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
+                      style={{ width: '55px', height: '31px', marginTop: '-2px' }}
+                    >
+                      <div className="flex items-center mt-1">
+                        <CameraAlt />
+                      </div>
                     </div>
-                  </Tooltip>
-                )}
-                {!props.file.cover && (
-                  <div
-                    className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
-                    style={{ width: '55px', height: '31px', marginTop: '-2px' }}
-                  >
-                    <div className="flex items-center mt-1">
-                      <CameraAlt />
-                    </div>
-                  </div>
-                )}
-                {props.file.cover ? '更换封面' : '上传封面'}
+                  )}
+                  {props.file.cover ? '更换封面' : '上传封面'}
+                </div>
               </div>
+              {props.wordCount > 0 && (
+                <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
+                  {props.wordCount} 字
+                </div>
+              )}
             </div>
-            {props.wordCount > 0 && (
-              <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
-                {props.wordCount} 字
-              </div>
+          )}
+          <div className="fixed bottom-0 right-0 bg-white px-6 py-4 z-10">
+            {(props.isUpdating || !state.showSwitchEditorButton) && <div className="pb-10" />}
+            {!props.isUpdating && state.showSwitchEditorButton && (
+              <Fade in={true} timeout={500}>
+                <Tooltip
+                  placement="top"
+                  arrow
+                  disableHoverListener={editorType === 'markdown'}
+                  title={editorType === 'markdown' ? '' : '使用 Markdown 语法'}
+                >
+                  <div>
+                    <Button
+                      color={editorType === 'markdown' ? 'green' : 'gray'}
+                      outline
+                      onClick={() => {
+                        props.toggleMimeType();
+                        (async () => {
+                          state.showSwitchEditorButton = false;
+                          await sleep(2000);
+                          state.showSwitchEditorButton = true;
+                        })();
+                      }}
+                    >
+                      切换到{editorType === 'markdown' ? '新版' : ' MD '}编辑器
+                    </Button>
+                  </div>
+                </Tooltip>
+              </Fade>
             )}
           </div>
         </div>

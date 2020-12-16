@@ -100,7 +100,8 @@ const createFile = async (user, data, options = {}) => {
       })();
     }
   }
-  Log.create(user.id, `创建文章 ${file.title} ${file.id}`);
+  const editorInfo = data.mimeType.includes('json') ? '使用新编辑器' : '';
+  Log.create(user.id, `${editorInfo}创建文章 ${file.title} ${file.id}`);
   return file;
 };
 exports.createFile = createFile;
