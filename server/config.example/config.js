@@ -246,7 +246,7 @@ module.exports = {
   search: {
     enabled: false,
     searchUrl: 'http://192.168.0.9/search',
-    updatertUrl: 'http://192.168.0.9/updatertUrl',
+    updatertUrl: 'http://192.168.0.9/updatert',
   },
 
   assistantUserId: 1

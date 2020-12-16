@@ -53,6 +53,7 @@
     "mathjs": "^6.2.3",
     "mixin-node": "^1.0.32",
     "mysql2": "1.7.0",
+    "node-fetch": "^2.6.1",
     "passport-github2": "^0.1.11",
     "passport-mixin": "^0.1.24",
     "pg": "7.0.2",
@@ -72,7 +73,8 @@
     "turndown": "^5.0.3",
     "uuid": "^3.3.3",
     "uuidv4": "^4.0.0",
-    "wechat-oauth": "^1.5.0"
+    "wechat-oauth": "^1.5.0",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "http-server": "^0.11.1",
