@@ -100,14 +100,15 @@ export default observer((props: any) => {
         const id = getQuery('id');
         if (id) {
           const file = await fileApi.getFile(id);
+          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || file.mimeType;
           state.file.title = EditorStorage.get(id, 'TITLE') || file.title;
           state.file.content = EditorStorage.get(id, state.contentStorageKey) || file.content;
           state.file.cover = EditorStorage.get(id, 'COVER') || file.cover;
-          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || file.mimeType;
           state.file.status = file.status;
           state.file.id = file.id;
           state.file.invisibility = file.invisibility;
         } else {
+          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || 'text/markdown';
           const hasCachedContent =
             EditorStorage.get(id, 'TITLE') ||
             EditorStorage.get(id, state.contentStorageKey) ||
@@ -115,7 +116,6 @@ export default observer((props: any) => {
           state.file.title = EditorStorage.get(id, 'TITLE') || '';
           state.file.content = EditorStorage.get(id, state.contentStorageKey) || '';
           state.file.cover = EditorStorage.get(id, 'COVER') || '';
-          state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || 'text/markdown';
           if (hasCachedContent) {
             isDirtyRef.current = true;
           }
