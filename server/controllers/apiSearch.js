@@ -42,7 +42,7 @@ exports.post = async ctx => {
     node: {
       cy_tenantid: {
         '_attributes': { 'type': 'cypress.untoken' },
-        '_text': config.settings['site.name'],
+        '_text': config.serviceKey,
       },
       date: {
         '_attributes': { 'type': 'cypress.int' },
@@ -56,7 +56,6 @@ exports.post = async ctx => {
     }
   }
   const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
-  console.log(xmlString);
   const userId = ctx.verification && ctx.verification.user.id;
   try {
     const res = await fetch(config.search.updatertUrl, {
@@ -67,9 +66,54 @@ exports.post = async ctx => {
       },
     });
     const json = await res.json();
-    console.log(json);
     if (userId) {
       Log.create(userId, `【更新索引】${uri}`);
+    }
+    ctx.body = json;
+  } catch(e) {
+    console.error(e);
+  }
+};
+
+exports.del = async ctx => {
+  if (!(config && config.search && config.search.enabled)) {
+    return;
+  }
+  const { uri } = ctx.request.body || {};
+  assert(uri, Errors.ERR_IS_REQUIRED('uri'));
+  const rId = uri.split('/').pop();
+  assert(rId, Errors.ERR_IS_INVALID('uri'));
+  const xmlObject = {
+    '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
+    node: {
+      cy_tenantid: {
+        '_attributes': { 'type': 'cypress.untoken' },
+        '_text': config.serviceKey,
+      },
+      date: {
+        '_attributes': { 'type': 'cypress.int' },
+        '_text': Math.floor(new Date() / 1000),
+      },
+      xmluri: uri,
+      uri,
+      title: {"_cdata": ''},
+      content: {"_cdata": ''},
+      user_address: '',
+    }
+  }
+  const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
+  const userId = ctx.verification && ctx.verification.user.id;
+  try {
+    const res = await fetch(config.search.updatertUrl, {
+      method: 'post',
+      body: xmlString,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+    });
+    const json = await res.json();
+    if (userId) {
+      Log.create(userId, `【删除索引】${uri}`);
     }
     ctx.body = json;
   } catch(e) {
