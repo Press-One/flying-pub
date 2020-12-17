@@ -18,8 +18,14 @@ export default observer((props: any) => {
             class: require('editorjs-paragraph-with-alignment'),
             inlineToolbar: true,
           },
-          header: require('@editorjs/header'),
-          list: require('@editorjs/list'),
+          header: {
+            class: require('@editorjs/header'),
+            inlineToolbar: true,
+          },
+          list: {
+            class: require('@editorjs/list'),
+            inlineToolbar: true,
+          },
           image: {
             class: require('./Plugins/Image').Image,
             config: {
@@ -34,7 +40,10 @@ export default observer((props: any) => {
             },
           },
           delimiter: require('@editorjs/delimiter'),
-          table: require('@editorjs/table'),
+          table: {
+            class: require('@editorjs/table'),
+            inlineToolbar: true,
+          },
           raw: {
             class: require('@editorjs/raw'),
             config: {
