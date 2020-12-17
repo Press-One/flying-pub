@@ -99,6 +99,9 @@ export function createFeedStore() {
       this.postMap[post.rId] = post;
       this.postRId = post.rId;
     },
+    clearPost() {
+      this.postRId = '';
+    },
     updatePost(rId: string, data: any) {
       for (let key in data) {
         this.postMap[rId][key] = data[key];

@@ -89,7 +89,7 @@ export default observer((props: any) => {
     }
     if (post.mimeType === 'application/json') {
       return editorJsDataToHTML(JSON.parse(post.content));
-    } else {
+    } else if (post.mimeType === 'text/markdown') {
       marked.setOptions({
         highlight: (code: string) => {
           return require('highlight.js').highlightAuto(code).value;
@@ -97,7 +97,14 @@ export default observer((props: any) => {
       });
       return marked.parse(post.content);
     }
+    return '';
   }, [post]);
+
+  React.useEffect(() => {
+    return () => {
+      feedStore.clearPost();
+    };
+  }, [feedStore]);
 
   React.useEffect(() => {
     if (state.isFetchedPost) {

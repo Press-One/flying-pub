@@ -458,6 +458,7 @@ export default observer((props: any) => {
                 file={state.file}
                 handleTitleChange={handleTitleChange}
                 handleContentChange={handleContentChange}
+                handleCoverChange={handleCoverChange}
                 openCoverUploadModal={() => (state.showCoverUploadModal = true)}
                 wordCount={state.wordCount}
                 handlePublishClickOpen={handlePublishClickOpen}

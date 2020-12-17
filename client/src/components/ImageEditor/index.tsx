@@ -164,7 +164,7 @@ export default observer((props: any) => {
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
-          <div className="edit-button text-13">
+          <div className="edit-button text-12">
             <Edit className="edit-icon" />
             更换{props.name || '图片'}
           </div>
@@ -174,7 +174,7 @@ export default observer((props: any) => {
             className="flex items-center justify-center text-3xl bg-gray-200 text-gray-500"
             style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
           >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center pt-3-px">
               <CameraAlt />
               <div className="text-12 mt-1">上传{props.name || '图片'}</div>
             </div>

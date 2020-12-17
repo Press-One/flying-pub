@@ -8,11 +8,11 @@ import { TextField, Tooltip } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
 import { CameraAlt } from '@material-ui/icons';
 import Img from 'components/Img';
+import ImageEditor from 'components/ImageEditor';
 import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import Button from 'components/Button';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
-import { isPc } from 'utils';
 import EditorJs from './EditorJs';
 import { sleep } from 'utils';
 
@@ -24,6 +24,7 @@ interface IProps {
   handleTitleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleContentChange: (content: string) => void;
   openCoverUploadModal: () => void;
+  handleCoverChange: (url: string) => void;
   handleBack: () => void;
   handleSave: (options: any) => void;
   handlePublishClickOpen: () => void;
@@ -169,6 +170,31 @@ export default observer((props: IProps) => {
         </Fade>
       )}
 
+      {!modalStore.showPageLoading &&
+        editorType === 'editorJs' &&
+        (props.file.title || props.file.content) && (
+          <Fade in={true} timeout={500}>
+            <div
+              className="absolute top-0 mt-20 pt-10"
+              style={{
+                right: props.isPublished ? -12 : 6,
+              }}
+            >
+              <ImageEditor
+                name="封面"
+                imageUrl={props.file.cover}
+                width={350}
+                placeholderWidth={130}
+                editorPlaceholderWidth={300}
+                ratio={3 / 2}
+                getImageUrl={(url: string) => {
+                  props.handleCoverChange(url);
+                }}
+              />
+            </div>
+          </Fade>
+        )}
+
       <div className="p-editor-input-area relative">
         <div className="-mt-2">
           <TextField
@@ -184,12 +210,65 @@ export default observer((props: IProps) => {
           />
 
           {!modalStore.showPageLoading && editorType === 'markdown' && (
-            <SimpleMDE
-              className="p-editor-markdown"
-              value={props.file.content}
-              onChange={props.handleContentChange}
-              options={config}
-            />
+            <div>
+              <SimpleMDE
+                className="p-editor-markdown"
+                value={props.file.content}
+                onChange={props.handleContentChange}
+                options={config}
+              />
+              <div>
+                <div
+                  className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
+                  onClick={props.openCoverUploadModal}
+                >
+                  <div className="flex items-center h-8 -mt-1-px">
+                    {props.file.cover && (
+                      <Tooltip
+                        title={
+                          <div>
+                            <Img
+                              src={props.file.cover}
+                              resizeWidth={250}
+                              useOriginalDefault
+                              alt="封面"
+                              width="250"
+                            />
+                          </div>
+                        }
+                        placement="left"
+                      >
+                        <div>
+                          <Img
+                            className="rounded mr-2"
+                            width="55px"
+                            src={props.file.cover}
+                            resizeWidth={55}
+                            alt="封面"
+                          />
+                        </div>
+                      </Tooltip>
+                    )}
+                    {!props.file.cover && (
+                      <div
+                        className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
+                        style={{ width: '55px', height: '31px', marginTop: '-2px' }}
+                      >
+                        <div className="flex items-center mt-1">
+                          <CameraAlt />
+                        </div>
+                      </div>
+                    )}
+                    {props.file.cover ? '更换封面' : '上传封面'}
+                  </div>
+                </div>
+                {props.wordCount > 0 && (
+                  <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
+                    {props.wordCount} 字
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {!modalStore.showPageLoading && editorType === 'editorJs' && (
@@ -219,59 +298,6 @@ export default observer((props: IProps) => {
             uploadCallback={uploadCallback}
           />
 
-          {!isPc && (
-            <div>
-              <div
-                className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
-                onClick={props.openCoverUploadModal}
-              >
-                <div className="flex items-center h-8">
-                  {props.file.cover && (
-                    <Tooltip
-                      title={
-                        <div>
-                          <Img
-                            src={props.file.cover}
-                            resizeWidth={250}
-                            useOriginalDefault
-                            alt="封面"
-                            width="250"
-                          />
-                        </div>
-                      }
-                      placement="left"
-                    >
-                      <div>
-                        <Img
-                          className="rounded mr-2"
-                          width="55px"
-                          src={props.file.cover}
-                          resizeWidth={55}
-                          alt="封面"
-                        />
-                      </div>
-                    </Tooltip>
-                  )}
-                  {!props.file.cover && (
-                    <div
-                      className="mr-2 text-xl flex items-center justify-center rounded bg-gray-f2"
-                      style={{ width: '55px', height: '31px', marginTop: '-2px' }}
-                    >
-                      <div className="flex items-center mt-1">
-                        <CameraAlt />
-                      </div>
-                    </div>
-                  )}
-                  {props.file.cover ? '更换封面' : '上传封面'}
-                </div>
-              </div>
-              {props.wordCount > 0 && (
-                <div className="absolute bottom-0 left-0 py-1 px-4 bg-gray-f2 text-gray-9b rounded-full mb-0 text-12 word-count whitespace-no-wrap">
-                  {props.wordCount} 字
-                </div>
-              )}
-            </div>
-          )}
           <div className="fixed bottom-0 right-0 bg-white px-6 py-4 z-10">
             {(props.isUpdating || !state.showSwitchEditorButton) && <div className="pb-10" />}
             {!props.isUpdating && state.showSwitchEditorButton && (
