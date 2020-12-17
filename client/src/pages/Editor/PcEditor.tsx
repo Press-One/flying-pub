@@ -57,7 +57,7 @@ export default observer((props: IProps) => {
     snackbarStore.show({
       delayDuration: 500,
       message: '链接插入成功，点预览可查看效果',
-      duration: 2000,
+      duration: 1500,
     });
   };
 
@@ -85,7 +85,7 @@ export default observer((props: IProps) => {
     snackbarStore.show({
       delayDuration: 500,
       message: '图片插入成功，点预览可查看效果',
-      duration: 2000,
+      duration: 1500,
     });
   };
 

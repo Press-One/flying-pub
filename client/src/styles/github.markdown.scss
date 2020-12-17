@@ -295,12 +295,12 @@
   }
 
   h1 {
-    font-size: 30px;
+    font-size: 24px;
     font-weight: bold;
   }
 
   h2 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
   }
 
@@ -447,11 +447,10 @@
 
   p,
   blockquote,
-  // ul,
-  // ol,
   dl,
-  // table,
-  pre {
+  table,
+  pre,
+  center {
     margin-top: 0;
     margin-bottom: 16px;
   }
@@ -685,11 +684,6 @@
 
   hr {
     border-bottom-color: #eee;
-  }
-
-  center,
-  p {
-    margin-bottom: 20px;
   }
 
   iframe {

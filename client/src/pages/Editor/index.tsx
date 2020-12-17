@@ -118,14 +118,6 @@ export default observer((props: any) => {
           state.file.mimeType = EditorStorage.get(id, 'MIME_TYPE') || 'text/markdown';
           if (hasCachedContent) {
             isDirtyRef.current = true;
-            if (isPc) {
-              setTimeout(() => {
-                snackbarStore.show({
-                  message: '恢复上次未保存的内容',
-                  duration: 1500,
-                });
-              }, 1000);
-            }
           }
         }
       } catch (err) {}

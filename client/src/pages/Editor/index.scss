@@ -85,6 +85,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        &.preview {
+          &.active, &:hover {
+            border-color: #0af;
+            border-width: 2px;
+          }
+        }
       }
     }
 
