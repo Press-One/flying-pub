@@ -10,7 +10,6 @@ import fileApi, { EditableFile } from 'apis/file';
 import * as EditorStorage from './Storage';
 import PcEditor from './PcEditor';
 import MobileEditor from './MobileEditor';
-import EditorJs from './EditorJs';
 
 const MAX_CONTENT_LENGTH = 20000;
 
@@ -55,6 +54,14 @@ export default observer((props: any) => {
   const idRef = React.useRef<any>(id);
   const isPublished = state.file.status === 'published' || state.file.status === 'pending';
 
+  const goBack = React.useCallback(() => {
+    if (isPc) {
+      prevPath ? props.history.goBack() : props.history.push('/dashboard');
+    } else {
+      prevPath ? props.history.goBack() : props.history.push(`/authors/${userStore.user.address}`);
+    }
+  }, [prevPath, props, userStore]);
+
   React.useEffect(() => {
     if (isMobile && !state.isFetching && state.file.mimeType !== 'text/markdown') {
       state.isFetching = true;
@@ -69,7 +76,7 @@ export default observer((props: any) => {
         },
       });
     }
-  }, [state.isFetching, state.file.mimeType]);
+  }, [state.isFetching, state.file.mimeType, goBack, confirmDialogStore]);
 
   React.useEffect(() => {
     (async () => {
@@ -404,14 +411,6 @@ export default observer((props: any) => {
         handlePublish();
       },
     });
-  };
-
-  const goBack = () => {
-    if (isPc) {
-      prevPath ? props.history.goBack() : props.history.push('/dashboard');
-    } else {
-      prevPath ? props.history.goBack() : props.history.push(`/authors/${userStore.user.address}`);
-    }
   };
 
   const handleBack = async () => {

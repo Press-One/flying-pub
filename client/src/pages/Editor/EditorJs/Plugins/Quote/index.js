@@ -1,6 +1,6 @@
 require('./index.css').toString();
 
-class Quote {
+export class Quote {
 
   static get isReadOnlySupported() {
     return true;
@@ -115,5 +115,3 @@ class Quote {
     return el;
   }
 }
-
-module.exports = Quote;

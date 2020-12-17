@@ -21,13 +21,13 @@ export default observer((props: any) => {
           header: require('@editorjs/header'),
           list: require('@editorjs/list'),
           image: {
-            class: require('./Plugins/Image'),
+            class: require('./Plugins/Image').Image,
             config: {
               openImgUploadModal: props.openImgUploadModal,
             },
           },
           quote: {
-            class: require('./Plugins/Quote'),
+            class: require('./Plugins/Quote').Quote,
             inlineToolbar: true,
             config: {
               quotePlaceholder: '输入你要引用的内容',

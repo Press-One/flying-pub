@@ -1,4 +1,4 @@
-class Image {
+export class Image {
 
   static get isReadOnlySupported() {
     return true;
@@ -86,5 +86,3 @@ class Image {
     return el;
   }
 }
-
-module.exports = Image;

@@ -36,7 +36,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { snackbarStore, modalStore, confirmDialogStore } = useStore();
+  const { snackbarStore, modalStore } = useStore();
   const state = useLocalStore(() => ({
     showLinkModal: false,
     showImgUploadModal: false,
