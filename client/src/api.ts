@@ -223,4 +223,10 @@ export default {
       body: { payload: { sticky: false } },
     });
   },
+  searchableReaderPost(uri: string) {
+    return request(`/api/search`, { method: 'POST', body: { uri } });
+  },
+  unsearchableReaderPost(uri: string) {
+    return request(`/api/search`, { method: 'DELETE', body: { uri } });
+  },
 };

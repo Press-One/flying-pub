@@ -79,7 +79,7 @@ const Pub = () => {
       <Route path="/editor" exact component={Editor} />
       {isPc && (
         <Route
-          path={['/dashboard', '/blockTopic', '/postManager', '/sticky']}
+          path={['/dashboard', '/blockTopic', '/postManager', '/sticky', '/searchManager']}
           exact
           component={ManagementLayout}
         />
