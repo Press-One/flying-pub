@@ -124,7 +124,7 @@ export default observer((props: any) => {
       </TableCell>
       <TableCell>
         {file.cover ? (
-          <Img width="55px" src={file.cover} resizeWidth={55} useOriginalDefault alt="封面" />
+          <Img width="55px" src={file.cover} resizeWidth={60} useOriginalDefault alt="封面" />
         ) : (
           ''
         )}
