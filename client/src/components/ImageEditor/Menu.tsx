@@ -21,8 +21,10 @@ export default observer((props: any) => {
         </Button>
       </div>
       {loading && (
-        <div className="absolute top-0 right-0 z-10 w-full py-20 mt-4 bg-white">
-          <Loading />
+        <div className="absolute top-0 right-0 z-10 w-full py-20 bg-white">
+          <div className="pt-4">
+            <Loading />
+          </div>
         </div>
       )}
     </div>

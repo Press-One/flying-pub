@@ -238,10 +238,10 @@ export default observer((props: IProps) => {
                       >
                         <div>
                           <Img
-                            className="rounded mr-2"
+                            className="rounded mr-2 -mt-1-px"
                             width="55px"
                             src={props.file.cover}
-                            resizeWidth={55}
+                            resizeWidth={60}
                             alt="封面"
                           />
                         </div>
@@ -333,7 +333,7 @@ export default observer((props: IProps) => {
                   <div>
                     <Button
                       color={editorType === 'markdown' ? 'green' : 'gray'}
-                      outline
+                      outline={editorType !== 'markdown'}
                       onClick={() => {
                         props.toggleMimeType();
                         (async () => {
