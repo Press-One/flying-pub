@@ -6,14 +6,12 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import ReceiptIcon from '@material-ui/icons/Receipt';
 import classNames from 'classnames';
 import Badge from '@material-ui/core/Badge';
-import Info from '@material-ui/icons/Info';
 import { useStore } from 'store';
 import { isPc, isMobile } from 'utils';
 import Assets from './assets';
 import Settings from './settings';
 import Receipts from './receipts';
 import Api from './api';
-import ReaderFinanceApi from '../../ReaderWalletModal/Wallet/api';
 
 const Tab = (props: any) => {
   const { tab, thisTab, onClick } = props;
@@ -40,8 +38,7 @@ const TabContent = (props: any) => {
 };
 
 export default observer(() => {
-  const [showReaderWithdrawNotice, setShowReaderWithdrawNotice] = React.useState(false);
-  const { modalStore, walletStore, userStore, settingsStore } = useStore();
+  const { modalStore, walletStore } = useStore();
   const [tab, setTab] = React.useState(modalStore.wallet.data.tab || 'receipts');
 
   React.useEffect(() => {
@@ -53,22 +50,6 @@ export default observer(() => {
       walletStore.setIsFetchedIsCustomPinExist(true);
     })();
   }, [walletStore]);
-
-  React.useEffect(() => {
-    if (isMobile || userStore.user.version === 1 || !walletStore.rewardOnly) {
-      return;
-    }
-    (async () => {
-      try {
-        const balance: any = await ReaderFinanceApi.getBalance();
-        for (const currency in balance) {
-          if (balance[currency] > 0) {
-            setShowReaderWithdrawNotice(true);
-          }
-        }
-      } catch (err) {}
-    })();
-  }, [userStore, walletStore]);
 
   return (
     <div className="relative text-gray-700">
@@ -173,27 +154,6 @@ export default observer(() => {
                   'mt-4',
                 )}
               >
-                {showReaderWithdrawNotice && (
-                  <div className="flex justify-between p-3 border border-blue-400 text-blue-400 bg-blue-100 items-center rounded mb-4 text-sm">
-                    <div className="flex items-center w-10/12">
-                      <span className="flex items-center mr-2 text-lg">
-                        <Info />
-                      </span>
-                      <span>
-                        现在推荐使用 {settingsStore.settings['mixinApp.name']}{' '}
-                        扫码打赏，将不再支持余额打赏，检测到您的钱包有余额，请尽快提现哦
-                      </span>
-                    </div>
-                    <span
-                      className="text-blue-400 cursor-pointer font-bold pr-2"
-                      onClick={() => {
-                        window.open('/readerWallet');
-                      }}
-                    >
-                      去提现
-                    </span>
-                  </div>
-                )}
                 <Receipts />
               </div>
             </TabContent>

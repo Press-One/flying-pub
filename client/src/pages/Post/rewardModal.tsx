@@ -79,6 +79,9 @@ export default observer((props: any) => {
   }, [step, isLogin, socketStore, fileRId, selectedCurrency, amount, memo, onClose, snackbarStore]);
 
   React.useEffect(() => {
+    if (!isLogin) {
+      return;
+    }
     (async () => {
       try {
         const balance = await WalletApi.getBalance();
@@ -86,16 +89,19 @@ export default observer((props: any) => {
       } catch (err) {}
       walletStore.setIsFetchedBalance(true);
     })();
-  }, [walletStore]);
+  }, [walletStore, isLogin]);
 
   React.useEffect(() => {
+    if (!isLogin) {
+      return;
+    }
     (async () => {
       try {
         const isCustomPinExist = await WalletApi.isCustomPinExist();
         walletStore.setIsCustomPinExist(isCustomPinExist);
       } catch (err) {}
     })();
-  }, [walletStore]);
+  }, [walletStore, isLogin]);
 
   const onCloseModal = (isSuccess: boolean) => {
     setStep(step > 1 ? 2 : 1);
