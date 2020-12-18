@@ -215,7 +215,14 @@ export default observer((props: any) => {
   );
 
   return (
-    <div className="image-editor">
+    <div
+      className={classNames(
+        {
+          'h-0 overflow-hidden': props.hidden,
+        },
+        'image-editor',
+      )}
+    >
       <div
         className={classNames(
           {
