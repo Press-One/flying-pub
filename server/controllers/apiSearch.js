@@ -3,11 +3,21 @@ const config = require('../config');
 const Log = require('../models/log');
 const convert = require('xml-js');
 const fetch = require('node-fetch');
+const marked = require('marked');
+const editorJsDataToHTML = require('../utils/editorJsDataToHTML');
+const { htmlToText } = require('html-to-text');
 const {
   assert,
   Errors,
 } = require('../utils/validator');
 
+const htmlToTextOptions = {
+  wordwrap: false,
+  tags: {
+    'a': { options: { ignoreHref: true } } ,
+    'img': { format: 'skip' },
+  }
+};
 exports.get = async ctx => {
   if (!(config && config.search && config.search.enabled)) {
     return;
@@ -36,7 +46,16 @@ exports.post = async ctx => {
     withContent: true,
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
-  const { title, content, userAddress } = post;
+  const { title, content, userAddress, mimeType} = post;
+  let contentHtml = '';
+  let contentText = content;
+  if (mimeType === 'text/markdown') {
+    contentHtml = marked.parse(content);
+    contentText = htmlToText(contentHtml, htmlToTextOptions);
+  } else if (mimeType === 'application/json') {
+    contentHtml = editorJsDataToHTML(JSON.parse(content));
+    contentText = htmlToText(contentHtml, htmlToTextOptions);
+  } 
   const xmlObject = {
     '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
     node: {
@@ -48,10 +67,10 @@ exports.post = async ctx => {
         '_attributes': { 'type': 'cypress.int' },
         '_text': Math.floor(new Date() / 1000),
       },
-      xmluri: config.settings['site.url'] + uri,
+      xmluri: config.search.xmluriHost + uri,
       uri,
       title: {"_cdata": title},
-      content: {"_cdata": content},
+      content: {"_cdata": contentText},
       user_address: userAddress,
     }
   }
@@ -94,7 +113,7 @@ exports.del = async ctx => {
         '_attributes': { 'type': 'cypress.int' },
         '_text': Math.floor(new Date() / 1000),
       },
-      xmluri: config.settings['site.url'] + uri,
+      xmluri: config.search.xmluriHost + uri,
       uri,
       title: {"_cdata": ''},
       content: {"_cdata": ''},
