@@ -2,6 +2,7 @@ import qs from 'query-string';
 import moment from 'moment';
 
 export { default as Endpoint } from './endpoint';
+export { default as MimeType } from './mimeType';
 
 export const getQueryObject = () => {
   return qs.parse(window.location.search);

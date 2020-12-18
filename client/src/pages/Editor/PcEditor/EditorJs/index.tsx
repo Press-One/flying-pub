@@ -8,6 +8,15 @@ import './index.scss';
 export default observer((props: any) => {
   const editorRef = React.useRef<any>(null);
 
+  if (props.data) {
+    props.data.blocks = props.data.blocks.filter((block: any) => {
+      if (block.type === 'image' && !block.data.url) {
+        return false;
+      }
+      return true;
+    });
+  }
+
   React.useEffect(() => {
     if (!editorRef.current) {
       editorRef.current = new EditorJS({

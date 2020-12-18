@@ -5,13 +5,22 @@ import Button from 'components/Button';
 import { Edit, ZoomIn, ZoomOut, CameraAlt } from '@material-ui/icons';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
 import DrawerModal from 'components/DrawerModal';
-import { isMobile, isPc } from 'utils';
+import { isMobile, isPc, MimeType, limitImageWidth, sleep } from 'utils';
+import Menu from './Menu';
+import ImageLibModal from './ImageLibModal';
 import Api from 'api';
+import classNames from 'classnames';
 
 import './index.sass';
 
 export default observer((props: any) => {
   const state = useLocalStore(() => ({
+    showMenu: false,
+    showImageLib: false,
+    externalImageUrl: '',
+    mimeType: '',
+    isUploadingOriginImage: false,
+
     avatar: '',
     nickname: '',
     bio: '',
@@ -21,7 +30,6 @@ export default observer((props: any) => {
     avatarTemp: '',
     avatarDialogOpen: false,
     avatarLoading: false,
-    avatarDone: false,
     scale: 1,
   }));
 
@@ -39,19 +47,36 @@ export default observer((props: any) => {
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const avatarEditorRef = React.useRef<AvatarEditor>(null);
 
-  const handleEditAvatar = () => {
-    avatarInputRef.current!.click();
-  };
+  React.useEffect(() => {
+    if (props.hidden) {
+      state.showMenu = props.open;
+    }
+  }, [state, props.hidden, props.open]);
 
   const handleAvatarInputChange = () => {
     const file = avatarInputRef.current!.files![0];
+    state.mimeType = file.type;
     avatarInputRef.current!.value = '';
     if (file) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.addEventListener('load', () => {
-        state.avatarTemp = reader.result as string;
-        state.avatarDialogOpen = true;
+      reader.addEventListener('load', async () => {
+        if (props.useOriginImage) {
+          state.isUploadingOriginImage = true;
+          const newFile: any = await limitImageWidth(750, file);
+          const formData = new FormData();
+          formData.append('file', newFile);
+          formData.append('file_name', newFile.name);
+          const res = await Api.uploadImage(formData);
+          const url = (await res.json()).url;
+          props.getImageUrl(url);
+          await sleep(200);
+          state.isUploadingOriginImage = false;
+          props.close && props.close(true);
+        } else {
+          state.avatarTemp = reader.result as string;
+          state.avatarDialogOpen = true;
+        }
       });
     }
   };
@@ -64,9 +89,20 @@ export default observer((props: any) => {
     state.avatarLoading = true;
 
     const imageElement = new Image();
-    imageElement.src = state.avatarTemp;
+    if (imageElement) {
+      imageElement.setAttribute('crossorigin', 'anonymous');
+    }
+    imageElement.src = state.externalImageUrl || state.avatarTemp;
+
+    if (state.externalImageUrl) {
+      await new Promise((resolve, reject) => {
+        imageElement.onload = resolve;
+        imageElement.onerror = reject;
+      });
+    }
+
     const crop = avatarEditorRef.current!.getCroppingRect();
-    const imageBlob = await getCroppedImg(imageElement, crop, width);
+    const imageBlob = await getCroppedImg(imageElement, crop, width, state.mimeType);
 
     const run = async () => {
       const formData = new FormData();
@@ -76,10 +112,14 @@ export default observer((props: any) => {
       const newUrl = (await res.json()).url;
       props.getImageUrl(newUrl);
 
-      setTimeout(() => {
-        state.avatarDialogOpen = false;
-      });
       state.avatar = newUrl;
+
+      await sleep(100);
+
+      state.avatarDialogOpen = false;
+      state.showMenu = false;
+      props.close && props.close(true);
+      state.showImageLib = false;
     };
 
     run().finally(() => {
@@ -93,6 +133,15 @@ export default observer((props: any) => {
       state.avatar = props.imageUrl;
     }
   }, [props.imageUrl, state.avatar, state.avatarTemp]);
+
+  React.useEffect(() => {
+    if (!state.avatarDialogOpen) {
+      state.scale = 1;
+      state.externalImageUrl = '';
+      state.mimeType = '';
+      state.avatarTemp = '';
+    }
+  }, [state, state.avatarDialogOpen]);
 
   const Content = () => (
     <div>
@@ -120,8 +169,8 @@ export default observer((props: any) => {
                 width={width}
                 height={width / ratio}
                 border={0}
-                scale={1 * (state.scale > 1 ? state.scale : 1)}
-                image={state.avatarTemp}
+                scale={state.scale}
+                image={state.externalImageUrl || state.avatarTemp}
               />
             </div>
           </div>
@@ -131,16 +180,23 @@ export default observer((props: any) => {
             <AvatarScaleSlider
               className="mx-2"
               step={0.001}
-              min={0}
+              min={1}
+              max={2}
               onChange={(_e, v) => {
-                console.log({ 'state.scale': state.scale });
                 state.scale = v as number;
               }}
-              max={5}
             />
             <ZoomIn className="mx-2" />
           </div>
           <div className="m-3 flex pb-4 justify-center w-full md:w-auto">
+            <Button
+              outline
+              color="gray"
+              onClick={() => (state.avatarDialogOpen = false)}
+              className="mr-5"
+            >
+              返回
+            </Button>
             <Button onClick={handleAvatarSubmit} isDoing={state.avatarLoading}>
               确定
             </Button>
@@ -158,8 +214,13 @@ export default observer((props: any) => {
   return (
     <div className="image-editor">
       <div
-        className="avatar-edit-box mt-2"
-        onClick={handleEditAvatar}
+        className={classNames(
+          {
+            'shift-hidden': props.hidden,
+          },
+          'avatar-edit-box mt-2',
+        )}
+        onClick={() => (state.showMenu = true)}
         style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
       >
         {state.avatar && <img src={state.avatar} alt="avatar" />}
@@ -182,12 +243,51 @@ export default observer((props: any) => {
         )}
       </div>
 
-      <input
-        ref={avatarInputRef}
-        hidden
-        onChange={handleAvatarInputChange}
-        accept="image/*"
-        type="file"
+      <div
+        className={classNames({
+          'shift-hidden': props.hidden,
+        })}
+      >
+        <input
+          ref={avatarInputRef}
+          hidden
+          onChange={handleAvatarInputChange}
+          accept="image/*"
+          type="file"
+        />
+      </div>
+
+      <Menu
+        open={state.showMenu}
+        close={() => {
+          state.showMenu = false;
+          props.close && props.close();
+        }}
+        loading={state.isUploadingOriginImage}
+        selectMenuItem={(action: string) => {
+          if (action === 'upload') {
+            avatarInputRef.current!.click();
+          } else if (action === 'openImageLib') {
+            state.showImageLib = true;
+          }
+        }}
+      />
+
+      <ImageLibModal
+        open={state.showImageLib}
+        close={() => (state.showImageLib = false)}
+        selectImage={(url: string) => {
+          if (props.useOriginImage) {
+            state.showImageLib = false;
+            props.getImageUrl(url);
+            props.close && props.close(true);
+          } else {
+            state.showImageLib = false;
+            state.externalImageUrl = url;
+            state.mimeType = MimeType.getByExt(url.split('.').pop() as string);
+            state.avatarDialogOpen = true;
+          }
+        }}
       />
 
       {isMobile && (
@@ -251,6 +351,7 @@ export const getCroppedImg = (
   image: HTMLImageElement,
   crop: { x: number; y: number; width: number; height: number },
   width: number,
+  mimeType: string,
 ) => {
   const canvas = document.createElement('canvas');
   const state = {
@@ -292,7 +393,7 @@ export const getCroppedImg = (
       (blob) => {
         resolve(blob as Blob);
       },
-      'image/png',
+      mimeType || 'image/png',
       1,
     );
   });

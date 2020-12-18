@@ -44,6 +44,7 @@ const upload = multer({
 });
 
 router.post('/', upload.single('file'), async (ctx) => {
+  console.log({ file: ctx.req.file });
   const {
     filename,
     mimetype,

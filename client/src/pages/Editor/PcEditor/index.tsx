@@ -3,7 +3,6 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import SimpleMDE from 'react-simplemde-editor';
 import config from './config';
 import LinkModal from './LinkModal';
-import ImgUploadModal from './ImgUploadModal';
 import { TextField, Tooltip } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
 import { CameraAlt } from '@material-ui/icons';
@@ -23,7 +22,6 @@ interface IProps {
   file: EditableFile;
   handleTitleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleContentChange: (content: string) => void;
-  openCoverUploadModal: () => void;
   handleCoverChange: (url: string) => void;
   handleBack: () => void;
   handleSave: (options: any) => void;
@@ -40,8 +38,9 @@ export default observer((props: IProps) => {
   const { snackbarStore, modalStore } = useStore();
   const state = useLocalStore(() => ({
     showLinkModal: false,
-    showImgUploadModal: false,
+    showImageModal: false,
     showSwitchEditorButton: true,
+    showCoverModal: false,
   }));
   const editorType = props.file.mimeType === 'text/markdown' ? 'markdown' : 'editorJs';
   const mdeRef = React.useRef<any>(null);
@@ -56,59 +55,59 @@ export default observer((props: IProps) => {
     state.showLinkModal = false;
     mdeRef.current.codemirror.replaceSelection(`${link}`);
     snackbarStore.show({
-      delayDuration: 500,
+      delayDuration: 800,
       message: '链接插入成功，点预览可查看效果',
       duration: 1500,
     });
   };
 
-  const uploadCallback = (images: any = []) => {
-    if (imageBlockOptions.current.insertImageCallback) {
-      imageBlockOptions.current.insertImageCallback(images[0].url);
-      state.showImgUploadModal = false;
-      return;
-    }
+  const insertImage = (url: string) => {
     if (!mdeRef.current) {
       console.error('mde not exist');
       return;
     }
-    if (images.length === 0) {
-      console.error('images is empty');
+    if (!url) {
+      console.error('image is empty');
       return;
     }
     const pos = mdeRef.current.codemirror.getCursor();
     mdeRef.current.codemirror.setSelection(pos, pos);
     const breakLinePrefix = pos.line > 1 || pos.ch > 0 ? '\n' : '';
-    mdeRef.current.codemirror.replaceSelection(
-      breakLinePrefix + images.map((img: any) => `![图片](${img.url})`).join('\n'),
-    );
-    state.showImgUploadModal = false;
+    mdeRef.current.codemirror.replaceSelection(breakLinePrefix + `![图片](${url})\n`);
     snackbarStore.show({
-      delayDuration: 500,
+      delayDuration: 800,
       message: '图片插入成功，点预览可查看效果',
       duration: 1500,
     });
   };
 
-  React.useEffect(() => {
-    const toolbar: any = config.toolbar;
-    const linkToolbarItem = toolbar.find((item: any) => item.name === 'link');
-    linkToolbarItem.action = (mde: any) => {
-      mdeRef.current = mde;
-      mdeRef.current.selection = mdeRef.current.codemirror.getSelection();
-      state.showLinkModal = true;
-    };
-    const imageToolbarItem = toolbar.find((item: any) => item.name === 'image');
-    imageToolbarItem.action = (mde: any) => {
-      mdeRef.current = mde;
-      state.showImgUploadModal = true;
-    };
-  }, [state]);
+  const insertImageBlock = (url: string) => {
+    imageBlockOptions.current.insertImageCallback(url);
+  };
 
   React.useEffect(() => {
-    let button = document.getElementsByClassName('preview');
-    if (button[0]) button[0].setAttribute('title', '预览 (Cmd-P)');
-  });
+    if (editorType === 'markdown') {
+      const toolbar: any = config.toolbar;
+      const linkToolbarItem = toolbar.find((item: any) => item.name === 'link');
+      linkToolbarItem.action = (mde: any) => {
+        mdeRef.current = mde;
+        mdeRef.current.selection = mdeRef.current.codemirror.getSelection();
+        state.showLinkModal = true;
+      };
+      const imageToolbarItem = toolbar.find((item: any) => item.name === 'image');
+      imageToolbarItem.action = (mde: any) => {
+        mdeRef.current = mde;
+        state.showImageModal = true;
+      };
+    }
+  }, [state, editorType]);
+
+  React.useEffect(() => {
+    if (editorType === 'markdown') {
+      let button = document.getElementsByClassName('preview');
+      if (button[0]) button[0].setAttribute('title', '预览 (Cmd-P)');
+    }
+  }, [editorType]);
 
   React.useEffect(() => {
     document.title = props.file.title || '写文章';
@@ -127,7 +126,6 @@ export default observer((props: IProps) => {
 
     setTimeout(() => {
       const previewContainer = document.querySelector('.p-editor-markdown');
-      console.log({ previewContainer });
       if (previewContainer) {
         previewContainer.addEventListener('click', bindClickEvent);
       }
@@ -187,9 +185,7 @@ export default observer((props: IProps) => {
                 placeholderWidth={130}
                 editorPlaceholderWidth={300}
                 ratio={3 / 2}
-                getImageUrl={(url: string) => {
-                  props.handleCoverChange(url);
-                }}
+                getImageUrl={props.handleCoverChange}
               />
             </div>
           </Fade>
@@ -220,7 +216,9 @@ export default observer((props: IProps) => {
               <div>
                 <div
                   className="text-blue-400 absolute top-0 right-0 mt-20 pt-10-px pb-2 px-4 text-14 cursor-pointer"
-                  onClick={props.openCoverUploadModal}
+                  onClick={() => {
+                    state.showCoverModal = true;
+                  }}
                 >
                   <div className="flex items-center h-8 -mt-1-px">
                     {props.file.cover && (
@@ -268,35 +266,59 @@ export default observer((props: IProps) => {
                   </div>
                 )}
               </div>
+              <ImageEditor
+                hidden
+                open={state.showCoverModal}
+                close={() => (state.showCoverModal = false)}
+                name="封面"
+                width={350}
+                placeholderWidth={200}
+                editorPlaceholderWidth={300}
+                ratio={3 / 2}
+                getImageUrl={props.handleCoverChange}
+              />
+              <ImageEditor
+                hidden
+                useOriginImage
+                open={state.showImageModal}
+                close={() => {
+                  state.showImageModal = false;
+                }}
+                getImageUrl={insertImage}
+              />
+              <LinkModal
+                open={state.showLinkModal}
+                close={() => (state.showLinkModal = false)}
+                text={mdeRef.current ? mdeRef.current.selection : ''}
+                insertLink={insertLink}
+              />
             </div>
           )}
 
           {!modalStore.showPageLoading && editorType === 'editorJs' && (
-            <EditorJs
-              data={props.file.content ? JSON.parse(props.file.content) : null}
-              onChange={props.handleContentChange}
-              openImgUploadModal={(options: any = {}) => {
-                state.showImgUploadModal = true;
-                imageBlockOptions.current = options;
-              }}
-            />
+            <div>
+              <EditorJs
+                data={props.file.content ? JSON.parse(props.file.content) : null}
+                onChange={props.handleContentChange}
+                openImgUploadModal={(options: any = {}) => {
+                  state.showImageModal = true;
+                  imageBlockOptions.current = options;
+                }}
+              />
+              <ImageEditor
+                hidden
+                useOriginImage
+                open={state.showImageModal}
+                close={(isSuccess: boolean) => {
+                  state.showImageModal = false;
+                  if (!isSuccess) {
+                    imageBlockOptions.current.cancelCallback();
+                  }
+                }}
+                getImageUrl={insertImageBlock}
+              />
+            </div>
           )}
-
-          <LinkModal
-            open={state.showLinkModal}
-            close={() => (state.showLinkModal = false)}
-            text={mdeRef.current ? mdeRef.current.selection : ''}
-            insertLink={insertLink}
-          />
-
-          <ImgUploadModal
-            open={state.showImgUploadModal}
-            close={() => {
-              state.showImgUploadModal = false;
-              imageBlockOptions.current.cancelCallback();
-            }}
-            uploadCallback={uploadCallback}
-          />
 
           <div className="fixed bottom-0 right-0 bg-white px-6 py-4 z-10">
             {(props.isUpdating || !state.showSwitchEditorButton) && <div className="pb-10" />}

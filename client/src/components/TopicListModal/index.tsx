@@ -214,7 +214,7 @@ const TopicList = observer(() => {
   };
 
   const SearchInput = () => (
-    <div className="mt-2 -mb-2 flex items-center justify-center pb-3">
+    <div className="mt-2 -mb-2 flex items-center justify-center pb-3 topic-search">
       <form action="/">
         <TextField
           className="po-input po-text-14 w-72 rounded"
@@ -228,6 +228,11 @@ const TopicList = observer(() => {
           type="search"
         />
       </form>
+      <style jsx global>{`
+        .image-search .MuiOutlinedInput-root {
+          border-radius: 30px !important;
+        }
+      `}</style>
     </div>
   );
 

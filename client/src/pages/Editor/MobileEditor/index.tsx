@@ -9,16 +9,19 @@ import { faImage, faEye } from '@fortawesome/free-regular-svg-icons';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'components/Button';
-import ImgUploadModal from './ImgUploadModal';
 import DrawerModal from 'components/DrawerModal';
 import marked from 'marked';
 import { useStore } from 'store';
+import CoverUploadModal from './CoverUploadModal';
+import ImageEditor from 'components/ImageEditor';
+
+import './index.scss';
 
 interface IProps {
   file: EditableFile;
   handleTitleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleContentChange: (file: string) => void;
-  openCoverUploadModal: () => void;
+  handleCoverChange: (url: string) => void;
   handleBack: () => void;
   handleSave: (options: any) => void;
   handlePublishClickOpen: () => void;
@@ -38,10 +41,11 @@ export default observer((props: IProps) => {
     showToolbar: true,
     toolbarBottom: 0 as any,
     toolbarTop: 0 as any,
-    showImgUploadModal: false,
+    showImageModal: false,
     showPreviewModal: false,
     editorHeight: getViewport().height - 48 - 42,
     typing: false,
+    showCoverModal: false,
   }));
   const textareaRef = React.useRef<any>(null);
 
@@ -104,14 +108,14 @@ export default observer((props: IProps) => {
     props.handleContentChange(insertedContent);
   };
 
-  const uploadCallback = (images: any = []) => {
-    if (images.length === 0) {
-      console.error('images is empty');
+  const insertImage = (url: string) => {
+    if (!url) {
+      console.error('image is empty');
       return;
     }
     const breakLinePrefix = state.selectionStart > 0 ? '\n' : '';
-    insertText(breakLinePrefix + images.map((img: any) => `![图片](${img.url})`).join('\n') + '\n');
-    state.showImgUploadModal = false;
+    insertText(breakLinePrefix + `![图片](${url})\n\n`);
+    state.showImageModal = false;
     snackbarStore.show({
       delayDuration: 500,
       message: '图片插入成功，点击预览可查看效果',
@@ -159,7 +163,7 @@ export default observer((props: IProps) => {
               className="flex items-center px-3 py-2 text-24"
               onClick={async () => {
                 await sleep(getIsKeyboardActive() ? 300 : 0);
-                props.openCoverUploadModal();
+                state.showCoverModal = true;
               }}
             >
               <FontAwesomeIcon icon={faCog} />
@@ -168,7 +172,7 @@ export default observer((props: IProps) => {
               className="flex items-center px-3 py-2"
               onClick={async () => {
                 await sleep(getIsKeyboardActive() ? 300 : 0);
-                state.showImgUploadModal = true;
+                state.showImageModal = true;
               }}
             >
               <FontAwesomeIcon icon={faImage} />
@@ -245,10 +249,21 @@ export default observer((props: IProps) => {
       </div>
       {state.showToolbar && Toolbar()}
 
-      <ImgUploadModal
-        open={state.showImgUploadModal}
-        close={() => (state.showImgUploadModal = false)}
-        uploadCallback={uploadCallback}
+      <CoverUploadModal
+        open={state.showCoverModal}
+        close={() => (state.showCoverModal = false)}
+        cover={props.file.cover}
+        handleCoverChange={props.handleCoverChange}
+      />
+
+      <ImageEditor
+        hidden
+        useOriginImage
+        open={state.showImageModal}
+        close={() => {
+          state.showImageModal = false;
+        }}
+        getImageUrl={insertImage}
       />
 
       <DrawerModal

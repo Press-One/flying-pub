@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import Loading from 'components/Loading';
-import CoverUploadModal from './CoverUploadModal';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
 import { useStore } from 'store';
@@ -44,7 +43,6 @@ export default observer((props: any) => {
     } as EditableFile,
     isFetching: true,
     isSaving: false,
-    showCoverUploadModal: false,
     wordCount: 0,
     get contentStorageKey() {
       return this.file.mimeType === 'text/markdown' ? `CONTENT` : `EDITOR_JS_CONTENT`;
@@ -63,18 +61,24 @@ export default observer((props: any) => {
   }, [prevPath, props, userStore]);
 
   React.useEffect(() => {
+    const id = getQuery('id');
+    const isUpdating = !!id;
     if (isMobile && !state.isFetching && state.file.mimeType !== 'text/markdown') {
-      state.isFetching = true;
-      confirmDialogStore.show({
-        content: '这篇文章用新版编辑器创建的，目前只能在电脑上编辑噢',
-        cancelDisabled: true,
-        okText: '我知道了',
-        ok: async () => {
-          confirmDialogStore.hide();
-          await sleep(100);
-          goBack();
-        },
-      });
+      if (isUpdating) {
+        state.isFetching = true;
+        confirmDialogStore.show({
+          content: '这篇文章用新版编辑器创建的，目前只能在电脑上编辑噢',
+          cancelDisabled: true,
+          okText: '我知道了',
+          ok: async () => {
+            confirmDialogStore.hide();
+            await sleep(100);
+            goBack();
+          },
+        });
+      } else {
+        state.file.mimeType = 'text/markdown';
+      }
     }
   }, [state.isFetching, state.file.mimeType, goBack, confirmDialogStore]);
 
@@ -459,7 +463,6 @@ export default observer((props: any) => {
                 handleTitleChange={handleTitleChange}
                 handleContentChange={handleContentChange}
                 handleCoverChange={handleCoverChange}
-                openCoverUploadModal={() => (state.showCoverUploadModal = true)}
                 wordCount={state.wordCount}
                 handlePublishClickOpen={handlePublishClickOpen}
                 handleBack={handleBack}
@@ -477,7 +480,7 @@ export default observer((props: any) => {
                 file={state.file}
                 handleTitleChange={handleTitleChange}
                 handleContentChange={handleContentChange}
-                openCoverUploadModal={() => (state.showCoverUploadModal = true)}
+                handleCoverChange={handleCoverChange}
                 wordCount={state.wordCount}
                 handlePublishClickOpen={handlePublishClickOpen}
                 handleBack={handleBack}
@@ -489,13 +492,6 @@ export default observer((props: any) => {
             )}
           </div>
         )}
-
-        <CoverUploadModal
-          open={state.showCoverUploadModal}
-          close={() => (state.showCoverUploadModal = false)}
-          cover={state.file.cover}
-          setCover={handleCoverChange}
-        />
       </div>
     </Fade>
   );
