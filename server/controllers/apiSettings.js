@@ -31,7 +31,6 @@ exports.upsert = async ctx => {
   });
   const settings = await Settings.getByUserId(userId);
   assert(settings, Errors.ERR_NOT_FOUND('settings'));
-  Log.create(userId, `保存用户设置 ${JSON.stringify(data)}`);
   ctx.body = {
     ...config.settings,
     ...settings

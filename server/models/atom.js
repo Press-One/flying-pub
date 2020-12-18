@@ -236,11 +236,11 @@ const saveChainPost = async (chainPost, options = {}) => {
     if (updatedFile) {
       post.pubDate = updatedFile.pubDate;
       await Post.create(post);
-      Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
+      // Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
       await Post.delete(updatedFile.rId);
-      Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
+      // Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
       await replacePost(updatedRId, post.rId);
-      Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+      // Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
     } else {
       await Post.create(post);
       Log.createAnonymity('updatedFile not found', `${updatedRId} ${post.rId}`);
