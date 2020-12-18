@@ -14,6 +14,7 @@ const {
   approveContributionRequest,
   rejectContributionRequest,
   listTopicPosts,
+  listTopicPostsByPopularity,
   addFollower,
   removeFollower,
   listFollowers,
@@ -45,6 +46,7 @@ router.del('/:uuid/contributions', ensureAuthorization(), removeContribution);
 router.post('/:uuid/followers', ensureAuthorization(), addFollower);
 router.del('/:uuid/followers', ensureAuthorization(), removeFollower);
 router.get('/:uuid/posts', listTopicPosts);
+router.get('/:uuid/posts/popularity', listTopicPostsByPopularity);
 router.get('/:uuid/followers', ensureAuthorization({ strict: false }), listFollowers);
 router.get('/:uuid/authors', ensureAuthorization({ strict: false }), listAuthors);
 

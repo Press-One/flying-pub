@@ -29,6 +29,7 @@ export interface IPost {
   pendingTopicUuids?: string[];
   voted: boolean;
   fileId: number;
+  favorite: boolean;
   author: {
     address: string;
     nickname: string;
@@ -37,13 +38,23 @@ export interface IPost {
 }
 
 export default {
-  fetchSubscription(options: any = {}) {
+  fetchPosts(options: any = {}) {
+    return request(`/api/posts?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  fetchPostsBySubscription(options: any = {}) {
     return request(`/api/posts/subscription?${qs.stringify(options)}`, {
       minPendingDuration: 300
     });
   },
-  fetchPosts(options: any = {}) {
-    return request(`/api/posts?${qs.stringify(options)}`, {
+  fetchPostsByPopularity(options: any = {}) {
+    return request(`/api/posts/popularity?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  fetchPostsByLatestComment(options: any = {}) {
+    return request(`/api/posts/latest_comment?${qs.stringify(options)}`, {
       minPendingDuration: 300
     });
   },
@@ -60,6 +71,21 @@ export default {
   fetchPostTopics(rId: string, options = {}) {
     return request(`/api/posts/${rId}/topics?${qs.stringify(options)}`, {
       minPendingDuration: 300
+    });
+  },
+  fetchFavorites(options = {}) {
+    return request(`/api/posts/favorite?${qs.stringify(options)}`, {
+      minPendingDuration: 300
+    });
+  },
+  favorite(rId: string) {
+    return request(`/api/posts/${rId}/favorite`, {
+      method: 'POST'
+    });
+  },
+  unfavorite(rId: string) {
+    return request(`/api/posts/${rId}/unfavorite`, {
+      method: 'POST'
     });
   },
 };

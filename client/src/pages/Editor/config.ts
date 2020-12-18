@@ -61,7 +61,9 @@ const options: EasyMDE.Options = {
     '|',
     {
       name: 'link',
-      action: EasyMDE.drawLink,
+      action: () => {
+        console.log('will be replaced');
+      },
       className: 'fa fa-link',
       title: '链接',
     },

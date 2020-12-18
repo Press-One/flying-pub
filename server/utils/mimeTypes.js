@@ -9,4 +9,5 @@ module.exports = {
   'pdf': 'application/pdf',
   'png': 'image/png',
   'md': 'text/markdown',
+  'json': 'application/json'
 }

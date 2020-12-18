@@ -36,21 +36,6 @@ export function createFeedStore() {
     get post() {
       return this.postMap[this.postRId];
     },
-    get optionsForFetching() {
-      if (this.filterType === 'SUBSCRIPTION') {
-        return {
-          type: this.subscriptionType
-        };
-      }
-      const options: any = { order: this.filterType };
-      if (this.filterType === 'POPULARITY' && this.filterDayRange > 0) {
-        options.dayRange = this.filterDayRange;
-      }
-      if (this.filterType === 'LATEST') {
-        options.order = this.latestType;
-      }
-      return options;
-    },
     get stickyEnabled() {
       return this.filterType !== 'SUBSCRIPTION';
     },
@@ -113,6 +98,9 @@ export function createFeedStore() {
     setPost(post: IPost) {
       this.postMap[post.rId] = post;
       this.postRId = post.rId;
+    },
+    clearPost() {
+      this.postRId = '';
     },
     updatePost(rId: string, data: any) {
       for (let key in data) {

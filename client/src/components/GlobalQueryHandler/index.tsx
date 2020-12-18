@@ -90,6 +90,12 @@ export default observer(() => {
           }
           return;
         }
+
+        if (action === 'CLEAR_STORAGE') {
+          removeQuery('action');
+          localStorage.clear();
+          return;
+        }
       }, 500);
     }
   }, [ready, confirmDialogStore, providerNameMap, modalStore, settingsStore]);

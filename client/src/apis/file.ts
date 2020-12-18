@@ -5,6 +5,7 @@ import { isMobile } from 'utils';
 export interface EditableFile {
   title: string;
   content: string;
+  mimeType: string;
   cover?: string;
   status?: string;
   id?: number;

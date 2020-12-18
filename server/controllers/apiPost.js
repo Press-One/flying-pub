@@ -12,6 +12,7 @@ const {
   Errors,
   throws
 } = require('../utils/validator');
+const Log = require("../models/log");
 
 exports.get = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
@@ -23,6 +24,7 @@ exports.get = async ctx => {
   const post = await Post.getByRId(rId, {
     userId,
     withVoted: true,
+    withFavorite: true,
     withContent: !dropContent,
     withPaymentUrl: true,
     ignoreDeleted: true,
@@ -92,125 +94,7 @@ exports.get = async ctx => {
   ctx.body = post;
 }
 
-const getListController = (listOptions = {}) => {
-  return async ctx => {
-    let options = ctx.query;
-    if (listOptions.withUserOptions) {
-      options = await getUserOptions(ctx);
-      if (options.order === 'SUBSCRIPTION') {
-        await exports.listBySubscriptions(ctx);
-        return;
-      }
-    }
-    const offset = ~~ctx.query.offset || 0;
-    const limit = Math.min(~~ctx.query.limit || 10, 50);
-    const order = options.order || 'PUB_DATE';
-    const address = ctx.query.address;
-    const dayRange = options.dayRange;
-    const filterBan = ctx.query.filterBan;
-    const filterSticky = ctx.query.filterSticky;
-    const withPendingTopicUuids = ctx.query.withPendingTopicUuids
-    const query = {
-      offset,
-      limit,
-      order,
-      dropAuthor: !!address,
-      dayRange,
-      filterBan,
-      filterSticky,
-      withPendingTopicUuids
-    };
-    if (address) {
-      query.addresses = [address];
-    }
-    if (order === 'LATEST_COMMENT') {
-      const findSql = `
-        SELECT p."rId" FROM posts p LEFT JOIN comments c on c."objectId" = p."rId" WHERE c."deleted" = false AND p.deleted = false AND p.invisibility = false AND p."latestRId" is null GROUP BY p."rId", p."createdAt" ORDER BY COALESCE(MAX(c."createdAt"), p."createdAt") DESC 
-        OFFSET ${offset} 
-        LIMIT ${limit};`;
-        const [count, rawPost] = await Promise.all([Post.SequelizePost.count({
-          where: {
-            commentsCount: {
-              [Op.gt]: 0
-            },
-            latestRId: null,
-            deleted: false,
-            invisibility: false
-          }
-        }), sequelize.query(findSql)])
-        const total = count;
-        const postRIds = rawPost[0].map(rawPost => rawPost.rId);
-        let posts = [];
-        if (postRIds.length > 0) {
-          posts = await Promise.all(postRIds.map(async rId => {
-            return await Post.getByRId(rId)
-          }))
-        }
-        ctx.body = {
-          total,
-          posts
-        };
-        return;
-    }
-    const result = await Post.list(query);
-    ctx.body = {
-      total: result.total,
-      posts: result.posts,
-    };
-  }
-}
-exports.list = getListController();
-
-const getUserOptions = async ctx => {
-  const query = ctx.query;
-  const options = { order: 'PUB_DATE' };
-  if (query.address || query.filterBan || query.filterSticky) {
-    return query;
-  }
-  if (query.order && query.dayRange) {
-    const dayRangeOptions = settings['filter.dayRangeOptions'];
-    const isValidDayRange = query.dayRange && dayRangeOptions.includes(query.dayRange);
-    query.dayRange = isValidDayRange ? query.dayRange : dayRangeOptions[0];
-    return query;
-  }
-  const userId = ctx.verification && ctx.verification.user && ctx.verification.user.id;
-  const userSettings = userId ? await Settings.getByUserId(userId) : {};
-  const settings = { ...config.settings, ...userSettings };
-  const type = settings['filter.type'];
-  if (type === 'SUBSCRIPTION') {
-    return { order: 'SUBSCRIPTION' }
-  }
-  if (type === 'LATEST') {
-    return { order: 'PUB_DATE' }
-  }
-  const popularityDisabled = !settings['filter.popularity.enabled'];
-  if (popularityDisabled) {
-    const validType = type === 'POPULARITY' ? 'PUB_DATE' : type;
-    options.order = validType;
-    return options;
-  }
-  if (query.order === 'POPULARITY') {
-    options.order = 'POPULARITY';
-    if (query.dayRange) {
-      options.dayRange = query.dayRange;
-    }
-  } else if (query.order === 'PUB_DATE') {
-    options.order = 'PUB_DATE';
-  }
-  if (!query.order && !query.dayRange) {
-    if (type === 'POPULARITY') {
-      const dayRange = settings['filter.dayRange'];
-      const dayRangeOptions = settings['filter.dayRangeOptions'];
-      const isValidDayRange = dayRange && dayRangeOptions.includes(dayRange);
-      const validDayRange = isValidDayRange ? dayRange : dayRangeOptions[0];
-      options.order = 'POPULARITY';
-      options.dayRange = validDayRange;
-    }
-  }
-  return options;
-}
-
-exports.listBySubscriptions = async ctx => {
+exports.listBySubscription = async ctx => {
   const type = ctx.query.type || 'author';
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
@@ -280,16 +164,108 @@ exports.listBySubscriptions = async ctx => {
   };
 }
 
+exports.listByPopularity = async ctx => {
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const address = ctx.query.address;
+  let dayRange = ~~ctx.query.dayRange;
+  const dayRangeOptions = config.settings['filter.dayRangeOptions'] || [];
+  if (dayRange && !dayRangeOptions.includes(dayRange)) {
+    dayRange = dayRangeOptions[0];
+  }
+  const query = {
+    order: 'POPULARITY',
+    dayRange,
+    offset,
+    limit
+  };
+  if (address) {
+    query.addresses = [address];
+    query.dropAuthor = true;
+  }
+  ctx.body = await Post.list(query);
+}
+
+exports.listByPubDate = async ctx => {
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const address = ctx.query.address;
+  const filterBan = ctx.query.filterBan;
+  const filterSticky = ctx.query.filterSticky;
+  const withPendingTopicUuids = ctx.query.withPendingTopicUuids;
+  const query = {
+    order: 'PUB_DATE',
+    filterBan,
+    filterSticky,
+    withPendingTopicUuids,
+    offset,
+    limit,
+  };
+  if (address) {
+    query.addresses = [address];
+    query.dropAuthor = true;
+  }
+  ctx.body = await Post.list(query);
+}
+
+exports.listByLatestComment = async ctx => {
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const findSql = `
+    SELECT p."rId" FROM posts p LEFT JOIN comments c on c."objectId" = p."rId" WHERE c."deleted" = false AND p.deleted = false AND p.invisibility = false AND p."latestRId" is null GROUP BY p."rId", p."createdAt" ORDER BY COALESCE(MAX(c."createdAt"), p."createdAt") DESC 
+    OFFSET ${offset} 
+    LIMIT ${limit};`;
+  const [count, rawPost] = await Promise.all([Post.SequelizePost.count({
+    where: {
+      commentsCount: {
+        [Op.gt]: 0
+      },
+      latestRId: null,
+      deleted: false,
+      invisibility: false
+    }
+  }), sequelize.query(findSql)])
+  const total = count;
+  const postRIds = rawPost[0].map(rawPost => rawPost.rId);
+  let posts = [];
+  if (postRIds.length > 0) {
+    posts = await Promise.all(postRIds.map(async rId => {
+      return await Post.getByRId(rId)
+    }))
+  }
+  ctx.body = {
+    total,
+    posts
+  };
+}
+
 exports.listByUserSettings = async ctx => {
   const userId = ctx.verification && ctx.verification.user.id;
   if (userId) {
-    const list = getListController({
-      withUserOptions: true
-    });
-    await list(ctx);
+    const userSettings = await Settings.getByUserId(userId);
+    const settings = { ...config.settings, ...userSettings };
+    const type = settings['filter.type'];
+    if (type === 'POPULARITY') {
+      ctx.query.dayRange = settings['filter.dayRange'];
+      await exports.listByPopularity(ctx);
+    } else if (type === 'SUBSCRIPTION') {
+      ctx.query.type = settings['filter.subscriptionType'];
+      await exports.listBySubscription(ctx);
+    } else if (type === 'LATEST') {
+      if (settings['filter.latestType'] === 'LATEST_COMMENT') {
+        await exports.listByLatestComment(ctx);
+      } else {
+        await exports.listByPubDate(ctx);
+      }
+    }
   } else {
-    const list = getListController();
-    await list(ctx);
+    if (config.settings['filter.type'] === 'POPULARITY') {
+      const dayRangeOptions = config.settings['filter.dayRangeOptions'] || [];
+      ctx.query.dayRange = dayRangeOptions[0];
+      await exports.listByPopularity(ctx);
+    } else {
+      await exports.listByPubDate(ctx);
+    }
   }
 }
 
@@ -332,5 +308,69 @@ exports.listTopics = async ctx => {
   ctx.body = {
     total: count,
     topics: derivedTopics
+  }
+}
+
+exports.favorite = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const rId = ctx.params.id;
+  const post = await Post.getByRId(rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await post.addFavoriteUsers(sequelizeUser);
+  const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+  Log.create(sequelizeUser.id, `收藏文章 ${postUrl}`);
+  ctx.body = true;
+}
+
+exports.unfavorite = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const rId = ctx.params.id;
+  const post = await Post.getByRId(rId, {
+    raw: true
+  });
+  assert(post, Errors.ERR_NOT_FOUND("post"));
+  await post.removeFavoriteUsers(sequelizeUser);
+  const postUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${rId}`;
+  Log.create(sequelizeUser.id, `取消收藏文章 ${postUrl}`);
+  ctx.body = true;
+}
+
+exports.listFavorites = async ctx => {
+  const { sequelizeUser } = ctx.verification;
+  const offset = ~~ctx.query.offset || 0;
+  const limit = Math.min(~~ctx.query.limit || 10, 50);
+  const where = {
+    deleted: false,
+    invisibility: false
+  };
+  const total = await sequelizeUser.countFavoritePosts({
+    where
+  });
+  const posts = await sequelizeUser.getFavoritePosts({
+    attributes: {
+      exclude: ['content'],
+    },
+    where,
+    joinTableAttributes: [],
+    offset,
+    limit,
+    include: [{
+      model: Author.SequelizeAuthor,
+      where: {
+        status: 'allow'
+      }
+    }],
+    order: [[Sequelize.literal('posts_users_favorites."createdAt"'), 'DESC']]
+  });
+  const derivedPosts = await Promise.all(posts.map(async post => {
+    return await Post.packPost(post, {
+      withTopic:false
+    });
+  }));
+  ctx.body = {
+    total,
+    posts: derivedPosts
   }
 }

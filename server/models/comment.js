@@ -13,7 +13,7 @@ const packComment = async (comment, options = {}) => {
   const {
     userId,
     withSubComments,
-    isSubComment
+    fromList
   } = options;
   assert(comment, Errors.ERR_NOT_FOUND("comment"));
   const commentJson = comment;
@@ -22,8 +22,9 @@ const packComment = async (comment, options = {}) => {
   const voted = !!userId && (await Vote.isVoted(userId, "comments", comment.id));
   commentJson.voted = voted;
   delete commentJson.deleted;
+  delete commentJson.version;
 
-  if (isSubComment && commentJson.replyId && commentJson.replyId !== commentJson.threadId) {
+  if (commentJson.replyId && commentJson.threadId && commentJson.replyId !== commentJson.threadId) {
     const replyComment = await Comment.findOne({
       attributes: ['id', 'userId', 'threadId'],
       where: {
@@ -50,11 +51,16 @@ const packComment = async (comment, options = {}) => {
         subComments.map(comment => {
           return packComment(comment, {
             userId,
-            isSubComment: true
+            fromList: true
           });
         })
       );
     }
+  }
+
+  if (fromList) {
+    delete commentJson.objectId;
+    delete commentJson.objectType;
   }
 
   return commentJson;
@@ -160,7 +166,6 @@ const findAll = async (options) => {
     ORDER BY c1."createdAt" ASC LIMIT ${limit} OFFSET ${offset}
   `
   const result = await sequelize.query(findSql);
-  console.log({ result });
   return result[0];
 }
 
@@ -209,7 +214,8 @@ exports.list = async options => {
     threadComments.map(comment => {
       return packComment(comment, {
         userId,
-        withSubComments: true
+        withSubComments: true,
+        fromList: true
       });
     })
   );

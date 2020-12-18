@@ -93,7 +93,7 @@ const TopView = observer(
       >
         {isMobile && (
           <div className="absolute top-0 left-0 z-30 w-full">
-            <div className="flex items-center justify-between text-gray-f2 h-12 pb-1 pt-2">
+            <div className="flex items-center justify-between text-gray-f7 h-12 pb-1 pt-2">
               <div className="flex items-center">
                 <div
                   className="flex items-center p-2 pl-5 text-20"
@@ -270,12 +270,19 @@ export default observer((props: any) => {
     (async () => {
       feedStore.setIsFetching(true);
       try {
-        const order = feedStore.filterType === 'LATEST' ? 'PUB_DATE' : feedStore.filterType;
-        const { total, posts } = await topicApi.fetchTopicPosts(uuid, {
-          order,
-          offset: feedStore.page * feedStore.limit,
-          limit: feedStore.limit,
-        });
+        let fetchPostsPromise;
+        if (feedStore.filterType === 'POPULARITY') {
+          fetchPostsPromise = topicApi.fetchTopicPostsByPopularity(uuid, {
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        } else {
+          fetchPostsPromise = topicApi.fetchTopicPosts(uuid, {
+            offset: feedStore.page * feedStore.limit,
+            limit: feedStore.limit,
+          });
+        }
+        const { total, posts } = await fetchPostsPromise;
         feedStore.setTotal(total);
         feedStore.addPosts(posts);
       } catch (err) {

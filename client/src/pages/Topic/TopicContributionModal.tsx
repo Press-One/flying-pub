@@ -21,8 +21,7 @@ interface IProps {
 const POSTS_LIMIT = 20;
 
 const TopicContribution = observer((props: IProps) => {
-  const { userStore, settingsStore, snackbarStore } = useStore();
-  const { settings } = settingsStore;
+  const { userStore, snackbarStore } = useStore();
   const { isTopicOwner, topic } = props;
   const state = useLocalStore(() => ({
     isFetching: false,
@@ -127,9 +126,7 @@ const TopicContribution = observer((props: IProps) => {
                 </ModalLink>
               </span>
             )}
-            {isMobile && (
-              <div className="mt-2">用电脑打开{settings['site.name']}，写一篇文章吧~</div>
-            )}
+            {isMobile && <div className="mt-2">去写一篇文章吧~</div>}
           </div>
         )}
         {loading && (

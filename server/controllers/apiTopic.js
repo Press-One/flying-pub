@@ -539,9 +539,9 @@ exports.rejectContributionRequest = async ctx => {
   });
 }
 
-exports.listTopicPosts = async ctx => {
+const getListTopicPostsController = (options = {}) => async ctx => {
   const uuid = ctx.params.uuid;
-  const order = ctx.query.order || 'PUB_DATE';
+  const order = options.order || 'PUB_DATE';
   const offset = ~~ctx.query.offset || 0;
   const limit = Math.min(~~ctx.query.limit || 10, 50);
   const topic = await Topic.get(uuid, {
@@ -578,6 +578,12 @@ exports.listTopicPosts = async ctx => {
     posts: derivedPosts
   }
 }
+
+exports.listTopicPosts = getListTopicPostsController();
+
+exports.listTopicPostsByPopularity = getListTopicPostsController({
+  order: 'POPULARITY'
+});
 
 exports.addFollower = async ctx => {
   const { user, sequelizeUser } = ctx.verification;

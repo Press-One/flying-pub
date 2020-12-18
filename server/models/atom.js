@@ -115,7 +115,8 @@ const pickPost = async chainPost => {
     cover,
     content,
     paymentUrl: JSON.parse(block.meta).payment_url,
-    pubDate: new Date(published)
+    pubDate: new Date(published),
+    mimeType: JSON.parse(block.meta).mime.split(';')[0]
   };
   const author = {
     address: block.user_address,
@@ -168,6 +169,9 @@ const replacePost = async (rId, newRId) => {
   });
   await newPost.addTopics(topics);
   await post.removeTopics(topics);
+  const favoriteUsers = await post.getFavoriteUsers();
+  await newPost.addFavoriteUsers(favoriteUsers);
+  await post.removeFavoriteUsers(favoriteUsers);
   return true;
 };
 

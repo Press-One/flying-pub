@@ -111,3 +111,5 @@ exports.listRecommended = async (options = {}) => {
 
   return derivedAuthors;
 }
+
+exports.SequelizeAuthor = Author;

@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./database');
 const Author = require('./author');
+const User = require('./user');
 
 const Post = sequelize.define('posts', {
   id: {
@@ -67,6 +68,9 @@ const Post = sequelize.define('posts', {
   invisibility: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  mimeType: {
+    type: Sequelize.STRING
   }
 }, {
   timestamps: true,
@@ -85,13 +89,34 @@ const Post = sequelize.define('posts', {
   }]
 });
 
+const PostUserFavorites = sequelize.define('posts_users_favorites', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  postRId: {
+    type: Sequelize.STRING,
+  },
+  userId: {
+    type: Sequelize.BIGINT,
+  },
+}, {
+  timestamps: true,
+  charset: 'utf8mb4'
+});
+
 Post.belongsTo(Author, {
   foreignKey: 'userAddress',
   targetKey: 'address'
 });
+
 Author.hasMany(Post, {
   sourceKey: 'address',
   foreignKey: 'userAddress'
 });
+
+Post.belongsToMany(User, { as: 'favoriteUsers', through: PostUserFavorites, sourceKey: 'rId', targetKey: 'id' });
+User.belongsToMany(Post, { as: 'favoritePosts', through: PostUserFavorites, sourceKey: 'id', targetKey: 'rId' });
 
 module.exports = Post;

@@ -5,9 +5,9 @@ import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import People from '@material-ui/icons/People';
+import Star from '@material-ui/icons/Star';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
-import NotificationModal from 'components/NotificationModal';
 import Button from 'components/Button';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import HomeOutlined from '@material-ui/icons/HomeOutlined';
@@ -28,7 +28,6 @@ export default observer((props: any) => {
   const showSearchEntry = window.location.pathname !== '/search';
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [showBack, setShowBack] = React.useState(false);
-  const [hideRightPanel, setHideRightPanel] = React.useState(false);
   const {
     preloadStore,
     userStore,
@@ -53,11 +52,6 @@ export default observer((props: any) => {
   React.useEffect(() => {
     pushPath(pathname);
     setShowBack(pathname !== '/');
-    if (isMobile && pathname.includes('/posts/')) {
-      setHideRightPanel(true);
-    } else {
-      setHideRightPanel(false);
-    }
   }, [pathname, pushPath]);
 
   if (isMobile && (pathname.includes('/authors/') || pathname.includes('/topics/'))) {
@@ -90,7 +84,7 @@ export default observer((props: any) => {
               >
                 <MenuItem className="text-gray-700">
                   <div className="py-1 flex items-center">
-                    <span className="flex items-center text-xl mr-2">
+                    <span className="flex items-center text-xl mr-2 -mt-1-px">
                       <People />
                     </span>{' '}
                     我的主页
@@ -101,13 +95,28 @@ export default observer((props: any) => {
             <div
               onClick={() => {
                 handleClose();
+                modalStore.openFavorites();
+              }}
+            >
+              <MenuItem className="text-gray-700">
+                <div className="py-1 flex items-center">
+                  <span className="flex items-center text-xl mr-2 -mt-1-px">
+                    <Star />
+                  </span>{' '}
+                  我的收藏
+                </div>
+              </MenuItem>
+            </div>
+            <div
+              onClick={() => {
+                handleClose();
                 walletStore.setFilterType('READER');
                 modalStore.openWallet();
               }}
             >
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
+                  <span className="flex items-center text-xl mr-2 -mt-1-px">
                     <AccountBalanceWallet />
                   </span>{' '}
                   打赏{walletStore.rewardOnly ? '记录' : '钱包'}
@@ -123,7 +132,7 @@ export default observer((props: any) => {
                 }}
               >
                 <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
+                  <span className="flex items-center text-xl mr-2 -mt-1-px">
                     <Settings />
                   </span>{' '}
                   账号设置
@@ -142,7 +151,7 @@ export default observer((props: any) => {
                 >
                   <MenuItem className="text-gray-700">
                     <div className="py-1 flex items-center">
-                      <span className="flex items-center text-xl mr-2">
+                      <span className="flex items-center text-xl mr-2 -mt-1-px">
                         <OpenInNew />
                       </span>{' '}
                       {link.name}
@@ -155,7 +164,7 @@ export default observer((props: any) => {
             <a href={logoutUrl}>
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
-                  <span className="flex items-center text-xl mr-2">
+                  <span className="flex items-center text-xl mr-2 -mt-1-px">
                     <ExitToApp />
                   </span>{' '}
                   退出账号
@@ -204,45 +213,43 @@ export default observer((props: any) => {
                   )}
                 </div>
               )}
-              {!hideRightPanel && (
-                <div className="flex items-center">
-                  {isMobile && settings['notification.enabled'] && userStore.isLogin && (
-                    <Badge
-                      badgeContent={unread}
-                      className="mr-8 transform scale-90 cursor-pointer"
-                      color="error"
-                      onClick={() => {
-                        modalStore.openNotification();
-                      }}
-                    >
-                      <div className="text-3xl flex items-center text-gray-88">
-                        <NotificationsOutlined />
-                      </div>
-                    </Badge>
-                  )}
-                  {!userStore.isLogin && (
-                    <div
-                      className="text-26 text-gray-af flex justify-center items-center leading-none pl-2 pr-1"
-                      onClick={() => {
-                        handleOpenLogin();
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faUser} />
+              <div className="flex items-center">
+                {isMobile && settings['notification.enabled'] && userStore.isLogin && (
+                  <Badge
+                    badgeContent={unread}
+                    className="mr-8 transform scale-90 cursor-pointer"
+                    color="error"
+                    onClick={() => {
+                      modalStore.openNotification();
+                    }}
+                  >
+                    <div className="text-3xl flex items-center text-gray-88">
+                      <NotificationsOutlined />
                     </div>
-                  )}
-                  {userStore.isLogin && (
-                    <div className="pr-1">
-                      <Link to={`/authors/${user.address}`}>
-                        <Img
-                          src={user.avatar}
-                          className="w-7 h-7 rounded-full border border-gray-f2"
-                          alt="头像"
-                        />
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
+                  </Badge>
+                )}
+                {!userStore.isLogin && (
+                  <div
+                    className="text-26 text-gray-af flex justify-center items-center leading-none pl-2 pr-1"
+                    onClick={() => {
+                      handleOpenLogin();
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faUser} />
+                  </div>
+                )}
+                {userStore.isLogin && (
+                  <div className="pr-1">
+                    <Link to={`/authors/${user.address}`}>
+                      <Img
+                        src={user.avatar}
+                        className="w-7 h-7 rounded-full border border-gray-f2"
+                        alt="头像"
+                      />
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -312,15 +319,6 @@ export default observer((props: any) => {
               </div>
             </div>
           </div>
-        )}
-        {settings['notification.enabled'] && (
-          <NotificationModal
-            open={modalStore.notification.open}
-            close={() => {
-              modalStore.closeNotification();
-              notificationStore.reset();
-            }}
-          />
         )}
         <style jsx global>{`
           .MuiIconButton-root {

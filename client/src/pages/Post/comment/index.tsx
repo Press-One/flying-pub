@@ -1,10 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import TextField from '@material-ui/core/TextField';
-import { faCommentDots, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
+import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
+import Modal from 'components/Modal';
 import BottomLine from 'components/BottomLine';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
@@ -17,10 +19,12 @@ import {
   stopBodyScroll,
   isMobile,
   isPc,
+  isMI,
   getQuery,
   scrollToElementById,
   getScrollTop,
   scrollToHere,
+  getViewport,
 } from 'utils';
 import CommentApi from 'apis/comment';
 import Api from 'api';
@@ -31,6 +35,7 @@ interface IProps {
   fileRId: number;
   alwaysShowCommentEntry: boolean;
   tryVote: () => void;
+  tryFavorite: () => void;
 }
 
 export default observer((props: IProps) => {
@@ -75,8 +80,7 @@ export default observer((props: IProps) => {
     };
   }, []);
 
-  const getIsKeyboardActive = () =>
-    (window as any).visualViewport.height + 150 < (window as any).outerHeight;
+  const getIsKeyboardActive = () => getViewport().height + 150 < (window as any).outerHeight;
 
   React.useEffect(() => {
     if (isPc) {
@@ -107,7 +111,7 @@ export default observer((props: IProps) => {
       return;
     }
     const timer = setInterval(() => {
-      setVisualViewportHeight((window as any).visualViewport.height);
+      setVisualViewportHeight(getViewport().height);
     }, 100);
 
     return () => {
@@ -357,7 +361,7 @@ export default observer((props: IProps) => {
               multiline
               fullWidth
               disabled={!isLogin}
-              rows={isMobile ? 3 : 5}
+              rows={isMobile && !isMI ? 3 : 5}
               value={valueState}
               onChange={handleEditorChange}
               margin="normal"
@@ -429,6 +433,17 @@ export default observer((props: IProps) => {
           </div>
           {!commentStore.openSubCommentPage && (
             <div className="flex items-center py-1 text-gray-99">
+              <div
+                onClick={() => props.tryFavorite()}
+                className={classNames(
+                  {
+                    'text-yellow-500': feedStore.post.favorite,
+                  },
+                  'text-xl px-4 relative duration-200 ease-in-out transition-all',
+                )}
+              >
+                <FontAwesomeIcon icon={feedStore.post.favorite ? faSolidStar : faStar} />
+              </div>
               {total > 0 && (
                 <div
                   className="text-xl px-4 mr-1 relative font-bold"
@@ -508,18 +523,47 @@ export default observer((props: IProps) => {
             isCreated: isCreatedComment,
           })}
         {hasComments && isPc && <div className="mt-8" />}
-        <DrawerModal
-          hideCloseButton
-          open={openDrawer}
-          onClose={() => {
-            setDrawerReplyValue('');
-            setReplyingComment(null);
-            setOpenDrawer(false);
-            stopBodyScroll(false);
-          }}
-        >
-          <div className="container m-auto">
-            <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-3">
+        {!isMI && (
+          <DrawerModal
+            hideCloseButton
+            open={openDrawer}
+            onClose={() => {
+              setDrawerReplyValue('');
+              setReplyingComment(null);
+              setOpenDrawer(false);
+              stopBodyScroll(false);
+            }}
+          >
+            <div className="container m-auto">
+              <div className="w-11/12 md:w-7/12 m-auto md:pt-2 pb-1 md:pb-3">
+                {renderEditor({
+                  user,
+                  valueState: drawerReplyValue,
+                  isDoing: isDrawerCreatingComment,
+                  isCreated: isDrawerCreatedComment,
+                  replyingComment,
+                  isFromDrawer: true,
+                })}
+              </div>
+            </div>
+          </DrawerModal>
+        )}
+        {isMI && (
+          <Modal
+            open={openDrawer}
+            onClose={() => {
+              setDrawerReplyValue('');
+              setReplyingComment(null);
+              setOpenDrawer(false);
+              stopBodyScroll(false);
+            }}
+          >
+            <div
+              className="w-90-vw px-5 pb-1 box-border bg-white rounded-12 md:pt-2"
+              style={{
+                marginTop: '-52vh',
+              }}
+            >
               {renderEditor({
                 user,
                 valueState: drawerReplyValue,
@@ -529,8 +573,8 @@ export default observer((props: IProps) => {
                 isFromDrawer: true,
               })}
             </div>
-          </div>
-        </DrawerModal>
+          </Modal>
+        )}
         {hasComments && (
           <div id="comments" className="overflow-hidden -mx-4">
             <Comments

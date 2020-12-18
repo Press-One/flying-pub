@@ -99,6 +99,8 @@ export const isFirefox = navigator.userAgent.indexOf("Firefox") > 0;
 
 export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
+export const isMI = /; MI /i.test(navigator.userAgent);
+
 export const getImageWidth = (width: number) => {
   return (window.devicePixelRatio || 1) * width
 }
@@ -295,6 +297,19 @@ export const urlify = (text: string) => {
   }
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.replace(urlRegex, '<a class="text-blue-400" href="$1">$1</a>')
+}
+
+export const getViewport = () => {
+  if ((window as any).visualViewport) {
+    return {
+      width: (window as any).visualViewport.width,
+      height: (window as any).visualViewport.height
+    };
+  }
+  return {
+    width: (window as any).innerWidth || (document.scrollingElement || document.documentElement).clientWidth,
+    height: (window as any).innerHeight || (document.scrollingElement || document.documentElement).clientHeight
+  };
 }
 
 type SetLoading = (l: boolean) => unknown;

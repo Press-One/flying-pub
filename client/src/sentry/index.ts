@@ -5,7 +5,7 @@ export default {
   init: () => {
     Sentry.init({
       ignoreErrors: SentryIgnoreErrors,
-      dsn: 'https://8375adf925c34925998c9b0ec0c89b71@sentry.xue.cn/11',
+      dsn: 'https://d7d05525733f4e8e880da3da812ea8f3@sentry.xue.cn/18',
     });
   },
 };
