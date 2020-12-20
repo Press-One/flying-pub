@@ -269,15 +269,18 @@ export default observer((props: any) => {
                   </div>
                 </Link>
                 {!userStore.isLogin && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      handleClose();
-                      handleOpenLogin();
-                    }}
-                  >
-                    登录
-                  </Button>
+                  <div className="flex items-center -mr-2">
+                    {isPc && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        handleClose();
+                        handleOpenLogin();
+                      }}
+                    >
+                      登录
+                    </Button>
+                  </div>
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
