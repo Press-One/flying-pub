@@ -35,6 +35,7 @@ import QRCode from 'qrcode.react';
 import Img from 'components/Img';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import editorJsDataToHTML from './editorJsDataToHTML';
+import copy from 'copy-to-clipboard';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -738,12 +739,23 @@ export default observer((props: any) => {
           }}
           items={[
             {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '链接已复制',
+                });
+              },
+            },
+            {
+              invisible: !isMyself,
               name: '编辑',
               onClick: () => {
                 props.history.push(`/editor?id=${post.fileId}`);
               },
             },
             {
+              invisible: !isMyself,
               name: '投稿',
               onClick: () => {
                 modalStore.openTopicList({
@@ -765,6 +777,7 @@ export default observer((props: any) => {
               },
             },
             {
+              invisible: !isMyself,
               name: '隐藏',
               onClick: () => {
                 confirmDialogStore.show({
@@ -795,6 +808,7 @@ export default observer((props: any) => {
               stayOpenAfterClick: true,
             },
             {
+              invisible: !isMyself,
               name: '删除',
               onClick: () => {
                 confirmDialogStore.show({
@@ -849,7 +863,7 @@ export default observer((props: any) => {
             </div>
           </Fade>
         )}
-        {isMyself && isMobile && Menu()}
+        {isMobile && Menu()}
         <h2 className={`text-xl md:text-2xl text-gray-900 font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className="flex items-center justify-between mt-2">
           <div className={`flex items-center gray info ${isMobile ? ' text-sm' : ''}`}>

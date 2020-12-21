@@ -37,6 +37,8 @@ import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DrawerMenu from 'components/DrawerMenu';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import copy from 'copy-to-clipboard';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -62,6 +64,7 @@ export default observer((props: any) => {
     showPosts: false,
     showDraftsModal: false,
     showMainMenu: false,
+    showShareMenu: false,
     showSettingsMenu: false,
   }));
   const loading = React.useMemo(() => state.isFetchingAuthor || !preloadStore.ready, [
@@ -305,6 +308,16 @@ export default observer((props: any) => {
                 </div>
               </div>
             )}
+            {!isMyself && (
+              <div className="flex items-center">
+                <div
+                  className="pl-5 pr-3 flex items-center text-26 py-2"
+                  onClick={() => (state.showShareMenu = true)}
+                >
+                  <MoreHoriz />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <DrawerMenu
@@ -339,6 +352,15 @@ export default observer((props: any) => {
               onClick: () => {
                 modalStore.openWallet({
                   tab: 'receipts',
+                });
+              },
+            },
+            {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '主页链接已复制',
                 });
               },
             },
@@ -388,6 +410,23 @@ export default observer((props: any) => {
                 window.location.href = logoutUrl;
               },
               stayOpenAfterClick: true,
+            },
+          ]}
+        />
+        <DrawerMenu
+          open={state.showShareMenu}
+          onClose={() => {
+            state.showShareMenu = false;
+          }}
+          items={[
+            {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '主页链接已复制',
+                });
+              },
             },
           ]}
         />
