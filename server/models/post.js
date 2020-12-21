@@ -21,6 +21,10 @@ const {
   Errors,
   attempt
 } = require('../utils/validator');
+const config = require('../config');
+const Cache = require('./cache');
+const TYPE = `${config.serviceKey}_SEARCH`;
+const { postToSearchService } = require('../controllers/apiSearch');
 
 const packPost = async (post, options = {}) => {
   assert(post, Errors.ERR_NOT_FOUND('post'));
@@ -409,5 +413,73 @@ exports.delete = async rId => {
   });
   return true;
 };
+
+let restart = true;
+
+exports.syncToSearchService = async () => {
+  let startAt = await Cache.pGet(TYPE, 'startAt');
+  if (restart) {
+    startAt = 0;
+    restart = false;
+  } 
+  console.log(startAt);
+  if (!startAt) {
+    const posts = await Post.findAll({
+      where: {[Op.and]: [{invisibility: false}, {deleted: false}]},
+      order: [['createdAt', 'ASC']],
+      limit: 20,
+    });
+    console.log(posts.length);
+    if (posts.length > 0) {
+      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
+      await Promise.all(posts.map(post => postToSearchService(`\post${post.rId}`, post)));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    }
+  } else {
+    const posts = await Post.findAll({
+      where: {
+        [Op.and]: [{invisibility: false}, {deleted: false}],
+        createdAt: {
+          [Op.gt]: startAt
+        }
+      },
+      order: [['createdAt', 'ASC']],
+      limit: 20,
+    });
+    console.log(posts.length);
+    if (posts.length > 0) {
+      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
+      await Promise.all(posts.map(post => postToSearchService(`/posts/${post.rId}`, post)));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    }
+  }
+
+  //if (!dbUnSyncBlock) {
+    //syncBlockLog('暂时没有需要同步的区块');
+    //return;
+  //}
+  //const unSyncBlock = dbUnSyncBlock.toJSON();
+  //const latestBlocks = await getBlock(unSyncBlock.id);
+  //const latestBlock = latestBlocks[0];
+  //assert(latestBlock, Errors.ERR_NOT_FOUND('latestBlock'));
+  //syncBlockLog(`区块ID，${latestBlock.id}`)
+  //const {
+    //blockNum,
+    //blockTransactionId
+  //} = latestBlock;
+  //const isUnSynced = !blockNum || !blockTransactionId;
+  //if (isUnSynced) {
+    //syncBlockLog('区块没有 blockNum 或者 blockTransactionId，本次同步失败，开始尝试下一次...');
+    //return;
+  //}
+  //await Block.update({
+    //blockNum,
+    //blockTransactionId
+  //}, {
+    //where: {
+      //id: unSyncBlock.id
+    //}
+  //})
+}
 
 exports.SequelizePost = Post;

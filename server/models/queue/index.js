@@ -16,6 +16,9 @@ const {
 const {
   createNotificationQueue
 } = require('./notification');
+const {
+  createSyncSearchIndexQueue
+} = require('./search');
 const queues = [];
 
 exports.up = async () => {
@@ -40,6 +43,9 @@ exports.up = async () => {
     }
     queues.push(createPublishViewQueue());
     queues.push(createViewSyncQueue());
+  }
+  if (!queueDisabledJobs.includes('search')) {
+    queues.push(createSyncSearchIndexQueue());
   }
 }
 

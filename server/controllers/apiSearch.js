@@ -18,6 +18,56 @@ const htmlToTextOptions = {
     'img': { format: 'skip' },
   }
 };
+
+const postToSearchService = (uri, post) => {
+  return new Promise(async (resolve, reject) => {
+    const { title, content, userAddress, mimeType} = post;
+    let contentHtml = '';
+    let contentText = content;
+    if (mimeType === 'text/markdown') {
+      contentHtml = marked.parse(content);
+      contentText = htmlToText(contentHtml, htmlToTextOptions);
+    } else if (mimeType === 'application/json') {
+      contentHtml = editorJsDataToHTML(JSON.parse(content));
+      contentText = htmlToText(contentHtml, htmlToTextOptions);
+    } 
+    const xmlObject = {
+      '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
+      node: {
+        cy_tenantid: {
+          '_attributes': { 'type': 'cypress.untoken' },
+          '_text': config.serviceKey,
+        },
+        date: {
+          '_attributes': { 'type': 'cypress.int' },
+          '_text': Math.floor(new Date() / 1000),
+        },
+        xmluri: config.search.xmluriHost + uri,
+        uri,
+        title: {"_cdata": title},
+        content: {"_cdata": contentText},
+        user_address: userAddress,
+      }
+    }
+    const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
+    try {
+      const res = await fetch(config.search.updatertUrl, {
+        method: 'post',
+        body: xmlString,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      });
+      const json = await res.json();
+      resolve(json);
+    } catch (e) {
+      reject(e);
+    }
+  })
+}
+
+exports.postToSearchService = postToSearchService;
+
 exports.get = async ctx => {
   if (!(config && config.search && config.search.enabled)) {
     return;
@@ -46,45 +96,9 @@ exports.post = async ctx => {
     withContent: true,
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
-  const { title, content, userAddress, mimeType} = post;
-  let contentHtml = '';
-  let contentText = content;
-  if (mimeType === 'text/markdown') {
-    contentHtml = marked.parse(content);
-    contentText = htmlToText(contentHtml, htmlToTextOptions);
-  } else if (mimeType === 'application/json') {
-    contentHtml = editorJsDataToHTML(JSON.parse(content));
-    contentText = htmlToText(contentHtml, htmlToTextOptions);
-  } 
-  const xmlObject = {
-    '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
-    node: {
-      cy_tenantid: {
-        '_attributes': { 'type': 'cypress.untoken' },
-        '_text': config.serviceKey,
-      },
-      date: {
-        '_attributes': { 'type': 'cypress.int' },
-        '_text': Math.floor(new Date() / 1000),
-      },
-      xmluri: config.search.xmluriHost + uri,
-      uri,
-      title: {"_cdata": title},
-      content: {"_cdata": contentText},
-      user_address: userAddress,
-    }
-  }
-  const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
-  const userId = ctx.verification && ctx.verification.user.id;
   try {
-    const res = await fetch(config.search.updatertUrl, {
-      method: 'post',
-      body: xmlString,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-    });
-    const json = await res.json();
+    const json = await postToSearchService(uri, post);
+    const userId = ctx.verification && ctx.verification.user.id;
     if (userId) {
       Log.create(userId, `【更新索引】${uri}`);
     }
@@ -106,18 +120,6 @@ exports.del = async ctx => {
     '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
     node: {
       xmluri: config.search.xmluriHost + uri,
-      //cy_tenantid: {
-        //'_attributes': { 'type': 'cypress.untoken' },
-        //'_text': config.serviceKey,
-      //},
-      //date: {
-        //'_attributes': { 'type': 'cypress.int' },
-        //'_text': Math.floor(new Date() / 1000),
-      //},
-      //uri,
-      //title: {"_cdata": ''},
-      //content: {"_cdata": ''},
-      //user_address: '',
     }
   }
   const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
