@@ -105,25 +105,25 @@ exports.del = async ctx => {
   const xmlObject = {
     '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
     node: {
-      cy_tenantid: {
-        '_attributes': { 'type': 'cypress.untoken' },
-        '_text': config.serviceKey,
-      },
-      date: {
-        '_attributes': { 'type': 'cypress.int' },
-        '_text': Math.floor(new Date() / 1000),
-      },
       xmluri: config.search.xmluriHost + uri,
-      uri,
-      title: {"_cdata": ''},
-      content: {"_cdata": ''},
-      user_address: '',
+      //cy_tenantid: {
+        //'_attributes': { 'type': 'cypress.untoken' },
+        //'_text': config.serviceKey,
+      //},
+      //date: {
+        //'_attributes': { 'type': 'cypress.int' },
+        //'_text': Math.floor(new Date() / 1000),
+      //},
+      //uri,
+      //title: {"_cdata": ''},
+      //content: {"_cdata": ''},
+      //user_address: '',
     }
   }
   const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
   const userId = ctx.verification && ctx.verification.user.id;
   try {
-    const res = await fetch(config.search.updatertUrl, {
+    const res = await fetch(config.search.deleteUrl, {
       method: 'post',
       body: xmlString,
       headers: {
