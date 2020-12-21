@@ -3,36 +3,31 @@ import * as qs from 'query-string';
 
 interface SearchResItem {
   'cypress.match': number
-  code: string
   cypress_updatetime: string
-  author: string
-  domain: string
-  title: string
-  bookname: string
-  keyword: string
+  date: string
   uri: string
-  xmluri: string
+  title: string
   content: string
+  user_address: string
+  xmluri: string
 }
 
 interface SearchRes {
   result: {
+    querywords: string
     spellcorrect: string
     segment: string
+    processtime: number
+    querytime: number
     count: number
-    querywords: string
-    time: number
     items: Array<SearchResItem>
   }
 }
 
 export interface SearchPayload {
-  cy_tenantid: string
-  c: 'default' | 'code' | 'section'
   q: string
-  programming_language?: string
   cy_termmust: boolean
-  author?: string
+  user_address?: string
   start: number
   num: number
 }

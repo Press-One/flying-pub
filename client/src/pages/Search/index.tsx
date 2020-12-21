@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import classNames from 'classnames';
+//import classNames from 'classnames';
 import { action } from 'mobx';
 import { Button } from '@material-ui/core';
 import Pagination, { PaginationProps } from '@material-ui/lab/Pagination';
@@ -20,17 +20,10 @@ export default observer(() => {
   const state = useLocalStore(() => ({
     page: 0,
     limit: 20 as const,
-
     query: String(getQuery('query') || ''),
-    searchType: String(getQuery('type') || 'default') as 'default' | 'code' | 'section',
-    language: String(getQuery('language') || 'all'),
-
     isSearched: false,
     get showLoading() {
       return !SearchService.state.isFetched || SearchService.state.loading;
-    },
-    get queryLanguage() {
-      return this.language === 'all' ? undefined : this.language;
     },
   }));
 
@@ -42,14 +35,9 @@ export default observer(() => {
     state.page = newPage;
     setQuery({
       query: state.query,
-      type: state.searchType,
-      language: state.queryLanguage,
     });
     await SearchService.search({
-      cy_tenantid: 'book.xue.cn',
-      c: state.searchType,
       q: state.query,
-      programming_language: state.searchType !== 'section' ? state.queryLanguage : undefined,
       cy_termmust: true,
       start: newPage * state.limit,
       num: state.limit,
@@ -85,12 +73,11 @@ export default observer(() => {
     window.scrollTo(0, 0);
   };
 
-  //onMounted(() => {
-    //if (state.query) {
-      //search();
-    //}
-  //});"
-  console.log('test');
+  React.useEffect(() => {
+    if (state.query) {
+      search();
+    }
+  }, [state]);
 
   return (
     <SubPage renderTitle={() => <div>搜索</div>}>
@@ -112,54 +99,6 @@ export default observer(() => {
             >
               搜索
             </Button>
-          </div>
-
-          <div className="flex items-center mt-3 text-12">
-            <div className="mr-8 text-gray-4a">
-              搜索类型
-            </div>
-            {([
-              { value: 'default', name: '搜索全部' },
-              { value: 'code', name: '只搜代码' },
-              { value: 'section', name: '只搜章节名' },
-            ] as const).map((item) => (
-              <div key={item.value}>
-                <div
-                  onClick={action(() => { state.searchType = item.value; })}
-                  className={classNames(
-                    item.value === state.searchType && 'bg-link text-white',
-                    item.value !== state.searchType && 'text-gray-99',
-                    'mr-2 cursor-pointer rounded px-2 py-1',
-                  )}
-                >
-                  {item.name}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center mt-3 text-12">
-            <div className="mr-8 text-gray-4a">
-              搜索语言
-            </div>
-            {[
-              { value: 'all', name: '全部语言' },
-              { value: 'python', name: 'Python' },
-              { value: 'javascript', name: 'Javascript' },
-            ].map((item) => (
-              <div key={item.value}>
-                <div
-                  onClick={action(() => { state.language = item.value; })}
-                  className={classNames(
-                    item.value === state.language && 'bg-link text-white',
-                    item.value !== state.language && 'text-gray-99',
-                    'mr-2 cursor-pointer rounded px-2 py-1 hover:underline',
-                  )}
-                >
-                  {item.name}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -184,11 +123,6 @@ export default observer(() => {
                     在书库中搜索到 <strong>{SearchService.state.total}</strong> 条结果
                   </div>
                   {SearchService.state.resultItems.map((resultItem, index) => {
-                    //const path = resultItem.bookPath + '/' + resultItem.uri;
-                    //const readerUrl = Utils.getReaderUrl({
-                      //bookId: resultItem.bookId,
-                      //path,
-                    //});
                     const readerUrl = '';
                     return (
                       <div key={index}>
@@ -198,17 +132,9 @@ export default observer(() => {
                             href={readerUrl}
                             //target="_blank"
                           >
-                            <div>《{resultItem.bookName}》章节：</div>
                             {/* eslint-disable-next-line react/no-danger */}
                             <div dangerouslySetInnerHTML={{ __html: resultItem.title }} />
                           </a>
-                          {resultItem.code && (
-                            <div
-                              className="mt-1 leading-relaxed text-gray-99 whitespace-pre-line p-5 bg-page-bg border-gray-e8 overflow-x-auto border-2 mb-1 searched-code"
-                              // eslint-disable-next-line react/no-danger
-                              dangerouslySetInnerHTML={{ __html: resultItem.code }}
-                            />
-                          )}
                           {resultItem.content && (
                             <div
                               className="pt-1 leading-relaxed text-gray-99 truncate-lines"

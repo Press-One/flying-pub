@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 const marked = require('marked');
 const editorJsDataToHTML = require('../utils/editorJsDataToHTML');
 const { htmlToText } = require('html-to-text');
+const querystring = require('querystring');
 const {
   assert,
   Errors,
@@ -74,13 +75,15 @@ exports.get = async ctx => {
   }
   const userId = ctx.verification && ctx.verification.user.id;
   try {
-    const res = await fetch(`${config.search.searchUrl}?${ctx.querystring}`);
+    const res = await fetch(`${config.search.searchUrl}?${ctx.querystring}&cy_tenantid=${config.serviceKey}`);
     const json = await res.json();
     if (userId) {
       Log.create(userId, `【搜索】${ctx.query.q}`);
     }
     ctx.body = json;
-  } catch(e) {}
+  } catch(e) {
+    console.log(e);
+  }
 };
 
 exports.post = async ctx => {

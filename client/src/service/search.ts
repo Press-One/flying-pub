@@ -4,25 +4,18 @@ import { runLoading } from 'utils';
 
 interface SearchResultItem {
   cypressMatch: number
-  code: string
-  author: string
+  userAddress: string
   title: string
-  bookId: number
-  bookName: string
-  bookPath: string
   uri: string
   content: string
 }
 
 const state = observable({
   searchWord: '',
-  searchType: 'default' as SearchPayload['c'],
-  searchLanguage: 'default' as SearchPayload['programming_language'],
   loading: false,
   total: 0,
   resultItems: [] as Array<SearchResultItem>,
   isFetched: false,
-
   get hasMore() {
     return this.resultItems.length < this.total;
   },
@@ -38,12 +31,8 @@ const getDerivedTitle = (title: string) => {
 const formatResultItem = (resItem: any) => {
   const resultItem: SearchResultItem = {
     cypressMatch: resItem['cypress.match'],
-    code: resItem.code,
-    author: resItem.author,
+    userAddress: resItem.user_address,
     title: getDerivedTitle(resItem.title),
-    bookId: Number(resItem.bookid),
-    bookName: resItem.displayname,
-    bookPath: resItem.bookpath,
     uri: resItem.uri,
     content: resItem.content,
   };
@@ -66,8 +55,6 @@ const search = async (payload: SearchPayload) => {
     (l) => { state.loading = l; },
     async () => {
       state.searchWord = payload.q;
-      state.searchType = payload.c;
-      state.searchLanguage = payload.programming_language;
       const [res] = await Promise.all([
         searchApi(payload)
       ]);
@@ -82,6 +69,5 @@ const search = async (payload: SearchPayload) => {
 
 export const SearchService = {
   state,
-
   search,
 };
