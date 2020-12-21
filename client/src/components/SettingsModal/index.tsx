@@ -3,12 +3,19 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import css from 'styled-jsx/css';
 import { Dialog } from '@material-ui/core';
-import { Settings as SettingsIcon, Lock, Link, AccountCircle } from '@material-ui/icons';
+import {
+  Settings as SettingsIcon,
+  LockOutlined,
+  Link,
+  AccountCircleOutlined,
+  InfoOutlined,
+} from '@material-ui/icons';
 import { useStore } from 'store';
 
 import { ProfileChange } from './ProfileChange';
 import { AccountBind } from './AccountBind';
 import { PhoneChangePassword } from './PhoneChangePassword';
+import { Preference } from './Preference';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile } from 'utils';
 
@@ -33,7 +40,7 @@ export default observer(() => {
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <AccountCircle />
+              <InfoOutlined />
             </span>
             修改资料
           </div>
@@ -43,11 +50,25 @@ export default observer(() => {
         </TabContent>
       )}
 
+      {tab === 'preference' && (
+        <TabContent>
+          <div className="font-bold flex items-center text-18 justify-center md:justify-start">
+            <span className="text-2xl mr-2 items-center hidden md:flex">
+              <AccountCircleOutlined />
+            </span>
+            偏好设置
+          </div>
+          <div className="mt-4">
+            <Preference />
+          </div>
+        </TabContent>
+      )}
+
       {tab === 'password' && (
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <Lock />
+              <LockOutlined />
             </span>
             修改密码
           </div>
@@ -105,9 +126,20 @@ export default observer(() => {
                 onClick={() => modalStore.openSettings('profile')}
               >
                 <span className="text-lg mr-2 flex items-center">
-                  <AccountCircle />
+                  <InfoOutlined />
                 </span>
                 修改资料
+              </TabButton>
+
+              <TabButton
+                className="pr-10"
+                isActive={tab === 'preference'}
+                onClick={() => modalStore.openSettings('preference')}
+              >
+                <span className="text-lg mr-2 flex items-center">
+                  <AccountCircleOutlined />
+                </span>
+                偏好设置
               </TabButton>
 
               {supportPhoneBinding && phoneBinded && (
@@ -117,7 +149,7 @@ export default observer(() => {
                   onClick={() => modalStore.openSettings('password')}
                 >
                   <span className="text-lg mr-2 flex items-center">
-                    <Lock />
+                    <LockOutlined />
                   </span>
                   修改密码
                 </TabButton>

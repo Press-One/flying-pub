@@ -43,6 +43,7 @@ exports.get = async ctx => {
     author.nickname = author.nickname || authorUser.nickname;
     author.bio = author.bio || authorUser.bio;
     author.privateSubscriptionEnabled = authorUser.privateSubscriptionEnabled;
+    author.privateContributionEnabled = authorUser.privateContributionEnabled;
   }
 
   const [

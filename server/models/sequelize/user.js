@@ -43,6 +43,10 @@ const User = sequelize.define('users', {
   privateSubscriptionEnabled: {
     type: Sequelize.BOOLEAN,
     defaultValue: false
+  },
+  privateContributionEnabled: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true,

@@ -5,5 +5,6 @@ export default interface IUser {
   cover: string;
   bio?: string;
   privateSubscriptionEnabled: boolean;
+  privateContributionEnabled: boolean;
   nickname: string;
 }

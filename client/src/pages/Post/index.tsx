@@ -898,21 +898,22 @@ export default observer((props: any) => {
           <div className="border-l-4 border-blue-400 pl-3 text-gray-9b mt-2 md:mt-0">
             {post.topics && post.topics.length > 0 && '被以下专题收录'}
             <div>
-              {(!post.topics || post.topics.length === 0) && (
-                <div className="flex items-center">
-                  收录到我的专题
-                  <div className="ml-3">
-                    <IncludedButton post={post as IPost} onClose={() => syncTopics()} />
+              {(!post.topics || post.topics.length === 0) &&
+                (isMyself || !post.author.privateContributionEnabled) && (
+                  <div className="flex items-center">
+                    收录到我的专题
+                    <div className="ml-3">
+                      <IncludedButton post={post as IPost} onClose={() => syncTopics()} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
           <div className="pt-2 pb-5 md:pb-0">
             <TopicLabels
               topics={post.topics || []}
               post={post}
-              showContributionButton
+              showContributionButton={isMyself || !post.author.privateContributionEnabled}
               maxListCount={isMobile ? 1 : 10}
               onClose={() => syncTopics()}
             />
