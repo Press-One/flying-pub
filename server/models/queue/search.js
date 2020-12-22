@@ -1,27 +1,27 @@
 const {
   createQueue
 } = require('./utils');
-const Block = require('../block');
+const Post = require('../post');
 const config = require('../../config');
 
-exports.create = () => {
-  const queue = createQueue(`${config.serviceKey}_SYNC_BLOCKS`, {
+exports.createSyncSearchIndexQueue = () => {
+  const queue = createQueue(`${config.serviceKey}_SYNC_SEARCH`, {
     limiter: {
       max: 1,
-      duration: 60 * 1000 * 1
+      duration: 120 * 1000 * 1
     }
   });
 
   queue.add(`${config.serviceKey}_SYNC`, {}, {
     priority: 1,
     repeat: {
-      every: 60 * 1000 * 1
+      every: 120 * 1000 * 1
     },
     removeOnComplete: true,
     removeOnFail: true
   });
 
-  queue.process(`${config.serviceKey}_SYNC`, Block.sync);
+  queue.process(`${config.serviceKey}_SYNC`, Post.syncToSearchService);
 
   return queue;
 }

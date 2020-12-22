@@ -22,8 +22,10 @@ import { Link } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, isMobile, isPc } from 'utils';
 import Img from 'components/Img';
+import { SearchInput } from './SearchInput';
 
 export default observer((props: any) => {
+  const showSearchEntry = window.location.pathname !== '/search';
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [showBack, setShowBack] = React.useState(false);
   const {
@@ -267,18 +269,22 @@ export default observer((props: any) => {
                   </div>
                 </Link>
                 {!userStore.isLogin && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      handleClose();
-                      handleOpenLogin();
-                    }}
-                  >
-                    登录
-                  </Button>
+                  <div className="flex items-center -mr-2">
+                    {isPc && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        handleClose();
+                        handleOpenLogin();
+                      }}
+                    >
+                      登录
+                    </Button>
+                  </div>
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
+                    {isPc && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
                     {isPc && (
                       <Link to="/dashboard">
                         <Button size="small" className="mr-5">

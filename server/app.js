@@ -33,6 +33,7 @@ const block = require('./routes/block');
 const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
+const search = require('./routes/search');
 
 const config = require('./config');
 const models = require('./models');
@@ -102,6 +103,9 @@ router.use('/api/logout', ensureAuthorization({
 }), logout.routes(), logout.allowedMethods());
 router.use('/api/auto_login', autoLogin.routes(), autoLogin.allowedMethods());
 router.use('/api/ping', ping.routes(), ping.allowedMethods());
+router.use('/api/search', ensureAuthorization({
+  strict: false
+}), search.routes(), search.allowedMethods());
 
 router.get('*', async ctx => ctx.render('index'));
 

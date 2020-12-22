@@ -7,6 +7,7 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import VerticalAlignTop from '@material-ui/icons/VerticalAlignTop';
 import CreateIcon from '@material-ui/icons/Create';
+import SearchIcon from '@material-ui/icons/Search';
 import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
 import Fade from '@material-ui/core/Fade';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
@@ -20,6 +21,7 @@ import Dashboard from '../Dashboard';
 import BlockTopic from '../BlockTopic';
 import PostManager from '../PostManager';
 import Sticky from '../Sticky';
+import SearchManager from '../SearchManager';
 
 export default observer((props: RouteChildrenProps) => {
   const { preloadStore, userStore, settingsStore, walletStore, modalStore } = useStore();
@@ -54,6 +56,12 @@ export default observer((props: RouteChildrenProps) => {
       text: '【管理后台】文章置顶',
       icon: VerticalAlignTop,
       path: '/sticky',
+      show: user.isAdmin,
+    },
+    {
+      text: '【管理后台】搜索服务',
+      icon: SearchIcon,
+      path: '/searchManager',
       show: user.isAdmin,
     },
   ];
@@ -153,6 +161,7 @@ export default observer((props: RouteChildrenProps) => {
           <Route path="/blockTopic" exact component={BlockTopic} />
           <Route path="/postManager" exact component={PostManager} />
           <Route path="/sticky" exact component={Sticky} />
+          <Route path="/searchManager" exact component={SearchManager} />
         </main>
       </div>
     </Fade>
