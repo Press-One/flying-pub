@@ -126,6 +126,7 @@ export default observer(() => {
                             className="flex items-center leading-none py-2 font-bold nice-blue-color text-16"
                             href={resultItem.uri}
                             target="_blank"
+                            rel="noopener noreferrer"
                           >
                             {/* eslint-disable-next-line react/no-danger */}
                             <div dangerouslySetInnerHTML={{ __html: resultItem.title }} />
