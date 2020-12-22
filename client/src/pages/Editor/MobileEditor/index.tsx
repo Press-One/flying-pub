@@ -3,7 +3,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { TextField } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
 import autosize from 'autosize';
-import { scrollToHere, sleep, getViewport } from 'utils';
+import { scrollToHere, sleep, getViewport, getQuery, removeQuery } from 'utils';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import { faImage, faEye } from '@fortawesome/free-regular-svg-icons';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
@@ -97,6 +97,16 @@ export default observer((props: IProps) => {
       }
     })();
   }, [props, state, tryAdjustToolbarPosition]);
+
+  React.useEffect(() => {
+    if (getQuery('action') === 'triggerPreview') {
+      (async () => {
+        await sleep(500);
+        state.showPreviewModal = true;
+        removeQuery('action');
+      })();
+    }
+  }, [state]);
 
   const insertText = (text: string) => {
     const insertedContent =

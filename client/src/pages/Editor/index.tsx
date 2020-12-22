@@ -145,7 +145,6 @@ export default observer((props: any) => {
   React.useEffect(() => {
     if (!state.isFetching && getQuery('action') === 'triggerPreview') {
       const previewButton: any = document.querySelector('.preview');
-      console.log({ previewButton });
       if (previewButton) {
         previewButton.click();
       }

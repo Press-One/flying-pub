@@ -8,73 +8,13 @@ import Badge from '@material-ui/core/Badge';
 import Button from 'components/Button';
 import Pagination from '@material-ui/lab/Pagination';
 import { Paper, Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
-import { pressOneLinkRegexp, wechatLinkRegexp } from 'utils/import';
-import PostImportDialog from 'components/PostImportDialog';
 import ContributionModal from 'components/ContributionModal';
+import PostImportModal from 'components/PostImportModal';
 import fileApi from 'apis/file';
-import importApi from 'apis/import';
-import { useStore } from 'store';
 import PostEntry from './postEntry';
+import { useStore } from 'store';
 
 import './index.scss';
-
-const useImportDialog = (props: any) => {
-  const store = useStore();
-  const { snackbarStore } = store;
-  const state = useLocalStore(() => ({
-    importDialogVisible: false,
-    importDialogLoading: false,
-  }));
-  const handleOpenImportDialog = () => (state.importDialogVisible = true);
-  const handleImportDialogClose = () => {
-    if (!state.importDialogLoading) {
-      state.importDialogVisible = false;
-    }
-  };
-
-  const handleImportDialogConfirm = (url: string) => {
-    const validUrl = [pressOneLinkRegexp.test(url), wechatLinkRegexp.test(url)].some(Boolean);
-    if (!validUrl) {
-      snackbarStore.show({
-        message: '请输入正确的文章地址',
-        type: 'error',
-      });
-      return;
-    }
-
-    state.importDialogLoading = true;
-    importApi
-      .importArticle(url)
-      .then(
-        (file) => {
-          setTimeout(() => {
-            props.history.push(`/editor?id=${file.id}&action=triggerPreview`);
-          });
-        },
-        (err) => {
-          let message = '导入失败';
-          if (err.message === 'url is invalid') {
-            message = '请输入有效的文章地址';
-          }
-          snackbarStore.show({
-            message,
-            type: 'error',
-          });
-        },
-      )
-      .finally(() => {
-        state.importDialogLoading = false;
-      });
-  };
-
-  return {
-    importDialogVisible: state.importDialogVisible,
-    importDialogLoading: state.importDialogLoading,
-    handleOpenImportDialog,
-    handleImportDialogClose,
-    handleImportDialogConfirm,
-  };
-};
 
 const LIMIT = 15;
 
@@ -83,18 +23,11 @@ export default observer((props: RouteChildrenProps) => {
   const state = useLocalStore(() => ({
     page: 0,
     showContributionModal: false,
+    showPostImportModal: false,
   }));
   const { isFetching, files, total } = fileStore;
   const { settings } = settingsStore;
   const unread = notificationStore.getUnread() || 0;
-
-  const {
-    importDialogVisible,
-    importDialogLoading,
-    handleOpenImportDialog,
-    handleImportDialogClose,
-    handleImportDialogConfirm,
-  } = useImportDialog(props);
 
   const fetchFiles = React.useCallback(
     async (page: number) => {
@@ -199,7 +132,7 @@ export default observer((props: RouteChildrenProps) => {
             </Badge>
           )}
           {settings['import.enabled'] && (
-            <Button onClick={handleOpenImportDialog} outline className="mr-5">
+            <Button onClick={() => (state.showPostImportModal = true)} outline className="mr-5">
               导入微信公众号文章
             </Button>
           )}
@@ -223,6 +156,7 @@ export default observer((props: RouteChildrenProps) => {
           <Loading />
         </div>
       )}
+
       {!isFetching && (
         <div className="p-dashboard-main-table-container max-w-1200">
           <div className="bg-white rounded-12 overflow-hidden">
@@ -234,11 +168,9 @@ export default observer((props: RouteChildrenProps) => {
       )}
 
       {settings['import.enabled'] && (
-        <PostImportDialog
-          loading={importDialogLoading}
-          open={importDialogVisible}
-          cancel={handleImportDialogClose}
-          ok={handleImportDialogConfirm}
+        <PostImportModal
+          open={state.showPostImportModal}
+          close={() => (state.showPostImportModal = false)}
         />
       )}
 
