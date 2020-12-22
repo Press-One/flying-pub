@@ -3,8 +3,6 @@ import classNames from 'classnames';
 import { OutlinedInput } from '@material-ui/core';
 import { observer, useLocalStore } from 'mobx-react-lite';
 
-import './index.sass';
-
 interface Props {
   className?: string
   value: string
@@ -31,7 +29,7 @@ export const SearchInput = observer((props: Props) => {
   return (
     <div
       className={classNames(
-        'flex flex-center relative',
+        'flex justify-center items-center relative',
         props.className,
       )}
       ref={state.searchRoot}

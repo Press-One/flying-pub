@@ -2,8 +2,6 @@ import React from "react";
 import ArrowBackIos from "@material-ui/icons/ArrowBackIos";
 import { history } from "utils";
 
-import "./index.scss";
-
 export default class extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
@@ -23,24 +21,40 @@ export default class extends React.Component<any, any> {
   render() {
     const { children, renderTitle, containerClassName = "" } = this.props;
     return (
-      <div className="bg-page-bg page pad-bottom-xxl">
-        <div className={"po-center po-width-960 " + containerClassName}>
-          <div className="navigator push-top flex v-center">
+      <div className="page">
+        <div className={"container mx-auto pb-16" + containerClassName}>
+          <div className="mt-4 flex items-center">
             <div
-              className="flex v-center gray-color po-cp"
+              className="flex items-center gray-color cursor-pointer"
               onClick={this.handleClick}
             >
-              <ArrowBackIos className="po-text-14" />
-              <span className="push-left-xs">返回</span>
+              <ArrowBackIos className="text-14" />
+              <span className="ml-1">返回</span>
             </div>
-            <div className="headline-color po-text-16 push-left-md">
+            <div className="text-blue-400 text-16 ml-6">
               {renderTitle()}
             </div>
           </div>
-          <div className="push-top bg-white-color pad-top-md pad-bottom-md pad-left-xxl pad-right-xxl content-contain">
+          <div className="mt-4 bg-white py-6 px-16 content-contain">
             {children}
           </div>
         </div>
+        <style jsx>{`
+          .page {
+            overflow: hidden;
+            min-height: 90vh;
+          }
+          .page .container {
+            width: 960px;
+            max-width: 90%;
+          }
+          @media screen and (max-width: 975px) {
+            .content-contain {
+              padding-right: 16px !important;
+              padding-left: 16px !important;
+            }
+          }
+        `}</style>
       </div>
     );
   }
