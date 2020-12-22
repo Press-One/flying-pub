@@ -243,5 +243,13 @@ module.exports = {
     bucketName: 'static-assets',
   },
 
+  search: {
+    enabled: false,
+    xmluriHost: 'http://localhost:5000',
+    searchUrl: 'http://192.168.0.9/search',
+    updatertUrl: 'http://192.168.0.9/updatert',
+    deleteUrl: 'http://192.168.0.9/deletert',
+  },
+
   assistantUserId: 1
 };

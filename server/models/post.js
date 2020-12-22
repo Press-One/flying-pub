@@ -21,6 +21,10 @@ const {
   Errors,
   attempt
 } = require('../utils/validator');
+const config = require('../config');
+const Cache = require('./cache');
+const TYPE = `${config.serviceKey}_SEARCH`;
+const { postToSearchService } = require('../controllers/apiSearch');
 
 const packPost = async (post, options = {}) => {
   assert(post, Errors.ERR_NOT_FOUND('post'));
@@ -409,5 +413,37 @@ exports.delete = async rId => {
   });
   return true;
 };
+
+exports.syncToSearchService = async () => {
+  const startAt = await Cache.pGet(TYPE, 'startAt');
+  if (!startAt) {
+    const posts = await Post.findAll({
+      where: {[Op.and]: [{invisibility: false}, {deleted: false}]},
+      order: [['createdAt', 'ASC']],
+      limit: 20,
+    });
+    if (posts.length > 0) {
+      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
+      await Promise.all(posts.map(post => postToSearchService(`\post${post.rId}`, post)));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    }
+  } else {
+    const posts = await Post.findAll({
+      where: {
+        [Op.and]: [{invisibility: false}, {deleted: false}],
+        createdAt: {
+          [Op.gt]: startAt
+        }
+      },
+      order: [['createdAt', 'ASC']],
+      limit: 20,
+    });
+    if (posts.length > 0) {
+      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
+      await Promise.all(posts.map(post => postToSearchService(`/posts/${post.rId}`, post)));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    }
+  }
+}
 
 exports.SequelizePost = Post;
