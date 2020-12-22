@@ -132,7 +132,7 @@ export const ProfileChange = observer(() => {
           {
             'w-full': isMobile,
           },
-          'mt-5 md:mt-6',
+          'mt-8 md:mt-6',
         )}
       >
         <Button

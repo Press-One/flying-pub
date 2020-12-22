@@ -9,7 +9,7 @@ export const Preference = observer(() => {
   const { user } = userStore;
 
   return (
-    <div className="profile-edit flex flex-col items-center md:items-start -mt-2">
+    <div className="profile-edit flex flex-col items-center md:items-start -mt-2 pb-2 md:pb-0">
       <div className="flex items-center w-full pt-3">
         <div className="font-bold text-14 text-gray-700">允许别人收录我的文章：</div>
         <Switch
@@ -29,7 +29,7 @@ export const Preference = observer(() => {
       </div>
 
       <div className="flex items-center w-full">
-        <div className="font-bold text-14 text-gray-700">关注和被关注列表对他人可见：</div>
+        <div className="font-bold text-14 text-gray-700">允许别人查看我的关注和被关注列表：</div>
         <Switch
           color="primary"
           checked={!user.privateSubscriptionEnabled}

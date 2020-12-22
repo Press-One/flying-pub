@@ -390,6 +390,13 @@ export default observer((props: any) => {
             },
             {
               invisible: !userStore.isLogin,
+              name: '偏好设置',
+              onClick: () => {
+                modalStore.openSettings('preference');
+              },
+            },
+            {
+              invisible: !userStore.isLogin,
               name: '账号绑定',
               onClick: () => {
                 modalStore.openSettings('bind');
