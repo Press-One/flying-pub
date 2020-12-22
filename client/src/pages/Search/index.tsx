@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 //import classNames from 'classnames';
 import { action } from 'mobx';
-import { Button } from '@material-ui/core';
+import Button from 'components/Button';
 import Pagination, { PaginationProps } from '@material-ui/lab/Pagination';
 
 import { getQuery, setQuery } from 'utils';
@@ -77,6 +77,7 @@ export default observer(() => {
     if (state.query) {
       search();
     }
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [state]);
 
   return (
@@ -85,18 +86,13 @@ export default observer(() => {
         <div className="search-box mx-auto">
           <div className="search-toolbar flex items-center justify-center">
             <SearchInput
-              className="search-input-box flex-1"
+              className="search-input-box flex-1 mr-2"
               value={state.query}
               onChange={handleChange}
               onEnter={handleEnter}
             />
 
-            <Button
-              className="bg-button-color ml-2"
-              variant="contained"
-              color="primary"
-              onClick={handleSearch}
-            >
+            <Button onClick={handleSearch}>
               搜索
             </Button>
           </div>
@@ -120,17 +116,16 @@ export default observer(() => {
               {!!SearchService.state.total && (
                 <div className="mt-2 pb-5">
                   <div className="text-gray-99 px-10 pb-2 text-14">
-                    在书库中搜索到 <strong>{SearchService.state.total}</strong> 条结果
+                    搜索到 <strong>{SearchService.state.total}</strong> 条结果
                   </div>
                   {SearchService.state.resultItems.map((resultItem, index) => {
-                    const readerUrl = '';
                     return (
                       <div key={index}>
                         <div className="border-t border-gray-e8 pt-3 pb-5 py-5 px-10 text-14">
                           <a
                             className="flex items-center leading-none py-2 font-bold nice-blue-color text-16"
-                            href={readerUrl}
-                            //target="_blank"
+                            href={resultItem.uri}
+                            target="_blank"
                           >
                             {/* eslint-disable-next-line react/no-danger */}
                             <div dangerouslySetInnerHTML={{ __html: resultItem.title }} />
