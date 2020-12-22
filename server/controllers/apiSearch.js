@@ -6,7 +6,6 @@ const fetch = require('node-fetch');
 const marked = require('marked');
 const editorJsDataToHTML = require('../utils/editorJsDataToHTML');
 const { htmlToText } = require('html-to-text');
-const querystring = require('querystring');
 const {
   assert,
   Errors,
@@ -69,6 +68,33 @@ const postToSearchService = (uri, post) => {
 
 exports.postToSearchService = postToSearchService;
 
+const deleteFromSearchService = (uri) => {
+  return new Promise(async (resolve, reject) => {
+    const xmlObject = {
+      '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
+      node: {
+        xmluri: config.search.xmluriHost + uri,
+      }
+    }
+    const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
+    const res = await fetch(config.search.deleteUrl, {
+      method: 'post',
+      body: xmlString,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+    });
+    try {
+      const json = await res.json();
+      resolve(json);
+    } catch (e) {
+      reject(e);
+    }
+  })
+}
+
+exports.deleteFromSearchService = deleteFromSearchService;
+
 exports.get = async ctx => {
   if (!(config && config.search && config.search.enabled)) {
     return;
@@ -79,6 +105,8 @@ exports.get = async ctx => {
     const json = await res.json();
     if (userId) {
       Log.create(userId, `【搜索】${ctx.query.q}`);
+    } else {
+      Log.createAnonymity('游客', `【搜索】${ctx.query.q}`);
     }
     ctx.body = json;
   } catch(e) {
@@ -104,6 +132,8 @@ exports.post = async ctx => {
     const userId = ctx.verification && ctx.verification.user.id;
     if (userId) {
       Log.create(userId, `【更新索引】${uri}`);
+    } else {
+      Log.createAnonymity('游客', `【更新索引】${uri}`);
     }
     ctx.body = json;
   } catch(e) {
@@ -119,25 +149,13 @@ exports.del = async ctx => {
   assert(uri, Errors.ERR_IS_REQUIRED('uri'));
   const rId = uri.split('/').pop();
   assert(rId, Errors.ERR_IS_INVALID('uri'));
-  const xmlObject = {
-    '_declaration':{'_attributes':{'version':'1.0','encoding':'utf-8'}},
-    node: {
-      xmluri: config.search.xmluriHost + uri,
-    }
-  }
-  const xmlString = convert.js2xml(xmlObject, {compact: true, spaces: 8});
-  const userId = ctx.verification && ctx.verification.user.id;
   try {
-    const res = await fetch(config.search.deleteUrl, {
-      method: 'post',
-      body: xmlString,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-    });
-    const json = await res.json();
+    const json = await deleteFromSearchService(uri);
+    const userId = ctx.verification && ctx.verification.user.id;
     if (userId) {
       Log.create(userId, `【删除索引】${uri}`);
+    } else {
+      Log.createAnonymity('游客', `【删除索引】${uri}`);
     }
     ctx.body = json;
   } catch(e) {

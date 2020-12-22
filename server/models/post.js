@@ -24,7 +24,8 @@ const {
 const config = require('../config');
 const Cache = require('./cache');
 const TYPE = `${config.serviceKey}_SEARCH`;
-const { postToSearchService } = require('../controllers/apiSearch');
+const { postToSearchService, deleteFromSearchService } = require('../controllers/apiSearch');
+const Log = require('../models/log');
 
 const packPost = async (post, options = {}) => {
   assert(post, Errors.ERR_NOT_FOUND('post'));
@@ -416,32 +417,45 @@ exports.delete = async rId => {
 
 exports.syncToSearchService = async () => {
   const startAt = await Cache.pGet(TYPE, 'startAt');
+  console.log('SYNC_SEARCH_START_AT: ', startAt);
   if (!startAt) {
     const posts = await Post.findAll({
-      where: {[Op.and]: [{invisibility: false}, {deleted: false}]},
-      order: [['createdAt', 'ASC']],
+      order: [['updatedAt', 'ASC']],
       limit: 20,
     });
     if (posts.length > 0) {
-      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
-      await Promise.all(posts.map(post => postToSearchService(`\post${post.rId}`, post)));
-      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+      await Promise.all(posts.map(post => {
+        if (post.invisibility || post.deleted ) {
+          Log.createAnonymity('队列',`【删除索引】/posts/${post.rId}`);
+          return deleteFromSearchService(`/posts/${post.rId}`, post);
+        } else {
+          Log.createAnonymity('队列',`【更新索引】/posts/${post.rId}`);
+          return postToSearchService(`/posts/${post.rId}`, post);
+        }
+      }));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
     }
   } else {
     const posts = await Post.findAll({
       where: {
-        [Op.and]: [{invisibility: false}, {deleted: false}],
-        createdAt: {
+        updatedAt: {
           [Op.gt]: startAt
         }
       },
-      order: [['createdAt', 'ASC']],
+      order: [['updatedAt', 'ASC']],
       limit: 20,
     });
     if (posts.length > 0) {
-      posts.forEach(post => console.log(post.rId, post.createdAt, post.deleted, post.invisibility));
-      await Promise.all(posts.map(post => postToSearchService(`/posts/${post.rId}`, post)));
-      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+      await Promise.all(posts.map(post => {
+        if (post.invisibility || post.deleted ) {
+          Log.createAnonymity('队列',`【删除索引】/posts/${post.rId}`);
+          return deleteFromSearchService(`/posts/${post.rId}`, post);
+        } else {
+          Log.createAnonymity('队列',`【更新索引】/posts/${post.rId}`);
+          return postToSearchService(`/posts/${post.rId}`, post);
+        }
+      }));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
     }
   }
 }
