@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-//import classNames from 'classnames';
 import { action } from 'mobx';
 import Button from 'components/Button';
 import Pagination, { PaginationProps } from '@material-ui/lab/Pagination';
@@ -10,10 +9,8 @@ import SubPage from 'components/SubPage';
 import Loading from 'components/Loading';
 
 import { useStore } from 'store';
-import { SearchService } from 'service/search';
+import { SearchService } from './helper/SearchService';
 import { SearchInput } from './helper/SearchInput';
-
-import './index.sass';
 
 export default observer(() => {
   const { snackbarStore } = useStore();
@@ -27,7 +24,7 @@ export default observer(() => {
     },
   }));
 
-  const search = action(async (newPage: number = 0) => {
+  const search = React.useCallback(async (newPage: number = 0) => {
     if (!state.query) {
       return;
     }
@@ -42,7 +39,7 @@ export default observer(() => {
       start: newPage * state.limit,
       num: state.limit,
     });
-  });
+  }, [state]);
 
   const handleChange = action((s: string) => { state.query = s; });
 
@@ -77,8 +74,7 @@ export default observer(() => {
     if (state.query) {
       search();
     }
-  /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [state]);
+  }, [state, search]);
 
   return (
     <SubPage renderTitle={() => <div>搜索</div>}>
@@ -164,6 +160,40 @@ export default observer(() => {
           </div>
         )}
       </div>
+      <style jsx>{`
+        .search-page .search-box {
+          max-width: 600px;
+        }
+
+        .search-page .truncate-lines {
+          text-overflow: ellipsis;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+
+        .search-page .MuiPaginationItem-page {
+          color: #888888;
+        }
+
+        .search-page .MuiPaginationItem-page.Mui-selected {
+          background: #227daa;
+          color: #fff;
+          border-color: #227daa;
+        }
+
+        .search-page .MuiPaginationItem-page:hover {
+          background: none;
+          color: #227daa;
+          border-color: #227daa;
+        }
+      `}</style>
+      <style jsx global>{`
+        .search-page .yx_hl {
+          color: #de7b56;
+        }
+      `}</style>
     </SubPage>
   );
 });

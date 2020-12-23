@@ -3,7 +3,6 @@ import moment from 'moment';
 
 export { default as Endpoint } from './endpoint';
 export { default as MimeType } from './mimeType';
-export { default as history } from './history';
 
 export const getQueryObject = () => {
   return qs.parse(window.location.search);

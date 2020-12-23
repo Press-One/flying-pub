@@ -30,7 +30,7 @@ export default function (props: { size?: number }) {
         <CircularProgress
           size={size || 26}
           className={classes.bottom}
-          variant="determinate"
+          variant="static"
           value={100}
         />
         <CircularProgress
