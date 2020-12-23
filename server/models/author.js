@@ -22,6 +22,9 @@ const packAuthor = async (author, options = {}) => {
   if (options.withUserId) {
     derivedAuthor.userId = user.id;
   }
+  if (options.withPrivateContributionEnabled) {
+    derivedAuthor.privateContributionEnabled = user.privateContributionEnabled;
+  }
   return derivedAuthor;
 }
 exports.packAuthor = packAuthor;

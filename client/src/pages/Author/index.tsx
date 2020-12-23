@@ -13,15 +13,6 @@ import TopicEditorModal from 'components/TopicEditorModal';
 import DraftsModal from './DraftsModal';
 import subscriptionApi from 'apis/subscription';
 import authorApi from 'apis/author';
-import {
-  isMobile,
-  isPc,
-  getDefaultAvatar,
-  getDefaultDeprecatedAvatar,
-  sleep,
-  isWeChat,
-  getApiEndpoint,
-} from 'utils';
 import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
 import postApi from 'apis/post';
@@ -37,6 +28,18 @@ import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DrawerMenu from 'components/DrawerMenu';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import copy from 'copy-to-clipboard';
+import PostImportModal from 'components/PostImportModal';
+import {
+  isMobile,
+  isPc,
+  getDefaultAvatar,
+  getDefaultDeprecatedAvatar,
+  sleep,
+  isWeChat,
+  getApiEndpoint,
+} from 'utils';
 
 const DEFAULT_BG_GRADIENT =
   'https://static-assets.xue.cn/images/8aa7ea2a80a7330f96f8d3b6990a6d114487a35559080baec4a176a6640133df';
@@ -62,7 +65,9 @@ export default observer((props: any) => {
     showPosts: false,
     showDraftsModal: false,
     showMainMenu: false,
+    showShareMenu: false,
     showSettingsMenu: false,
+    showPostImportModal: false,
   }));
   const loading = React.useMemo(() => state.isFetchingAuthor || !preloadStore.ready, [
     state.isFetchingAuthor,
@@ -305,6 +310,16 @@ export default observer((props: any) => {
                 </div>
               </div>
             )}
+            {!isMyself && (
+              <div className="flex items-center">
+                <div
+                  className="pl-5 pr-3 flex items-center text-26 py-2"
+                  onClick={() => (state.showShareMenu = true)}
+                >
+                  <MoreHoriz />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <DrawerMenu
@@ -313,6 +328,13 @@ export default observer((props: any) => {
             state.showMainMenu = false;
           }}
           items={[
+            {
+              invisible: !userStore.canPublish,
+              name: '导入微信公众号文章',
+              onClick: () => {
+                state.showPostImportModal = true;
+              },
+            },
             {
               invisible: isWeChat && !userStore.canPublish,
               name: '写文章',
@@ -342,6 +364,15 @@ export default observer((props: any) => {
                 });
               },
             },
+            {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '主页链接已复制',
+                });
+              },
+            },
           ]}
         />
         <DrawerMenu
@@ -364,6 +395,13 @@ export default observer((props: any) => {
               name: '设置密码',
               onClick: () => {
                 modalStore.openSettings('password');
+              },
+            },
+            {
+              invisible: !userStore.isLogin,
+              name: '偏好设置',
+              onClick: () => {
+                modalStore.openSettings('preference');
               },
             },
             {
@@ -391,6 +429,23 @@ export default observer((props: any) => {
             },
           ]}
         />
+        <DrawerMenu
+          open={state.showShareMenu}
+          onClose={() => {
+            state.showShareMenu = false;
+          }}
+          items={[
+            {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '主页链接已复制',
+                });
+              },
+            },
+          ]}
+        />
         <DraftsModal
           open={state.showDraftsModal}
           close={() => {
@@ -400,6 +455,12 @@ export default observer((props: any) => {
             fetchPosts();
           }}
         />
+        {settingsStore.settings['import.enabled'] && (
+          <PostImportModal
+            open={state.showPostImportModal}
+            close={() => (state.showPostImportModal = false)}
+          />
+        )}
       </div>
     );
   };

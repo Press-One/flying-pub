@@ -35,6 +35,7 @@ import QRCode from 'qrcode.react';
 import Img from 'components/Img';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import editorJsDataToHTML from './editorJsDataToHTML';
+import copy from 'copy-to-clipboard';
 
 import 'react-viewer/dist/index.css';
 import './github.css';
@@ -723,9 +724,9 @@ export default observer((props: any) => {
   const Menu = () => (
     <Fade in={true} timeout={800}>
       <div>
-        <div className="absolute top-0 right-0 -mt-16 z-10">
+        <div className="absolute top-0 right-0 -mt-16 z-10 pt-1">
           <div
-            className="px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pl-20"
+            className="px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pl-4 pb-2"
             onClick={() => (state.showMenu = true)}
           >
             <MoreHoriz />
@@ -738,12 +739,23 @@ export default observer((props: any) => {
           }}
           items={[
             {
+              name: '分享',
+              onClick: () => {
+                copy(window.location.href);
+                snackbarStore.show({
+                  message: '链接已复制',
+                });
+              },
+            },
+            {
+              invisible: !isMyself,
               name: '编辑',
               onClick: () => {
                 props.history.push(`/editor?id=${post.fileId}`);
               },
             },
             {
+              invisible: !isMyself,
               name: '投稿',
               onClick: () => {
                 modalStore.openTopicList({
@@ -765,6 +777,7 @@ export default observer((props: any) => {
               },
             },
             {
+              invisible: !isMyself,
               name: '隐藏',
               onClick: () => {
                 confirmDialogStore.show({
@@ -795,6 +808,7 @@ export default observer((props: any) => {
               stayOpenAfterClick: true,
             },
             {
+              invisible: !isMyself,
               name: '删除',
               onClick: () => {
                 confirmDialogStore.show({
@@ -849,7 +863,7 @@ export default observer((props: any) => {
             </div>
           </Fade>
         )}
-        {isMyself && isMobile && Menu()}
+        {isMobile && Menu()}
         <h2 className={`text-xl md:text-2xl text-gray-900 font-bold pt-0 pb-0`}>{post.title}</h2>
         <div className="flex items-center justify-between mt-2">
           <div className={`flex items-center gray info ${isMobile ? ' text-sm' : ''}`}>
@@ -884,21 +898,22 @@ export default observer((props: any) => {
           <div className="border-l-4 border-blue-400 pl-3 text-gray-9b mt-2 md:mt-0">
             {post.topics && post.topics.length > 0 && '被以下专题收录'}
             <div>
-              {(!post.topics || post.topics.length === 0) && (
-                <div className="flex items-center">
-                  收录到我的专题
-                  <div className="ml-3">
-                    <IncludedButton post={post as IPost} onClose={() => syncTopics()} />
+              {(!post.topics || post.topics.length === 0) &&
+                (isMyself || !post.author.privateContributionEnabled) && (
+                  <div className="flex items-center">
+                    收录到我的专题
+                    <div className="ml-3">
+                      <IncludedButton post={post as IPost} onClose={() => syncTopics()} />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
           <div className="pt-2 pb-5 md:pb-0">
             <TopicLabels
               topics={post.topics || []}
               post={post}
-              showContributionButton
+              showContributionButton={isMyself || !post.author.privateContributionEnabled}
               maxListCount={isMobile ? 1 : 10}
               onClose={() => syncTopics()}
             />

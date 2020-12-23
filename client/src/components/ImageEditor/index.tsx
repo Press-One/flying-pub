@@ -89,10 +89,12 @@ export default observer((props: any) => {
     state.avatarLoading = true;
 
     const imageElement = new Image();
-    if (imageElement) {
+    if (state.externalImageUrl) {
       imageElement.setAttribute('crossorigin', 'anonymous');
+      imageElement.src = state.externalImageUrl;
+    } else {
+      imageElement.src = state.avatarTemp;
     }
-    imageElement.src = state.externalImageUrl || state.avatarTemp;
 
     if (state.externalImageUrl) {
       await new Promise((resolve, reject) => {
@@ -104,27 +106,28 @@ export default observer((props: any) => {
     const crop = avatarEditorRef.current!.getCroppingRect();
     const imageBlob = await getCroppedImg(imageElement, crop, width, state.mimeType);
 
-    const run = async () => {
-      const formData = new FormData();
-      formData.append('file', imageBlob);
-      const res = await Api.uploadImage(formData);
+    (async () => {
+      try {
+        const formData = new FormData();
+        formData.append('file', imageBlob);
+        const res = await Api.uploadImage(formData);
 
-      const newUrl = (await res.json()).url;
-      props.getImageUrl(newUrl);
+        const newUrl = (await res.json()).url;
+        props.getImageUrl(newUrl);
 
-      state.avatar = newUrl;
+        state.avatar = newUrl;
 
-      await sleep(100);
+        await sleep(100);
 
-      state.avatarDialogOpen = false;
-      state.showMenu = false;
-      props.close && props.close(true);
-      state.showImageLib = false;
-    };
-
-    run().finally(() => {
+        state.avatarDialogOpen = false;
+        state.showMenu = false;
+        props.close && props.close(true);
+        state.showImageLib = false;
+      } catch (err) {
+        console.log(err);
+      }
       state.avatarLoading = false;
-    });
+    })();
   };
 
   React.useEffect(() => {
@@ -212,7 +215,14 @@ export default observer((props: any) => {
   );
 
   return (
-    <div className="image-editor">
+    <div
+      className={classNames(
+        {
+          'h-0 overflow-hidden': props.hidden,
+        },
+        'image-editor',
+      )}
+    >
       <div
         className={classNames(
           {

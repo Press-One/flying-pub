@@ -22,8 +22,7 @@ const Topic = require("../models/sequelize/topic");
 
 exports.get = async ctx => {
   const {
-    user,
-    sequelizeUser,
+    user
   } = ctx.verification;
   if (user.SSO) {
     user.SSO.reader.mixinWalletClientId = await ReaderWallet.getMixinClientIdByUserAddress(
@@ -71,23 +70,16 @@ exports.getPublicUser = async ctx => {
   ctx.body = user;
 };
 
-// update nickname or avatar or bio
 exports.put = async (ctx) => {
   const {
     nickname,
-    avatar,
-    bio
   } = ctx.request.body || {};
   const {
     user,
   } = ctx.verification;
 
-  if (!(nickname || avatar || bio)) {
-    throws(Errors.ERR_IS_REQUIRED('name or nickname or avatar or bio'));
-  }
-
   const data = removeEmpty(ctx.request.body);
-  const support_fields = ['nickname', 'bio', 'avatar', 'cover', 'privateSubscriptionEnabled'];
+  const support_fields = ['nickname', 'bio', 'avatar', 'cover', 'privateSubscriptionEnabled', 'privateContributionEnabled'];
   for (const [k, _] of Object.entries(data)) {
     if (!support_fields.includes(k)) {
       throws(Errors.ERR_IS_INVALID(k));
@@ -116,7 +108,7 @@ exports.put = async (ctx) => {
   ctx.body = updatedUser;
 }
 
-// set password for phone
+
 exports.setPassword = async (ctx) => {
   const {
     user
@@ -128,7 +120,6 @@ exports.setPassword = async (ctx) => {
     oldPassword,
     code,
   } = ctx.request.body || {};
-  // FIXME: hardcode provider: `phone`
   const provider = 'phone';
 
   assert(password, Errors.ERR_IS_REQUIRED('password'));
@@ -157,7 +148,6 @@ exports.setPassword = async (ctx) => {
   };
 }
 
-// add alread used new feat record
 exports.addNewFeatRecord = async (ctx) => {
   const {
     sequelizeUser,

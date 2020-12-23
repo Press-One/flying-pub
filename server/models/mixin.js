@@ -69,7 +69,7 @@ const start = () => {
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
           if (!profile) {
-            await mixin.sendText(`${config.settings['site.name']}没有查询到你的账户信息，请先到${config.settings['site.name']}登录一下`, msgObj);
+            await mixin.sendText(`${config.settings['site.name']}没有查询到你的 Mixin 账户信息，请先到${config.settings['site.name']}使用 ${config.settings['mixinApp.name']} 登录一下。如果你是用手机注册的，请到${config.settings['site.name']}绑定当前 Mixin 账号噢`, msgObj);
             return;
           }
           try {

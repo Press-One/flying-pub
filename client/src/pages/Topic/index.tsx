@@ -20,13 +20,14 @@ import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import marked from 'marked';
 import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
 import TopicIntroductionModal from './TopicIntroductionModal';
-import Settings from '@material-ui/icons/Settings';
+import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import { toJS } from 'mobx';
 import { resizeImage, disableBackgroundScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import copy from 'copy-to-clipboard';
 
 const TopView = observer(
   (props: {
@@ -103,14 +104,12 @@ const TopView = observer(
                 </div>
               </div>
               <div>
-                {props.isMyself && (
-                  <div
-                    className="pl-5 pr-4 flex items-center text-26"
-                    onClick={() => props.openTopicManagerMenu()}
-                  >
-                    <Settings />
-                  </div>
-                )}
+                <div
+                  className="pl-5 pr-4 flex items-center text-26"
+                  onClick={() => props.openTopicManagerMenu()}
+                >
+                  <MoreHoriz />
+                </div>
               </div>
             </div>
           </div>
@@ -600,35 +599,47 @@ export default observer((props: any) => {
                   fetchTopic();
                 }}
               />
-              {isMobile && (
-                <DrawerMenu
-                  open={state.showTopicManagerMenu}
-                  onClose={() => {
-                    state.showTopicManagerMenu = false;
-                    fetchTopic();
-                  }}
-                  items={[
-                    {
-                      name: '编辑',
-                      onClick: () => {
-                        state.showTopicEditorModal = true;
-                      },
-                    },
-                    {
-                      name: '管理文章',
-                      onClick: () => {
-                        state.showTopicPostManagerModal = true;
-                      },
-                    },
-                    {
-                      name: '删除',
-                      onClick: onDelete,
-                      className: 'text-red-400',
-                    },
-                  ]}
-                />
-              )}
             </div>
+          )}
+          {isMobile && (
+            <DrawerMenu
+              open={state.showTopicManagerMenu}
+              onClose={() => {
+                state.showTopicManagerMenu = false;
+                fetchTopic();
+              }}
+              items={[
+                {
+                  name: '分享',
+                  onClick: () => {
+                    copy(window.location.href);
+                    snackbarStore.show({
+                      message: '专题链接已复制',
+                    });
+                  },
+                },
+                {
+                  invisible: !props.isMyself,
+                  name: '编辑',
+                  onClick: () => {
+                    state.showTopicEditorModal = true;
+                  },
+                },
+                {
+                  invisible: !props.isMyself,
+                  name: '管理文章',
+                  onClick: () => {
+                    state.showTopicPostManagerModal = true;
+                  },
+                },
+                {
+                  invisible: !props.isMyself,
+                  name: '删除',
+                  onClick: onDelete,
+                  className: 'text-red-400',
+                },
+              ]}
+            />
           )}
           <div
             ref={ref}

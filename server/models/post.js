@@ -73,7 +73,9 @@ const packPost = async (post, options = {}) => {
       }
     }
     if (postJson.author) {
-      postJson.author = await packAuthor(postJson.author);
+      postJson.author = await packAuthor(postJson.author, {
+        withPrivateContributionEnabled: true
+      });
     }
   }
 
