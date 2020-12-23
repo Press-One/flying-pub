@@ -1,6 +1,5 @@
-import { action, observable, runInAction } from 'mobx';
+import { action, observable } from 'mobx';
 import { search as searchApi, SearchPayload } from 'apis/search';
-import { runLoading } from 'utils';
 
 interface SearchResultItem {
   cypressMatch: number
@@ -48,23 +47,17 @@ const search = async (payload: SearchPayload) => {
   if (state.loading) {
     return;
   }
+  state.searchWord = payload.q;
   state.loading = true;
   reset();
-
-  await runLoading(
-    (l) => { state.loading = l; },
-    async () => {
-      state.searchWord = payload.q;
-      const [res] = await Promise.all([
-        searchApi(payload)
-      ]);
-      runInAction(() => {
-        state.isFetched = true;
-        state.total = res.result.count;
-        state.resultItems = res.result.items.map(formatResultItem);
-      });
-    },
-  );
+  try {
+    const res = await searchApi(payload);
+    state.isFetched = true;
+    state.total = res.result.count;
+    state.resultItems = res.result.items.map(formatResultItem);
+  } finally {
+    state.loading = false;
+  }
 };
 
 export const SearchService = {

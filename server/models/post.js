@@ -420,45 +420,29 @@ exports.delete = async rId => {
 exports.syncToSearchService = async () => {
   const startAt = await Cache.pGet(TYPE, 'startAt');
   console.log('SYNC_SEARCH_START_AT: ', startAt);
-  if (!startAt) {
-    const posts = await Post.findAll({
-      order: [['updatedAt', 'ASC']],
-      limit: 20,
-    });
-    if (posts.length > 0) {
-      await Promise.all(posts.map(post => {
-        if (post.invisibility || post.deleted ) {
-          Log.createAnonymity('队列',`【删除索引】/posts/${post.rId}`);
-          return deleteFromSearchService(`/posts/${post.rId}`, post);
-        } else {
-          Log.createAnonymity('队列',`【更新索引】/posts/${post.rId}`);
-          return postToSearchService(`/posts/${post.rId}`, post);
-        }
-      }));
-      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
+  let filterParam = {
+    order: [['updatedAt', 'ASC']],
+    limit: 20,
+  }
+  if (startAt) {
+    filterParam.where = {
+      updatedAt: {
+        [Op.gt]: startAt
+      }
     }
-  } else {
-    const posts = await Post.findAll({
-      where: {
-        updatedAt: {
-          [Op.gt]: startAt
-        }
-      },
-      order: [['updatedAt', 'ASC']],
-      limit: 20,
-    });
-    if (posts.length > 0) {
-      await Promise.all(posts.map(post => {
-        if (post.invisibility || post.deleted ) {
-          Log.createAnonymity('队列',`【删除索引】/posts/${post.rId}`);
-          return deleteFromSearchService(`/posts/${post.rId}`, post);
-        } else {
-          Log.createAnonymity('队列',`【更新索引】/posts/${post.rId}`);
-          return postToSearchService(`/posts/${post.rId}`, post);
-        }
-      }));
-      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
-    }
+  }
+  const posts = await Post.findAll(filterParam);
+  if (posts.length > 0) {
+    await Promise.all(posts.map(post => {
+      if (post.invisibility || post.deleted ) {
+        Log.createAnonymity('搜索服务',`删除文章《${post.title}》索引 /posts/${post.rId}`);
+        return deleteFromSearchService(`/posts/${post.rId}`, post);
+      } else {
+        Log.createAnonymity('搜索服务',`更新文章《${post.title}》索引 /posts/${post.rId}`);
+        return postToSearchService(`/posts/${post.rId}`, post);
+      }
+    }));
+    await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
   }
 }
 
