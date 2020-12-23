@@ -214,6 +214,7 @@ export default observer((props: any) => {
                 </div>
               )}
               <div className="flex items-center">
+                {isMobile && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
                 {isMobile && settings['notification.enabled'] && userStore.isLogin && (
                   <Badge
                     badgeContent={unread}

@@ -6,6 +6,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 interface Props {
   className?: string
   value: string
+  placeholder?: string
   onChange: (v: string) => unknown
   onEnter: () => unknown
 }
@@ -36,7 +37,7 @@ export const SearchInput = observer((props: Props) => {
     >
       <OutlinedInput
         className="flex-1"
-        placeholder="要搜索的内容"
+        placeholder={props.placeholder || "要搜索的内容"}
         value={props.value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

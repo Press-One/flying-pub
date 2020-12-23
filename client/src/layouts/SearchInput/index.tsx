@@ -4,6 +4,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { Input, InputAdornment } from '@material-ui/core';
 import { Search } from '@material-ui/icons';
 import { useHistory } from "react-router-dom";
+import { isMobile, isPc } from 'utils';
 
 import './index.sass';
 
@@ -45,6 +46,12 @@ export const SearchInput = observer((props: Props) => {
     state.focused = false;
   };
 
+  const handleClick = () => {
+    if (isMobile) {
+      history.push(`/search?query=${state.value.trim()}`);
+    }
+  };
+
   const handleFocusInput = () => {
     state.inputRef.current?.focus();
   };
@@ -53,10 +60,11 @@ export const SearchInput = observer((props: Props) => {
     <div
       className={classNames(
         'header-search-input-box flex flex-center relative',
-        state.focused && 'focused',
+        state.focused && isPc && 'focused',
         props.className,
       )}
       ref={state.searchRoot}
+      onClick={handleClick}
     >
       <Input
         className="search-input flex-1 duration-300 ease-in-out text-white"

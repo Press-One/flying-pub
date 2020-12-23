@@ -4,7 +4,7 @@ import { action } from 'mobx';
 import Button from 'components/Button';
 import Pagination, { PaginationProps } from '@material-ui/lab/Pagination';
 
-import { getQuery, setQuery } from 'utils';
+import { getQuery, setQuery, removeQuery } from 'utils';
 import SubPage from 'components/SubPage';
 import Loading from 'components/Loading';
 
@@ -18,6 +18,7 @@ export default observer(() => {
     page: 0,
     limit: 20 as const,
     query: String(getQuery('query') || ''),
+    userAddress: String(getQuery('user_address') || ''),
     isSearched: false,
     get showLoading() {
       return !SearchService.state.isFetched || SearchService.state.loading;
@@ -30,18 +31,28 @@ export default observer(() => {
     }
     state.isSearched = true;
     state.page = newPage;
-    setQuery({
+    let queryParam: any = {
       query: state.query,
-    });
-    await SearchService.search({
+    }
+    let searchParam: any = {
       q: state.query,
       cy_termmust: true,
       start: newPage * state.limit,
       num: state.limit,
-    });
+    }
+    if (state.userAddress) {
+      queryParam.user_address = state.userAddress;
+      searchParam.user_address = state.userAddress;
+    } else {
+      removeQuery('user_address');
+    }
+    setQuery(queryParam);
+    await SearchService.search(searchParam);
   }, [state]);
 
   const handleChange = action((s: string) => { state.query = s; });
+
+  const handleUserAddressChange = action((s: string) => { state.userAddress = s; });
 
   const handleSearch = () => {
     if (!state.query) {
@@ -91,6 +102,15 @@ export default observer(() => {
             <Button onClick={handleSearch}>
               搜索
             </Button>
+          </div>
+          <div className="search-toolbar flex items-center justify-center mt-4">
+            <SearchInput
+              className="search-input-box flex-1 mr-2"
+              value={state.userAddress}
+              placeholder="可输入用于筛选的用户地址"
+              onChange={handleUserAddressChange}
+              onEnter={handleEnter}
+            />
           </div>
         </div>
 
