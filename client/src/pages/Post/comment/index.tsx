@@ -366,7 +366,7 @@ export default observer((props: IProps) => {
               onChange={handleEditorChange}
               margin="normal"
               variant="outlined"
-              inputProps={{ maxLength: 1500 }}
+              inputProps={{ maxLength: 8000 }}
             />
             {!isLogin && (
               <div className="text-gray-600 absolute top-0 left-0 mt-5 ml-1 bg-white p-3">
