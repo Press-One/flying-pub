@@ -19,7 +19,6 @@ export default observer(() => {
     active: false,
     showMask: false,
   }));
-  console.log(state.value);
   const address = getQuery('address') || '';
   const nickname = getQuery('nickname') || '';
   const who = React.useMemo(() => {

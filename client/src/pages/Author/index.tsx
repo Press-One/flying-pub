@@ -234,9 +234,7 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     return () => {
-      if (isPc) {
-        authorStore.clearAuthor();
-      }
+      authorStore.clearAuthor();
     };
   }, [authorStore]);
 
@@ -306,20 +304,23 @@ export default observer((props: any) => {
               </div>
             </div>
             <div className="flex items-center">
-              <div
-                className="pl-5 pr-3 flex items-center text-26 py-2"
-                onClick={() => {
-                  if (!userStore.isLogin) {
-                    modalStore.openLogin();
-                    return;
-                  }
-                  props.history.push(
-                    `/search?address=${author.address}&nickname=${author.nickname}`,
-                  );
-                }}
-              >
-                <Search />
-              </div>
+              {(settingsStore.settings.extra['search.enabled'] ||
+                localStorage.getItem('SEARCH_ENABLED')) && (
+                <div
+                  className="pl-5 pr-3 flex items-center text-26 py-2"
+                  onClick={() => {
+                    if (!userStore.isLogin) {
+                      modalStore.openLogin();
+                      return;
+                    }
+                    props.history.push(
+                      `/search?address=${author.address}&nickname=${author.nickname}`,
+                    );
+                  }}
+                >
+                  <Search />
+                </div>
+              )}
               {isMyself && (
                 <div
                   className="pl-5 pr-3 flex items-center text-26 py-2"
