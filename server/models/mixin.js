@@ -3,6 +3,9 @@ const config = require('../config');
 const Log = require('./log');
 const Profile = require('./profile');
 const Conversation = require('./conversation');
+const {
+  sleep
+} = require('../utils');
 
 let enabled = false;
 let connected = false;
@@ -69,13 +72,22 @@ const start = () => {
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
           if (!profile) {
-            await mixin.sendText(`${config.settings['site.name']}没有查询到你的 Mixin 账户信息，请先到${config.settings['site.name']}使用 ${config.settings['mixinApp.name']} 登录一下。如果你是用手机注册的，请到${config.settings['site.name']}绑定当前 Mixin 账号噢`, msgObj);
+            await mixin.sendText(`${config.settings['site.name']}没有查询到你的 Mixin 账户信息，请先到${config.settings['site.name']}登录注册一下。如果你是用手机注册的，请到${config.settings['site.name']}绑定当前 Mixin 账号噢。`, msgObj);
+            await sleep(1000);
+            await mixin.sendText('如有疑问，可以联系技术支持，Mixin ID 是：', msgObj);
+            await sleep(1000);
+            await mixin.sendText('39150127', msgObj);
             return;
           }
           try {
-            await tryCreateConversation(profile.userId, msgObj);
-            const text = '你成功开通了消息提醒。当有新的消息，我会第一时间通知你';
-            await trySendText(profile.userId, text);
+            const conversation = await tryCreateConversation(profile.userId, msgObj);
+            if (conversation) {
+              await trySendText(profile.userId, '你成功开通了消息提醒。当有新的消息，我会第一时间通知你');
+            } else {
+              await trySendText(profile.userId, '哈喽，如果你在使用的时候遇到了问题，可以联系技术支持，Mixin ID 是：');
+              await sleep(1000);
+              await trySendText(profile.userId, '39150127');
+            }
           } catch (e) {
             console.log(e);
             await mixin.sendText('服务出错了', msgObj);
@@ -103,6 +115,7 @@ const tryCreateConversation = async (userId, msgObj) => {
   if (conversation) {
     Log.create(userId, '开通 Mixin 通知');
   }
+  return conversation;
 }
 
 const trySendToUser = async (userId, text, options = {}) => {

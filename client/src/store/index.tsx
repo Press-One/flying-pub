@@ -16,6 +16,7 @@ import { createNotificationStore } from './notification';
 import { createConfirmDialogStore } from './confirmDialog';
 import { createFilesStore } from './files';
 import { createPublishDialogStore } from './publishDialog';
+import { createAuthorStore } from './author';
 
 const storeContext = React.createContext<any>(null);
 
@@ -39,6 +40,7 @@ const useCreateStore = () => ({
   confirmDialogStore: useLocalStore(createConfirmDialogStore),
   fileStore: useLocalStore(createFilesStore),
   publishDialogStore: useLocalStore(createPublishDialogStore),
+  authorStore: useLocalStore(createAuthorStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {

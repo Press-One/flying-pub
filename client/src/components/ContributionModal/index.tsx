@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog, Tab, Tabs, TextField } from '@material-ui/core';
+import { Dialog, Tab, Tabs } from '@material-ui/core';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import classNames from 'classnames';
@@ -12,6 +12,7 @@ import { sleep, isMobile } from 'utils';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
 import Img from 'components/Img';
 import Tooltip from '@material-ui/core/Tooltip';
+import SearchInput from 'components/SearchInput';
 
 const LIMIT = 25;
 
@@ -34,7 +35,6 @@ const TopicLists = observer((props: IProps) => {
     includedTopicUuidMap: {} as any,
     pendingTopicUuidMap: {} as any,
     showTopicEditorModal: false,
-    keyword: '',
     searchKeyword: '',
   }));
 
@@ -136,37 +136,20 @@ const TopicLists = observer((props: IProps) => {
     }
   };
 
-  const search = async () => {
+  const search = (value: string) => {
     state.topics = [];
     state.page = 0;
     state.isFetched = false;
-    state.searchKeyword = state.keyword;
+    state.searchKeyword = value;
   };
-
-  const onKeyDown = (e: any) => {
-    if (e.keyCode === 13) {
-      search();
-    }
-  };
-
-  const SearchInput = () => (
-    <div className="mt-2 -mb-2 flex items-center justify-center">
-      <TextField
-        className="po-input po-text-14 w-72"
-        placeholder="搜索专题"
-        size="small"
-        value={state.keyword}
-        onChange={(e) => (state.keyword = e.target.value)}
-        onKeyDown={onKeyDown}
-        margin="dense"
-        variant="outlined"
-      />
-    </div>
-  );
 
   return (
     <div>
-      {props.type === 'publicTopics' && SearchInput()}
+      {props.type === 'publicTopics' && (
+        <div className="mt-2 -mb-2 flex justify-center">
+          <SearchInput className="w-64" placeholder="搜索专题" search={search} />
+        </div>
+      )}
       {state.isFetched ? (
         <div
           className={classNames(

@@ -22,7 +22,7 @@ import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
 import TopicIntroductionModal from './TopicIntroductionModal';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import { toJS } from 'mobx';
-import { resizeImage, disableBackgroundScroll } from 'utils';
+import { resizeImage, stopBodyScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
@@ -430,7 +430,7 @@ export default observer((props: any) => {
   const showImageView = (show: boolean) => {
     setShowImage(show);
     if (isMobile) {
-      disableBackgroundScroll(show);
+      stopBodyScroll(show);
     }
   };
 

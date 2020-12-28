@@ -10,12 +10,16 @@ interface IProps {
   hasNextPage: boolean;
   threshold: 350;
   onLoadMore: () => void;
+  disabled?: boolean;
 }
 
 export default (props: IProps) => {
   const ref = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
+    if (props.disabled) {
+      return;
+    }
     const debounceScroll = debounce(async () => {
       if (props.loading) {
         await sleep(200);

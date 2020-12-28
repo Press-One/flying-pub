@@ -9,7 +9,7 @@ export const getQueryObject = () => {
 };
 
 export const getQuery = (name: string) => {
-  return qs.parse(window.location.search)[name];
+  return String(qs.parse(window.location.search)[name] || '');
 };
 
 export const setQuery = (param: any = {}) => {
@@ -120,7 +120,7 @@ export const getTokenUrl = () => {
 let stoppedBodyScroll = false;
 let scrollTop = 0;
 export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
-  if (isPc || isWeChat) {
+  if (isWeChat) {
     return;
   }
   const { disabled } = options;
@@ -240,18 +240,6 @@ const checkVisible = (element: any) => {
   var rect = element.getBoundingClientRect();
   var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
   return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
-}
-
-export const disableBackgroundScroll = (disable: boolean) => {
-  if (disable) {
-    document.body.style.overflow = 'hidden';
-    if (document.body.scrollHeight > document.body.clientHeight) {
-      document.body.style.paddingRight = '15px';
-    }
-  } else {
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
 }
 
 export const resizeImageByWidth = (width: number, img: HTMLImageElement, file: File) => {

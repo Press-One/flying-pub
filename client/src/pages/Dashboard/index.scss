@@ -85,22 +85,5 @@
       font-weight: 500;
       color: white !important;
     }
-
-    .MuiPaginationItem-page {
-      color: #888888;
-
-      &.Mui-selected,
-      &.Mui-selected:hover {
-        background: #63b3ed;
-        color: #fff;
-        border-color: #63b3ed;
-      }
-
-      &:hover {
-        background: none;
-        color: #63b3ed;
-        border-color: #63b3ed;
-      }
-    }
   }
 }

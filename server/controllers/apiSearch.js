@@ -108,6 +108,26 @@ exports.get = async ctx => {
     } else {
       Log.createAnonymity('游客', `【搜索】${ctx.query.q}`);
     }
+    if (json.result.items.length > 0) {
+      json.result.items = await Promise.all((json.result.items.map(async item => {
+        try {
+          const rId = item.uri.split('/').pop();
+          const post = await Post.getByRId(rId);
+          if (post) {
+            item.post = post;
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        return item;
+      })));
+      json.result.items = json.result.items.sort((a, b) => {
+        if (!a.post || !b.post) {
+          return 0;
+        }
+        return (b.post.commentsCount + b.post.upVotesCount) - (a.post.commentsCount + a.post.upVotesCount)
+      });
+    }
     ctx.body = json;
   } catch(e) {
     console.log(e);
