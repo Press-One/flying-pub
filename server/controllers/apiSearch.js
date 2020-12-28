@@ -18,6 +18,8 @@ const htmlToTextOptions = {
     'img': { format: 'skip' },
   }
 };
+const Cache = require('../models/cache');
+const TYPE = `${config.serviceKey}_SEARCH`;
 
 const postToSearchService = (uri, post) => {
   return new Promise(async (resolve, reject) => {
@@ -151,9 +153,9 @@ exports.post = async ctx => {
     const json = await postToSearchService(uri, post);
     const userId = ctx.verification && ctx.verification.user.id;
     if (userId) {
-      Log.create(userId, `【更新索引】${uri}`);
+      Log.create(userId, `【更新搜索索引】${uri}`);
     } else {
-      Log.createAnonymity('游客', `【更新索引】${uri}`);
+      Log.createAnonymity('游客', `【更新搜索索引】${uri}`);
     }
     ctx.body = json;
   } catch(e) {
@@ -173,12 +175,30 @@ exports.del = async ctx => {
     const json = await deleteFromSearchService(uri);
     const userId = ctx.verification && ctx.verification.user.id;
     if (userId) {
-      Log.create(userId, `【删除索引】${uri}`);
+      Log.create(userId, `【删除搜索索引】${uri}`);
     } else {
-      Log.createAnonymity('游客', `【删除索引】${uri}`);
+      Log.createAnonymity('游客', `【删除搜索索引】${uri}`);
     }
     ctx.body = json;
   } catch(e) {
     console.error(e);
   }
 };
+
+exports.resync = async ctx => {
+  if (!(config && config.search && config.search.enabled)) {
+    return;
+  }
+  try {
+    await Cache.pDel(TYPE, 'startAt');
+    const userId = ctx.verification && ctx.verification.user.id;
+    if (userId) {
+      Log.create(userId, `【重新同步搜索索引】`);
+    };
+    ctx.ok({
+      success: true
+    });
+  } catch(e) {
+    console.error(e);
+  }
+}

@@ -14,6 +14,7 @@ const {
 const {
   pushToNotificationQueue,
 } = require("../models/notification");
+const { postToSearchService, deleteFromSearchService } = require('./apiSearch');
 
 exports.list = async ctx => {
   const {
@@ -134,6 +135,10 @@ exports.hide = async ctx => {
   });
   await File.hide(id);
   Log.create(user.id, `隐藏文章 ${file.title} ${file.id}`);
+  (async () => {
+    await deleteFromSearchService(`/posts/${file.rId}`, file);
+    Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+  })();
   ctx.body = true;
 };
 
@@ -150,6 +155,10 @@ exports.show = async ctx => {
   });
   await File.show(id);
   Log.create(user.id, `显示文章 ${file.title} ${file.id}`);
+  (async () => {
+    await postToSearchService(`/posts/${file.rId}`, file);
+    Log.createAnonymity('搜索服务',`更新文章《${file.title}》索引 /posts/${file.rId}`);
+  })();
   ctx.body = true;
 };
 
@@ -168,6 +177,10 @@ exports.remove = async ctx => {
   }
   await File.delete(id);
   Log.create(user.id, `删除文章 ${file.title} ${file.id}`);
+  (async () => {
+    await deleteFromSearchService(`/posts/${file.rId}`, file);
+    Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+  })();
   ctx.body = true;
 };
 
@@ -242,6 +255,10 @@ exports.update = async ctx => {
       user.id,
       `被替换的文章 ${file.title}，id ${file.id}`
     );
+    (async () => {
+      await deleteFromSearchService(`/posts/${file.rId}`, file);
+      Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+    })();
     ctx.body = {
       newFile,
       updatedFile: file

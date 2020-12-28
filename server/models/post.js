@@ -421,12 +421,12 @@ exports.syncToSearchService = async () => {
   const startAt = await Cache.pGet(TYPE, 'startAt');
   console.log('SYNC_SEARCH_START_AT: ', startAt);
   let filterParam = {
-    order: [['updatedAt', 'ASC']],
+    order: [['createdAt', 'ASC']],
     limit: 20,
   }
   if (startAt) {
     filterParam.where = {
-      updatedAt: {
+      createdAt: {
         [Op.gt]: startAt
       }
     }
@@ -442,7 +442,7 @@ exports.syncToSearchService = async () => {
         return postToSearchService(`/posts/${post.rId}`, post);
       }
     }));
-    await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].updatedAt);
+    await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
   }
 }
 
