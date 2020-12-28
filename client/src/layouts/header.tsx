@@ -40,16 +40,12 @@ export default observer((props: any) => {
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
   const { user, isLogin } = userStore;
-  const { pathname } = props.location;
   const unread = notificationStore.getUnread() || 0;
   const location = useLocation();
+  const pathname = location.pathname;
   const showSearchEntry = React.useMemo(() => {
-    return (
-      location.pathname === '/' ||
-      location.pathname === '/search' ||
-      (isPc && pathname.includes('/authors/'))
-    );
-  }, [location.pathname]);
+    return pathname === '/' || pathname === '/search' || (isPc && pathname.includes('/authors/'));
+  }, [pathname]);
 
   React.useEffect(() => {
     pushPath(pathname);
