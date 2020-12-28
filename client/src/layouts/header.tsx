@@ -44,11 +44,11 @@ export default observer((props: any) => {
   const unread = notificationStore.getUnread() || 0;
   const location = useLocation();
   const showSearchEntry = React.useMemo(() => {
-    if (isPc) {
-      return location.pathname === '/' || location.pathname === '/authors';
-    } else if (isMobile) {
-      return location.pathname === '/' || location.pathname === '/search';
-    }
+    return (
+      location.pathname === '/' ||
+      location.pathname === '/search' ||
+      (isPc && pathname.includes('/authors/'))
+    );
   }, [location.pathname]);
 
   React.useEffect(() => {
@@ -226,8 +226,7 @@ export default observer((props: any) => {
                 </div>
               )}
               <div className="flex items-center">
-                {isMobile &&
-                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
                   showSearchEntry && <Search />}
                 {isMobile && settings['notification.enabled'] && userStore.isLogin && (
                   <Badge

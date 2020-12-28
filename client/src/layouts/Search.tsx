@@ -8,7 +8,6 @@ import qs from 'query-string';
 import { useStore } from 'store';
 import SearchInput from 'components/SearchInput';
 import { isMobile, isPc, getQuery, sleep, scrollToHere } from 'utils';
-import classNames from 'classnames';
 
 export default observer(() => {
   const history = useHistory();
@@ -17,11 +16,10 @@ export default observer(() => {
   const isSearchPage = location.pathname === '/search';
   const state = useLocalStore(() => ({
     value: isSearchPage ? getQuery('query') : '',
-    show: false,
     active: false,
     showMask: false,
-    mounted: false,
   }));
+  console.log(state.value);
   const address = getQuery('address') || '';
   const nickname = getQuery('nickname') || '';
   const who = React.useMemo(() => {
@@ -44,16 +42,12 @@ export default observer(() => {
         if (status) {
           state.active = true;
           if (!isSearchPage) {
-            await sleep(1);
-          }
-          state.show = true;
-          if (!isSearchPage) {
             state.showMask = true;
           }
         } else {
-          state.show = false;
           state.showMask = false;
           state.active = false;
+          state.value = '';
         }
       })();
     },
@@ -61,7 +55,7 @@ export default observer(() => {
   );
 
   React.useEffect(() => {
-    if (isMobile && isSearchPage) {
+    if (isSearchPage) {
       if (!state.active) {
         toggle(true);
       }
@@ -69,7 +63,7 @@ export default observer(() => {
   }, [state, isSearchPage, toggle]);
 
   React.useEffect(() => {
-    if (isMobile && !isSearchPage) {
+    if (!isSearchPage) {
       toggle(false);
     }
   }, [isSearchPage, toggle]);
@@ -80,7 +74,7 @@ export default observer(() => {
 
   React.useEffect(() => {
     return () => {
-      if (isMobile && authorStore.author.address) {
+      if (authorStore.author.address) {
         authorStore.clearAuthor();
       }
     };
@@ -89,6 +83,7 @@ export default observer(() => {
   const handleSearch = (value: string) => {
     scrollToHere(0);
     if (value.trim()) {
+      state.value = value;
       if (isMobile) {
         state.showMask = false;
       }
@@ -116,37 +111,31 @@ export default observer(() => {
       stopBodyScroll(true);
     }
     toggle(true);
-    state.value = '';
   };
 
   return (
     <div className="mr-8">
-      {!state.show && (
+      {!state.active && (
         <div className="text-28 cursor-pointer flex ml-2 text-gray-99">
           <Search onClick={onFocus} />
         </div>
       )}
       {state.active && (
-        <div
-          className={classNames(
-            {
-              show: state.show,
-              md: isPc,
-            },
-            'absolute left-0 w-full md:flex md:justify-center bg-white z-30 h-12 md:h-auto search-input-entry duration-300 ease-in-out transition-all md:py-2',
-          )}
-        >
-          <Fade in={true} timeout={0}>
+        <div className="absolute top-0 left-0 w-full md:flex md:justify-center bg-white z-30 h-12 md:h-auto">
+          <Fade in={true} timeout={500}>
             <div>
               {isPc && (
                 <SearchInput
+                  defaultValue={state.value}
                   required
-                  autoFocus
+                  autoFocus={!state.value}
                   placeholder={`搜索${who}文章`}
                   search={handleSearch}
                   onBlur={() => {
-                    stopBodyScroll(false);
-                    toggle(false);
+                    if (!isSearchPage) {
+                      stopBodyScroll(false);
+                      toggle(false);
+                    }
                   }}
                 />
               )}
@@ -198,17 +187,6 @@ export default observer(() => {
           }}
         />
       )}
-      <style jsx>{`
-        .search-input-entry {
-          top: -48px;
-        }
-        .search-input-entry.show {
-          top: 0;
-        }
-        .search-input-entry.show.md {
-          top: -8px;
-        }
-      `}</style>
     </div>
   );
 });

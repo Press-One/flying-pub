@@ -7,12 +7,12 @@ import { useStore } from 'store';
 import { SearchService, SearchResultItem } from './helper/SearchService';
 import classNames from 'classnames';
 import BottomLine from 'components/BottomLine';
-import SearchInput from 'components/SearchInput';
 import { isMobile, isPc, getImageWidth, ago } from 'utils';
 import Img from 'components/Img';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import SmartLink from 'components/SmartLink';
 import BackToTop from 'components/BackToTop';
+import BackButton from 'components/BackButton';
 
 const ItemEntry = observer((props: { index: number; item: SearchResultItem }) => {
   const { index, item } = props;
@@ -116,7 +116,7 @@ const ItemEntry = observer((props: { index: number; item: SearchResultItem }) =>
 });
 
 export default observer(() => {
-  const { userStore, settingsStore } = useStore();
+  const { settingsStore } = useStore();
   const state = useLocalStore(() => ({
     page: 0,
     limit: 20,
@@ -124,20 +124,6 @@ export default observer(() => {
     isSearched: false,
   }));
   const address = getQuery('address') || '';
-  const nickname = getQuery('nickname') || '';
-  const who = React.useMemo(() => {
-    if (!address) {
-      return '';
-    }
-    const isMyself = userStore.isLogin && userStore.user.address === address;
-    if (isMyself) {
-      return '我的';
-    }
-    if (address) {
-      return ` ${nickname} 的`;
-    }
-    return '';
-  }, [userStore.isLogin, userStore.user, address, nickname]);
 
   const infiniteRef: any = useWindowInfiniteScroll({
     disabled: isPc,
@@ -203,33 +189,19 @@ export default observer(() => {
 
   return (
     <div className="md:w-7/12 m-auto md:pb-8">
+      {isPc && (
+        <div className="relative">
+          <BackButton className="-ml-32" />
+        </div>
+      )}
       <div
-        className="bg-white md:rounded-12 md:shadow-md search-page min-h-screen md:min-h-90-vh pt-12 md:pt-0"
+        className="bg-white md:rounded-12 md:shadow-md search-page min-h-screen md:min-h-90-vh pt-12 md:pt-8"
         ref={infiniteRef}
       >
-        {isPc && (
-          <div className="search-box mx-auto pt-8 pb-4">
-            <div className="flex items-center justify-center">
-              <SearchInput
-                defaultValue={getQuery('query')}
-                required
-                autoFocus
-                placeholder={`搜索${who}文章`}
-                search={(value: string) => {
-                  window.scrollTo(0, 0);
-                  SearchService.reset();
-                  state.page = 0;
-                  search(value);
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         {state.isSearched && (
           <div>
             {(isPc || !SearchService.state.isFetched) && SearchService.state.loading && (
-              <div className="pt-32 mt-8 md:pt-16 md:pb-8">
+              <div className="pt-32 mt-8 md:pt-24 md:pb-8">
                 <Loading />
               </div>
             )}

@@ -837,7 +837,7 @@ export default observer((props: any) => {
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="px-4 md:px-0 md:w-7/12 m-auto relative post-page">
         <div className="hidden md:block fixed">
-          <BackButton history={props.history} />
+          <BackButton className="-ml-40" />
         </div>
         {isPc && state.showExtra && (
           <Fade in={true} timeout={500}>
