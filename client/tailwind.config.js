@@ -98,6 +98,20 @@ module.exports = {
           )
         )
       },
+      minHeight: {
+        ...Object.fromEntries(
+          [50, 60, 70, 80, 90].map(
+            v => [`${v}-vh`, `${v}vh`]
+          )
+        ),
+      },
+      maxWidth: {
+        ...Object.fromEntries(
+          Array(72).fill(0).map(
+            (_v, i) => [`${i + 1}`, `${(i + 1) * 0.25}rem`],
+          ),
+        ),
+      },
     },
   },
 };

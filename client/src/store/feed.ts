@@ -84,7 +84,7 @@ export function createFeedStore() {
     addPosts(posts: IPost[]) {
       this.isNew = false;
       for (const post of posts) {
-        if (!this.rIdsSet.has(post.rId)) {
+        if (!this.rIdsSet.has(post.rId) && !this.stickyRIdsSet.has(post.rId)) {
           this.postMap[post.rId] = post;
           this.rIdsSet.add(post.rId);
         }

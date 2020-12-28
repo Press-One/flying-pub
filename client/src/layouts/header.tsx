@@ -18,14 +18,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
 import Badge from '@material-ui/core/Badge';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useStore } from 'store';
 import { getApiEndpoint, isMobile, isPc } from 'utils';
 import Img from 'components/Img';
-import { SearchInput } from './SearchInput';
+import Search from './Search';
+import classNames from 'classnames';
 
 export default observer((props: any) => {
-  const showSearchEntry = window.location.pathname !== '/search';
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [showBack, setShowBack] = React.useState(false);
   const {
@@ -42,12 +42,14 @@ export default observer((props: any) => {
   const { user, isLogin } = userStore;
   const { pathname } = props.location;
   const unread = notificationStore.getUnread() || 0;
-
-  const handleClose = () => setAnchorEl(null);
-
-  const handleOpenLogin = () => {
-    modalStore.openLogin();
-  };
+  const location = useLocation();
+  const showSearchEntry = React.useMemo(() => {
+    if (isPc) {
+      return location.pathname === '/' || location.pathname === '/authors';
+    } else if (isMobile) {
+      return location.pathname === '/' || location.pathname === '/search';
+    }
+  }, [location.pathname]);
 
   React.useEffect(() => {
     pushPath(pathname);
@@ -61,6 +63,12 @@ export default observer((props: any) => {
   if (!preloadStore.ready) {
     return isMobile ? <div className="h-12" /> : <div style={{ height: 53 }} />;
   }
+
+  const handleClose = () => setAnchorEl(null);
+
+  const handleOpenLogin = () => {
+    modalStore.openLogin();
+  };
 
   const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
 
@@ -182,7 +190,11 @@ export default observer((props: any) => {
     <Fade in={true} timeout={isMobile ? 400 : 1500}>
       <div>
         {isMobile && (
-          <div>
+          <div
+            className={classNames({
+              'fixed top-0 left-0 w-full': pathname === '/search',
+            })}
+          >
             <div className="border-t border-gray-300 border-opacity-50" />
             <div className="flex justify-between items-center py-1 px-3 border-b border-gray-200 h-12">
               {!showBack && (
@@ -201,20 +213,22 @@ export default observer((props: any) => {
               {showBack && (
                 <div className="flex items-center">
                   <div
-                    className="flex items-center text-xl text-gray-700 p-2"
+                    className="flex items-center text-xl text-gray-99 p-2"
                     onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
                   >
                     <ArrowBackIos />
                   </div>
                   {prevPath && prevPath !== '/' && (
-                    <Link to="/" className="flex items-center text-28 text-gray-700 p-2 ml-2">
+                    <Link to="/" className="flex items-center text-28 text-gray-99 p-2 ml-2">
                       <HomeOutlined />
                     </Link>
                   )}
                 </div>
               )}
               <div className="flex items-center">
-                {isMobile && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
+                {isMobile &&
+                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                  showSearchEntry && <Search />}
                 {isMobile && settings['notification.enabled'] && userStore.isLogin && (
                   <Badge
                     badgeContent={unread}
@@ -224,14 +238,14 @@ export default observer((props: any) => {
                       modalStore.openNotification();
                     }}
                   >
-                    <div className="text-3xl flex items-center text-gray-88">
+                    <div className="text-3xl flex items-center text-gray-99">
                       <NotificationsOutlined />
                     </div>
                   </Badge>
                 )}
                 {!userStore.isLogin && (
                   <div
-                    className="text-26 text-gray-af flex justify-center items-center leading-none pl-2 pr-1"
+                    className="text-24 text-gray-99 flex justify-center items-center leading-none pl-2 pr-1"
                     onClick={() => {
                       handleOpenLogin();
                     }}
@@ -255,9 +269,9 @@ export default observer((props: any) => {
           </div>
         )}
         {isPc && (
-          <div className="py-2 border-b border-gray-300">
+          <div className="py-2 border-b border-gray-300 box-border header">
             <div className="container mx-auto">
-              <div className="w-916 mx-auto flex justify-between items-center">
+              <div className="w-916 mx-auto flex justify-between items-center relative">
                 <Link to="/">
                   <div className="flex items-center">
                     <img
@@ -270,8 +284,9 @@ export default observer((props: any) => {
                   </div>
                 </Link>
                 {!userStore.isLogin && (
-                  <div className="flex items-center -mr-2">
-                    {isPc && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
+                  <div className="flex items-center">
+                    {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                      showSearchEntry && <Search />}
                     <Button
                       size="small"
                       onClick={() => {
@@ -285,39 +300,44 @@ export default observer((props: any) => {
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
-                    {isPc && settings.extra['search.enabled'] && showSearchEntry && <SearchInput className="mr-8" />}
-                    {isPc && (
+                    {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                      showSearchEntry && (
+                        <div className="mt-2-px">
+                          <Search />
+                        </div>
+                      )}
+                    <div className="flex items-center">
+                      {settings['notification.enabled'] && (
+                        <Badge
+                          badgeContent={unread}
+                          className="mr-6 pr-2 transform scale-90 cursor-pointer mt-1-px"
+                          color="error"
+                          onClick={() => {
+                            modalStore.openNotification();
+                          }}
+                        >
+                          <div className="text-3xl flex items-center text-gray-88">
+                            <NotificationsOutlined />
+                          </div>
+                        </Badge>
+                      )}
                       <Link to="/dashboard">
                         <Button size="small" className="mr-5">
                           写文章
                         </Button>
                       </Link>
-                    )}
-                    {settings['notification.enabled'] && (
-                      <Badge
-                        badgeContent={unread}
-                        className="mr-4 transform scale-90 cursor-pointer"
-                        color="error"
-                        onClick={() => {
-                          modalStore.openNotification();
-                        }}
-                      >
-                        <div className="text-3xl flex items-center text-gray-88">
-                          <NotificationsOutlined />
+                      {isLogin && (
+                        <div className="flex items-center pl-1 mr-3">
+                          <Link to={`/authors/${user.address}`}>
+                            <Img src={user.avatar} className="w-8 h-8 rounded-full" alt="头像" />
+                          </Link>
                         </div>
-                      </Badge>
-                    )}
-                    {isLogin && (
-                      <div className="flex items-center pl-1 mr-3">
-                        <Link to={`/authors/${user.address}`}>
-                          <Img src={user.avatar} className="w-8 h-8 rounded-full" alt="头像" />
-                        </Link>
-                      </div>
-                    )}
-                    <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                      <MoreHoriz />
-                    </IconButton>
-                    {pcMenuView()}
+                      )}
+                      <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
+                        <MoreHoriz />
+                      </IconButton>
+                      {pcMenuView()}
+                    </div>
                   </div>
                 )}
               </div>
@@ -327,6 +347,11 @@ export default observer((props: any) => {
         <style jsx global>{`
           .MuiIconButton-root {
             padding: 6px;
+          }
+        `}</style>
+        <style jsx>{`
+          .header {
+            height: 53px;
           }
         `}</style>
       </div>

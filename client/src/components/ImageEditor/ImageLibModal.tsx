@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { TextField } from '@material-ui/core';
 import Loading from 'components/Loading';
 import pixabayApi from 'apis/pixabay';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
@@ -10,6 +9,7 @@ import DrawerModal from 'components/DrawerModal';
 import { isMobile, sleep, isPc } from 'utils';
 import Tooltip from '@material-ui/core/Tooltip';
 import classNames from 'classnames';
+import SearchInput from 'components/SearchInput';
 
 const LIMIT = isMobile ? 20 : 24;
 
@@ -28,7 +28,6 @@ const ImageLib = observer((props: any) => {
     isFetched: false,
     page: 1,
     searchKeyword: '',
-    keyword: '',
     hasMore: false,
     total: 0,
     images: [] as any,
@@ -82,47 +81,17 @@ const ImageLib = observer((props: any) => {
     },
   });
 
-  const search = async () => {
+  const search = (value: string) => {
     state.images = [];
     state.page = 1;
     state.isFetched = false;
-    state.searchKeyword = state.keyword;
+    state.searchKeyword = value;
   };
-
-  const onKeyDown = (e: any) => {
-    if (e.keyCode === 13) {
-      search();
-      e.target.blur();
-    }
-  };
-
-  const SearchInput = () => (
-    <div className="flex items-center justify-center image-search">
-      <form action="/">
-        <TextField
-          className="w-64 md:w-72"
-          placeholder="输入关键词"
-          size="small"
-          value={state.keyword}
-          onChange={(e) => (state.keyword = e.target.value)}
-          onKeyDown={onKeyDown}
-          margin="dense"
-          variant="outlined"
-          type="search"
-        />
-      </form>
-      <style jsx global>{`
-        .image-search .MuiOutlinedInput-root {
-          border-radius: 30px !important;
-        }
-      `}</style>
-    </div>
-  );
 
   return (
     <div className="bg-white rounded-12 text-center p-0 md:p-8 md:pt-5">
-      <div className="md:w-600-px relative pt-4 md:pt-0">
-        {SearchInput()}
+      <div className="md:w-600-px relative pt-4 md:pt-0 flex justify-center">
+        <SearchInput className="w-64" placeholder="输入关键词" search={search} />
         {isPc && (
           <Tooltip placement="top" arrow title="图片由 Pixabay 提供，都是免费可自由使用的">
             <a

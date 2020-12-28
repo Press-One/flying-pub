@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Dialog, TextField } from '@material-ui/core';
+import { Dialog } from '@material-ui/core';
 import { useStore } from 'store';
 import Button from 'components/Button';
 import TopicEditorModal from 'components/TopicEditorModal';
@@ -13,6 +13,7 @@ import DrawerModal from 'components/DrawerModal';
 import ModalLink from 'components/ModalLink';
 import Img from 'components/Img';
 import classNames from 'classnames';
+import SearchInput from 'components/SearchInput';
 
 const LIMIT = 15;
 
@@ -195,46 +196,16 @@ const TopicList = observer(() => {
     }
   };
 
-  const search = async () => {
-    if (state.keyword === state.searchKeyword) {
+  const search = (value: string) => {
+    if (value === state.searchKeyword) {
       return;
     }
     state.isFetched = false;
     state.page = 0;
     state.topics = [];
     state.total = 0;
-    state.searchKeyword = state.keyword;
+    state.searchKeyword = value;
   };
-
-  const onKeyDown = (e: any) => {
-    if (e.keyCode === 13) {
-      search();
-      e.target.blur();
-    }
-  };
-
-  const SearchInput = () => (
-    <div className="mt-2 -mb-2 flex items-center justify-center pb-3 topic-search">
-      <form action="/">
-        <TextField
-          className="po-input po-text-14 w-72 rounded"
-          placeholder="搜索专题"
-          size="small"
-          value={state.keyword}
-          onChange={(e) => (state.keyword = e.target.value)}
-          onKeyDown={onKeyDown}
-          margin="dense"
-          variant="outlined"
-          type="search"
-        />
-      </form>
-      <style jsx global>{`
-        .image-search .MuiOutlinedInput-root {
-          border-radius: 30px !important;
-        }
-      `}</style>
-    </div>
-  );
 
   return (
     <div className="bg-white rounded-12 text-gray-4a">
@@ -258,7 +229,11 @@ const TopicList = observer(() => {
           'w-full md:w-400-px h-60-vh md:h-400-px overflow-y-auto',
         )}
       >
-        {state.isFetched && isContributionToPublicTopics && SearchInput()}
+        {state.isFetched && isContributionToPublicTopics && (
+          <div className="mt-3 -mb-2 pb-9-px flex justify-center">
+            <SearchInput className="w-64" placeholder="搜索专题" search={search} />
+          </div>
+        )}
         {loading && (
           <div className="pt-24 flex items-center justify-center">
             <Loading />

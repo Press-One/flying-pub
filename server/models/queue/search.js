@@ -8,14 +8,14 @@ exports.createSyncSearchIndexQueue = () => {
   const queue = createQueue(`${config.serviceKey}_SYNC_SEARCH`, {
     limiter: {
       max: 1,
-      duration: 120 * 1000 * 1
+      duration: (config.search.queueDuration || 120) * 1000 * 1
     }
   });
 
   queue.add(`${config.serviceKey}_SYNC`, {}, {
     priority: 1,
     repeat: {
-      every: 120 * 1000 * 1
+      every: (config.search.queueDuration || 120) * 1000 * 1
     },
     removeOnComplete: true,
     removeOnFail: true

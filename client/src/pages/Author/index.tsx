@@ -13,17 +13,16 @@ import TopicEditorModal from 'components/TopicEditorModal';
 import DraftsModal from './DraftsModal';
 import subscriptionApi from 'apis/subscription';
 import authorApi from 'apis/author';
-import { IAuthor } from 'apis/author';
 import { FilterType } from 'apis/post';
 import postApi from 'apis/post';
 import { isEmpty } from 'lodash';
 import { toJS } from 'mobx';
-import { resizeFullImage, disableBackgroundScroll } from 'utils';
+import { resizeFullImage, stopBodyScroll } from 'utils';
 import Img from 'components/Img';
 import Viewer from 'react-viewer';
 import classNames from 'classnames';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
-import { Edit, Settings } from '@material-ui/icons';
+import { Edit, Settings, Search } from '@material-ui/icons';
 import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DrawerMenu from 'components/DrawerMenu';
@@ -55,11 +54,11 @@ export default observer((props: any) => {
     walletStore,
     settingsStore,
     pathStore,
+    authorStore,
   } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
     isFetchedAuthor: false,
-    author: {} as IAuthor,
     showTopicEditorModal: false,
     loadingOthers: false,
     showPosts: false,
@@ -75,12 +74,12 @@ export default observer((props: any) => {
   ]);
   const { prevPath } = pathStore;
   const { isLogin, user } = userStore;
+  const { author } = authorStore;
   const { address } = props.match.params;
   const isMyself = isLogin && userStore.user.address === address;
   const thatName = isMyself ? '我' : 'TA';
   const isDefaultAvatar =
-    state.author.avatar === getDefaultAvatar() ||
-    state.author.avatar === getDefaultDeprecatedAvatar();
+    author.avatar === getDefaultAvatar() || author.avatar === getDefaultDeprecatedAvatar();
   const tabs = [
     {
       type: 'POPULARITY',
@@ -112,8 +111,8 @@ export default observer((props: any) => {
             withSummary: true,
             summaryPreviewCount: 3,
           });
-          state.author = author;
-          document.title = state.author.nickname;
+          authorStore.setAuthor(author);
+          document.title = author.nickname;
         } catch (err) {
           console.log(err);
         }
@@ -123,7 +122,7 @@ export default observer((props: any) => {
         }
       })();
     },
-    [state, address],
+    [state, address, authorStore],
   );
 
   React.useEffect(() => {
@@ -147,14 +146,14 @@ export default observer((props: any) => {
   React.useEffect(() => {
     if (!feedStore.isNew && !feedStore.willLoadingPage) {
       if (feedStore.belongedAuthor && feedStore.belongedAuthor.address === address) {
-        state.author = feedStore.belongedAuthor;
+        authorStore.setAuthor(feedStore.belongedAuthor);
         state.isFetchedAuthor = true;
         return;
       }
     }
 
     fetchAuthor();
-  }, [state, address, feedStore, fetchAuthor]);
+  }, [state, address, feedStore, fetchAuthor, authorStore]);
 
   const fetchPosts = React.useCallback(() => {
     (async () => {
@@ -201,33 +200,45 @@ export default observer((props: any) => {
 
   React.useEffect(() => {
     if (isMyself) {
-      state.author.nickname = user.nickname;
-      state.author.avatar = user.avatar;
-      state.author.cover = user.cover;
-      state.author.bio = user.bio;
-      state.author.privateSubscriptionEnabled = user.privateSubscriptionEnabled;
+      authorStore.updateAuthor({
+        address: user.address,
+        nickname: user.nickname,
+        avatar: user.avatar,
+        cover: user.cover,
+        bio: user.bio,
+        privateSubscriptionEnabled: user.privateSubscriptionEnabled,
+      });
     }
   }, [
+    authorStore,
+    user,
     user.nickname,
     user.avatar,
     user.cover,
     user.bio,
     user.privateSubscriptionEnabled,
     isMyself,
-    state,
   ]);
 
   React.useEffect(() => {
-    feedStore.setBelongedAuthor(toJS(state.author));
+    feedStore.setBelongedAuthor(toJS(author));
   }, [
-    state.author,
-    state.author.nickname,
-    state.author.avatar,
-    state.author.cover,
-    state.author.bio,
-    state.author.privateSubscriptionEnabled,
+    author,
+    author.nickname,
+    author.avatar,
+    author.cover,
+    author.bio,
+    author.privateSubscriptionEnabled,
     feedStore,
   ]);
+
+  React.useEffect(() => {
+    return () => {
+      if (isPc) {
+        authorStore.clearAuthor();
+      }
+    };
+  }, [authorStore]);
 
   const infiniteRef: any = useWindowInfiniteScroll({
     loading: feedStore.isFetching,
@@ -261,8 +272,8 @@ export default observer((props: any) => {
   const subscribe = async () => {
     try {
       await subscriptionApi.subscribe(address);
-      state.author.following = true;
-      state.author.summary!.follower!.count += 1;
+      author.following = true;
+      author.summary!.follower!.count += 1;
     } catch (err) {
       console.log(err);
     }
@@ -271,8 +282,8 @@ export default observer((props: any) => {
   const unsubscribe = async () => {
     try {
       await subscriptionApi.unsubscribe(address);
-      state.author.following = false;
-      state.author.summary!.follower!.count -= 1;
+      author.following = false;
+      author.summary!.follower!.count -= 1;
     } catch (err) {
       console.log(err);
     }
@@ -294,32 +305,46 @@ export default observer((props: any) => {
                 <ArrowBackIos />
               </div>
             </div>
-            {isMyself && (
-              <div className="flex items-center">
+            <div className="flex items-center">
+              <div
+                className="pl-5 pr-3 flex items-center text-26 py-2"
+                onClick={() => {
+                  if (!userStore.isLogin) {
+                    modalStore.openLogin();
+                    return;
+                  }
+                  props.history.push(
+                    `/search?address=${author.address}&nickname=${author.nickname}`,
+                  );
+                }}
+              >
+                <Search />
+              </div>
+              {isMyself && (
                 <div
                   className="pl-5 pr-3 flex items-center text-26 py-2"
                   onClick={() => (state.showSettingsMenu = true)}
                 >
                   <Settings />
                 </div>
+              )}
+              {isMyself && (
                 <div
                   className="pl-5 pr-4 flex items-center text-24 py-2"
                   onClick={() => (state.showMainMenu = true)}
                 >
                   <FontAwesomeIcon icon={faBars} />
                 </div>
-              </div>
-            )}
-            {!isMyself && (
-              <div className="flex items-center">
+              )}
+              {!isMyself && (
                 <div
                   className="pl-5 pr-3 flex items-center text-26 py-2"
                   onClick={() => (state.showShareMenu = true)}
                 >
                   <MoreHoriz />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
         <DrawerMenu
@@ -487,7 +512,7 @@ export default observer((props: any) => {
     );
   }
 
-  if (state.isFetchedAuthor && isEmpty(state.author)) {
+  if (state.isFetchedAuthor && isEmpty(author)) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
@@ -500,7 +525,7 @@ export default observer((props: any) => {
   const showImageView = (show: boolean) => {
     setShowImage(show);
     if (isMobile) {
-      disableBackgroundScroll(show);
+      stopBodyScroll(show);
     }
   };
 
@@ -521,7 +546,7 @@ export default observer((props: any) => {
                 backgroundImage: `url('${
                   isDefaultAvatar
                     ? resizeFullImage(DEFAULT_BG_GRADIENT)
-                    : resizeFullImage(state.author.cover) || state.author.avatar
+                    : resizeFullImage(author.cover) || author.avatar
                 }')`,
               }}
             >
@@ -533,13 +558,13 @@ export default observer((props: any) => {
                   width={isMobile ? 74 : 120}
                   height={isMobile ? 74 : 120}
                   className="rounded-full avatar bg-white"
-                  src={state.author.avatar}
-                  alt={state.author.nickname}
+                  src={author.avatar}
+                  alt={author.nickname}
                   resizeWidth={isMobile ? 74 : 120}
                   onClick={() => {
                     if (isMyself) {
                       modalStore.openSettings('profile');
-                    } else if (state.author.avatar) {
+                    } else if (author.avatar) {
                       showImageView(true);
                     }
                   }}
@@ -550,26 +575,25 @@ export default observer((props: any) => {
                     isMyself && modalStore.openSettings('profile');
                   }}
                 >
-                  {state.author.nickname}
+                  {author.nickname}
                 </div>
                 <div className="text-14 md:text-16 flex items-center">
                   <span className="mt-2">
                     {' '}
                     <span className="text-16 font-bold">
-                      {state.author.summary?.post.count}
-                    </span>{' '}
-                    篇文章{' '}
+                      {author.summary?.post.count}
+                    </span> 篇文章{' '}
                   </span>
-                  {Number(state.author.summary?.followingAuthor.count) > 0 && (
+                  {Number(author.summary?.followingAuthor.count) > 0 && (
                     <span className="mx-3 mt-2 opacity-50">|</span>
                   )}
-                  {Number(state.author.summary?.followingAuthor.count) > 0 && (
+                  {Number(author.summary?.followingAuthor.count) > 0 && (
                     <span
                       className="cursor-pointer mt-2"
                       onClick={() => {
-                        if (isMyself || !state.author.privateSubscriptionEnabled) {
+                        if (isMyself || !author.privateSubscriptionEnabled) {
                           modalStore.openUserList({
-                            authorAddress: state.author.address,
+                            authorAddress: author.address,
                             title: `${thatName}关注的人`,
                             type: 'FOLLOWING_USERS',
                             onClose: () => fetchAuthor('SILENT'),
@@ -587,21 +611,21 @@ export default observer((props: any) => {
                       }}
                     >
                       <span className="text-16 font-bold">
-                        {state.author.summary?.followingAuthor.count}
+                        {author.summary?.followingAuthor.count}
                       </span>{' '}
                       关注{' '}
                     </span>
                   )}
-                  {Number(state.author.summary?.follower.count) > 0 && (
+                  {Number(author.summary?.follower.count) > 0 && (
                     <span className="opacity-50 mx-3 mt-2">|</span>
                   )}
-                  {Number(state.author.summary?.follower.count) > 0 && (
+                  {Number(author.summary?.follower.count) > 0 && (
                     <span
                       className="cursor-pointer mt-2"
                       onClick={() => {
-                        if (isMyself || !state.author.privateSubscriptionEnabled) {
+                        if (isMyself || !author.privateSubscriptionEnabled) {
                           modalStore.openUserList({
-                            authorAddress: state.author.address,
+                            authorAddress: author.address,
                             title: `关注${thatName}的人`,
                             type: 'USER_FOLLOWERS',
                             onClose: () => fetchAuthor('SILENT'),
@@ -618,21 +642,19 @@ export default observer((props: any) => {
                         }
                       }}
                     >
-                      <span className="text-16 font-bold">
-                        {state.author.summary?.follower.count}
-                      </span>{' '}
+                      <span className="text-16 font-bold">{author.summary?.follower.count}</span>{' '}
                       被关注
                     </span>
                   )}
                 </div>
                 <div className="md:hidden pt-2 pr-5 text-white opacity-90">
-                  {state.author.bio && <div className="text-13">{state.author.bio}</div>}
+                  {author.bio && <div className="text-13">{author.bio}</div>}
                 </div>
               </div>
               <div className="mt-16 md:mt-12 pt-4 mr-6 md:mr-3 absolute md:static top-0 right-0">
                 {!isMyself && (
                   <div>
-                    {state.author.following ? (
+                    {author.following ? (
                       <Button onClick={unsubscribe} outline color="white">
                         已关注
                       </Button>
@@ -696,43 +718,43 @@ export default observer((props: any) => {
                     <FolderGrid
                       folders={[
                         {
-                          hide: state.author.summary?.topic.count === 0,
-                          authorAddress: state.author.address,
+                          hide: author.summary?.topic.count === 0,
+                          authorAddress: author.address,
                           type: 'CREATED_TOPICS',
                           title: `专题`,
-                          content: `${state.author.summary?.topic.count}个`,
-                          gallery: state.author.summary?.topic.preview || [],
+                          content: `${author.summary?.topic.count}个`,
+                          gallery: author.summary?.topic.preview || [],
                           onClose: () => fetchAuthor('SILENT'),
                         },
                         {
-                          hide: state.author.summary?.followingTopic.count === 0,
-                          authorAddress: state.author.address,
+                          hide: author.summary?.followingTopic.count === 0,
+                          authorAddress: author.address,
                           type: 'FOLLOWING_TOPICS',
                           title: `${thatName}关注的专题`,
-                          content: `${state.author.summary?.followingTopic.count}个`,
-                          gallery: state.author.summary?.followingTopic.preview || [],
+                          content: `${author.summary?.followingTopic.count}个`,
+                          gallery: author.summary?.followingTopic.preview || [],
                           onClose: () => fetchAuthor('SILENT'),
                         },
                         {
                           hide:
-                            (state.author.privateSubscriptionEnabled && !isMyself) ||
-                            state.author.summary?.followingAuthor.count === 0,
-                          authorAddress: state.author.address,
+                            (author.privateSubscriptionEnabled && !isMyself) ||
+                            author.summary?.followingAuthor.count === 0,
+                          authorAddress: author.address,
                           type: 'FOLLOWING_USERS',
                           title: `关注的人`,
-                          content: `${state.author.summary?.followingAuthor.count}个`,
-                          gallery: state.author.summary?.followingAuthor.preview || [],
+                          content: `${author.summary?.followingAuthor.count}个`,
+                          gallery: author.summary?.followingAuthor.preview || [],
                           onClose: () => fetchAuthor('SILENT'),
                         },
                         {
                           hide:
-                            (state.author.privateSubscriptionEnabled && !isMyself) ||
-                            state.author.summary?.follower.count === 0,
-                          authorAddress: state.author.address,
+                            (author.privateSubscriptionEnabled && !isMyself) ||
+                            author.summary?.follower.count === 0,
+                          authorAddress: author.address,
                           type: 'USER_FOLLOWERS',
                           title: `关注${thatName}的人`,
-                          content: `${state.author.summary?.follower.count}个`,
-                          gallery: state.author.summary?.follower.preview || [],
+                          content: `${author.summary?.follower.count}个`,
+                          gallery: author.summary?.follower.preview || [],
                           onClose: () => fetchAuthor('SILENT'),
                         },
                       ]}
@@ -754,8 +776,8 @@ export default observer((props: any) => {
                   个人介绍
                 </div>
                 <div className="px-5 py-4">
-                  {state.author.bio}
-                  {!state.author.bio && (
+                  {author.bio}
+                  {!author.bio && (
                     <div className="text-center mt-2">
                       {isMyself && (
                         <span
@@ -770,7 +792,7 @@ export default observer((props: any) => {
                   )}
                 </div>
               </div>
-              {isMyself && state.author.summary?.topic.count === 0 && (
+              {isMyself && author.summary?.topic.count === 0 && (
                 <div className="bg-white rounded-12 pb-2 mb-3 text-gray-4a">
                   <div className="px-5 py-4 leading-none text-16 border-b border-gray-d8 border-opacity-75 flex justify-between items-center">
                     我的专题
@@ -818,43 +840,43 @@ export default observer((props: any) => {
               <FolderGrid
                 folders={[
                   {
-                    hide: state.author.summary?.topic.count === 0,
-                    authorAddress: state.author.address,
+                    hide: author.summary?.topic.count === 0,
+                    authorAddress: author.address,
                     type: 'CREATED_TOPICS',
                     title: `专题`,
-                    content: `${state.author.summary?.topic.count}个`,
-                    gallery: state.author.summary?.topic.preview || [],
+                    content: `${author.summary?.topic.count}个`,
+                    gallery: author.summary?.topic.preview || [],
                     onClose: () => fetchAuthor('SILENT'),
                   },
                   {
-                    hide: state.author.summary?.followingTopic.count === 0,
-                    authorAddress: state.author.address,
+                    hide: author.summary?.followingTopic.count === 0,
+                    authorAddress: author.address,
                     type: 'FOLLOWING_TOPICS',
                     title: `${thatName}关注的专题`,
-                    content: `${state.author.summary?.followingTopic.count}个`,
-                    gallery: state.author.summary?.followingTopic.preview || [],
+                    content: `${author.summary?.followingTopic.count}个`,
+                    gallery: author.summary?.followingTopic.preview || [],
                     onClose: () => fetchAuthor('SILENT'),
                   },
                   {
                     hide:
-                      (state.author.privateSubscriptionEnabled && !isMyself) ||
-                      state.author.summary?.followingAuthor.count === 0,
-                    authorAddress: state.author.address,
+                      (author.privateSubscriptionEnabled && !isMyself) ||
+                      author.summary?.followingAuthor.count === 0,
+                    authorAddress: author.address,
                     type: 'FOLLOWING_USERS',
                     title: `关注的人`,
-                    content: `${state.author.summary?.followingAuthor.count}个`,
-                    gallery: state.author.summary?.followingAuthor.preview || [],
+                    content: `${author.summary?.followingAuthor.count}个`,
+                    gallery: author.summary?.followingAuthor.preview || [],
                     onClose: () => fetchAuthor('SILENT'),
                   },
                   {
                     hide:
-                      (state.author.privateSubscriptionEnabled && !isMyself) ||
-                      state.author.summary?.follower.count === 0,
-                    authorAddress: state.author.address,
+                      (author.privateSubscriptionEnabled && !isMyself) ||
+                      author.summary?.follower.count === 0,
+                    authorAddress: author.address,
                     type: 'USER_FOLLOWERS',
                     title: `关注${thatName}的人`,
-                    content: `${state.author.summary?.follower.count}个`,
-                    gallery: state.author.summary?.follower.preview || [],
+                    content: `${author.summary?.follower.count}个`,
+                    gallery: author.summary?.follower.preview || [],
                     onClose: () => fetchAuthor('SILENT'),
                   },
                 ]}
@@ -885,7 +907,7 @@ export default observer((props: any) => {
           noToolbar={true}
           visible={showImage}
           onClose={() => showImageView(false)}
-          images={[{ src: resizeFullImage(state.author.avatar) }]}
+          images={[{ src: resizeFullImage(author.avatar) }]}
           container={isMobile && !!ref.current ? ref.current : undefined}
           noClose={isMobile}
         />

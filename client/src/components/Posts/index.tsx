@@ -44,7 +44,7 @@ const PostEntry = observer((props: IPostProps) => {
     },
   } = props;
   const isMobileMode = props.postsProps.isMobileMode || isMobile;
-  const AVATAR_RATIO = isMobileMode ? 1 : 3 / 2;
+  const COVER_RATIO = isMobileMode ? 1 : 3 / 2;
   const coverWidth = smallCoverSize ? (isMobileMode ? 86 : 120) : isMobileMode ? 86 : 150;
   const state = useLocalStore(() => ({
     useOriginalCover: false,
@@ -334,7 +334,7 @@ const PostEntry = observer((props: IPostProps) => {
                 backgroundImage: state.useOriginalCover
                   ? `url(${post.cover})`
                   : `url(${post.cover}?image=&action=resize:h_${
-                      getImageWidth(coverWidth) / AVATAR_RATIO
+                      getImageWidth(coverWidth) / COVER_RATIO
                     })`,
               }}
             >
@@ -347,7 +347,7 @@ const PostEntry = observer((props: IPostProps) => {
                 <img
                   className="cover rounded invisible"
                   src={`${post.cover}?image=&action=resize:h_${
-                    getImageWidth(coverWidth) / AVATAR_RATIO
+                    getImageWidth(coverWidth) / COVER_RATIO
                   }`}
                   alt="封面"
                   onError={() => {
@@ -385,7 +385,7 @@ const PostEntry = observer((props: IPostProps) => {
             max-width: 4rem;
           }
           .height {
-            min-height: ${coverWidth / AVATAR_RATIO}px;
+            min-height: ${coverWidth / COVER_RATIO}px;
           }
           .small-height {
             min-height: 55px;
@@ -396,7 +396,7 @@ const PostEntry = observer((props: IPostProps) => {
           }
           .cover {
             width: ${coverWidth}px;
-            height: ${coverWidth / AVATAR_RATIO}px;
+            height: ${coverWidth / COVER_RATIO}px;
           }
         `}</style>
       </div>

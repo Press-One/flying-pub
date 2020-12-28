@@ -6,10 +6,9 @@ import marked from 'marked';
 import BackButton from 'components/BackButton';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
-import ButtonOutlined from 'components/ButtonOutlined';
+import BackToTop from 'components/BackToTop';
 import TopicLabels, { IncludedButton } from 'components/TopicLabels';
 import Fade from '@material-ui/core/Fade';
-import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -27,7 +26,7 @@ import postApi from 'apis/post';
 import fileApi from 'apis/file';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, getQuery, disableBackgroundScroll } from 'utils';
+import { ago, isPc, isMobile, sleep, getQuery, stopBodyScroll } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
@@ -179,7 +178,7 @@ export default observer((props: any) => {
       }
       state.showImage = show;
       if (isMobile) {
-        disableBackgroundScroll(show);
+        stopBodyScroll(show);
       }
     },
     [state],
@@ -303,17 +302,6 @@ export default observer((props: any) => {
     if (isSuccess) {
       await sleep(200);
       state.rewardSummary = await FeedApi.getRewardSummary(rId);
-    }
-  };
-
-  const backToTop = () => {
-    try {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    } catch (e) {
-      window.scroll(0, 0);
     }
   };
 
@@ -722,7 +710,7 @@ export default observer((props: any) => {
   };
 
   const Menu = () => (
-    <Fade in={true} timeout={800}>
+    <Fade in={true} timeout={500}>
       <div>
         <div className="absolute top-0 right-0 -mt-16 z-10 pt-1">
           <div
@@ -919,22 +907,7 @@ export default observer((props: any) => {
             />
           </div>
         </div>
-        {post.content.length > 100 && (
-          <div className="hidden md:block">
-            {
-              <div
-                className="fixed bottom-0 right-0 mr-20 mb-12 cursor-pointer"
-                onClick={backToTop}
-              >
-                <ButtonOutlined>
-                  <div className="text-xl">
-                    <ArrowUpward />
-                  </div>
-                </ButtonOutlined>
-              </div>
-            }
-          </div>
-        )}
+        {isPc && post.content.length > 100 && <BackToTop />}
         {state.isFetchedReward && state.isFetchedComments && (
           <div>
             <div
