@@ -18,8 +18,6 @@ const htmlToTextOptions = {
     'img': { format: 'skip' },
   }
 };
-const Cache = require('../models/cache');
-const TYPE = `${config.serviceKey}_SEARCH`;
 
 const postToSearchService = (uri, post) => {
   return new Promise(async (resolve, reject) => {
@@ -184,21 +182,3 @@ exports.del = async ctx => {
     console.error(e);
   }
 };
-
-exports.resync = async ctx => {
-  if (!(config && config.search && config.search.enabled)) {
-    return;
-  }
-  try {
-    await Cache.pDel(TYPE, 'startAt');
-    const userId = ctx.verification && ctx.verification.user.id;
-    if (userId) {
-      Log.create(userId, `【重新同步搜索索引】`);
-    };
-    ctx.ok({
-      success: true
-    });
-  } catch(e) {
-    console.error(e);
-  }
-}

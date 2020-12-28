@@ -249,6 +249,9 @@ module.exports = {
     searchUrl: 'http://192.168.0.9/search',
     updatertUrl: 'http://192.168.0.9/updatert',
     deleteUrl: 'http://192.168.0.9/deletert',
+    queueDuration: 20,
+    rollout: false,
+    syncRedisKey: `${serviceKey}_SEARCH`,
   },
 
   assistantUserId: 1

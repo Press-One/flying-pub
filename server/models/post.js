@@ -23,7 +23,7 @@ const {
 } = require('../utils/validator');
 const config = require('../config');
 const Cache = require('./cache');
-const TYPE = `${config.serviceKey}_SEARCH`;
+const TYPE = (config.search && config.search.syncRedisKey) || `${config.serviceKey}_SEARCH`;
 const { postToSearchService, deleteFromSearchService } = require('../controllers/apiSearch');
 const Log = require('../models/log');
 
@@ -433,16 +433,27 @@ exports.syncToSearchService = async () => {
   }
   const posts = await Post.findAll(filterParam);
   if (posts.length > 0) {
-    await Promise.all(posts.map(post => {
-      if (post.invisibility || post.deleted ) {
-        Log.createAnonymity('搜索服务',`删除文章《${post.title}》索引 /posts/${post.rId}`);
-        return deleteFromSearchService(`/posts/${post.rId}`, post);
-      } else {
-        Log.createAnonymity('搜索服务',`更新文章《${post.title}》索引 /posts/${post.rId}`);
-        return postToSearchService(`/posts/${post.rId}`, post);
-      }
-    }));
-    await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    try {
+      await Promise.all(posts.map(post => {
+        if (post.invisibility || post.deleted ) {
+          return deleteFromSearchService(`/posts/${post.rId}`, post).then();
+        } else {
+          return postToSearchService(`/posts/${post.rId}`, post);
+        }
+      }));
+      let msg = [];
+      posts.forEach(post => {
+        if (post.invisibility || post.deleted ) {
+          msg.push(`\n删除文章《${post.title}》索引 /posts/${post.rId}`);
+        } else {
+          msg.push(`\n更新文章《${post.title}》索引 /posts/${post.rId}`);
+        }
+      });
+      Log.createAnonymity('搜索服务',msg.join(''));
+      await Cache.pSet(TYPE, 'startAt', posts[posts.length - 1].createdAt);
+    } catch (e) {
+      Log.createAnonymity('搜索服务',`本次同步失败`);
+    }
   }
 }
 
