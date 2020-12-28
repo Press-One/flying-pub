@@ -44,7 +44,7 @@ exports.up = async () => {
     queues.push(createPublishViewQueue());
     queues.push(createViewSyncQueue());
   }
-  if (config.search.enabled && !queueDisabledJobs.includes('search')) {
+  if (config.search && config.search.enabled && !queueDisabledJobs.includes('search')) {
     queues.push(createSyncSearchIndexQueue());
   }
 }
