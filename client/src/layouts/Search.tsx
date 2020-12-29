@@ -25,7 +25,10 @@ export default observer(() => {
     if (!authorStore.author.address && !address) {
       return '';
     }
-    const isMyself = userStore.isLogin && userStore.user.address === authorStore.author.address;
+    const isMyself =
+      userStore.isLogin &&
+      userStore.user.avatar === authorStore.author.avatar &&
+      userStore.user.nickname === authorStore.author.nickname;
     if (isMyself) {
       return '我的';
     }
