@@ -274,14 +274,16 @@ const PostEntry = observer((props: IPostProps) => {
                         >
                           {post.commentsCount}
                         </span>
-                        <span
-                          className={classNames(
-                            {
-                              'md:w-6 md:mr-0': !isMobileMode,
-                            },
-                            `w-5 mr-3-px`,
-                          )}
-                        ></span>
+                        {(hideAuthor || showFavorite) && (
+                          <span
+                            className={classNames(
+                              {
+                                'md:w-6 md:mr-0': !isMobileMode,
+                              },
+                              `w-5 mr-3-px`,
+                            )}
+                          ></span>
+                        )}
                       </div>
                     )}
                     {!isMobileMode && <div className="text-gray-af">{ago(post.pubDate)}</div>}

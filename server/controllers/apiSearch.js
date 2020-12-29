@@ -103,10 +103,12 @@ exports.get = async ctx => {
   try {
     const res = await fetch(`${config.search.searchUrl}?${ctx.querystring}&cy_tenantid=${config.serviceKey}`);
     const json = await res.json();
-    if (userId) {
-      Log.create(userId, `【搜索】${ctx.query.q}`);
-    } else {
-      Log.createAnonymity('游客', `【搜索】${ctx.query.q}`);
+    if (ctx.query.start == 0) {
+      if (userId) {
+        Log.create(userId, `【搜索】${ctx.query.q} ${ctx.query.user_address || ''}`);
+      } else {
+        Log.createAnonymity('游客', `【搜索】${ctx.query.q} ${ctx.query.user_address || ''}`);
+      }
     }
     if (json.result.items.length > 0) {
       json.result.items = await Promise.all((json.result.items.map(async item => {
