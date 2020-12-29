@@ -274,7 +274,7 @@ const PostEntry = observer((props: IPostProps) => {
                         >
                           {post.commentsCount}
                         </span>
-                        {(hideAuthor || showFavorite) && (
+                        {(hideAuthor || showFavorite || !isMobileMode) && (
                           <span
                             className={classNames(
                               {
