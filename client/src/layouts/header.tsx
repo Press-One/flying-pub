@@ -305,7 +305,7 @@ export default observer((props: any) => {
                       {settings['notification.enabled'] && (
                         <Badge
                           badgeContent={unread}
-                          className="mr-6 pr-2 transform scale-90 cursor-pointer mt-1-px"
+                          className="mr-8 transform scale-90 cursor-pointer mt-1-p"
                           color="error"
                           onClick={() => {
                             modalStore.openNotification();
