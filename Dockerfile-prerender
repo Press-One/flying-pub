@@ -1,0 +1,22 @@
+FROM node:14
+LABEL maintainer="press.one <info@press.one>"
+
+RUN apt-get -y update && apt-get -y install vim
+
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/google-chrome-stable_current_amd64.deb &&\
+    cd /tmp && apt install -y ./google-chrome-stable_current_amd64.deb &&\
+    rm ./google-chrome-stable_current_amd64.deb
+
+# run chrome with root need to add --no-sandbox after start command.
+RUN echo "$(cat $(which google-chrome)) --no-sandbox" > $(which google-chrome)
+
+RUN git clone https://github.com/prerender/prerender.git
+
+WORKDIR /prerender
+
+RUN npm install
+RUN npm install nodemon -g
+
+EXPOSE 3000
+
+CMD ["nodemon", "server.js"]
