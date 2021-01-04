@@ -67,7 +67,7 @@ export const ago = (timestamp: string) => {
   const _min = diffValue / minute;
   let result = '';
   const isLastYear = Number(moment().format('YYYY')) > Number(moment(timestamp).format('YYYY'));
-  if (isLastYear) {
+  if (isLastYear && _week >= 15) {
     result = moment(timestamp).format('YYYY-MM-DD');
   } else if (_week >= 1) {
     result = moment(timestamp).format('MM-DD');
