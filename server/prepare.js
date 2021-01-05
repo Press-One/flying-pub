@@ -8,6 +8,8 @@ const pWriteFile = util.promisify(fs.writeFile);
 exports.initStatic = async () => {
   await tryDownloadFavicon(config.favicon);
   await tryUseStaticCDN(config.staticCDN);
+  await tryUpdateRobots(config.serviceRoot);
+  await tryUpdateSitemap(config.serviceRoot);
 }
 
 const tryDownloadFavicon = async url => {
@@ -37,4 +39,31 @@ const tryUseStaticCDN = async cdn => {
   } catch (e) {
     console.log(e);
   }
+}
+
+const tryUpdateRobots = async url => {
+  try {
+    const text = await pReadFile('./build/robots.txt');
+    if (!text.includes('serviceRoot')) {
+      return;
+    }
+    const newText = robots.toString().replace(/serviceRoot/g, url);
+    await pWriteFile('./build/robots.txt', newText);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+const tryUpdateSitemap = async url => {
+  try {
+    const text = await pReadFile('./build/sitemap.txt');
+    if (!text.includes('serviceRoot')) {
+      return;
+    }
+    const newText = robots.toString().replace(/serviceRoot/g, url);
+    await pWriteFile('./build/sitemap.txt', newText);
+  } catch (e) {
+    console.log(e);
+  }
+
 }
