@@ -47,7 +47,7 @@ const tryUpdateRobots = async url => {
     if (!text.includes('serviceRoot')) {
       return;
     }
-    const newText = robots.toString().replace(/serviceRoot/g, url);
+    const newText = text.toString().replace(/serviceRoot/g, url);
     await pWriteFile('./build/robots.txt', newText);
   } catch (e) {
     console.log(e);
@@ -60,7 +60,7 @@ const tryUpdateSitemap = async url => {
     if (!text.includes('serviceRoot')) {
       return;
     }
-    const newText = robots.toString().replace(/serviceRoot/g, url);
+    const newText = text.toString().replace(/serviceRoot/g, url);
     await pWriteFile('./build/sitemap.txt', newText);
   } catch (e) {
     console.log(e);
