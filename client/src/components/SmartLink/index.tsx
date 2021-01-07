@@ -35,6 +35,7 @@ export default (props: IProps) => {
       }}
     >
       {props.children}
+      <a href={props.to} className="hidden" />
     </span>
   );
 };
