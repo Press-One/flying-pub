@@ -9,7 +9,6 @@ import {
   CombinedNotificationType,
 } from 'store/notification';
 import { ago, removeUrlHost } from 'utils';
-import marked from 'marked';
 import ModalLink from 'components/ModalLink';
 import Img from 'components/Img';
 
@@ -36,12 +35,7 @@ export default observer(() => {
       if (!msg.notification.extras.originUrl) {
         return <div className="text-12 text-gray-af border-l-4 pl-2">评论已经被 Ta 删除了</div>;
       }
-      return (
-        <div
-          className="msg-at-me"
-          dangerouslySetInnerHTML={{ __html: marked.parse(extras.fromContent) }}
-        />
-      );
+      return <div className="msg-at-me" dangerouslySetInnerHTML={{ __html: extras.fromContent }} />;
     }
 
     if (
@@ -52,7 +46,7 @@ export default observer(() => {
         <div className="msg-like-comment">
           <div
             className="mt-1 pl-2 border-l-2 markdown-body"
-            dangerouslySetInnerHTML={{ __html: marked.parse(extras.fromContent) }}
+            dangerouslySetInnerHTML={{ __html: extras.fromContent }}
           />
         </div>
       );
@@ -231,7 +225,7 @@ export default observer(() => {
               <div className="mt-2 text-gray-99 text-12">原因是：</div>
               <div
                 className="msg-topic-rejected-note mt-2 pl-2 border-l-2 markdown-body text-12"
-                dangerouslySetInnerHTML={{ __html: marked.parse(extras.note) }}
+                dangerouslySetInnerHTML={{ __html: extras.note }}
               />
             </div>
           )}
@@ -270,7 +264,7 @@ export default observer(() => {
               <div className="mt-2 text-gray-99 text-12">原因是：</div>
               <div
                 className="msg-topic-rejected-note mt-2 pl-2 border-l-2 markdown-body text-12"
-                dangerouslySetInnerHTML={{ __html: marked.parse(extras.note) }}
+                dangerouslySetInnerHTML={{ __html: extras.note }}
               />
             </div>
           )}
@@ -283,10 +277,7 @@ export default observer(() => {
         return <div className="text-12 text-gray-af border-l-4 pl-2">评论已经被 Ta 删除了</div>;
       }
       return (
-        <div
-          className="msg-comment-me"
-          dangerouslySetInnerHTML={{ __html: marked.parse(extras.fromContent) }}
-        />
+        <div className="msg-comment-me" dangerouslySetInnerHTML={{ __html: extras.fromContent }} />
       );
     }
   };
