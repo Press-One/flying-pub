@@ -13,8 +13,6 @@ import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import HomeOutlined from '@material-ui/icons/HomeOutlined';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import OpenInNew from '@material-ui/icons/OpenInNew';
-import { faUser } from '@fortawesome/free-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
 import Badge from '@material-ui/core/Badge';
@@ -222,7 +220,8 @@ export default observer((props: any) => {
                 </div>
               )}
               <div className="flex items-center">
-                {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                {userStore.isLogin &&
+                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
                   showSearchEntry && <Search />}
                 {isMobile && settings['notification.enabled'] && userStore.isLogin && (
                   <Badge
@@ -240,12 +239,14 @@ export default observer((props: any) => {
                 )}
                 {!userStore.isLogin && (
                   <div
-                    className="text-24 text-gray-99 flex justify-center items-center leading-none pl-2 pr-1"
+                    className="text-gray-99 flex justify-center items-center leading-none pl-l pr-2 font-bold py-2"
                     onClick={() => {
                       handleOpenLogin();
                     }}
                   >
-                    <FontAwesomeIcon icon={faUser} />
+                    <Button size="mini" outline>
+                      登录
+                    </Button>
                   </div>
                 )}
                 {userStore.isLogin && (

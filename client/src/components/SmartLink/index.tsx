@@ -35,6 +35,7 @@ export default (props: IProps) => {
       }}
     >
       {props.children}
+      {/* eslint-disable-next-line */}
       <a href={props.to} className="hidden" />
     </span>
   );

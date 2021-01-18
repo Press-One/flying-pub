@@ -714,7 +714,7 @@ export default observer((props: any) => {
                 </div>
               )}
               {feedStore.filterType === 'OTHERS' && (
-                <div>
+                <div className="bg-white min-h-70-vh">
                   {!state.loadingOthers && (
                     <FolderGrid
                       folders={[

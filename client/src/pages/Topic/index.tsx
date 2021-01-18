@@ -619,21 +619,21 @@ export default observer((props: any) => {
                   },
                 },
                 {
-                  invisible: !props.isMyself,
+                  invisible: !isMyself,
                   name: '编辑',
                   onClick: () => {
                     state.showTopicEditorModal = true;
                   },
                 },
                 {
-                  invisible: !props.isMyself,
+                  invisible: !isMyself,
                   name: '管理文章',
                   onClick: () => {
                     state.showTopicPostManagerModal = true;
                   },
                 },
                 {
-                  invisible: !props.isMyself,
+                  invisible: !isMyself,
                   name: '删除',
                   onClick: onDelete,
                   className: 'text-red-400',
