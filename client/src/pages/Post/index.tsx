@@ -714,7 +714,13 @@ export default observer((props: any) => {
       <div>
         <div className="absolute top-0 right-0 -mt-16 z-10 pt-1">
           <div
-            className="px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pl-8 pb-2"
+            className={classNames(
+              {
+                'pl-8': !isLogin,
+                'pl-4': isLogin,
+              },
+              'px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pb-2',
+            )}
             onClick={() => (state.showMenu = true)}
           >
             <MoreHoriz />
