@@ -54,6 +54,15 @@ export default observer((props: any) => {
     }
   }, [state, props.hidden, props.open]);
 
+  React.useEffect(() => {
+    if (!state.showMenu) {
+      (async () => {
+        await sleep(200);
+        state.isUploadingOriginImage = false;
+      })();
+    }
+  }, [state.showMenu]);
+
   const handleAvatarInputChange = () => {
     const file = avatarInputRef.current!.files![0];
     state.mimeType = file.type;
@@ -72,7 +81,6 @@ export default observer((props: any) => {
           const url = (await res.json()).url;
           props.getImageUrl(url);
           await sleep(200);
-          state.isUploadingOriginImage = false;
           props.close && props.close(true);
         } else {
           state.avatarTemp = reader.result as string;
@@ -294,7 +302,6 @@ export default observer((props: any) => {
             const newUrl = await transferResourceToCDN(url);
             props.getImageUrl(newUrl);
             await sleep(200);
-            state.isUploadingOriginImage = false;
             props.close && props.close(true);
           } else {
             state.showImageLib = false;
