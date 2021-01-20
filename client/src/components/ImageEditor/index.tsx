@@ -61,7 +61,7 @@ export default observer((props: any) => {
         state.isUploadingOriginImage = false;
       })();
     }
-  }, [state.showMenu]);
+  }, [state, state.showMenu]);
 
   const handleAvatarInputChange = () => {
     const file = avatarInputRef.current!.files![0];
