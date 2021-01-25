@@ -17,10 +17,8 @@ import { FilterType } from 'apis/post';
 import postApi from 'apis/post';
 import { isEmpty } from 'lodash';
 import { toJS } from 'mobx';
-import { resizeFullImage, stopBodyScroll } from 'utils';
+import { resizeFullImage } from 'utils';
 import Img from 'components/Img';
-import Viewer from 'react-viewer';
-import classNames from 'classnames';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import { Edit, Settings, Search } from '@material-ui/icons';
 import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
@@ -55,6 +53,7 @@ export default observer((props: any) => {
     settingsStore,
     pathStore,
     authorStore,
+    photoSwipeStore,
   } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
@@ -96,9 +95,6 @@ export default observer((props: any) => {
       name: '动态',
     });
   }
-
-  const [showImage, setShowImage] = React.useState(false);
-  const ref = React.useRef(document.createElement('div'));
 
   const fetchAuthor = React.useCallback(
     (type?: string) => {
@@ -523,13 +519,6 @@ export default observer((props: any) => {
     );
   }
 
-  const showImageView = (show: boolean) => {
-    setShowImage(show);
-    if (isMobile) {
-      stopBodyScroll(show);
-    }
-  };
-
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto relative">
@@ -566,7 +555,7 @@ export default observer((props: any) => {
                     if (isMyself) {
                       modalStore.openSettings('profile');
                     } else if (author.avatar) {
-                      showImageView(true);
+                      photoSwipeStore.show(resizeFullImage(author.avatar));
                     }
                   }}
                 />
@@ -890,28 +879,6 @@ export default observer((props: any) => {
             <Loading />
           </div>
         )}
-        <div
-          ref={ref}
-          className={classNames(
-            {
-              hidden: !isMobile || !showImage,
-            },
-            'mobile-viewer-container fixed bg-black',
-          )}
-          onClick={() => showImageView(false)}
-          //style={{ width: '125vw', height: '125vh', top: '-12.5vh', left: '-12.5vw', zIndex: 100 }}
-        ></div>
-        <Viewer
-          className={isMobile ? 'mobile-viewer' : ''}
-          onMaskClick={() => showImageView(false)}
-          noNavbar={true}
-          noToolbar={true}
-          visible={showImage}
-          onClose={() => showImageView(false)}
-          images={[{ src: resizeFullImage(author.avatar) }]}
-          container={isMobile && !!ref.current ? ref.current : undefined}
-          noClose={isMobile}
-        />
         <style jsx>{`
           .nickname {
             max-width: ${isMobile ? '230px' : 'auto'};

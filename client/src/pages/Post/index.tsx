@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import Viewer from 'react-viewer';
 import marked from 'marked';
 import BackButton from 'components/BackButton';
 import Button from 'components/Button';
@@ -26,7 +25,7 @@ import postApi from 'apis/post';
 import fileApi from 'apis/file';
 import subscriptionApi from 'apis/subscription';
 import { useStore } from 'store';
-import { ago, isPc, isMobile, sleep, getQuery, stopBodyScroll } from 'utils';
+import { ago, isPc, isMobile, sleep, getQuery } from 'utils';
 import FeedApi from './api';
 import Api from 'api';
 import Popover from '@material-ui/core/Popover';
@@ -36,7 +35,6 @@ import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import editorJsDataToHTML from './editorJsDataToHTML';
 import copy from 'copy-to-clipboard';
 
-import 'react-viewer/dist/index.css';
 import './github.css';
 
 const COMMENTS_LIMIT = isMobile ? 10 : 15;
@@ -51,6 +49,7 @@ export default observer((props: any) => {
     confirmDialogStore,
     snackbarStore,
     settingsStore,
+    photoSwipeStore,
   } = useStore();
 
   const { ready } = preloadStore;
@@ -60,8 +59,6 @@ export default observer((props: any) => {
     isFetchedPost: false,
     showExtra: false,
     posting: false,
-    showImage: false,
-    imgSrc: '',
     openRewardModal: false,
     isFetchedReward: false,
     rewardSummary: { amountMap: {}, users: [] },
@@ -72,6 +69,7 @@ export default observer((props: any) => {
     isBan: false,
     anchorEl: null as any,
     showMenu: false,
+    imgSrc: [] as any,
   }));
 
   const noReward = state.rewardSummary.users.length === 0;
@@ -80,8 +78,6 @@ export default observer((props: any) => {
     () => post && post.author && user.address === post.author.address,
     [user.address, post],
   );
-
-  const ref = React.useRef(document.createElement('div'));
 
   const postHTMLContent = React.useMemo(() => {
     if (!post) {
@@ -171,19 +167,6 @@ export default observer((props: any) => {
     })();
   }, [rId, state]);
 
-  const showImageView = React.useCallback(
-    (show: boolean) => {
-      if (isMobile) {
-        return;
-      }
-      state.showImage = show;
-      if (isMobile) {
-        stopBodyScroll(show);
-      }
-    },
-    [state],
-  );
-
   React.useEffect(() => {
     window.scrollTo(0, 0);
     if (!post) {
@@ -195,14 +178,23 @@ export default observer((props: any) => {
         window.open(href);
         e.preventDefault();
       } else if (e.target.tagName === 'IMG') {
-        state.imgSrc = e.target.src;
-        showImageView(true);
+        if (!e.target.src) {
+          return;
+        }
+        let index = state.imgSrc.indexOf(e.target.src);
+        if (index !== -1) {
+          photoSwipeStore.show(state.imgSrc, index);
+        } else {
+          photoSwipeStore.show(e.target.src);
+        }
       }
     };
 
     setTimeout(() => {
       const markdownBody = document.querySelector('.markdown-body');
       if (markdownBody) {
+        const imgs = markdownBody.getElementsByTagName('img');
+        state.imgSrc = Array.prototype.map.call(imgs, item => item.src);
         markdownBody.addEventListener('click', bindClickEvent);
       }
     }, 2000);
@@ -213,7 +205,7 @@ export default observer((props: any) => {
         markdownBody.addEventListener('click', bindClickEvent);
       }
     };
-  }, [post, state, showImageView]);
+  }, [post, state, photoSwipeStore]);
 
   React.useEffect(() => {
     state.isFetchingComments = true;
@@ -936,27 +928,6 @@ export default observer((props: any) => {
           </div>
         )}
         {(!state.isFetchedReward || !state.isFetchedComments) && renderLoading()}
-        <div
-          ref={ref}
-          className={classNames(
-            {
-              hidden: !isMobile || !state.showImage,
-            },
-            'mobile-viewer-container fixed bg-black',
-          )}
-          onClick={() => showImageView(false)}
-        ></div>
-        <Viewer
-          className={isMobile ? 'mobile-viewer' : ''}
-          onMaskClick={() => showImageView(false)}
-          noNavbar={true}
-          noToolbar={true}
-          visible={state.showImage}
-          onClose={() => showImageView(false)}
-          images={[{ src: state.imgSrc }]}
-          container={isMobile && !!ref.current ? ref.current : undefined}
-          noClose={isMobile}
-        />
         <style jsx>{`
           .name-max-width {
             max-width: 115px;

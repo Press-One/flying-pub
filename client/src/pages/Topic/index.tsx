@@ -22,9 +22,8 @@ import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
 import TopicIntroductionModal from './TopicIntroductionModal';
 import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import { toJS } from 'mobx';
-import { resizeImage, stopBodyScroll } from 'utils';
+import { resizeImage } from 'utils';
 import Img from 'components/Img';
-import Viewer from 'react-viewer';
 import classNames from 'classnames';
 import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import copy from 'copy-to-clipboard';
@@ -37,10 +36,9 @@ const TopView = observer(
     unsubscribe: () => Promise<void>;
     openTopicManagerMenu: () => void;
     fetchTopic: any;
-    setShowImage: () => void;
     history: any;
   }) => {
-    const { userStore, modalStore, pathStore } = useStore();
+    const { userStore, modalStore, pathStore, photoSwipeStore } = useStore();
     const state = useLocalStore(() => ({
       showTopicContributionModal: false,
       showTopicIntroductionModal: false,
@@ -134,7 +132,7 @@ const TopView = observer(
                 useOriginalDefault
                 resizeWidth={isMobile ? 90 : 120}
                 onClick={() => {
-                  topic.cover && props.setShowImage();
+                  topic.cover && photoSwipeStore.show(resizeImage(topic.cover, 240));
                 }}
               />
               <div className="ml-4 md:ml-5">
@@ -250,9 +248,6 @@ export default observer((props: any) => {
       name: '最新收录',
     },
   ];
-
-  const [showImage, setShowImage] = React.useState(false);
-  const ref = React.useRef(document.createElement('div'));
 
   const fetchTopic = React.useCallback(() => {
     (async () => {
@@ -427,13 +422,6 @@ export default observer((props: any) => {
     });
   };
 
-  const showImageView = (show: boolean) => {
-    setShowImage(show);
-    if (isMobile) {
-      stopBodyScroll(show);
-    }
-  };
-
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
       <div className="w-full md:w-916 md:m-auto">
@@ -450,9 +438,6 @@ export default observer((props: any) => {
             feedStore.clear();
             feedStore.setFilterType(tabs[1].type);
             fetchTopicPosts();
-          }}
-          setShowImage={() => {
-            showImageView(true);
           }}
           history={props.history}
         />
@@ -641,27 +626,6 @@ export default observer((props: any) => {
               ]}
             />
           )}
-          <div
-            ref={ref}
-            className={classNames(
-              {
-                hidden: !isMobile || !showImage,
-              },
-              'mobile-viewer-container fixed bg-black',
-            )}
-            onClick={() => showImageView(false)}
-          ></div>
-          <Viewer
-            className={isMobile ? 'mobile-viewer' : ''}
-            onMaskClick={() => showImageView(false)}
-            noNavbar={true}
-            noToolbar={true}
-            visible={showImage}
-            onClose={() => showImageView(false)}
-            images={[{ src: resizeImage(state.topic.cover, 240) }]}
-            container={isMobile && !!ref.current ? ref.current : undefined}
-            noClose={isMobile}
-          />
           <style jsx>{`
             .posts-container {
               min-height: 90vh;
