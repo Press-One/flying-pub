@@ -59,12 +59,14 @@ const providerPermissionChecker = {
 
 const getMixinBoxGroupUser = async mixinUuid => {
   try {
+    const url = `${config.auth.groupAuthBaseApi}/${mixinUuid}${config.auth.groupQuery}`;
+    console.log({ url, headerGroupId: config.auth.headerGroupId });
     const res = await request({
-      uri: `${config.auth.boxGroupAuthBaseApi}/${mixinUuid}`,
+      uri: url,
       json: true,
       headers: {
-        group_id: config.auth.boxGroupId,
-        Authorization: `Basic ${config.auth.boxGroupToken}`
+        group_id: config.auth.headerGroupId,
+        Authorization: `Basic ${config.auth.groupToken}`
       },
     }).promise();
     console.log({ res });
