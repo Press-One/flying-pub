@@ -27,6 +27,7 @@ import GlobalQueryHandler from './components/GlobalQueryHandler';
 import PublishDialog from './components/PublishDialog';
 import FavoritesModal from './components/FavoritesModal';
 import NotificationModal from './components/NotificationModal';
+import PhotoSwipe from './components/PhotoSwipe';
 
 import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
 
@@ -34,7 +35,6 @@ import { StoreProvider } from './store';
 
 import './styles/tailwind.css';
 import './styles/base.scss';
-import './styles/mobile-viewer.scss';
 
 const Reader = () => {
   return (
@@ -117,6 +117,7 @@ const AppRouter = () => {
           <PublishDialog />
           <FavoritesModal />
           <NotificationModal />
+          <PhotoSwipe />
           {isPc && <Contact />}
           <style jsx global>{`
             body {

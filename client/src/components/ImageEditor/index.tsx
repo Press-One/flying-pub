@@ -6,6 +6,7 @@ import { Edit, ZoomIn, ZoomOut, CameraAlt } from '@material-ui/icons';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile, isPc, MimeType, limitImageWidth, sleep } from 'utils';
+import { transferResourceToCDN } from 'utils/transfer';
 import Menu from './Menu';
 import ImageLibModal from './ImageLibModal';
 import Api from 'api';
@@ -53,6 +54,15 @@ export default observer((props: any) => {
     }
   }, [state, props.hidden, props.open]);
 
+  React.useEffect(() => {
+    if (!state.showMenu) {
+      (async () => {
+        await sleep(200);
+        state.isUploadingOriginImage = false;
+      })();
+    }
+  }, [state, state.showMenu]);
+
   const handleAvatarInputChange = () => {
     const file = avatarInputRef.current!.files![0];
     state.mimeType = file.type;
@@ -71,7 +81,6 @@ export default observer((props: any) => {
           const url = (await res.json()).url;
           props.getImageUrl(url);
           await sleep(200);
-          state.isUploadingOriginImage = false;
           props.close && props.close(true);
         } else {
           state.avatarTemp = reader.result as string;
@@ -286,10 +295,13 @@ export default observer((props: any) => {
       <ImageLibModal
         open={state.showImageLib}
         close={() => (state.showImageLib = false)}
-        selectImage={(url: string) => {
+        selectImage={async (url: string) => {
           if (props.useOriginImage) {
             state.showImageLib = false;
-            props.getImageUrl(url);
+            state.isUploadingOriginImage = true;
+            const newUrl = await transferResourceToCDN(url);
+            props.getImageUrl(newUrl);
+            await sleep(200);
             props.close && props.close(true);
           } else {
             state.showImageLib = false;

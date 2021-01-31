@@ -17,6 +17,7 @@ import { createConfirmDialogStore } from './confirmDialog';
 import { createFilesStore } from './files';
 import { createPublishDialogStore } from './publishDialog';
 import { createAuthorStore } from './author';
+import { createPhotoSwipeStore } from './photoSwipe';
 
 const storeContext = React.createContext<any>(null);
 
@@ -41,6 +42,7 @@ const useCreateStore = () => ({
   fileStore: useLocalStore(createFilesStore),
   publishDialogStore: useLocalStore(createPublishDialogStore),
   authorStore: useLocalStore(createAuthorStore),
+  photoSwipeStore: useLocalStore(createPhotoSwipeStore)
 });
 
 export const StoreProvider = ({ children }: IProps) => {

@@ -1,6 +1,7 @@
 const {
   override,
   addBabelPlugins,
+  addWebpackModuleRule,
 } = require('customize-cra');
 
 module.exports = {
@@ -10,5 +11,6 @@ module.exports = {
         "plugins": ["styled-jsx-plugin-postcss"]
       }]
     ),
+    addWebpackModuleRule({test: /\.svg$/, use: 'url-loader'})
   )
 }
