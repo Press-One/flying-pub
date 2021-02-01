@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./database/pub');
+const sequelize = require('./database');
 const File = require('./file');
 
 const Receipt = sequelize.define('receipts', {

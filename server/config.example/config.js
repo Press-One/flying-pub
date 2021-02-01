@@ -1,5 +1,5 @@
 const serviceRoot = 'http://localhost:9000';
-const serviceName = 'JUNHONG_LOCALHOST';
+const serviceName = 'FLYING_PUB_LOCAL';
 const serviceKey = `${serviceName}_READER`;
 
 module.exports = {
@@ -32,12 +32,11 @@ module.exports = {
   staticCDN: ``,
 
   // 数据库
-
   db: {
     host: `localhost`,
-    database: `reader`,
-    user: `postgres`,
-    password: `39f12851f5275222e8b50fddddf04ee4`,
+    database: "flying_pub",
+    user: "postgres",
+    password: "39f12851f5275222e8b50fddddf04ee4",
     dialect: `postgres`,
   },
 
@@ -76,7 +75,6 @@ module.exports = {
     },
 
     pressone: {
-      // appAddress: "0a23a3c44ecef10cbf698898c6ef74d7cae8dd9b"
       appAddress: "d6fe91f2711c805e7743304ac60fe18b35dc9fa1"
     }
   },
@@ -100,15 +98,15 @@ module.exports = {
   // 前后端共用的配置
   settings: {
     // 站点名称
-    'site.name': `新作`,
+    'site.name': `飞帖开发版`,
     // 站点标题（浏览器 tab 显示的文案）
-    'site.title': `新作`,
+    'site.title': `飞帖开发版`,
     // 一句话介绍本站点
-    'site.slogan': `李笑来的写作课练习平台（内测版）`,
+    'site.slogan': `飞帖开发版`,
     // 站点 logo
-    'site.logo': `https://static-assets.xue.cn/images/104-Xnip2020-10-04_17-36-41.jpg`,
+    'site.logo': `https://img-cdn.xue.cn/17-flying-pub.png`,
     // 是否开启 Mixin 消息通知
-    'notification.enabled': true,
+    'notification.enabled': false,
     // Mixin id
     'notification.mixin.id': 7000102340,
     // 是否开放作者详情页（取决于你是否提供关注作者的功能）
@@ -118,37 +116,28 @@ module.exports = {
     // 是否开启文章筛选器
     'filter.enabled': true,
     // 筛选器默认类型
-    'filter.type': `PUB_DATE`,
+    'filter.type': `LATEST`,
     // 是否开启热门排序
-    'filter.popularity.enabled': true,
+    'filter.popularity.enabled': false,
+    'filter.latest.enabled': true,
     // 热门排序时间段
-    'filter.dayRangeOptions': [7, 30, 0],
+    'filter.dayRangeOptions': [],
     // 支持的货币类型
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
     'site.url': `http://localhost:5000`,
     // 自定义菜单
     'menu.links': [],
-    // 选择公开或者私密，私密需要登录（通过校验）才能发布、查看文章
-    'permission.isPrivate': false,
-    'permission.isOnlyPubPrivate': false,
-    // 没有权限，被拦截之后，提示用户的文案
-    'permission.denyText': `您需要加入【飞帖开发版】才能阅读内容`,
-    // 引导被拦截用户的文章
-    'permission.denyActionText': `如何加入？`,
-    // 引导被拦截用户的链接，比如【如何付费加入？】这类型的引导文章
-    'permission.denyActionLink': `https://xxx.com/如何加入？`,
-    'import.enabled': true,
-
-    // 'permission.checkingProviders': ['mixin'],
-
     'mixinApp.name': '新生大讲堂',
     'mixinApp.downloadUrl': 'https://firesbox.com',
     'mixinApp.logo': 'https://static-assets.xue.cn/images/395b16fecce9f5bca118ee59c3b0ce82abcca800bcf8500eefa1750c3f11aff8',
+    'mixinApp.onlyAllowedMobileDevice': true,
+    'auth.providers': ['mixin'],
+  },
 
-    'auth.providers': ['mixin', 'phone'],
-
-    // 废弃
-    'pub.site.url': `http://localhost:8000`,
+  postView: {
+    enabled: true,
+    visible: true,
+    ipExpiredDuration: 10 * 60, // 10 分钟
   },
 
   // 权限认证
@@ -158,16 +147,13 @@ module.exports = {
     apiAccessKey: `1d612e68c74b7553d630267bbc7f7574`,
     // 如果站点是私密的，把用户的 providerId 放入白名单，则该用户不需要通过校验就能访问私密
     adminList: {
-      phone: [15622187078],
-      mixin: [1095057]
+      phone: [],
+      mixin: []
     },
     whitelist: {
-      mixin: [],
-      github: [],
+      phone: [],
+      mixin: []
     },
-    boxGroupAuthBaseApi: 'https://xuexi-courses-api.firesbox.com/v1/open-api/users',
-    boxGroupId: 7000102069,
-    boxGroupToken: '938212df61d348df4a40321744404277a53c9cd44ebd1f64be0d203ef6c1d7ec',
   },
 
   // 加密相关的 key
@@ -179,80 +165,25 @@ module.exports = {
       key: `99b32688c8bc95042e18991b47c18bde48d1c0f3ad3531efb9a79c2464124666`,
       ivPrefix: `dd4144175a607114419a86a136041c56f6cf8fd233cb1c38cd7b2fd18a8767b9`,
     },
-    aesKey256: [
-      16,
-      29,
-      21,
-      9,
-      21,
-      16,
-      26,
-      27,
-      28,
-      27,
-      7,
-      21,
-      0,
-      16,
-      6,
-      10,
-      3,
-      4,
-      20,
-      9,
-      14,
-      15,
-      26,
-      11,
-      17,
-      7,
-      20,
-      30,
-      14,
-      2,
-      31,
-      2,
-    ],
-  },
-
-  bot: {
-    enabled: true,
-    url: 'http://dev.press.one:8091/forward',
-    mixin: {
-      activeMixinUserUuid: 'c39c2ecc-2109-499f-b6c4-d6f278ea29fb',
-      lazyMixinUserUuid: 'c07448b5-a35c-49d6-8214-174f966d7f56',
-      url: 'http://dev.press.one:8091/forward/mixin'
-    }
+    aesKey256: [16,29,21,9,21,16,26,27,28,27,7,21,0,16,6,10,3,4,20,9,14,15,26,11,17,7,20,30,14,2,31,2],
   },
 
   messageSystem: {
-    sendSmsCodeURL: 'https://message.prsdev.club/api/phone/code/send',
-    verifySmsCodeURL: 'https://message.prsdev.club/api/phone/code/verify',
-    project: 'flyingpub_dev',
-    accessKey: 'f3f3a8c0fe9f727197787d06aab11f5b',
-    secretKey: '0a03cec905c0bb0efed61c47330cb9a169dc29667255e127',
-    url: 'https://message.prsdev.club/api/notification',
-    smsHardCode: '123123'
+    enabled: false,
   },
 
-  qingCloud: {
-    cdn: 'https://static-assets.xue.cn',
-    accessKeyId: 'JKYQFBAPQERCWGJTTXAA',
-    secretAccessKey: 'ZFzuDynfMEQJrlF2ZLIoZtBiPFSMuAMgUmXAi6Rg',
-    zone: 'pek3b',
-    bucketName: 'static-assets',
+  recommendation: {
+    authors: {
+      // 60 * 60 * 12 半天
+      cachedDuration: 60
+    }
   },
+
+  assistantUserId: 1,
 
   search: {
-    enabled: false,
-    xmluriHost: 'http://localhost:5000',
-    searchUrl: 'http://192.168.0.9/search',
-    updatertUrl: 'http://192.168.0.9/updatert',
-    deleteUrl: 'http://192.168.0.9/deletert',
-    queueDuration: 20,
-    rollout: false,
-    syncRedisKey: `${serviceKey}_SEARCH`,
+    enabled: false
   },
 
-  assistantUserId: 1
+  queueDisabledJobs: ['atom'],
 };

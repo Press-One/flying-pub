@@ -14,7 +14,6 @@ module.exports = {
 
     try {
       await sequelize.authenticate();
-      console.log(`已成功连接数据库，准备迁移钱包 userAddress`);
 
       const readerDbQueryInterface = sequelize.getQueryInterface();
       const users = await readerDbQueryInterface.sequelize.query(
@@ -23,7 +22,6 @@ module.exports = {
         }
       );
       if (users.length === 0) {
-        console.log('没有需要迁移的用户');
         return null;
       }
       console.log(`开始迁移${users.length}个用户`);

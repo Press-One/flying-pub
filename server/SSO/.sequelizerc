@@ -1,6 +1,0 @@
-const path = require('path');
-
-module.exports = {
-  'config': path.resolve('SSO', 'sequelize_cli_config.js'),
-  'migrations-path': path.resolve('SSO', 'migrations')
-}

@@ -35,7 +35,11 @@ const getCommentIdFromMsg = (msg: Notification) =>
 
 export default observer(() => {
   const { settingsStore, userStore, notificationStore } = useStore();
-  if (!userStore.isFetched || !userStore.isLogin) {
+  if (
+    !userStore.isFetched ||
+    !userStore.isLogin ||
+    !settingsStore.settings.extra['messageSystem.enabled']
+  ) {
     return null;
   }
 

@@ -19,7 +19,7 @@ const {
   ensureAdmin,
 } = require('../middleware/api');
 
-const isPrivate = config.settings['permission.isPrivate'];
+const isPrivate = config.settings['permission.isPrivate'] || false;
 
 router.get('/', ensureAuthorization({
   strict: isPrivate,

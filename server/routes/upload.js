@@ -33,9 +33,13 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const { mimetype } = file;
     const postfix = getPostfix(mimetype);
-    const now = new Date();
-    const prefix = now.getMonth() + 1 + '' + now.getDate();
-    cb(null, prefix + "." + postfix);
+    if (config.qingCloud) {
+      const now = new Date();
+      const prefix = now.getMonth() + 1 + '' + now.getDate();
+      cb(null, prefix + "." + postfix);
+    } else {
+      cb(null, new Date().getTime() + "." + postfix)
+    }
   }
 });
 
@@ -50,6 +54,16 @@ router.post('/', upload.single('file'), async (ctx) => {
     mimetype,
     path
   } = ctx.req.file;
+  
+  if (!config.qingCloud) {
+    console.log({ filename, path });
+    ctx.body = {
+      filename: filename,
+      url: `${config.serviceRoot}/${filename}`
+    }
+    return;
+  }
+
   try {
     let qingConfig = new Config(config.qingCloud.accessKeyId, config.qingCloud.secretAccessKey);
     let bucket = new QingStor(qingConfig).Bucket(config.qingCloud.bucketName, config.qingCloud.zone);

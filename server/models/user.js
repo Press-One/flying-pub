@@ -4,7 +4,6 @@ const PrsUtil = require("prs-utility");
 const util = require("../utils");
 const config = require("../config");
 const Wallet = require("./wallet");
-const SSO_User = require('../models_SSO/user');
 
 const {
   assert,
@@ -15,8 +14,6 @@ const DEFAULT_AVATAR = "https://static-assets.xue.cn/images/435d111.jpg";
 const packUser = async (user, options = {}) => {
   assert(user, Errors.ERR_IS_REQUIRED("user"));
 
-  const isNewVersionUser = user.version === 1;
-  const isSharedWithPubUser = user.version !== 1;
   const {
     withKeys
   } = options;
@@ -31,46 +28,12 @@ const packUser = async (user, options = {}) => {
     privateContributionEnabled: user.privateContributionEnabled
   };
 
-  if (options.withSSO) {
-    derivedUser.version = user.version || 0;
-  }
-
-  // 旧用户，需要使用 pub user 的一些数据
-  let foundPubUser = false;
-  if (isSharedWithPubUser) {
-    const pubUser = await SSO_User.getByReaderUserId(user.id, {
-      withKeys
-    });
-    if (pubUser) {
-      foundPubUser = true;
-      derivedUser.address = pubUser.address;
-      if (withKeys) {
-        derivedUser.privateKey = pubUser.privateKey;
-      }
-      if (options.withSSO) {
-        derivedUser.SSO = {
-          reader: {
-            id: user.id,
-            address: user.address
-          },
-          pub: {
-            id: pubUser.id,
-            address: pubUser.address
-          }
-        }
-      }
-    }
-  }
-
-  // 新用户
-  if (isNewVersionUser || !foundPubUser) {
-    derivedUser.address = user.address;
-    if (withKeys) {
-      derivedUser.privateKey = util.crypto.aesDecrypt(
-        user.aesEncryptedHexOfPrivateKey,
-        config.encryption.aesKey256
-      );
-    }
+  derivedUser.address = user.address;
+  if (withKeys) {
+    derivedUser.privateKey = util.crypto.aesDecrypt(
+      user.aesEncryptedHexOfPrivateKey,
+      config.encryption.aesKey256
+    );
   }
 
   return derivedUser;
@@ -186,12 +149,6 @@ exports.get = async (id, options) => {
 };
 
 exports.getByAddress = async (address, options) => {
-  const userId = await SSO_User.tryGetReaderIdByAddress(address);
-  if (userId) {
-    return await get({
-      id: userId,
-    }, options);
-  }
   return await get({
     address,
   }, options);
@@ -201,7 +158,6 @@ const get = async (query = {}, options = {}) => {
   const {
     raw,
     withKeys,
-    withSSO,
     returnRaw
   } = options;
   const user = await User.findOne({
@@ -217,7 +173,6 @@ const get = async (query = {}, options = {}) => {
 
   const derivedUser = await packUser(user.toJSON(), {
     withKeys,
-    withSSO
   });
 
   if (returnRaw) {

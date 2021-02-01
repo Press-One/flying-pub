@@ -2,10 +2,9 @@ const Mixin = require('mixin-node');
 const image2base64 = require('image-to-base64');
 const util = require('../utils');
 const config = require('../config');
-const SSOWalletConfig = require('../SSO/config.pub.wallet');
+const walletConfig = require('../config.wallet');
 const Wallet = require('./sequelize/wallet');
 const Cache = require('./cache');
-const SSOConfig = require("../SSO/config.pub");
 const {
   aesCrypto,
   aesDecrypt
@@ -15,14 +14,14 @@ const {
   assertFault,
   Errors
 } = require('../utils/validator')
-const aesKey256 = SSOWalletConfig.encryption.aesKey256;
+const aesKey256 = walletConfig.encryption.aesKey256;
 
 const mixin = new Mixin({
-  client_id: SSOConfig.provider.mixin.clientId,
-  aeskey: SSOConfig.provider.mixin.aesKey,
-  pin: SSOConfig.provider.mixin.pinCode,
-  session_id: SSOConfig.provider.mixin.sessionId,
-  privatekey: Buffer.from(SSOConfig.provider.mixin.privateKey, 'utf8')
+  client_id: config.provider.mixin.clientId,
+  aeskey: config.provider.mixin.aesKey,
+  pin: config.provider.mixin.pinCode,
+  session_id: config.provider.mixin.sessionId,
+  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
 });
 
 const getNumberByMixinClientId = mixinClientId => {
@@ -36,7 +35,7 @@ const getNumberByMixinClientId = mixinClientId => {
 }
 
 const aesCryptoWallet = data => {
-  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt;
+  const counterInitialValue = getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt;
   data.mixinAesKey = aesCrypto(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesCrypto(data.mixinSessionId, aesKey256, counterInitialValue);
   data.mixinPrivateKey = aesCrypto(data.mixinPrivateKey, aesKey256, counterInitialValue);
@@ -48,7 +47,7 @@ const aesDecryptWallet = data => {
   if (!data.mixinAccount) {
     return data;
   }
-  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + SSOWalletConfig.encryption.salt : 5;
+  const counterInitialValue = data.version === 1 ? getNumberByMixinClientId(data.mixinClientId) + Number(data.mixinPin) + walletConfig.encryption.salt : 5;
   data.mixinPin = data.version === 1 ? data.mixinPin : aesDecrypt(data.mixinPin, aesKey256, counterInitialValue);
   data.mixinAesKey = aesDecrypt(data.mixinAesKey, aesKey256, counterInitialValue);
   data.mixinSessionId = aesDecrypt(data.mixinSessionId, aesKey256, counterInitialValue);

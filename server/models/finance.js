@@ -2,7 +2,6 @@ const mathjs = require("mathjs");
 const Mixin = require("mixin-node");
 const rfc3339nano = require('rfc3339nano');
 const config = require("../config");
-const SSOConfig = require("../SSO/config.pub");
 const Wallet = require("./wallet");
 const File = require("./file");
 const Post = require("./post");
@@ -45,11 +44,11 @@ const bigFormat = bignumber => {
 const balanceCacheKey = `${config.serviceKey}_BALANCE_CACHE_KEY`;
 
 const mixin = new Mixin({
-  client_id: SSOConfig.provider.mixin.clientId,
-  aeskey: SSOConfig.provider.mixin.aesKey,
-  pin: SSOConfig.provider.mixin.pinCode,
-  session_id: SSOConfig.provider.mixin.sessionId,
-  privatekey: Buffer.from(SSOConfig.provider.mixin.privateKey, 'utf8')
+  client_id: config.provider.mixin.clientId,
+  aeskey: config.provider.mixin.aesKey,
+  pin: config.provider.mixin.pinCode,
+  session_id: config.provider.mixin.sessionId,
+  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
 });
 
 const getViewToken = snapshotId => {
@@ -67,7 +66,7 @@ const getMixinPaymentUrl = (options = {}) => {
     memo
   } = options;
   return (
-    `${SSOConfig.provider.mixin.domain || 'https://mixin.one'}/pay` +
+    `${config.provider.mixin.domain || 'https://mixin.one'}/pay` +
     "?recipient=" +
     encodeURIComponent(toMixinClientId) +
     "&asset=" +

@@ -8,7 +8,6 @@ module.exports = {
       }
     );
     if (replyComments.length === 0) {
-      console.log('没有需要操作的评论');
       return null;
     }
     console.log(`开始迁移${replyComments.length}条子评论`);

@@ -4,7 +4,7 @@ import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
 import debounce from 'lodash.debounce';
 import { useStore } from 'store';
-import { sleep, getApiEndpoint, getQuery, setQuery, removeQuery, isPc, isMobile } from 'utils';
+import { sleep, getQuery, setQuery, removeQuery, isPc, isMobile } from 'utils';
 import fileApi, { EditableFile } from 'apis/file';
 import * as EditorStorage from './Storage';
 import PcEditor from './PcEditor';
@@ -331,31 +331,6 @@ export default observer((props: any) => {
     if (!preloadStore.ready) {
       return;
     }
-    const mixinProfile = userStore.profiles.find((v) => v.provider === 'mixin');
-    const shouldCheckMixinGroup = (settings['permission.checkingProviders'] || []).includes(
-      'mixin',
-    );
-    if (shouldCheckMixinGroup && !mixinProfile) {
-      confirmDialogStore.show({
-        contentClassName: 'text-left',
-        content: `发布文章之前，请先绑定 ${settings['mixinApp.name']} 的账户，以便我们验证你的学员资格（仅写作课学员能发布文章）`,
-        okText: '去绑定',
-        ok: async () => {
-          confirmDialogStore.setLoading(true);
-          window.location.href = `${getApiEndpoint()}/api/auth/mixin/bind?redirect=${encodeURIComponent(
-            window.location.href,
-          )}`;
-        },
-      });
-      await sleep(500);
-      if (!isPublished) {
-        handleSave({
-          strict: false,
-        });
-      }
-      return;
-    }
-
     if (!userStore.canPublish) {
       confirmDialogStore.show({
         contentClassName: 'text-left',

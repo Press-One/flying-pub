@@ -4,5 +4,5 @@ const {
 } = require('../../../utils/db');
 
 module.exports = init(config.db, {
-  name: 'Reader'
+  name: 'Main'
 });

@@ -5,11 +5,6 @@ const User = require("../models/user");
 const Log = require("../models/log");
 const Mixin = require("../models/mixin");
 let scanner = null;
-if (process.env.NODE_ENV === 'production') {
-  const sensitiveWords = require("../utils/sensitiveWords.json");
-  const FastScanner = require("fastscan");
-  scanner = new FastScanner(sensitiveWords);
-}
 const {
   truncate
 } = require("../utils");

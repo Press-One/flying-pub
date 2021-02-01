@@ -1,12 +1,9 @@
 {
-  "name": "reader-server",
-  "version": "0.1.0",
-  "private": true,
+  "name": "server",
+  "version": "2.0.0",
   "scripts": {
-    "db-migrate": "./node_modules/.bin/sequelize db:migrate --debug && yarn sso-db-migrate && yarn wallet-db-migrate && yarn sso-wallet-db-migrate",
+    "db-migrate": "./node_modules/.bin/sequelize db:migrate --debug && yarn wallet-db-migrate",
     "wallet-db-migrate": "./node_modules/.bin/sequelize --options-path ./wallet/.sequelizerc db:migrate --debug",
-    "sso-db-migrate": "./node_modules/.bin/sequelize --options-path ./SSO/.sequelizerc db:migrate --debug",
-    "sso-wallet-db-migrate": "./node_modules/.bin/sequelize --options-path ./SSO/wallet/.sequelizerc db:migrate --debug",
     "start": "yarn db-migrate && ./node_modules/.bin/nodemon bin/run",
     "start-queue": "./node_modules/.bin/nodemon ./queue.js",
     "start-prod": "export NODE_ENV='production' && yarn db-migrate && ./node_modules/.bin/pm2-runtime bin/run",

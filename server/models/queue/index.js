@@ -9,9 +9,6 @@ const {
 } = require('./atom');
 const {
   createViewSyncQueue,
-  createAddAvgViewQueue,
-  createAddHotViewQueue,
-  createPublishViewQueue
 } = require('./view');
 const {
   createNotificationQueue
@@ -35,13 +32,6 @@ exports.up = async () => {
     queues.push(createAtomCacheQueue());
   }
   if (config.postView && config.postView.enabled && !queueDisabledJobs.includes('view')) {
-    if (!queueDisabledJobs.includes('viewAddAvg')) {
-      queues.push(createAddAvgViewQueue());
-    }
-    if (!queueDisabledJobs.includes('viewAddHot')) {
-      queues.push(createAddHotViewQueue());
-    }
-    queues.push(createPublishViewQueue());
     queues.push(createViewSyncQueue());
   }
   if (config.search && config.search.enabled && !queueDisabledJobs.includes('search')) {

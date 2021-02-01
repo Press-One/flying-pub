@@ -47,7 +47,6 @@ exports.ensureAuthorization = (options = {}) => {
     const [{ user, sequelizeUser }, profiles] = await Promise.all([
       User.get(userId, {
         returnRaw: true,
-        withSSO: true
       }),
       Profile.getByUserId(userId)
     ]);

@@ -1,6 +1,5 @@
 'use strict';
 
-const request = require('request-promise');
 const config = require('../config');
 const auth = require('../models/auth');
 const {
@@ -22,76 +21,9 @@ const {
   verifySmsCode
 } = require('../models/verifycode');
 
-const providers = ['pressone', 'github', 'mixin', 'phone'];
+const providers = ['mixin', 'phone'];
 
 const DEFAULT_AVATAR = 'https://static-assets.xue.cn/images/435d111.jpg';
-
-const checkPermission = async (provider, profile) => {
-  const {
-    providerId
-  } = profile;
-  const whitelist = config.auth.whitelist[provider];
-  const isInWhiteList = whitelist && whitelist.includes(parseInt(providerId));
-  if (isInWhiteList) {
-    return true;
-  }
-  const checkResult = await providerPermissionChecker[provider](profile);
-  return checkResult;
-}
-
-const providerPermissionChecker = {
-  mixin: async profile => {
-    const rawJson = JSON.parse(profile.raw);
-    const mixinGroupUser = await getMixinBoxGroupUser(rawJson.user_id);
-    return mixinGroupUser;
-  },
-  github: async profile => {
-    const isPaidUserOfXue = await checkIsPaidUserOfXue(profile.name);
-    return isPaidUserOfXue;
-  },
-  pressone: async () => {
-    return true;
-  },
-  phone: async () => {
-    return true;
-  },
-};
-
-const getMixinBoxGroupUser = async mixinUuid => {
-  try {
-    const url = `${config.auth.groupAuthBaseApi}/${mixinUuid}${config.auth.groupQuery}`;
-    console.log({ url, headerGroupId: config.auth.headerGroupId });
-    const res = await request({
-      uri: url,
-      json: true,
-      headers: {
-        group_id: config.auth.headerGroupId,
-        Authorization: `Basic ${config.auth.groupToken}`
-      },
-    }).promise();
-    console.log({ res });
-    return res.user_id === mixinUuid && res;
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
-}
-
-const checkIsPaidUserOfXue = async githubNickName => {
-  try {
-    const user = await request({
-      uri: `${config.auth.xueUserExtraApi}/${githubNickName}`,
-      json: true,
-      headers: {
-        'x-po-auth-token': config.auth.xueAdminToken
-      },
-    }).promise();
-    const isPaidUser = user.balance > 0;
-    return isPaidUser;
-  } catch (err) {
-    return false;
-  }
-}
 
 const oauth = (ctx, oauthType) => {
   const {
@@ -120,12 +52,7 @@ exports.oauthCallback = async ctx => {
       provider
     } = ctx.params;
 
-    let user;
-    if (provider === 'pressone') {
-      user = await handlePressOneCallback(ctx, provider);
-    } else {
-      user = await handleOauthCallback(ctx, provider);
-    }
+    const user = await handleOauthCallback(ctx, provider);
     assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
 
     const profile = providerGetter[provider](user);
@@ -136,48 +63,7 @@ exports.oauthCallback = async ctx => {
     assert(oauthType, Errors.ERR_IS_REQUIRED('oauthType'));
 
     if (oauthType === 'login') {
-      if (config.settings['permission.isPrivate']) {
-        const mixinGroupUser = await checkPermission(provider, profile);
-
-        if (config.settings['permission.isPrivate']) {
-          const noPermission = !mixinGroupUser;
-          if (noPermission) {
-            Log.createAnonymity(
-              profile.providerId,
-              `没有 ${provider} 权限，raw ${profile.raw}`
-            );
-            const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
-            ctx.redirect(`${clientHost}?action=PERMISSION_DENY`);
-            return false;
-          }
-        }
-
-        const insertedUser = await login(ctx, user, provider);
-
-        try {
-          if (mixinGroupUser && mixinGroupUser.phone_number) {
-            const providerId = parseInt(mixinGroupUser.phone_number);
-            const insertedProfile = await Profile.get('phone', providerId);
-            if (!insertedProfile) {
-              await Profile.createProfile({
-                userId: insertedUser.id,
-                profile: {
-                  provider: 'phone',
-                  providerId,
-                  name: providerId.toString(),
-                  avatar: DEFAULT_AVATAR,
-                  raw: '{}'
-                }
-              });
-              Log.create(insertedUser.id, `创建对应的手机账户`);
-            }
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      } else {
-        await login(ctx, user, provider);
-      }
+      await login(ctx, user, provider);
     } else if (oauthType === 'bind') {
       assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
       const queryStart = ctx.session.auth.redirect.includes('?') ? '&' : '?';
@@ -203,21 +89,6 @@ exports.oauthCallback = async ctx => {
     console.log(err);
     throws(Errors.ERR_FAIL_TO_LOGIN);
   }
-};
-
-const handlePressOneCallback = async (ctx, provider) => {
-  const {
-    userAddress
-  } = ctx.query;
-  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
-  const user = await request({
-    uri: `https://press.one/api/v2/users/${userAddress}`,
-    json: true,
-    headers: {
-      accept: 'application/json'
-    }
-  }).promise();
-  return user;
 };
 
 const handleOauthCallback = async (ctx, provider) => {
@@ -344,25 +215,6 @@ exports.getPermission = async ctx => {
   const {
     user
   } = ctx.verification;
-
-  if (config.settings['permission.allowedProviders']) {
-    const allowedProviders = config.settings['permission.allowedProviders'];
-    const profiles = await Profile.getByUserId(user.id);
-    let passed = false;
-    for (const profile of profiles) {
-      if (allowedProviders.includes(profile.provider)) {
-        passed = true;
-      }
-    }
-    assert(passed, Errors.ERR_NO_PERMISSION);
-  }
-
-  if (config.settings['permission.isOnlyPubPrivate']) {
-    const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
-    assert(mixinProfile, Errors.ERR_NO_PERMISSION);
-    const mixinGroupUser = await checkPermission('mixin', mixinProfile);
-    assert(mixinGroupUser, Errors.ERR_NO_PERMISSION);
-  }
 
   try {
     const topicAddress = config.topic.address;
@@ -522,17 +374,6 @@ exports.oauthBind = async ctx => {
 };
 
 const providerGetter = {
-  github: user => {
-    return {
-      provider: 'github',
-      providerId: user._json.id,
-      name: user.username,
-      nickname: user.username,
-      avatar: user._json.avatar_url || DEFAULT_AVATAR,
-      bio: user._json.bio,
-      raw: user._raw
-    };
-  },
 
   mixin: user => {
     return {
@@ -551,19 +392,6 @@ const providerGetter = {
         session_id: user._json.session_id,
         code_id: user._json.code_id,
       })
-    };
-  },
-
-  pressone: user => {
-    delete user.proofs;
-    return {
-      provider: 'pressone',
-      providerId: user.id,
-      name: user.name,
-      nickname: user.name,
-      avatar: user.avatar || DEFAULT_AVATAR,
-      bio: user.bio,
-      raw: JSON.stringify(user)
     };
   },
 

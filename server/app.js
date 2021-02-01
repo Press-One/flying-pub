@@ -16,7 +16,6 @@ const auth = require('./routes/auth');
 const token = require("./routes/token");
 const profile = require("./routes/profile");
 const finance = require('./routes/finance');
-const readerFinance = require('./routes/readerFinance');
 const post = require('./routes/post');
 const comment = require('./routes/comment');
 const vote = require('./routes/vote');
@@ -72,6 +71,7 @@ if (!config.staticCDN) {
   serveOptions.maxage = 365 * 24 * 60 * 60;
 }
 app.use(serve('build', serveOptions));
+app.use(serve('uploads', serveOptions));
 
 router.all('*', errorHandler);
 router.all('*', extendCtx);
@@ -80,7 +80,6 @@ router.use("/api/user", user.routes(), user.allowedMethods());
 router.use("/api/token", token.routes(), token.allowedMethods());
 router.use('/api/auth', auth.routes(), auth.allowedMethods());
 router.use("/api/profile", profile.routes(), profile.allowedMethods());
-router.use('/api/reader_finance', readerFinance.routes(), readerFinance.allowedMethods());
 router.use('/api/finance', finance.routes(), finance.allowedMethods());
 router.use('/api/posts', post.routes(), post.allowedMethods());
 router.use('/api/authors', author.routes(), author.allowedMethods());

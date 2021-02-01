@@ -6,6 +6,9 @@ const Log = require('./log');
 const config = require("../config");
 
 const notify = async (payload, messageType = "private_message", channel = "all") => {
+  if (!config.messageSystem.enabled) {
+    return;
+  }
   try {
     const data = {
       channel: channel,

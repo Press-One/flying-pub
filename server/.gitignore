@@ -6,8 +6,6 @@ yarn-error.log*
 
 /config.js
 /config.wallet.js
-/SSO/config.pub.js
-/SSO/config.pub.wallet.js
 
 session.json
 
