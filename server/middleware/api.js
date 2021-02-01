@@ -84,7 +84,7 @@ exports.errorHandler = async (ctx, next) => {
   try {
     await next();
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production' || ![400, 404].includes(err.status)) {
+    if (![400, 401, 404].includes(err.status)) {
       console.log(err);
     }
     if (
