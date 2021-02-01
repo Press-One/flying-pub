@@ -13,7 +13,7 @@ git clean -f -d &&
 git pull
 
 sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qingcloud.com
-IMAGE_NAME="dockerhub.qingcloud.com/pressone/reader"
+IMAGE_NAME="dockerhub.qingcloud.com/pressone/flying-pub"
 sudo docker build -t $IMAGE_NAME .
 sudo docker push $IMAGE_NAME
 

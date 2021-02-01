@@ -4,15 +4,15 @@ set -e
 cd client
 yarn install && yarn build || { exit 1; }
 
-cd /pressone/reader
+cd /pressone/flying-pub
 
 sudo docker login -u prs-admin -p 57e348ab37aa5b55f68b7642ac584a41 dockerhub.qingcloud.com
 
 # 静态文件上传到 CDN
-sudo docker run --rm -v $(pwd)/client/build/static/js:/app/src dockerhub.qingcloud.com/pressone_private/qingcloud-uploader sh -c "npm start -- --folder='reader/static/js'"
-sudo docker run --rm -v $(pwd)/client/build/static/css:/app/src dockerhub.qingcloud.com/pressone_private/qingcloud-uploader sh -c "npm start -- --folder='reader/static/css'"
+sudo docker run --rm -v $(pwd)/client/build/static/js:/app/src dockerhub.qingcloud.com/pressone_private/qingcloud-uploader sh -c "npm start -- --folder='flying-pub/static/js'"
+sudo docker run --rm -v $(pwd)/client/build/static/css:/app/src dockerhub.qingcloud.com/pressone_private/qingcloud-uploader sh -c "npm start -- --folder='flying-pub/static/css'"
 
-IMAGE_NAME="dockerhub.qingcloud.com/pressone/reader"
+IMAGE_NAME="dockerhub.qingcloud.com/pressone/flying-pub"
 BOX_IMAGE_NAME="dockerhub.qingcloud.com/pressone/flying-pub-box"
 WRITING_IMAGE_NAME="dockerhub.qingcloud.com/pressone/flying-pub-writing"
 # XUE_IMAGE_NAME="dockerhub.qingcloud.com/pressone/xue-reader"
