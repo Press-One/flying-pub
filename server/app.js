@@ -33,6 +33,7 @@ const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
 const search = require('./routes/search');
+const sitemap = require('./routes/sitemap');
 
 const config = require('./config');
 const models = require('./models');
@@ -105,6 +106,7 @@ router.use('/api/ping', ping.routes(), ping.allowedMethods());
 router.use('/api/search', ensureAuthorization({
   strict: false
 }), search.routes(), search.allowedMethods());
+router.use('/sitemap.txt', sitemap.routes(), sitemap.allowedMethods());
 
 router.get('*', async ctx => ctx.render('index'));
 

@@ -9,7 +9,6 @@ exports.initStatic = async () => {
   await tryDownloadFavicon(config.favicon);
   await tryUseStaticCDN(config.staticCDN);
   await tryUpdateRobots(config.serviceRoot);
-  await tryUpdateSitemap(config.serviceRoot);
 }
 
 const tryDownloadFavicon = async url => {
@@ -52,18 +51,4 @@ const tryUpdateRobots = async url => {
   } catch (e) {
     console.log(e);
   }
-}
-
-const tryUpdateSitemap = async url => {
-  try {
-    const text = await pReadFile('./build/sitemap.txt');
-    if (!text.includes('serviceRoot')) {
-      return;
-    }
-    const newText = text.toString().replace(/serviceRoot/g, url);
-    await pWriteFile('./build/sitemap.txt', newText);
-  } catch (e) {
-    console.log(e);
-  }
-
 }
