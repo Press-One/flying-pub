@@ -239,36 +239,6 @@ exports.listByLatestComment = async ctx => {
   };
 }
 
-exports.listByUserSettings = async ctx => {
-  const userId = ctx.verification && ctx.verification.user.id;
-  if (userId) {
-    const userSettings = await Settings.getByUserId(userId);
-    const settings = { ...config.settings, ...userSettings };
-    const type = settings['filter.type'];
-    if (type === 'POPULARITY') {
-      ctx.query.dayRange = settings['filter.dayRange'];
-      await exports.listByPopularity(ctx);
-    } else if (type === 'SUBSCRIPTION') {
-      ctx.query.type = settings['filter.subscriptionType'];
-      await exports.listBySubscription(ctx);
-    } else if (type === 'LATEST') {
-      if (settings['filter.latestType'] === 'LATEST_COMMENT') {
-        await exports.listByLatestComment(ctx);
-      } else {
-        await exports.listByPubDate(ctx);
-      }
-    }
-  } else {
-    if (config.settings['filter.type'] === 'POPULARITY') {
-      const dayRangeOptions = config.settings['filter.dayRangeOptions'] || [];
-      ctx.query.dayRange = dayRangeOptions[0];
-      await exports.listByPopularity(ctx);
-    } else {
-      await exports.listByPubDate(ctx);
-    }
-  }
-}
-
 exports.update = async ctx => {
   const rId = ctx.params.id;
   const data = ctx.request.body.payload;

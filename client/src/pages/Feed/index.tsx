@@ -8,7 +8,6 @@ import Filter from 'components/PostsFilter';
 import RecommendAuthors from './RecommendAuthors';
 import { isMobile, isPc } from 'utils';
 import postApi, { FilterType } from 'apis/post';
-import settingsApi from 'apis/settings';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import Button from 'components/Button';
 
@@ -49,63 +48,14 @@ export default observer(() => {
     });
   }
 
-  const initFilter = React.useCallback(
-    (settings: any) => {
-      const type = settings['filter.type'];
-      const popularityDisabled = !settings['filter.popularity.enabled'];
-      if (popularityDisabled) {
-        const validType = type === 'POPULARITY' ? 'LATEST' : type;
-        settings['filter.type'] = validType;
-        feedStore.setFilter({
-          type: validType,
-        });
-      } else {
-        const filter: any = { type };
-        if (type === 'POPULARITY') {
-          const dayRange = settings['filter.dayRange'];
-          const dayRangeOptions = settings['filter.dayRangeOptions'];
-          const isValidDayRange =
-            (dayRange || dayRange === 0) && dayRangeOptions.includes(dayRange);
-          const validDayRange = isValidDayRange ? dayRange : dayRangeOptions[0];
-          settings['filter.dayRange'] = validDayRange;
-          filter.dayRange = validDayRange;
-        }
-        if (isPc && type === 'SUBSCRIPTION') {
-          if (settings['filter.subscriptionType']) {
-            filter.subscriptionType = settings['filter.subscriptionType'];
-          } else {
-            filter.subscriptionType = 'author';
-          }
-        }
-        if (type === 'LATEST' || type === 'PUB_DATE' || (isMobile && type === 'SUBSCRIPTION')) {
-          filter.type = 'LATEST';
-          if (settings['filter.latestType']) {
-            filter.latestType = settings['filter.latestType'];
-          } else {
-            filter.latestType = 'PUB_DATE';
-          }
-        }
-        feedStore.setFilter(filter);
-      }
-    },
-    [feedStore],
-  );
-
-  React.useEffect(() => {
-    if (ready && !feedStore.syncedFromSettings) {
-      initFilter(settings);
-      feedStore.markSyncedFromSettings();
-    }
-  }, [ready, settings, feedStore, initFilter]);
-
   React.useEffect(() => {
     if (feedStore.provider !== 'feed') {
       feedStore.setProvider('feed');
       feedStore.clear();
-      initFilter(settings);
+      feedStore.setFilterType('LATEST');
       window.scrollTo(0, 0);
     }
-  }, [feedStore, tabs, settings, initFilter]);
+  }, [feedStore, tabs, settings]);
 
   React.useEffect(() => {
     document.title = `${settings['site.title'] || ''}`;
@@ -184,8 +134,8 @@ export default observer(() => {
             }
           }
         } else {
-          fetchPostsPromise = postApi.fetchPostsByUserSettings({
-            offset: 0,
+          fetchPostsPromise = postApi.fetchPosts({
+            offset: feedStore.page * limit,
             limit,
           });
         }
@@ -233,26 +183,6 @@ export default observer(() => {
       feedStore.setPage(0);
       feedStore.setFilter(filter);
       feedStore.setIsFetched(false);
-    }
-    try {
-      const settings: any = {
-        'filter.type': filter.type,
-      };
-      if (filter.type === 'POPULARITY') {
-        settings['filter.dayRange'] = filter.dayRange;
-      }
-      if (filter.type === 'SUBSCRIPTION') {
-        settings['filter.subscriptionType'] = filter.subscriptionType;
-      }
-      if (filter.type === 'LATEST') {
-        settings['filter.latestType'] = filter.latestType;
-      }
-      if (userStore.isLogin) {
-        await settingsApi.saveSettings(settings);
-      }
-      settingsStore.updateSettings(settings);
-    } catch (err) {
-      console.log(err);
     }
   };
 

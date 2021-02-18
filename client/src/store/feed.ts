@@ -29,7 +29,6 @@ export function createFeedStore() {
     belongedAuthor: ({} as IAuthor),
     belongedTopic: ({} as ITopic),
     hasMorePosts: false,
-    syncedFromSettings: false,
     get hasPosts() {
       return this.posts.length > 0;
     },
@@ -150,9 +149,6 @@ export function createFeedStore() {
     },
     setBelongedTopic(Topic: ITopic) {
       this.belongedTopic = Topic
-    },
-    markSyncedFromSettings() {
-      this.syncedFromSettings = true;
     },
     setPendingNewPage(status: boolean) {
       this.pendingNewPage = status;

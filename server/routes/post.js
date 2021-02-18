@@ -5,7 +5,6 @@ const {
   listByPopularity,
   listByPubDate,
   listByLatestComment,
-  listByUserSettings,
   get,
   update,
   listTopics,
@@ -32,7 +31,6 @@ router.get('/latest_comment', ensureAuthorization({
 }), listByLatestComment);
 router.get('/subscription', ensureAuthorization(), listBySubscription);
 router.get('/favorite', ensureAuthorization(), listFavorites);
-router.get('/by_user_settings', ensureAuthorization({ strict: isPrivate }), listByUserSettings);
 router.get('/:id', ensureAuthorization({
   strict: isPrivate
 }), get);
