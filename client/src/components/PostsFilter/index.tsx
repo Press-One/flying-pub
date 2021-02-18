@@ -36,6 +36,7 @@ export default observer((props: IProps) => {
   const { userStore, contextStore } = useStore();
   const selectorId = 'feed-filter';
   const { enableScroll = true } = props;
+  console.log({ 'props.type': props.type });
   const showSubTabs =
     (props.showPopularity && props.type === 'POPULARITY') ||
     (props.showLatest && props.type === 'LATEST') ||

@@ -309,7 +309,7 @@ export default observer((props: any) => {
         </div>
         {state.showTopCommentLoading && (
           <div
-            style={{ height: '98vh' }}
+            style={{ height: '92vh' }}
             className="absolute top-0 left-0 right-0 bottom-0 bg-white z-10 flex items-center justify-center rounded-12"
           >
             <Loading />
@@ -317,7 +317,7 @@ export default observer((props: any) => {
         )}
         <style jsx>{`
           .height {
-            height: calc(98vh - 49px);
+            height: calc(92vh - 49px);
           }
         `}</style>
       </div>

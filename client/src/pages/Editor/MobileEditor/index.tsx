@@ -310,7 +310,7 @@ export default observer((props: IProps) => {
 
       <style jsx>{`
         .preview-modal {
-          height: 95vh;
+          height: 92vh;
         }
         .markdown-body {
           font-size: 16px;

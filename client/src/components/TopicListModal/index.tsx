@@ -224,7 +224,7 @@ const TopicList = observer(() => {
         ref={infiniteRef}
         className={classNames(
           {
-            'h-90-vh': isContributionToPublicTopics,
+            'h-80-vh': isContributionToPublicTopics,
           },
           'w-full md:w-400-px h-60-vh md:h-400-px overflow-y-auto',
         )}

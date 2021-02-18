@@ -78,7 +78,7 @@ export default observer(() => {
       <div className="w-full md:w-916 md:m-auto pb-0 md:pb-10 flex justify-between items-start">
         <div className="w-full md:w-8/12 box-border md:pr-3">
           <div className="bg-white md:px-5 pb-8 rounded-12">
-            <div className="text-20 text-blue-400 font-bold pt-2 pb-2 px-4">我的关注</div>
+            <div className="text-20 font-bold pt-2 pb-2 px-4 text-blue-400">关注</div>
             <div className="posts-container" ref={infiniteRef}>
               {feedStore.hasPosts && (
                 <Posts

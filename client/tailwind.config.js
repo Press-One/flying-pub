@@ -93,14 +93,14 @@ module.exports = {
           )
         ),
         ...Object.fromEntries(
-          [50, 60, 70, 80, 90].map(
+          [50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map(
             v => [`${v}-vh`, `${v}vh`]
           )
         )
       },
       minHeight: {
         ...Object.fromEntries(
-          [50, 60, 70, 80, 90].map(
+          [50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map(
             v => [`${v}-vh`, `${v}vh`]
           )
         ),

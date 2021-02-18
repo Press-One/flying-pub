@@ -49,7 +49,7 @@ export default (props: Props) => {
               'absolute top-0 right-0 p-3 mr-1',
             )}
           >
-            <div className="flex justify-center items-center w-6 h-6 rounded-full bg-gray-300 text-xl">
+            <div className="flex justify-center items-center w-6 h-6 rounded-full text-32 text-black pr-1">
               <MdClear />
             </div>
           </div>

@@ -15,7 +15,7 @@ export default observer(() => {
 
   const Main = () => (
     <div className="pt-4 px-12 pb-8 bg-white text-center">
-      <div className="text-5xl text-blue-400">
+      <div className="text-5xl text-blue-400 flex justify-center pt-2 pb-1">
         <MdCheckCircle />
       </div>
       <div className="text-xl font-bold mt-1 text-gray-700 px-10">发布成功</div>
