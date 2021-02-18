@@ -34,10 +34,6 @@ export default observer(() => {
   );
   const tabs = [
     {
-      type: 'SUBSCRIPTION',
-      name: '关注',
-    },
-    {
       type: 'POPULARITY',
       name: '热门',
     },
@@ -46,6 +42,12 @@ export default observer(() => {
       name: '最新',
     },
   ];
+  if (isPc) {
+    tabs.unshift({
+      type: 'SUBSCRIPTION',
+      name: '关注',
+    });
+  }
 
   const initFilter = React.useCallback(
     (settings: any) => {
@@ -68,14 +70,14 @@ export default observer(() => {
           settings['filter.dayRange'] = validDayRange;
           filter.dayRange = validDayRange;
         }
-        if (type === 'SUBSCRIPTION') {
+        if (isPc && type === 'SUBSCRIPTION') {
           if (settings['filter.subscriptionType']) {
             filter.subscriptionType = settings['filter.subscriptionType'];
           } else {
             filter.subscriptionType = 'author';
           }
         }
-        if (type === 'LATEST' || type === 'PUB_DATE') {
+        if (type === 'LATEST' || type === 'PUB_DATE' || (isMobile && type === 'SUBSCRIPTION')) {
           filter.type = 'LATEST';
           if (settings['filter.latestType']) {
             filter.latestType = settings['filter.latestType'];
@@ -285,7 +287,7 @@ export default observer(() => {
   if (state.pagePending) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-24 md:-mt-40">
           <Loading />
         </div>
       </div>
@@ -314,11 +316,12 @@ export default observer(() => {
                 />
               )}
             </div>
+            <div className="pb-1 md:pb-0" />
             {!filterEnabled && (
               <div className="mt-10 md:mt-12 md:border-t border-gray-300 md:border-gray-200" />
             )}
             <div className="posts-container" ref={infiniteRef}>
-              <div className="md:mt-2" />
+              <div className="mt-2" />
               {stickyEnabled &&
                 !pending &&
                 feedStore.hasPosts &&

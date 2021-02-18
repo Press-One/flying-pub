@@ -1,6 +1,6 @@
 import React from 'react';
 import Drawer from '@material-ui/core/Drawer';
-import Clear from '@material-ui/icons/Clear';
+import { MdClear } from 'react-icons/md';
 import classNames from 'classnames';
 
 interface Props {
@@ -50,7 +50,7 @@ export default (props: Props) => {
             )}
           >
             <div className="flex justify-center items-center w-6 h-6 rounded-full bg-gray-300 text-xl">
-              <Clear />
+              <MdClear />
             </div>
           </div>
         )}

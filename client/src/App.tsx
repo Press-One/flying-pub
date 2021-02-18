@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 
-import Header from './layouts/header';
+import Header from './layouts/Header';
+import Navigator from './layouts/Navigator';
 import Feed from './pages/Feed';
+import Subscription from './pages/Subscription';
 import Post from './pages/Post';
 import Author from './pages/Author';
 import TryFetch from './pages/TryFetch';
@@ -10,6 +12,7 @@ import ManagementLayout from './pages/ManagementLayout';
 import Editor from './pages/Editor';
 import Topic from './pages/Topic';
 import Search from './pages/Search';
+import Settings from './pages/Settings';
 
 import LoginModal from 'components/LoginModal';
 import PhoneLoginModal from 'components/PhoneLoginModal';
@@ -29,7 +32,7 @@ import FavoritesModal from './components/FavoritesModal';
 import NotificationModal from './components/NotificationModal';
 import PhotoSwipe from './components/PhotoSwipe';
 
-import { isIPhone, isPc, isFirefox, isProduction } from 'utils';
+import { isIPhone, isPc, isFirefox, isProduction, isMobile } from 'utils';
 
 import { StoreProvider } from './store';
 
@@ -41,16 +44,25 @@ const Reader = () => {
     <div>
       <Route path="/" component={Header} />
       <Route
-        path={['/', '/authors/:address', '/topics/:address', '/search']}
+        path={[
+          '/',
+          '/subscription',
+          '/authors/:address',
+          '/topics/:address',
+          '/search',
+          '/settings',
+        ]}
         exact
         component={() => (
           <div>
             <div className="gray-bg">
               <div className={`container m-auto min-h-screen pt-0 md:pt-2`}>
                 <Route path="/" exact component={Feed} />
+                <Route path="/subscription" exact component={Subscription} />
                 <Route path="/authors/:address" exact component={Author} />
                 <Route path="/topics/:uuid" exact component={Topic} />
                 <Route path="/search" exact component={Search} />
+                <Route path="/settings" exact component={Settings} />
               </div>
             </div>
           </div>
@@ -96,11 +108,22 @@ const AppRouter = () => {
         <div>
           <Route path="/" component={TryFetch} />
           <Route
-            path={['/', '/posts/:rId', '/authors/:address', '/topics/:address', '/subscriptions', '/search']}
+            path={[
+              '/',
+              '/subscription',
+              '/posts/:rId',
+              '/authors/:address',
+              '/topics/:address',
+              '/subscriptions',
+              '/search',
+              '/settings',
+            ]}
             exact
             component={Reader}
           />
           <Pub />
+
+          {isMobile && <Navigator />}
 
           <LoginModal />
           <PhoneLoginModal />

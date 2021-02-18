@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
 import { Tabs, Tab, Button } from '@material-ui/core';
-import NavigateBefore from '@material-ui/icons/NavigateBefore';
-import NavigateNext from '@material-ui/icons/NavigateNext';
+import { MdNavigateBefore, MdNavigateNext } from 'react-icons/md';
 import Loading from 'components/Loading';
 import Img from 'components/Img';
 
@@ -82,7 +81,7 @@ const renderUserList = (renderUserListProps: RenderUserListProps) => {
             disabled={pageLoading || page === 0}
             className="page-button"
           >
-            <NavigateBefore></NavigateBefore>
+            <MdNavigateBefore />
             上一页
           </Button>
           <Button
@@ -91,7 +90,7 @@ const renderUserList = (renderUserListProps: RenderUserListProps) => {
             className="page-button"
           >
             下一页
-            <NavigateNext></NavigateNext>
+            <MdNavigateNext />
           </Button>
           <span>
             第 {page + 1} / {totalPage} 页

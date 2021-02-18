@@ -20,14 +20,17 @@ import { toJS } from 'mobx';
 import { resizeFullImage } from 'utils';
 import Img from 'components/Img';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
-import { Edit, Settings, Search } from '@material-ui/icons';
-import { faPen, faBars } from '@fortawesome/free-solid-svg-icons';
+import { MdSearch, MdChevronLeft } from 'react-icons/md';
+import { BiEditAlt } from 'react-icons/bi';
+import { RiSettings4Fill } from 'react-icons/ri';
+import { faPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DrawerMenu from 'components/DrawerMenu';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { MdMoreHoriz } from 'react-icons/md';
 import copy from 'copy-to-clipboard';
 import PostImportModal from 'components/PostImportModal';
+import classNames from 'classnames';
+import { FaBars } from 'react-icons/fa';
 import {
   isMobile,
   isPc,
@@ -35,7 +38,6 @@ import {
   getDefaultDeprecatedAvatar,
   sleep,
   isWeChat,
-  getApiEndpoint,
 } from 'utils';
 
 const DEFAULT_BG_GRADIENT =
@@ -54,6 +56,7 @@ export default observer((props: any) => {
     pathStore,
     authorStore,
     photoSwipeStore,
+    contextStore,
   } = useStore();
   const state = useLocalStore(() => ({
     isFetchingAuthor: false,
@@ -64,13 +67,13 @@ export default observer((props: any) => {
     showDraftsModal: false,
     showMainMenu: false,
     showShareMenu: false,
-    showSettingsMenu: false,
     showPostImportModal: false,
   }));
   const loading = React.useMemo(() => state.isFetchingAuthor || !preloadStore.ready, [
     state.isFetchingAuthor,
     preloadStore.ready,
   ]);
+  const { isMixinImmersive, isMixin } = contextStore;
   const { prevPath } = pathStore;
   const { isLogin, user } = userStore;
   const { author } = authorStore;
@@ -284,20 +287,27 @@ export default observer((props: any) => {
   };
 
   const Menu = () => {
-    const logoutUrl = `${getApiEndpoint()}/api/logout?from=${window.location.origin}`;
-    const supportPhoneBinding = !!settingsStore.settings['auth.providers']?.includes('phone');
-    const hasPhoneBinding = userStore.profiles.some((v) => v.provider === 'phone');
     return (
       <div>
         <div className="absolute top-0 left-0 z-10 w-full">
-          <div className="flex items-center justify-between text-gray-f7 h-12 pb-1 pt-2 pr-1">
+          <div
+            className={classNames(
+              {
+                'pt-0': isMixinImmersive,
+                'pt-2': !isMixinImmersive,
+              },
+              'flex items-center justify-between text-gray-f7 h-12 pb-1 pr-1',
+            )}
+          >
             <div className="flex items-center">
-              <div
-                className="flex items-center p-2 pl-5 text-20"
-                onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
-              >
-                <ArrowBackIos />
-              </div>
+              {!isMyself && (
+                <div
+                  className="flex items-center pl-3 text-20"
+                  onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
+                >
+                  <MdChevronLeft className="text-30" />
+                </div>
+              )}
             </div>
             <div className="flex items-center">
               {(settingsStore.settings.extra['search.enabled'] ||
@@ -314,15 +324,7 @@ export default observer((props: any) => {
                     );
                   }}
                 >
-                  <Search />
-                </div>
-              )}
-              {isMyself && (
-                <div
-                  className="pl-5 pr-3 flex items-center text-26 py-2"
-                  onClick={() => (state.showSettingsMenu = true)}
-                >
-                  <Settings />
+                  <MdSearch />
                 </div>
               )}
               {isMyself && (
@@ -330,17 +332,18 @@ export default observer((props: any) => {
                   className="pl-5 pr-4 flex items-center text-24 py-2"
                   onClick={() => (state.showMainMenu = true)}
                 >
-                  <FontAwesomeIcon icon={faBars} />
+                  <FaBars />
                 </div>
               )}
-              {!isMyself && (
+              {!isMyself && !isMixin && (
                 <div
                   className="pl-5 pr-3 flex items-center text-26 py-2"
                   onClick={() => (state.showShareMenu = true)}
                 >
-                  <MoreHoriz />
+                  <MdMoreHoriz />
                 </div>
               )}
+              {isMixinImmersive && <div className="pr-24 mr-4" />}
             </div>
           </div>
         </div>
@@ -355,13 +358,6 @@ export default observer((props: any) => {
               name: '导入微信公众号文章',
               onClick: () => {
                 state.showPostImportModal = true;
-              },
-            },
-            {
-              invisible: isWeChat && !userStore.canPublish,
-              name: '写文章',
-              onClick: () => {
-                props.history.push(`/editor`);
               },
             },
             {
@@ -387,6 +383,7 @@ export default observer((props: any) => {
               },
             },
             {
+              invisible: isMixin,
               name: '分享',
               onClick: () => {
                 copy(window.location.href);
@@ -394,60 +391,6 @@ export default observer((props: any) => {
                   message: '主页链接已复制',
                 });
               },
-            },
-          ]}
-        />
-        <DrawerMenu
-          open={state.showSettingsMenu}
-          onClose={() => {
-            state.showSettingsMenu = false;
-          }}
-          items={[
-            {
-              invisible: !walletStore.canSpendBalance,
-              name: '余额',
-              onClick: () => {
-                modalStore.openWallet({
-                  tab: 'assets',
-                });
-              },
-            },
-            {
-              invisible: !walletStore.canSpendBalance,
-              name: '设置密码',
-              onClick: () => {
-                modalStore.openSettings('password');
-              },
-            },
-            {
-              invisible: !userStore.isLogin,
-              name: '偏好设置',
-              onClick: () => {
-                modalStore.openSettings('preference');
-              },
-            },
-            {
-              invisible: !userStore.isLogin,
-              name: '账号绑定',
-              onClick: () => {
-                modalStore.openSettings('bind');
-              },
-            },
-            {
-              invisible: !(supportPhoneBinding && hasPhoneBinding),
-              name: '设置密码',
-              onClick: () => {
-                modalStore.openSettings('password');
-              },
-            },
-            {
-              invisible: !userStore.isLogin,
-              name: '退出账号',
-              onClick: () => {
-                modalStore.openPageLoading();
-                window.location.href = logoutUrl;
-              },
-              stayOpenAfterClick: true,
             },
           ]}
         />
@@ -489,7 +432,7 @@ export default observer((props: any) => {
 
   const EditorEntry = () => {
     return (
-      <div className="fixed bottom-0 right-0 m-4 z-10">
+      <div className="fixed bottom-0 right-0 m-4 mb-20 z-10">
         <Link to={`/editor`}>
           <div className="text-20 flex items-center justify-center w-12 h-12 rounded-full bg-blue-400 text-white">
             <FontAwesomeIcon icon={faPen} />
@@ -502,7 +445,7 @@ export default observer((props: any) => {
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-24 md:-mt-40">
           <Loading />
         </div>
       </div>
@@ -512,7 +455,7 @@ export default observer((props: any) => {
   if (state.isFetchedAuthor && isEmpty(author)) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+        <div className="-mt-24 md:-mt-40 text-base md:text-xl text-center text-gray-600">
           抱歉，你访问的作者不存在
         </div>
       </div>
@@ -653,7 +596,7 @@ export default observer((props: any) => {
                     )}
                   </div>
                 )}
-                {isMyself && (
+                {isPc && isMyself && (
                   <Button
                     outline
                     color="white"
@@ -663,10 +606,20 @@ export default observer((props: any) => {
                     }}
                   >
                     <div className="flex items-center text-16 mr-1">
-                      <Edit />
+                      <BiEditAlt />
                     </div>
                     编辑资料
                   </Button>
+                )}
+                {isMobile && isMyself && (
+                  <Link to="/settings">
+                    <Button outline color="white" size={isMobile ? 'small' : 'normal'}>
+                      <div className="flex items-center text-16 mr-1">
+                        <RiSettings4Fill />
+                      </div>
+                      账号设置
+                    </Button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -681,9 +634,10 @@ export default observer((props: any) => {
                 type={feedStore.filterType}
                 tabs={tabs}
               />
+              <div className="pb-1 md:pb-0" />
               {feedStore.filterType !== 'OTHERS' && (
                 <div className="posts-container" ref={infiniteRef}>
-                  <div className="md:mt-2" />
+                  <div className="mt-2" />
                   {feedStore.isFetched && state.showPosts && feedStore.hasPosts && (
                     <Posts posts={feedStore.posts} hideAuthor smallCoverSize />
                   )}
@@ -703,7 +657,7 @@ export default observer((props: any) => {
                 </div>
               )}
               {feedStore.filterType === 'OTHERS' && (
-                <div className="bg-white min-h-70-vh">
+                <div className="bg-white min-h-70-vh -mt-2 md:-mt-0">
                   {!state.loadingOthers && (
                     <FolderGrid
                       folders={[

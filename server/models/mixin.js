@@ -72,7 +72,10 @@ const start = () => {
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
           if (!profile) {
-            await mixin.sendText(`${config.settings['site.name']}没有查询到你的 Mixin 账户信息，请先到${config.settings['site.name']}登录注册一下。如果你是用手机注册的，请到${config.settings['site.name']}绑定当前 Mixin 账号噢。`, msgObj);
+            await trySendToUser(profile.userId, '新作', {
+              url: `${config.settings['site.url'] || config.serviceRoot}`,
+              desc: '点击打开新作',
+            });
             await sleep(1000);
             await mixin.sendText('如有疑问，可以联系技术支持，Mixin ID 是：', msgObj);
             await sleep(1000);
@@ -83,7 +86,15 @@ const start = () => {
             const conversation = await tryCreateConversation(profile.userId, msgObj);
             if (conversation) {
               await trySendText(profile.userId, '你成功开通了消息提醒。当有新的消息，我会第一时间通知你');
+              await trySendToUser(profile.userId, '新作', {
+                url: `${config.settings['site.url'] || config.serviceRoot}`,
+                desc: '点击打开新作',
+              });
             } else {
+              await trySendToUser(profile.userId, '新作', {
+                url: `${config.settings['site.url'] || config.serviceRoot}`,
+                desc: '点击打开新作',
+              });
               await trySendText(profile.userId, '哈喽，如果你在使用的时候遇到了问题，可以联系技术支持，Mixin ID 是：');
               await sleep(1000);
               await trySendText(profile.userId, '39150127');

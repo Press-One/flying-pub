@@ -18,14 +18,13 @@ import { FilterType } from 'apis/post';
 import { isEmpty } from 'lodash';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import marked from 'marked';
-import ArrowForwardIos from '@material-ui/icons/ArrowForwardIos';
+import { MdChevronRight, MdChevronLeft } from 'react-icons/md';
 import TopicIntroductionModal from './TopicIntroductionModal';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { MdMoreHoriz } from 'react-icons/md';
 import { toJS } from 'mobx';
 import { resizeImage } from 'utils';
 import Img from 'components/Img';
 import classNames from 'classnames';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import copy from 'copy-to-clipboard';
 
 const TopView = observer(
@@ -95,10 +94,10 @@ const TopView = observer(
             <div className="flex items-center justify-between text-gray-f7 h-12 pb-1 pt-2">
               <div className="flex items-center">
                 <div
-                  className="flex items-center p-2 pl-5 text-20"
+                  className="flex items-center pl-3"
                   onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
                 >
-                  <ArrowBackIos />
+                  <MdChevronLeft className="text-30" />
                 </div>
               </div>
               <div>
@@ -106,7 +105,7 @@ const TopView = observer(
                   className="pl-5 pr-4 flex items-center text-26"
                   onClick={() => props.openTopicManagerMenu()}
                 >
-                  <MoreHoriz />
+                  <MdMoreHoriz />
                 </div>
               </div>
             </div>
@@ -170,7 +169,7 @@ const TopView = observer(
             >
               <div className="truncate pr-1">{topic.description}</div>
               <div className="flex items-center text-13">
-                <ArrowForwardIos />
+                <MdChevronRight />
               </div>
             </div>
           )}
@@ -228,7 +227,15 @@ export default observer((props: any) => {
     showTopicManagerMenu: false,
     showPosts: false,
   }));
-  const { snackbarStore, userStore, preloadStore, confirmDialogStore, feedStore } = useStore();
+  const {
+    snackbarStore,
+    userStore,
+    preloadStore,
+    confirmDialogStore,
+    feedStore,
+    contextStore,
+  } = useStore();
+  const { isMixin } = contextStore;
   const loading = React.useMemo(() => !state.isFetchedTopic || !preloadStore.ready, [
     state.isFetchedTopic,
     preloadStore.ready,
@@ -382,7 +389,7 @@ export default observer((props: any) => {
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-24 md:-mt-40">
           <Loading />
         </div>
       </div>
@@ -392,7 +399,7 @@ export default observer((props: any) => {
   if (state.isFetchedTopic && isEmpty(state.topic)) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+        <div className="-mt-24 md:-mt-40 text-base md:text-xl text-center text-gray-600">
           抱歉，你访问的专题不存在
         </div>
       </div>
@@ -450,9 +457,10 @@ export default observer((props: any) => {
                 type={feedStore.filterType}
                 tabs={tabs}
               />
+              <div className="pb-1 md:pb-0" />
               {feedStore.filterType !== 'OTHERS' && (
                 <div className="posts-container" ref={infiniteRef}>
-                  <div className="md:mt-2" />
+                  <div className="mt-2" />
                   {feedStore.isFetched && state.showPosts && feedStore.hasPosts && (
                     <Posts posts={feedStore.posts} hideTopics smallCoverSize />
                   )}
@@ -595,6 +603,7 @@ export default observer((props: any) => {
               }}
               items={[
                 {
+                  invisible: isMixin,
                   name: '分享',
                   onClick: () => {
                     copy(window.location.href);

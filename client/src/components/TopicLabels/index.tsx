@@ -2,8 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Link } from 'react-router-dom';
 import { useStore } from 'store';
-import Add from '@material-ui/icons/Add';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { MdAdd, MdMoreHoriz } from 'react-icons/md';
 import { IPostTopic, IPost } from 'apis/post';
 import classNames from 'classnames';
 import { isMobile } from 'utils';
@@ -28,7 +27,7 @@ export const IncludedButton = (props: { post: IPost; onClose?: () => void }) => 
       }
     >
       <div className="rounded-full w-4 h-3 m-2 mr-0 text-16 overflow-hidden box-border text-blue-400 flex items-center">
-        <Add />
+        <MdAdd />
       </div>
       <div className="text-blue-400 text-14 pr-2"></div>
     </div>
@@ -91,7 +90,7 @@ export default observer((props: IProps) => {
           }
         >
           <div className="rounded-full w-4 h-3 m-2 mr-0 text-16 overflow-hidden box-border text-blue-400 flex items-center">
-            <MoreHoriz />
+            <MdMoreHoriz />
           </div>
           <div className="text-blue-400 text-14 pr-2"></div>
         </div>

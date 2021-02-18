@@ -7,8 +7,7 @@ import Button from 'components/Button';
 import { TextField, Badge } from '@material-ui/core';
 import topicApi, { ITopicContributionRequest } from 'apis/topic';
 import Loading from 'components/Loading';
-import CheckCircle from '@material-ui/icons/CheckCircle';
-import Block from '@material-ui/icons/Block';
+import { MdCheckCircle, MdBlock } from 'react-icons/md';
 import classNames from 'classnames';
 import { sleep, isPc, isMobile } from 'utils';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
@@ -205,13 +204,13 @@ export default observer(() => {
                 <div className="pt-2 pb-2-px">
                   {request.status === 'approved' && (
                     <div className="flex items-start text-16 text-green-500 ">
-                      <CheckCircle />
+                      <MdCheckCircle />
                       <span className="ml-2 text-12 -mt-1-px">已允许，文章已收录到你的专题</span>
                     </div>
                   )}
                   {request.status === 'rejected' && (
                     <div className="flex items-start text-16 text-red-400">
-                      <Block />
+                      <MdBlock />
                       <div className="ml-2 text-12 -mt-1-px">
                         已拒绝{request.note && `，原因是：${request.note}`}
                       </div>

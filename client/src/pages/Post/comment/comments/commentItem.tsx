@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { isMobile, urlify, isSafari, isIPhone, isPc } from 'utils';
 import { faComment, faThumbsUp } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { MdMoreHoriz } from 'react-icons/md';
 import Img from 'components/Img';
 import { useStore } from 'store';
 
@@ -174,7 +174,7 @@ export default observer((props: any) => {
                     }}
                   >
                     <span className="flex items-center text-18 pr-2 md:pr-1">
-                      <MoreHoriz />
+                      <MdMoreHoriz />
                     </span>
                   </span>
                 )}

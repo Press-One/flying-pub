@@ -1,6 +1,6 @@
 const serviceRoot = 'http://localhost:9000';
-const serviceName = 'FLYING_PUB_LOCAL';
-const serviceKey = `${serviceName}_READER`;
+const serviceName = 'LOCAL';
+const serviceKey = `${serviceName}_FLYING_PUB`;
 
 module.exports = {
   // 是否在终端打印日志

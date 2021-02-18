@@ -3,7 +3,7 @@ import { observer, useLocalStore } from 'mobx-react-lite';
 import { RouteChildrenProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import Loading from 'components/Loading';
-import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
+import { MdNotificationsNone } from 'react-icons/md';
 import Badge from '@material-ui/core/Badge';
 import Button from 'components/Button';
 import Pagination from '@material-ui/lab/Pagination';
@@ -127,7 +127,7 @@ export default observer((props: RouteChildrenProps) => {
               }}
             >
               <div className="text-3xl flex items-center icon-btn-color">
-                <NotificationsOutlined />
+                <MdNotificationsNone />
               </div>
             </Badge>
           )}

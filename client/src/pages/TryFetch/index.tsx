@@ -94,7 +94,7 @@ export default observer((props: any) => {
   if (userStore.shouldLogin) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-24 md:-mt-40">
           <span onClick={() => modalStore.openLogin()} className="text-blue-400 text-lg">
             阅读文章之前请登录一下哦
           </span>

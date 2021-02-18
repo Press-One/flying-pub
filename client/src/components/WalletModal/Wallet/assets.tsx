@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from 'store';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
-import Info from '@material-ui/icons/Info';
+import { MdInfo } from 'react-icons/md';
 import RechargeModal from './rechargeModal';
 import WithdrawModal from './withdrawModal';
 import { currencyIconMap } from './utils';
@@ -163,7 +163,7 @@ export default observer((props: any) => {
           <div className="flex justify-between p-3 border border-blue-400 text-blue-400 bg-blue-100 flex items-center rounded mb-2 text-sm">
             <div className="flex items-center">
               <span className="flex items-center mr-1 text-lg">
-                <Info />
+                <MdInfo />
               </span>
               <span className="hidden md:block">再去设置一下支付密码，你就可以提现余额啦</span>
               <span className="md:hidden">尚未设置支付密码</span>

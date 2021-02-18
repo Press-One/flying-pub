@@ -11,10 +11,9 @@ import Loading from 'components/Loading';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Badge } from '@material-ui/core';
-import PhonelinkRing from '@material-ui/icons/PhonelinkRing';
+import { MdPhonelinkRing, MdNotificationsNone } from 'react-icons/md';
 import NotificationMessages from './NotificationMessages';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
-import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
 import { isPc, isMobile } from 'utils';
 import classNames from 'classnames';
 import TopicReviewRequest from './TopicReviewRequest';
@@ -130,7 +129,7 @@ export default observer(() => {
             }}
           >
             <div className="text-xl mr-1 flex items-center">
-              <NotificationsOutlined />
+              <MdNotificationsNone />
             </div>
             开启手机通知
           </div>
@@ -157,7 +156,7 @@ export default observer(() => {
               modalStore.openMixinNotification();
             }}
           >
-            <PhonelinkRing />
+            <MdPhonelinkRing />
           </div>
         )}
       </div>

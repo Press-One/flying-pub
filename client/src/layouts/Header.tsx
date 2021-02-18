@@ -1,19 +1,21 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import People from '@material-ui/icons/People';
-import Star from '@material-ui/icons/Star';
-import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
-import NotificationsOutlined from '@material-ui/icons/NotificationsOutlined';
+import {
+  MdMoreHoriz,
+  MdPeople,
+  MdStar,
+  MdAccountBalanceWallet,
+  MdNotificationsNone,
+  MdChevronLeft,
+  MdExitToApp,
+  MdOpenInNew,
+  MdSettings,
+} from 'react-icons/md';
+import { HiOutlineHome } from 'react-icons/hi';
 import Button from 'components/Button';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
-import HomeOutlined from '@material-ui/icons/HomeOutlined';
-import ExitToApp from '@material-ui/icons/ExitToApp';
-import OpenInNew from '@material-ui/icons/OpenInNew';
-import { Settings } from '@material-ui/icons';
 import Fade from '@material-ui/core/Fade';
 import Badge from '@material-ui/core/Badge';
 import { Link, useLocation } from 'react-router-dom';
@@ -34,6 +36,7 @@ export default observer((props: any) => {
     settingsStore,
     notificationStore,
     walletStore,
+    contextStore,
   } = useStore();
   const { settings } = settingsStore;
   const { pushPath, prevPath } = pathStore;
@@ -44,18 +47,24 @@ export default observer((props: any) => {
   const showSearchEntry = React.useMemo(() => {
     return pathname === '/' || pathname === '/search' || (isPc && pathname.includes('/authors/'));
   }, [pathname]);
+  const { isMixinImmersive } = contextStore;
 
   React.useEffect(() => {
     pushPath(pathname);
     setShowBack(pathname !== '/');
   }, [pathname, pushPath]);
 
-  if (isMobile && (pathname.includes('/authors/') || pathname.includes('/topics/'))) {
+  if (
+    isMobile &&
+    (pathname.includes('/authors/') ||
+      pathname.includes('/topics/') ||
+      pathname.includes('/subscription'))
+  ) {
     return null;
   }
 
   if (!preloadStore.ready) {
-    return isMobile ? <div className="h-12" /> : <div style={{ height: 53 }} />;
+    return isMobile ? <div className="h-11" /> : <div style={{ height: 53 }} />;
   }
 
   const handleClose = () => setAnchorEl(null);
@@ -87,7 +96,7 @@ export default observer((props: any) => {
                 <MenuItem className="text-gray-700">
                   <div className="py-1 flex items-center">
                     <span className="flex items-center text-xl mr-2 -mt-1-px">
-                      <People />
+                      <MdPeople />
                     </span>{' '}
                     我的主页
                   </div>
@@ -103,7 +112,7 @@ export default observer((props: any) => {
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
                   <span className="flex items-center text-xl mr-2 -mt-1-px">
-                    <Star />
+                    <MdStar />
                   </span>{' '}
                   我的收藏
                 </div>
@@ -119,7 +128,7 @@ export default observer((props: any) => {
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
                   <span className="flex items-center text-xl mr-2 -mt-1-px">
-                    <AccountBalanceWallet />
+                    <MdAccountBalanceWallet />
                   </span>{' '}
                   打赏{walletStore.rewardOnly ? '记录' : '钱包'}
                 </div>
@@ -135,7 +144,7 @@ export default observer((props: any) => {
               >
                 <div className="py-1 flex items-center">
                   <span className="flex items-center text-xl mr-2 -mt-1-px">
-                    <Settings />
+                    <MdSettings />
                   </span>{' '}
                   账号设置
                   <span className="pr-2" />
@@ -154,7 +163,7 @@ export default observer((props: any) => {
                   <MenuItem className="text-gray-700">
                     <div className="py-1 flex items-center">
                       <span className="flex items-center text-xl mr-2 -mt-1-px">
-                        <OpenInNew />
+                        <MdOpenInNew />
                       </span>{' '}
                       {link.name}
                       <span className="pr-2" />
@@ -167,7 +176,7 @@ export default observer((props: any) => {
               <MenuItem className="text-gray-700">
                 <div className="py-1 flex items-center">
                   <span className="flex items-center text-xl mr-2 -mt-1-px">
-                    <ExitToApp />
+                    <MdExitToApp />
                   </span>{' '}
                   退出账号
                   <span className="pr-2" />
@@ -181,7 +190,7 @@ export default observer((props: any) => {
   };
 
   return (
-    <Fade in={true} timeout={isMobile ? 400 : 1500}>
+    <Fade in={true} timeout={isMobile ? 0 : 1500}>
       <div>
         {isMobile && (
           <div
@@ -189,9 +198,16 @@ export default observer((props: any) => {
               'fixed top-0 left-0 w-full': pathname === '/search',
             })}
           >
-            <div className="border-t border-gray-300 border-opacity-50" />
-            <div className="flex justify-between items-center py-1 px-3 border-b border-gray-200 h-12">
-              {!showBack && (
+            <div
+              className={classNames(
+                {
+                  'pt-1': !isMixinImmersive,
+                  'border-b border-gray-200': showBack,
+                },
+                'flex justify-between items-center pb-1 px-3 h-11',
+              )}
+            >
+              {!showBack && !userStore.isLogin && (
                 <Link to="/">
                   <div className="flex items-center">
                     <img
@@ -204,63 +220,40 @@ export default observer((props: any) => {
                   </div>
                 </Link>
               )}
+              {!showBack && userStore.isLogin && (
+                <div className="mr-3">
+                  <Link to={`/authors/${user.address}`}>
+                    <Img
+                      src={user.avatar}
+                      className="w-8 h-8 rounded-full border border-gray-f2 mt-1-px"
+                      alt="头像"
+                    />
+                  </Link>
+                </div>
+              )}
+
+              <div className="flex-1 pr-2">
+                {userStore.isLogin &&
+                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+                  showSearchEntry && <Search />}
+              </div>
+
               {showBack && (
-                <div className="flex items-center">
+                <div className="flex items-center w-full mt-2-px">
                   <div
-                    className="flex items-center text-xl text-gray-99 p-2"
+                    className="flex items-center text-gray-99 mr-2"
                     onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
                   >
-                    <ArrowBackIos />
+                    <MdChevronLeft className="text-30 -ml-2" />
                   </div>
-                  {prevPath && prevPath !== '/' && (
-                    <Link to="/" className="flex items-center text-28 text-gray-99 p-2 ml-2">
-                      <HomeOutlined />
+                  {prevPath && prevPath !== '/' && pathname !== '/settings' && (
+                    <Link to="/" className="flex items-center text-24 text-gray-99 p-2 ml-2">
+                      <HiOutlineHome />
                     </Link>
                   )}
                 </div>
               )}
-              <div className="flex items-center">
-                {userStore.isLogin &&
-                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
-                  showSearchEntry && <Search />}
-                {isMobile && settings['notification.enabled'] && userStore.isLogin && (
-                  <Badge
-                    badgeContent={unread}
-                    className="mr-8 transform scale-90 cursor-pointer"
-                    color="error"
-                    onClick={() => {
-                      modalStore.openNotification();
-                    }}
-                  >
-                    <div className="text-3xl flex items-center text-gray-99">
-                      <NotificationsOutlined />
-                    </div>
-                  </Badge>
-                )}
-                {!userStore.isLogin && (
-                  <div
-                    className="text-gray-99 flex justify-center items-center leading-none pl-l pr-2 font-bold py-2"
-                    onClick={() => {
-                      handleOpenLogin();
-                    }}
-                  >
-                    <Button size="mini" outline>
-                      登录
-                    </Button>
-                  </div>
-                )}
-                {userStore.isLogin && (
-                  <div className="pr-1">
-                    <Link to={`/authors/${user.address}`}>
-                      <Img
-                        src={user.avatar}
-                        className="w-7 h-7 rounded-full border border-gray-f2"
-                        alt="头像"
-                      />
-                    </Link>
-                  </div>
-                )}
-              </div>
+              {isMixinImmersive && <div className="pr-24" />}
             </div>
           </div>
         )}
@@ -313,7 +306,7 @@ export default observer((props: any) => {
                           }}
                         >
                           <div className="text-3xl flex items-center text-gray-88">
-                            <NotificationsOutlined />
+                            <MdNotificationsNone />
                           </div>
                         </Badge>
                       )}
@@ -330,7 +323,7 @@ export default observer((props: any) => {
                         </div>
                       )}
                       <IconButton onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                        <MoreHoriz />
+                        <MdMoreHoriz />
                       </IconButton>
                       {pcMenuView()}
                     </div>

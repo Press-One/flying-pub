@@ -3,13 +3,9 @@ import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import css from 'styled-jsx/css';
 import { Dialog } from '@material-ui/core';
-import {
-  Settings as SettingsIcon,
-  LockOutlined,
-  Link,
-  AccountCircleOutlined,
-  InfoOutlined,
-} from '@material-ui/icons';
+import { BsLink } from 'react-icons/bs';
+import { RiAccountCircleLine, RiSettings4Fill } from 'react-icons/ri';
+import { BiEditAlt, BiKey } from 'react-icons/bi';
 import { useStore } from 'store';
 
 import { ProfileChange } from './ProfileChange';
@@ -40,7 +36,7 @@ export default observer(() => {
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <InfoOutlined />
+              <BiEditAlt />
             </span>
             修改资料
           </div>
@@ -54,7 +50,7 @@ export default observer(() => {
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <AccountCircleOutlined />
+              <RiAccountCircleLine />
             </span>
             偏好设置
           </div>
@@ -68,7 +64,7 @@ export default observer(() => {
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <LockOutlined />
+              <BiKey />
             </span>
             修改密码
           </div>
@@ -82,7 +78,7 @@ export default observer(() => {
         <TabContent>
           <div className="font-bold flex items-center text-18 justify-center md:justify-start">
             <span className="text-2xl mr-2 items-center hidden md:flex">
-              <Link />
+              <BsLink />
             </span>
             账号绑定
           </div>
@@ -115,7 +111,7 @@ export default observer(() => {
           <div className="py-8 px-6">
             <div className="font-bold flex items-center text-xl">
               <span className="text-2xl mr-2 flex items-center">
-                <SettingsIcon />
+                <RiSettings4Fill />
               </span>
               账号设置
             </div>
@@ -126,7 +122,7 @@ export default observer(() => {
                 onClick={() => modalStore.openSettings('profile')}
               >
                 <span className="text-lg mr-2 flex items-center">
-                  <InfoOutlined />
+                  <BiEditAlt />
                 </span>
                 修改资料
               </TabButton>
@@ -137,7 +133,7 @@ export default observer(() => {
                 onClick={() => modalStore.openSettings('preference')}
               >
                 <span className="text-lg mr-2 flex items-center">
-                  <AccountCircleOutlined />
+                  <RiAccountCircleLine />
                 </span>
                 偏好设置
               </TabButton>
@@ -149,7 +145,7 @@ export default observer(() => {
                   onClick={() => modalStore.openSettings('password')}
                 >
                   <span className="text-lg mr-2 flex items-center">
-                    <LockOutlined />
+                    <BiKey />
                   </span>
                   修改密码
                 </TabButton>
@@ -161,7 +157,7 @@ export default observer(() => {
                 onClick={() => modalStore.openSettings('bind')}
               >
                 <span className="text-lg mr-2 flex items-center">
-                  <Link />
+                  <BsLink />
                 </span>
                 账号绑定
               </TabButton>

@@ -8,12 +8,13 @@ import Loading from 'components/Loading';
 import BackToTop from 'components/BackToTop';
 import TopicLabels, { IncludedButton } from 'components/TopicLabels';
 import Fade from '@material-ui/core/Fade';
+import { RiSettings4Line } from 'react-icons/ri';
+import { MdMoreHoriz } from 'react-icons/md';
 import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ShareIcon from '@material-ui/icons/Share';
+import { MdShare } from 'react-icons/md';
 import Badge from '@material-ui/core/Badge';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
 import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
@@ -50,6 +51,7 @@ export default observer((props: any) => {
     snackbarStore,
     settingsStore,
     photoSwipeStore,
+    contextStore,
   } = useStore();
 
   const { ready } = preloadStore;
@@ -72,6 +74,7 @@ export default observer((props: any) => {
     imgSrc: [] as any,
   }));
 
+  const { isMixinImmersive, isMixin } = contextStore;
   const noReward = state.rewardSummary.users.length === 0;
   const { rId } = props.match.params;
   const isMyself = React.useMemo(
@@ -194,7 +197,7 @@ export default observer((props: any) => {
       const markdownBody = document.querySelector('.markdown-body');
       if (markdownBody) {
         const imgs = markdownBody.getElementsByTagName('img');
-        state.imgSrc = Array.prototype.map.call(imgs, item => item.src);
+        state.imgSrc = Array.prototype.map.call(imgs, (item) => item.src);
         markdownBody.addEventListener('click', bindClickEvent);
       }
     }, 2000);
@@ -264,7 +267,7 @@ export default observer((props: any) => {
   if (!ready || !state.isFetchedPost) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30">
+        <div className="-mt-24 md:-mt-40">
           <Loading />
         </div>
       </div>
@@ -274,7 +277,7 @@ export default observer((props: any) => {
   if (state.isBan || !post) {
     return (
       <div className="h-screen flex justify-center items-center">
-        <div className="-mt-40 md:-mt-30 text-base md:text-xl text-center text-gray-600">
+        <div className="-mt-24 md:-mt-40 text-base md:text-xl text-center text-gray-600">
           抱歉，你访问的文章不存在
         </div>
       </div>
@@ -674,7 +677,7 @@ export default observer((props: any) => {
         }}
       >
         <div className={classNames('text-gray-600 flex items-center text-xl')}>
-          <ShareIcon />
+          <MdShare />
         </div>
         <Popover
           id="share-qrcode"
@@ -711,11 +714,16 @@ export default observer((props: any) => {
                 'pl-8': !isLogin,
                 'pl-4': isLogin,
               },
-              'px-4 text-gray-88 text-28 flex items-center h-10 pt-2 py-0 bg-white pb-2',
+              'px-4 text-gray-99 text-28 flex items-center h-10 pt-2 py-0 bg-white pb-2',
             )}
             onClick={() => (state.showMenu = true)}
           >
-            <MoreHoriz />
+            {isMixinImmersive && isMyself ? (
+              <RiSettings4Line className="text-22" />
+            ) : (
+              <MdMoreHoriz />
+            )}
+            {isMixinImmersive && <div className="pr-24 mr-2" />}
           </div>
         </div>
         <DrawerMenu
@@ -725,6 +733,7 @@ export default observer((props: any) => {
           }}
           items={[
             {
+              invisible: isMixin,
               name: '分享',
               onClick: () => {
                 copy(window.location.href);

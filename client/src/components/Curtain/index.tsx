@@ -1,5 +1,5 @@
 import React from 'react';
-import ComputerIcon from '@material-ui/icons/Computer';
+import { MdComputer } from 'react-icons/md';
 
 export default () => {
   return (
@@ -9,7 +9,7 @@ export default () => {
         style={{ height: '100vh' }}
       >
         <div className="text-5xl primary-color">
-          <ComputerIcon />
+          <MdComputer />
         </div>
         <span className="mt-2 text-lg primary-color font-bold">请在电脑端打开链接</span>
         <span className="mt-2 text-blue-400 text-base">{window.location.origin}</span>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import { MdChevronLeft } from 'react-icons/md';
 import ButtonOutlined from 'components/ButtonOutlined';
 import { useStore } from 'store';
 import { useHistory } from 'react-router-dom';
@@ -17,7 +17,7 @@ export default observer((props: any) => {
       <div onClick={() => (prevPath ? history.goBack() : history.push('/'))}>
         <ButtonOutlined>
           <div className="p-1 flex justify-center items-center">
-            <ArrowBackIos /> 返回
+            <MdChevronLeft className="transform scale-150 mr-3-px" /> 返回
           </div>
         </ButtonOutlined>
       </div>

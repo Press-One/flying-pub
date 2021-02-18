@@ -4,7 +4,7 @@ import { toJS } from 'mobx';
 import { Dialog, TextField, Switch, Tooltip } from '@material-ui/core';
 import Button from 'components/Button';
 import ImageEditor from 'components/ImageEditor';
-import Help from '@material-ui/icons/Help';
+import { MdHelp } from 'react-icons/md';
 import topicApi, { ITopic, IEditableTopic } from 'apis/topic';
 import { useStore } from 'store';
 import DrawerModal from 'components/DrawerModal';
@@ -131,7 +131,7 @@ const TopicEditor = observer((props: IProps) => {
                   </div>
                 }
               >
-                <Help className="text-gray-600" />
+                <MdHelp className="text-gray-600" />
               </Tooltip>
             )}
           </div>

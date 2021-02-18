@@ -1,6 +1,6 @@
 import React from 'react';
 import ButtonOutlined from 'components/ButtonOutlined';
-import ArrowUpward from '@material-ui/icons/ArrowUpward';
+import { MdArrowUpward } from 'react-icons/md';
 
 export default () => {
   const backToTop = () => {
@@ -18,7 +18,7 @@ export default () => {
     <div className="fixed bottom-0 mb-8 cursor-pointer root" onClick={backToTop}>
       <ButtonOutlined className="py-8-px px-10-px">
         <div className="text-xl">
-          <ArrowUpward />
+          <MdArrowUpward />
         </div>
       </ButtonOutlined>
       <style jsx>{`

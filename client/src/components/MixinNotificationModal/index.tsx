@@ -5,7 +5,7 @@ import Modal from 'components/Modal';
 import QRCode from 'qrcode.react';
 import { isMobile, isWeChat } from 'utils';
 import { useStore } from 'store';
-import Info from '@material-ui/icons/Info';
+import { MdInfo } from 'react-icons/md';
 
 export default observer(() => {
   const { modalStore, settingsStore } = useStore();
@@ -50,7 +50,7 @@ export default observer(() => {
             </div>
             <div className="flex items-center justify-center mt-5 text-gray-500 text-xs">
               <span className="flex items-center text-lg mr-1">
-                <Info />
+                <MdInfo />
               </span>
               手机还没有安装 {settings['mixinApp.name']} ？
               {!isWeChat && (

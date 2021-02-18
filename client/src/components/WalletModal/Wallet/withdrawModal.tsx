@@ -2,8 +2,8 @@ import React from 'react';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
-import Help from '@material-ui/icons/Help';
+import { AiOutlineCheckCircle } from 'react-icons/ai';
+import { MdHelp } from 'react-icons/md';
 import Tooltip from '@material-ui/core/Tooltip';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
@@ -61,7 +61,7 @@ export default (props: any) => {
             转给 <span className="font-bold mr-1">{mixinAccount.full_name}</span>
           </div>{' '}
           <Tooltip placement="right" title={`你当前登录的${settings['mixinApp.name']} 账号`}>
-            <Help className="text-gray-600" />
+            <MdHelp className="text-gray-600" />
           </Tooltip>
         </div>
         <div className="text-gray-500 text-xs">{mixinAccount.identity_number}</div>
@@ -184,7 +184,7 @@ export default (props: any) => {
         {isPaid && (
           <div className="fixed-width text-center md:px-6 -mt-3 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
-              <CheckCircleOutline />
+              <AiOutlineCheckCircle />
             </Fade>
           </div>
         )}

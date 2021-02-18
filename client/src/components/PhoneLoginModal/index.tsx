@@ -12,14 +12,12 @@ import {
   Button as MuiButton,
   Tooltip,
 } from '@material-ui/core';
-import Info from '@material-ui/icons/Info';
+import { MdInfo, MdArrowDropUp, MdArrowDropDown } from 'react-icons/md';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
 import { isMobile, getLoginUrl, sleep, isWeChat } from 'utils';
 import Api from 'api';
-import ArrowDropUp from '@material-ui/icons/ArrowDropUp';
-import ArrowDropDown from '@material-ui/icons/ArrowDropDown';
 
 import './index.sass';
 
@@ -312,14 +310,14 @@ export default observer(() => {
                 <div className="flex items-center">
                   使用手机登录
                   <span className="flex items-center ml-1 text-2xl">
-                    <ArrowDropUp />
+                    <MdArrowDropUp />
                   </span>
                 </div>
               ) : (
                 <div className="flex items-center">
                   使用 {settings['mixinApp.name']} 登录
                   <span className="flex items-center ml-1 text-2xl">
-                    <ArrowDropDown />
+                    <MdArrowDropDown />
                   </span>
                 </div>
               )}
@@ -359,7 +357,7 @@ export default observer(() => {
                 </div>
                 <div className="flex justify-center items-center text-gray-500 text-xs mt-6">
                   <span className="flex items-center text-lg mr-1">
-                    <Info />
+                    <MdInfo />
                   </span>
                   手机还没有安装 {settings['mixinApp.name']} ？
                   <a

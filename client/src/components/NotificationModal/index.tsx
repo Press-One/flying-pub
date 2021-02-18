@@ -39,7 +39,7 @@ export default observer(() => {
           <Notification />
           <style jsx>{`
             .notification-drawer-content {
-              height: 95vh;
+              height: 92vh;
             }
           `}</style>
         </div>

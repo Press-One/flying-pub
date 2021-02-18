@@ -1,9 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
-import AccountBalanceWalletRounded from '@material-ui/icons/AccountBalance';
-import SettingsIcon from '@material-ui/icons/Settings';
-import ReceiptIcon from '@material-ui/icons/Receipt';
+import { MdAccountBalanceWallet, MdSettings, MdReceipt } from 'react-icons/md';
+import { BiWallet } from 'react-icons/bi';
 import classNames from 'classnames';
 import Badge from '@material-ui/core/Badge';
 import { useStore } from 'store';
@@ -65,14 +63,14 @@ export default observer(() => {
           <div className="py-8 px-6">
             <div className="font-bold flex items-center text-xl">
               <span className="text-2xl mr-2 flex items-center">
-                <AccountBalanceWallet />
+                <MdAccountBalanceWallet />
               </span>
               打赏{walletStore.rewardOnly ? '记录' : '钱包'}
             </div>
             <div className="ml-2 mt-3">
               <Tab tab={tab} thisTab="assets" onClick={() => setTab('assets')}>
                 <span className="text-lg mr-2 flex items-center">
-                  <AccountBalanceWalletRounded />
+                  <BiWallet />
                 </span>
                 余额
               </Tab>
@@ -86,7 +84,7 @@ export default observer(() => {
                 >
                   <div className="flex items-center">
                     <span className="text-lg mr-2 flex items-center">
-                      <SettingsIcon />
+                      <MdSettings />
                     </span>
                     设置
                   </div>
@@ -94,7 +92,7 @@ export default observer(() => {
               </Tab>
               <Tab tab={tab} thisTab="receipts" onClick={() => setTab('receipts')}>
                 <span className="text-lg mr-2 flex items-center">
-                  <ReceiptIcon />
+                  <MdReceipt />
                 </span>
                 交易记录
               </Tab>
@@ -116,7 +114,7 @@ export default observer(() => {
             <TabContent>
               <div className="font-bold items-center text-xl flex justify-center md:justify-start">
                 <span className="text-2xl mr-2 items-center hidden md:flex">
-                  <AccountBalanceWalletRounded />
+                  <BiWallet />
                 </span>
                 <span className="md:hidden">我的</span>余额
               </div>
@@ -129,7 +127,7 @@ export default observer(() => {
             <TabContent>
               <div className="font-bold items-center text-xl flex justify-center md:justify-start">
                 <span className="text-2xl mr-2 items-center hidden md:flex">
-                  <SettingsIcon />
+                  <MdSettings />
                 </span>
                 设置<span className="md:hidden">钱包</span>
               </div>
@@ -142,7 +140,7 @@ export default observer(() => {
             <TabContent>
               <div className="font-bold items-center text-xl flex justify-center md:justify-start">
                 <span className="text-2xl mr-2 items-center hidden md:flex">
-                  <ReceiptIcon />
+                  <MdReceipt />
                 </span>
                 {walletStore.rewardOnly ? '打赏' : '交易'}记录
               </div>

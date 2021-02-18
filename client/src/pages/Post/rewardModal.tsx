@@ -4,8 +4,8 @@ import { currencyIconMap } from '../../components/WalletModal/Wallet/utils';
 import classNames from 'classnames';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
-import Info from '@material-ui/icons/Info';
+import { AiOutlineCheckCircle } from 'react-icons/ai';
+import { MdInfo } from 'react-icons/md';
 import Button from 'components/Button';
 import PinOTPInput from 'components/PinOTPInput';
 import Loading from 'components/Loading';
@@ -487,7 +487,7 @@ export default observer((props: any) => {
             <div className="text-xs">
               <div className="flex justify-center items-center text-gray-500">
                 <span className="flex items-center text-lg mr-1">
-                  <Info />
+                  <MdInfo />
                 </span>
                 手机还没有安装 {settings['mixinApp.name']} ？
               </div>
@@ -538,7 +538,7 @@ export default observer((props: any) => {
         {isPaid && (
           <div className="fixed-width text-center md:px-6 -mt-3 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
-              <CheckCircleOutline />
+              <AiOutlineCheckCircle />
             </Fade>
           </div>
         )}
@@ -605,7 +605,7 @@ export default observer((props: any) => {
         </div>
         <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
           <span className="flex items-center text-lg mr-1">
-            <Info />
+            <MdInfo />
           </span>
           手机还没有安装 {settings['mixinApp.name']} ？
           <a

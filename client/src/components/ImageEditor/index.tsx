@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import AvatarEditor from 'react-avatar-editor';
 import Button from 'components/Button';
-import { Edit, ZoomIn, ZoomOut, CameraAlt } from '@material-ui/icons';
+import { MdEdit, MdZoomIn, MdZoomOut, MdCameraAlt } from 'react-icons/md';
 import { Dialog, Slider, withStyles } from '@material-ui/core';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile, isPc, MimeType, limitImageWidth, sleep } from 'utils';
@@ -188,7 +188,7 @@ export default observer((props: any) => {
           </div>
 
           <div className="slider-box flex items-center py-1 mt-1 text-xl text-gray-500">
-            <ZoomOut className="mx-2" />
+            <MdZoomOut className="mx-2" />
             <AvatarScaleSlider
               className="mx-2"
               step={0.001}
@@ -198,7 +198,7 @@ export default observer((props: any) => {
                 state.scale = v as number;
               }}
             />
-            <ZoomIn className="mx-2" />
+            <MdZoomIn className="mx-2" />
           </div>
           <div className="m-3 flex pb-4 justify-center w-full md:w-auto">
             <Button
@@ -245,7 +245,7 @@ export default observer((props: any) => {
         {state.avatar && <img src={state.avatar} alt="avatar" />}
         {state.avatar && (
           <div className="edit-button text-12">
-            <Edit className="edit-icon" />
+            <MdEdit className="edit-icon" />
             更换{props.name || '图片'}
           </div>
         )}
@@ -255,7 +255,7 @@ export default observer((props: any) => {
             style={{ width: width * placeholderScale, height: (width * placeholderScale) / ratio }}
           >
             <div className="flex flex-col items-center pt-3-px">
-              <CameraAlt />
+              <MdCameraAlt />
               <div className="text-12 mt-1">上传{props.name || '图片'}</div>
             </div>
           </div>

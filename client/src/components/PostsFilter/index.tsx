@@ -27,14 +27,20 @@ interface IProps {
   enableScroll?: boolean;
 }
 
+interface ITabItem {
+  text: string;
+  value: any;
+}
+
 export default observer((props: IProps) => {
-  const { userStore } = useStore();
+  const { userStore, contextStore } = useStore();
   const selectorId = 'feed-filter';
   const { enableScroll = true } = props;
   const showSubTabs =
     (props.showPopularity && props.type === 'POPULARITY') ||
     (props.showLatest && props.type === 'LATEST') ||
     props.type === 'SUBSCRIPTION';
+  const { isMixinImmersive } = contextStore;
 
   const types = React.useMemo(() => props.tabs.map((tab) => tab.type), [props.tabs]);
 
@@ -44,114 +50,61 @@ export default observer((props: IProps) => {
     if (types[value] === props.type) {
       return;
     }
-    if (fixed) {
+    if (isMixinImmersive) {
+      window.scrollTo({
+        top: 0,
+      });
+    } else if (fixed) {
       tryScroll(selectorId);
     }
     props.onChange(types[value] as string);
   };
 
-  const latestItems = () => {
-    return (
-      <Fade in={true} timeout={isMobile ? 500 : 500}>
-        <div className="flex justify-center pt-3-px pb-2 md:py-3">
-          <div>{latestItem('发布', 'PUB_DATE')}</div>
-          <div>{latestItem('评论', 'LATEST_COMMENT')}</div>
-        </div>
-      </Fade>
-    );
-  };
-
-  const latestItem = (text: string, latestType: string) => {
-    return (
-      <div
-        onClick={() => {
-          if (fixed) {
-            tryScroll(selectorId);
-          }
-          props.onChange('LATEST', latestType);
-        }}
-        className={classNames(
-          {
-            'bg-blue-400 text-white': props.latestType === latestType,
-            'bg-gray-f2 text-gray-88': props.latestType !== latestType,
-          },
-          'py-3-px px-3 mx-10-px md:mx-3 text-12 rounded-12 md:cursor-pointer',
-        )}
-      >
-        {text}
-      </div>
-    );
-  };
-
-  const subscriptionItems = () => {
-    return (
-      <Fade in={true} timeout={isMobile ? 500 : 500}>
-        <div className="flex justify-center pt-3-px pb-2 md:py-3">
-          <div>{subscriptionItem('作者文章', 'author')}</div>
-          <div>{subscriptionItem('专题文章', 'topic')}</div>
-        </div>
-      </Fade>
-    );
-  };
-
-  const subscriptionItem = (text: string, subscriptionType: string) => {
-    return (
-      <div
-        onClick={() => {
-          if (fixed) {
-            tryScroll(selectorId);
-          }
-          props.onChange('SUBSCRIPTION', subscriptionType);
-        }}
-        className={classNames(
-          {
-            'bg-blue-400 text-white': props.subscriptionType === subscriptionType,
-            'bg-gray-f2 text-gray-88': props.subscriptionType !== subscriptionType,
-          },
-          'py-3-px px-3 mx-10-px md:mx-3 text-12 rounded-12 md:cursor-pointer',
-        )}
-      >
-        {text}
-      </div>
-    );
-  };
-
-  const popularityItems = () => {
-    const dayRangeOptions = props.dayRangeOptions || [];
-    if (dayRangeOptions.length === 0) {
+  const tabItems = (options: { type: string; selectValue: any; items: ITabItem[] }) => {
+    const { type, items, selectValue } = options;
+    if (!items || items.length === 0) {
       return null;
     }
     return (
-      <Fade in={true} timeout={isMobile ? 500 : 500}>
-        <div className="flex justify-center pt-3-px pb-2 md:py-3">
-          {dayRangeOptions.map((dayRange: number) => {
-            const text = dayRange > 0 ? `${dayRange}天内` : '全部';
-            return <div key={dayRange}>{popularityItem(text, dayRange)}</div>;
+      <Fade in={true} timeout={isMobile ? 100 : 500}>
+        <div className="flex justify-center md:py-3 -mt-2-px md:mt-0">
+          {items.map((option, index: number) => {
+            return (
+              <div
+                key={index}
+                className={classNames({
+                  'rounded-l-12 overflow-hidden': isMobile && index === 0,
+                  'rounded-r-12 overflow-hidden': isMobile && index === items.length - 1,
+                })}
+              >
+                <div
+                  onClick={() => {
+                    if (isMixinImmersive) {
+                      window.scrollTo({
+                        top: 0,
+                      });
+                    } else if (fixed) {
+                      tryScroll(selectorId);
+                    }
+                    props.onChange(type, option.value);
+                  }}
+                  className={classNames(
+                    {
+                      'bg-blue-400 text-white': selectValue === option.value,
+                      'bg-gray-f2 text-gray-88': selectValue !== option.value,
+                      'pl-3 pr-2': isMobile && index === 0,
+                      'pl-2 pr-3': isMobile && index === items.length - 1,
+                    },
+                    'py-3-px md:px-3 md:mx-3 text-12 md:rounded-12 md:cursor-pointer',
+                  )}
+                >
+                  {option.text}
+                </div>
+              </div>
+            );
           })}
         </div>
       </Fade>
-    );
-  };
-
-  const popularityItem = (text: string, value: number) => {
-    return (
-      <div
-        onClick={() => {
-          if (fixed) {
-            tryScroll(selectorId);
-          }
-          props.onChange('POPULARITY', value);
-        }}
-        className={classNames(
-          {
-            'bg-blue-400 text-white': props.dayRange === value,
-            'bg-gray-f2 text-gray-88': props.dayRange !== value,
-          },
-          'py-3-px px-3 mx-10-px md:mx-3 text-12 rounded-12 md:cursor-pointer',
-        )}
-      >
-        {text}
-      </div>
     );
   };
 
@@ -181,6 +134,8 @@ export default observer((props: IProps) => {
               className={classNames(
                 {
                   'px-0 md:px-5': fixed,
+                  'justify-between': !fixed || !isMixinImmersive,
+                  'flex items-center pl-2 pr-3 pt-1': isMobile,
                 },
                 'bg-white filter',
               )}
@@ -190,8 +145,8 @@ export default observer((props: IProps) => {
                 onChange={handleOrderChange}
                 className={classNames(
                   {
-                    'two-columns': types.length === 2,
-                    'three-columns': types.length === 3,
+                    'two-columns': isPc && types.length === 2,
+                    'three-columns': isPc && types.length === 3,
                     sm: isMobile,
                   },
                   'relative post-filter-tabs text-gray-88',
@@ -201,9 +156,53 @@ export default observer((props: IProps) => {
                   <Tab label={tab.name} className="tab" key={tab.type} />
                 ))}
               </Tabs>
-              {userStore.isLogin && props.type === 'SUBSCRIPTION' && subscriptionItems()}
-              {props.showLatest && props.type === 'LATEST' && latestItems()}
-              {props.showPopularity && props.type === 'POPULARITY' && popularityItems()}
+
+              {fixed && isMixinImmersive && <div className="mr-6" />}
+
+              {userStore.isLogin &&
+                props.type === 'SUBSCRIPTION' &&
+                tabItems({
+                  type: 'SUBSCRIPTION',
+                  selectValue: props.subscriptionType,
+                  items: [
+                    {
+                      text: '作者文章',
+                      value: 'author',
+                    },
+                    {
+                      text: '专题文章',
+                      value: 'topic',
+                    },
+                  ],
+                })}
+
+              {props.showLatest &&
+                props.type === 'LATEST' &&
+                tabItems({
+                  type: 'LATEST',
+                  selectValue: props.latestType,
+                  items: [
+                    {
+                      text: '发布',
+                      value: 'PUB_DATE',
+                    },
+                    {
+                      text: '评论',
+                      value: 'LATEST_COMMENT',
+                    },
+                  ],
+                })}
+
+              {props.showPopularity &&
+                props.type === 'POPULARITY' &&
+                tabItems({
+                  type: 'POPULARITY',
+                  selectValue: props.dayRange,
+                  items: (props.dayRangeOptions || []).map((dayRange: any) => ({
+                    text: `${dayRange}天内`,
+                    value: dayRange,
+                  })),
+                })}
             </div>
           </div>
         </div>
@@ -218,8 +217,8 @@ export default observer((props: IProps) => {
             min-height: auto;
           }
           :global(.post-filter-tabs.sm .MuiTabs-indicator) {
-            transform: scaleX(0.2);
-            bottom: 5px;
+            transform: scaleX(0.35);
+            bottom: 0;
             height: 3px;
             border-radius: 2px;
           }
@@ -228,13 +227,27 @@ export default observer((props: IProps) => {
             font-size: 14px;
             min-height: 0;
           }
+          :global(.post-filter-tabs.sm .tab) {
+            font-size: 15px;
+          }
           :global(.post-filter-tabs .tab) {
             height: 40px;
             padding: 0 12px;
           }
+          :global(.post-filter-tabs.sm .tab) {
+            height: 38px;
+            padding: 4px 12px 0;
+          }
+          :global(.post-filter-tabs.sm .tab) {
+            min-width: auto;
+            padding: 0 14px;
+          }
           :global(.post-filter-tabs .MuiTab-textColorInherit.Mui-selected) {
             font-size: 15px;
             font-weight: bold;
+          }
+          :global(.post-filter-tabs.sm .MuiTab-textColorInherit.Mui-selected) {
+            font-size: 18px;
           }
           :global(.post-filter-tabs.two-columns .tab) {
             width: 50%;
@@ -250,7 +263,7 @@ export default observer((props: IProps) => {
   const placeholder = () => {
     let height = 0;
     if (isMobile) {
-      height = showSubTabs ? 75 : 40;
+      height = 42;
     } else {
       height = showSubTabs ? 88 : 41;
     }

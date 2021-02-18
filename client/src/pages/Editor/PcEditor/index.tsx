@@ -5,10 +5,9 @@ import config from './config';
 import LinkModal from './LinkModal';
 import { TextField, Tooltip } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
-import { CameraAlt } from '@material-ui/icons';
+import { MdCameraAlt, MdNavigateBefore } from 'react-icons/md';
 import Img from 'components/Img';
 import ImageEditor from 'components/ImageEditor';
-import NavigateBefore from '@material-ui/icons/NavigateBefore';
 import Button from 'components/Button';
 import Fade from '@material-ui/core/Fade';
 import { useStore } from 'store';
@@ -144,7 +143,7 @@ export default observer((props: IProps) => {
       {!props.isFetching && (
         <div onClick={props.handleBack}>
           <nav className="p-editor-back flex items-center text-blue-400">
-            <NavigateBefore />
+            <MdNavigateBefore />
             文章
           </nav>
         </div>
@@ -253,7 +252,7 @@ export default observer((props: IProps) => {
                         style={{ width: '55px', height: '31px', marginTop: '-2px' }}
                       >
                         <div className="flex items-center mt-1">
-                          <CameraAlt />
+                          <MdCameraAlt />
                         </div>
                       </div>
                     )}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import { MdChevronLeft } from 'react-icons/md';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
@@ -38,7 +38,7 @@ export default observer(() => {
               <div className="absolute bottom-0 right-0 m-5">
                 <Button onClick={modalStore.closeWallet}>
                   <div className="flex items-center">
-                    <ArrowBackIos />
+                    <MdChevronLeft className="transform scale-150" />
                     <span className="ml-1">{returnInfo.text}</span>
                   </div>
                 </Button>

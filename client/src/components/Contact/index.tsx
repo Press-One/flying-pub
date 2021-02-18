@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from '@material-ui/core/Modal';
-import Help from '@material-ui/icons/Help';
+import { MdHelp } from 'react-icons/md';
 import Fade from '@material-ui/core/Fade';
 
 export default () => {
@@ -18,7 +18,7 @@ export default () => {
       className="fixed bottom-0 right-0 m-1 flex items-center justify-center text-5xl cursor-pointer text-blue-400 transform scale-90"
       onClick={() => setOpen(true)}
     >
-      <Help />
+      <MdHelp />
     </div>
   );
 

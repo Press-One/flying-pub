@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Info from '@material-ui/icons/Info';
-import MoreHoriz from '@material-ui/icons/MoreHoriz';
+import { MdInfo, MdMoreHoriz } from 'react-icons/md';
 import Button from 'components/Button';
 import DrawerModal from 'components/DrawerModal';
 import Modal from 'components/Modal';
@@ -32,7 +31,7 @@ export default observer(() => {
                 <div className="text-gray-700">
                   <div className="flex items-center text-2xl">
                     <span className="mr-1 text-sm">1. 点击右上角</span>
-                    <MoreHoriz />
+                    <MdMoreHoriz />
                   </div>
                   <div className="flex text-gray-700 mt-1">
                     2. 选择在<span className="font-bold px-1">Safari</span>中打开
@@ -50,7 +49,7 @@ export default observer(() => {
           </div>
           <div className="flex items-center justify-center mt-5 text-gray-500 text-xs">
             <span className="flex items-center text-lg mr-1">
-              <Info />
+              <MdInfo />
             </span>
             手机还没有安装 {settings['mixinApp.name']} ？
             {!isWeChat && (

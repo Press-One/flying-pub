@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { observer, useLocalStore } from 'mobx-react-lite';
-import { Refresh } from '@material-ui/icons';
+import { MdRefresh } from 'react-icons/md';
 import authorApi, { IAuthor } from 'apis/author';
 import subscriptionApi from 'apis/subscription';
 import Loading from 'components/Loading';
@@ -75,7 +75,7 @@ export default observer(() => {
           onClick={() => (state.isFetched = false)}
         >
           <div className="flex items-center text-18 mr-1">
-            <Refresh />
+            <MdRefresh />
           </div>
           换一换
         </span>

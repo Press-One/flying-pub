@@ -2,7 +2,7 @@ import React from 'react';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { TextField } from '@material-ui/core';
 import { useStore } from 'store';
-import { Search, Close } from '@material-ui/icons';
+import { MdSearch, MdClose } from 'react-icons/md';
 
 interface IProps {
   size?: string;
@@ -55,7 +55,7 @@ export default observer((props: IProps) => {
   return (
     <div className="relative">
       <div className="text-20 text-gray-af flex items-center absolute top-0 left-0 z-10 mt-7-px ml-9-px md:mt-8-px md:ml-10-px">
-        <Search />
+        <MdSearch />
       </div>
       {state.value && (
         <div className="flex items-center absolute top-0 right-0 z-10 mt-9-px mr-10-px md:mt-8-px">
@@ -65,14 +65,14 @@ export default observer((props: IProps) => {
               state.value = '';
             }}
           >
-            <Close />
+            <MdClose />
           </div>
         </div>
       )}
       <form action="/">
         <TextField
           className={`search-input ${props.className || 'w-72'} ${props.size || ''}`}
-          placeholder={props.placeholder || '搜索'}
+          placeholder={props.placeholder}
           size="small"
           autoFocus={props.autoFocus || false}
           value={state.value}
@@ -92,7 +92,7 @@ export default observer((props: IProps) => {
           padding: 10px 10px 9px 34px;
         }
         .search-input.small .MuiOutlinedInput-input {
-          padding: 9px 10px 8px 33px;
+          padding: 8px 9px 8px 33px;
         }
       `}</style>
     </div>

@@ -3,14 +3,16 @@ import { observer } from 'mobx-react-lite';
 import { RouteChildrenProps, Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import AssignmentIcon from '@material-ui/icons/Assignment';
-import VerticalAlignTop from '@material-ui/icons/VerticalAlignTop';
-import CreateIcon from '@material-ui/icons/Create';
-import SearchIcon from '@material-ui/icons/Search';
-import AccountBalanceWallet from '@material-ui/icons/AccountBalanceWallet';
+import {
+  MdAccountCircle,
+  MdAssignment,
+  MdVerticalAlignTop,
+  MdCreate,
+  MdSearch,
+  MdAccountBalanceWallet,
+  MdChevronLeft,
+} from 'react-icons/md';
 import Fade from '@material-ui/core/Fade';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
 import Button from 'components/Button';
 import Img from 'components/Img';
 
@@ -36,31 +38,31 @@ export default observer((props: RouteChildrenProps) => {
   const navList = [
     {
       text: '文章',
-      icon: CreateIcon,
+      icon: MdCreate,
       path: '/dashboard',
       show: true,
     },
     {
       text: '【管理后台】用户权限',
-      icon: AccountCircle,
+      icon: MdAccountCircle,
       path: '/blockTopic',
       show: user.isAdmin,
     },
     {
       text: '【管理后台】文章权限',
-      icon: AssignmentIcon,
+      icon: MdAssignment,
       path: '/postManager',
       show: user.isAdmin,
     },
     {
       text: '【管理后台】文章置顶',
-      icon: VerticalAlignTop,
+      icon: MdVerticalAlignTop,
       path: '/sticky',
       show: user.isAdmin,
     },
     {
       text: '【管理后台】搜索服务',
-      icon: SearchIcon,
+      icon: MdSearch,
       path: '/searchManager',
       show: user.isAdmin,
     },
@@ -141,7 +143,7 @@ export default observer((props: RouteChildrenProps) => {
                   }}
                 >
                   <div className="flex items-center text-lg mr-1">
-                    <AccountBalanceWallet />
+                    <MdAccountBalanceWallet />
                   </div>
                   写作收入
                 </Button>
@@ -149,7 +151,7 @@ export default observer((props: RouteChildrenProps) => {
               <div className="mx-2 pb-5">
                 <Link to="/">
                   <Button className="w-full" outline>
-                    <ArrowBackIos /> 返回首页
+                    <MdChevronLeft className="transform scale-150 mr-3-px" /> 返回首页
                   </Button>
                 </Link>
               </div>

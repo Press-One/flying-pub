@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { observer, useLocalStore } from 'mobx-react-lite';
 import { Button as MuiButton, CircularProgress, TextField } from '@material-ui/core';
-import CheckCircle from '@material-ui/icons/CheckCircle';
+import { MdCheckCircle } from 'react-icons/md';
 import { getProtectedPhone, isMobile, getApiEndpoint } from 'utils';
 import Img from 'components/Img';
 
@@ -182,7 +182,7 @@ export const AccountBind = observer(() => {
 
           {phoneProfile && (
             <span className="text-xl text-green-400">
-              <CheckCircle />
+              <MdCheckCircle />
             </span>
           )}
         </div>
@@ -221,7 +221,7 @@ export const AccountBind = observer(() => {
 
           {mixinProfile && (
             <span className="text-xl text-green-400">
-              <CheckCircle />
+              <MdCheckCircle />
             </span>
           )}
         </div>

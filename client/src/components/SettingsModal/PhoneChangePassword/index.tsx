@@ -15,7 +15,7 @@ import {
   Tabs,
   TextField,
 } from '@material-ui/core';
-import { Visibility, VisibilityOff } from '@material-ui/icons';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { getProtectedPhone, isMobile } from 'utils';
 
 import Button from 'components/Button';
@@ -246,7 +246,7 @@ export const PhoneChangePassword = observer(() => {
                       }}
                       edge="end"
                     >
-                      {state.peakPassword ? <Visibility /> : <VisibilityOff />}
+                      {state.peakPassword ? <MdVisibility /> : <MdVisibilityOff />}
                     </IconButton>
                   </InputAdornment>
                 }
@@ -278,7 +278,7 @@ export const PhoneChangePassword = observer(() => {
                     }}
                     edge="end"
                   >
-                    {state.peakNewPassword ? <Visibility /> : <VisibilityOff />}
+                    {state.peakNewPassword ? <MdVisibility /> : <MdVisibilityOff />}
                   </IconButton>
                 </InputAdornment>
               }

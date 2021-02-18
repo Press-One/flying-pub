@@ -1,7 +1,7 @@
 import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import Info from '@material-ui/icons/Info';
+import { MdInfo } from 'react-icons/md';
 import classNames from 'classnames';
 import Loading from 'components/Loading';
 import Button from 'components/Button';
@@ -222,7 +222,7 @@ export default (props: any) => {
         </div>
         <div className="flex justify-center items-center mt-4 text-gray-500 text-xs">
           <span className="flex items-center text-lg mr-1">
-            <Info />
+            <MdInfo />
           </span>
           手机还没有安装 {settings['mixinApp.name']} ?
           <a

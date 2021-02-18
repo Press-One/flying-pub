@@ -18,6 +18,7 @@ import { createFilesStore } from './files';
 import { createPublishDialogStore } from './publishDialog';
 import { createAuthorStore } from './author';
 import { createPhotoSwipeStore } from './photoSwipe';
+import { createContextStore } from './context';
 
 const storeContext = React.createContext<any>(null);
 
@@ -42,7 +43,8 @@ const useCreateStore = () => ({
   fileStore: useLocalStore(createFilesStore),
   publishDialogStore: useLocalStore(createPublishDialogStore),
   authorStore: useLocalStore(createAuthorStore),
-  photoSwipeStore: useLocalStore(createPhotoSwipeStore)
+  photoSwipeStore: useLocalStore(createPhotoSwipeStore),
+  contextStore: useLocalStore(createContextStore),
 });
 
 export const StoreProvider = ({ children }: IProps) => {

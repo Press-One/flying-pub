@@ -4,7 +4,7 @@ import { TextField } from '@material-ui/core';
 import { EditableFile } from 'apis/file';
 import autosize from 'autosize';
 import { scrollToHere, sleep, getViewport, getQuery, removeQuery } from 'utils';
-import ArrowBackIos from '@material-ui/icons/ArrowBackIos';
+import { MdChevronLeft } from 'react-icons/md';
 import { faImage, faEye } from '@fortawesome/free-regular-svg-icons';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,6 +14,7 @@ import marked from 'marked';
 import { useStore } from 'store';
 import CoverUploadModal from './CoverUploadModal';
 import ImageEditor from 'components/ImageEditor';
+import classNames from 'classnames';
 
 import './index.scss';
 
@@ -32,7 +33,7 @@ interface IProps {
 }
 
 export default observer((props: IProps) => {
-  const { snackbarStore } = useStore();
+  const { snackbarStore, contextStore } = useStore();
   const state = useLocalStore(() => ({
     selectionStart: 0,
     autoSized: false,
@@ -47,6 +48,7 @@ export default observer((props: IProps) => {
     typing: false,
     showCoverModal: false,
   }));
+  const { isMixinImmersive } = contextStore;
   const textareaRef = React.useRef<any>(null);
 
   const getIsKeyboardActive = () => getViewport().height + 150 < (window as any).outerHeight;
@@ -138,13 +140,23 @@ export default observer((props: IProps) => {
         <div className="pt-1-px" />
         <div className="flex justify-between items-center py-1 px-3 h-12">
           <div className="flex items-center">
-            <div className="flex items-center text-xl text-gray-700 p-2" onClick={props.handleBack}>
-              <ArrowBackIos />
+            <div className="flex items-center text-gray-700" onClick={props.handleBack}>
+              <MdChevronLeft className="text-30" />
             </div>
           </div>
-          <Button size="small" onClick={props.handlePublishClickOpen}>
-            发布
-          </Button>
+          <div
+            className={classNames(
+              {
+                '-mt-2': isMixinImmersive,
+              },
+              'flex',
+            )}
+          >
+            <Button size="small" onClick={props.handlePublishClickOpen}>
+              发布
+            </Button>
+            {isMixinImmersive && <div className="pr-24" />}
+          </div>
         </div>
       </div>
     </div>

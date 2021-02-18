@@ -3,15 +3,16 @@ import { observer } from 'mobx-react-lite';
 import Button from 'components/Button';
 import ButtonProgress from 'components/ButtonProgress';
 
-import { Menu, MenuItem, TableRow, TableCell, Tooltip } from '@material-ui/core';
+import { Menu, MenuItem, TableRow, TableCell, Tooltip, IconButton } from '@material-ui/core';
 
-import LinkIcon from '@material-ui/icons/Link';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import Visibility from '@material-ui/icons/Visibility';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
-import Settings from '@material-ui/icons/Settings';
-import CreateIcon from '@material-ui/icons/Create';
+import {
+  MdLink,
+  MdVisibilityOff,
+  MdVisibility,
+  MdDelete,
+  MdSettings,
+  MdCreate,
+} from 'react-icons/md';
 
 import fileApi from 'apis/file';
 
@@ -155,7 +156,7 @@ export default observer((props: any) => {
                   editFile(+file.id);
                 }}
               >
-                <CreateIcon />
+                <MdCreate />
               </IconButton>
             </Tooltip>
           </span>
@@ -167,7 +168,7 @@ export default observer((props: any) => {
               aria-haspopup="true"
               onClick={handleMenuClick}
             >
-              <Settings className="text-base" />
+              <MdSettings className="text-base" />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -197,7 +198,7 @@ export default observer((props: any) => {
                   <Tooltip title="隐藏后的文章对他人不可见" placement="left">
                     <div className="flex items-center text-gray-700 leading-none">
                       <span className="flex items-center text-lg mr-2">
-                        <VisibilityOff />
+                        <MdVisibilityOff />
                       </span>
                       <span className="font-bold">隐藏</span>
                       <ButtonProgress color={'primary-color'} size={12} isDoing={hiding} />
@@ -213,7 +214,7 @@ export default observer((props: any) => {
                 >
                   <div className="flex items-center text-gray-700 leading-none">
                     <span className="flex items-center text-lg mr-2">
-                      <Visibility />
+                      <MdVisibility />
                     </span>
                     <span className="font-bold">显示</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={showing} />
@@ -235,7 +236,7 @@ export default observer((props: any) => {
                 <div>
                   <div className="flex items-center text-gray-700 leading-none">
                     <span className="flex items-center text-lg mr-2">
-                      <DeleteIcon />
+                      <MdDelete />
                     </span>
                     <span className="font-bold">删除</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={deleting} />
@@ -248,7 +249,7 @@ export default observer((props: any) => {
             <Tooltip title="查看文章" placement="top">
               <a href={`${readerUrl}/posts/${file.rId}`} target="_blank" rel="noopener noreferrer">
                 <IconButton className="mr-1">
-                  <LinkIcon />
+                  <MdLink />
                 </IconButton>
               </a>
             </Tooltip>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Folder } from '@material-ui/icons';
 import { useStore } from 'store';
 import { every } from 'lodash';
 import { isMobile } from 'utils';

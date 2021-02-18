@@ -6,7 +6,7 @@ import Loading from 'components/Loading';
 import { ago, sleep } from 'utils';
 import { faEyeSlash, faImage } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import MoreVert from '@material-ui/icons/MoreVert';
+import { MdMoreVert } from 'react-icons/md';
 import { useHistory } from 'react-router-dom';
 import fileApi, { IFile } from 'apis/file';
 import useInfiniteScroll from 'react-infinite-scroll-hook';
@@ -72,7 +72,7 @@ const DraftEntry = observer(
             </div>
           </div>
           <div className="text-gray-af text-20 flex items-center px-5 py-3">
-            <MoreVert />
+            <MdMoreVert />
           </div>
         </div>
         <DrawerMenu

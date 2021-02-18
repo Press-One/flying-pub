@@ -231,7 +231,7 @@ const TopicList = observer(() => {
       >
         {state.isFetched && isContributionToPublicTopics && (
           <div className="mt-3 -mb-2 pb-9-px flex justify-center">
-            <SearchInput className="w-64" placeholder="搜索专题" search={search} />
+            <SearchInput className="w-64" placeholder="搜索专题" size="small" search={search} />
           </div>
         )}
         {loading && (

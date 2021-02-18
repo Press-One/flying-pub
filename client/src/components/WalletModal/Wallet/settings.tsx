@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import classNames from 'classnames';
-import Info from '@material-ui/icons/Info';
-import CheckCircle from '@material-ui/icons/CheckCircle';
+import { MdInfo } from 'react-icons/md';
+import { MdCheckCircle } from 'react-icons/md';
 import Button from 'components/Button';
 import Loading from 'components/Loading';
 import Fade from '@material-ui/core/Fade';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import { AiOutlineCheckCircle } from 'react-icons/ai';
 import Modal from 'components/Modal';
 import PinOTPInput from 'components/PinOTPInput';
 import { sleep, isMobile, isIPhone, stopBodyScroll } from 'utils';
@@ -181,7 +181,7 @@ export default observer(() => {
           {isVerified && (
             <div className="fixed-width flex items-center justify-center md:px-6 text-5xl text-blue-400">
               <Fade in={true} timeout={500}>
-                <CheckCircleOutline className="-mt-2" />
+                <AiOutlineCheckCircle className="-mt-2" />
               </Fade>
             </div>
           )}
@@ -204,21 +204,21 @@ export default observer(() => {
         <div>
           {isCustomPinExist && (
             <div className="mb-6 md:mb-4 text-green-500 flex flex-col md:flex-row items-center justify-center md:justify-start text-5xl md:text-lg mt-6 md:mt-0">
-              <CheckCircle />
+              <MdCheckCircle />
               <span className="text-sm mt-2 md:mt-0 md:ml-1">支付密码已设置</span>
             </div>
           )}
           {!isCustomPinExist && (
             <div className="p-3 border border-blue-400 text-blue-400 bg-blue-100 flex items-center rounded mb-5">
               <span className="flex items-center mr-1 text-lg">
-                <Info />
+                <MdInfo />
               </span>
               尚未设置支付密码
             </div>
           )}
         </div>
         <div className="md:hidden flex items-center justify-center text-gray-500 mb-2">
-          <Info />
+          <MdInfo />
           <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
         </div>
         <div className="text-center md:text-left">
@@ -235,7 +235,7 @@ export default observer(() => {
           </Button>
         </div>
         <div className="hidden md:flex items-center text-gray-500 mt-2">
-          <Info />
+          <MdInfo />
           <span className="text-xs ml-1">支付密码将用于支付和提现，请牢牢记住哦</span>
         </div>
         <Modal open={openModal} onClose={() => onCloseModal()}>

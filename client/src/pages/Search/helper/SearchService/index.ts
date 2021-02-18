@@ -78,6 +78,7 @@ const search = async (payload: SearchPayload, options: SearchOptions) => {
       state.resultItems = res.result.items.map(formatResultItem);
     }
   } finally {
+    state.isFetched = true;
     state.loading = false;
   }
 };
