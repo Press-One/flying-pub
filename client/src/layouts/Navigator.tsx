@@ -102,7 +102,7 @@ export default observer(() => {
             <div className="absolute top-0 right-0">
               <Badge
                 badgeContent={unread}
-                className="-mr-2-px -mt-2 transform scale-90"
+                className="-ml-8 pl-1 -mt-2 transform scale-90"
                 color="error"
               />
             </div>
