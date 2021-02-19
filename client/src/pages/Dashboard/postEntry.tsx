@@ -197,7 +197,7 @@ export default observer((props: any) => {
                   <Tooltip title="隐藏后的文章对他人不可见" placement="left">
                     <div className="flex items-center text-gray-700 leading-none">
                       <span className="flex items-center mr-2">
-                        <MdVisibilityOff className="text-22" />
+                        <MdVisibilityOff className="text-18" />
                       </span>
                       <span className="font-bold">隐藏</span>
                       <ButtonProgress color={'primary-color'} size={12} isDoing={hiding} />
@@ -213,7 +213,7 @@ export default observer((props: any) => {
                 >
                   <div className="flex items-center text-gray-700 leading-none">
                     <span className="flex items-center mr-2">
-                      <MdVisibility className="text-22" />
+                      <MdVisibility className="text-18" />
                     </span>
                     <span className="font-bold">显示</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={showing} />
@@ -235,7 +235,7 @@ export default observer((props: any) => {
                 <div>
                   <div className="flex items-center text-gray-700 leading-none">
                     <span className="flex items-center mr-2">
-                      <MdDelete className="text-22" />
+                      <MdDelete className="text-18" />
                     </span>
                     <span className="font-bold">删除</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={deleting} />

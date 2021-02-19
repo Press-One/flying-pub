@@ -44,7 +44,7 @@ export default observer(() => {
             {
               'text-blue-400': pathname === '/',
             },
-            'text-center',
+            'px-4 text-center',
           )}
           onClick={() => {
             history.push('/');
@@ -60,7 +60,7 @@ export default observer(() => {
             {
               'text-blue-400': pathname === '/subscription',
             },
-            'text-center',
+            'px-4 text-center',
           )}
           onClick={() => {
             if (!isLogin) {
@@ -81,7 +81,7 @@ export default observer(() => {
               {
                 'text-blue-400': pathname === '/notification',
               },
-              'text-center relative',
+              'px-4 text-center relative',
             )}
             onClick={() => {
               if (!isLogin) {
@@ -113,7 +113,7 @@ export default observer(() => {
             {
               'text-blue-400': pathname.startsWith('/authors'),
             },
-            'text-center',
+            'px-4 text-center',
           )}
           onClick={() => {
             if (!isLogin) {

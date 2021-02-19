@@ -221,7 +221,7 @@ export default observer((props: any) => {
                 </Link>
               )}
               {!showBack && userStore.isLogin && (
-                <div className="mr-3">
+                <div>
                   <Link to={`/authors/${user.address}`}>
                     <Img
                       src={user.avatar}
@@ -232,9 +232,8 @@ export default observer((props: any) => {
                 </div>
               )}
 
-              <div className="flex-1 pr-2">
-                {userStore.isLogin &&
-                  (settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
+              <div className="flex-1 pr-2 pl-3">
+                {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
                   showSearchEntry && <Search />}
               </div>
 
