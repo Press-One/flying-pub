@@ -156,19 +156,18 @@ export default observer((props: any) => {
                   editFile(+file.id);
                 }}
               >
-                <MdCreate />
+                <MdCreate className="text-22" />
               </IconButton>
             </Tooltip>
           </span>
           <div>
             <IconButton
-              className="text-base"
               aria-label="more"
               aria-controls="dashboard-post-menu"
               aria-haspopup="true"
               onClick={handleMenuClick}
             >
-              <MdSettings className="text-base" />
+              <MdSettings className="text-22" />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -197,8 +196,8 @@ export default observer((props: any) => {
                 >
                   <Tooltip title="隐藏后的文章对他人不可见" placement="left">
                     <div className="flex items-center text-gray-700 leading-none">
-                      <span className="flex items-center text-lg mr-2">
-                        <MdVisibilityOff />
+                      <span className="flex items-center mr-2">
+                        <MdVisibilityOff className="text-22" />
                       </span>
                       <span className="font-bold">隐藏</span>
                       <ButtonProgress color={'primary-color'} size={12} isDoing={hiding} />
@@ -213,8 +212,8 @@ export default observer((props: any) => {
                   }}
                 >
                   <div className="flex items-center text-gray-700 leading-none">
-                    <span className="flex items-center text-lg mr-2">
-                      <MdVisibility />
+                    <span className="flex items-center mr-2">
+                      <MdVisibility className="text-22" />
                     </span>
                     <span className="font-bold">显示</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={showing} />
@@ -235,8 +234,8 @@ export default observer((props: any) => {
               >
                 <div>
                   <div className="flex items-center text-gray-700 leading-none">
-                    <span className="flex items-center text-lg mr-2">
-                      <MdDelete />
+                    <span className="flex items-center mr-2">
+                      <MdDelete className="text-22" />
                     </span>
                     <span className="font-bold">删除</span>
                     <ButtonProgress color={'primary-color'} size={12} isDoing={deleting} />
@@ -249,7 +248,7 @@ export default observer((props: any) => {
             <Tooltip title="查看文章" placement="top">
               <a href={`${readerUrl}/posts/${file.rId}`} target="_blank" rel="noopener noreferrer">
                 <IconButton className="mr-1">
-                  <MdLink />
+                  <MdLink className="text-22" />
                 </IconButton>
               </a>
             </Tooltip>

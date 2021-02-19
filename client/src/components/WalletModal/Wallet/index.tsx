@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { MdAccountBalanceWallet, MdSettings, MdReceipt } from 'react-icons/md';
-import { BiWallet } from 'react-icons/bi';
+import { MdAccountBalanceWallet, MdSettings, MdReceipt, MdAccountBalance } from 'react-icons/md';
 import classNames from 'classnames';
 import Badge from '@material-ui/core/Badge';
 import { useStore } from 'store';
@@ -70,7 +69,7 @@ export default observer(() => {
             <div className="ml-2 mt-3">
               <Tab tab={tab} thisTab="assets" onClick={() => setTab('assets')}>
                 <span className="text-lg mr-2 flex items-center">
-                  <BiWallet />
+                  <MdAccountBalance />
                 </span>
                 余额
               </Tab>
@@ -114,7 +113,7 @@ export default observer(() => {
             <TabContent>
               <div className="font-bold items-center text-xl flex justify-center md:justify-start">
                 <span className="text-2xl mr-2 items-center hidden md:flex">
-                  <BiWallet />
+                  <MdAccountBalance />
                 </span>
                 <span className="md:hidden">我的</span>余额
               </div>

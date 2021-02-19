@@ -58,11 +58,6 @@ export default {
       minPendingDuration: 300
     });
   },
-  fetchPostsByUserSettings(options = {}) {
-    return request(`/api/posts/by_user_settings?${qs.stringify(options)}`, {
-      minPendingDuration: 300
-    });
-  },
   fetchPost(rId: string, options = {}) {
     return request(`/api/posts/${rId}?${qs.stringify(options)}`, {
       minPendingDuration: 300

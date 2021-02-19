@@ -143,7 +143,7 @@ export default observer((props: IProps) => {
       {!props.isFetching && (
         <div onClick={props.handleBack}>
           <nav className="p-editor-back flex items-center text-blue-400">
-            <MdNavigateBefore />
+            <MdNavigateBefore className="text-22" />
             文章
           </nav>
         </div>

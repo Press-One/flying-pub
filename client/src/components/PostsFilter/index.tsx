@@ -36,7 +36,6 @@ export default observer((props: IProps) => {
   const { userStore, contextStore } = useStore();
   const selectorId = 'feed-filter';
   const { enableScroll = true } = props;
-  console.log({ 'props.type': props.type });
   const showSubTabs =
     (props.showPopularity && props.type === 'POPULARITY') ||
     (props.showLatest && props.type === 'LATEST') ||
@@ -67,7 +66,7 @@ export default observer((props: IProps) => {
       return null;
     }
     return (
-      <Fade in={true} timeout={isMobile ? 100 : 500}>
+      <Fade in={true} timeout={isMobile ? 1000 : 500}>
         <div className="flex justify-center md:py-3 -mt-2-px md:mt-0">
           {items.map((option, index: number) => {
             return (
