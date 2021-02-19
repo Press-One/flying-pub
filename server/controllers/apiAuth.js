@@ -134,6 +134,9 @@ const handleOauthCallback = async (ctx, provider) => {
   const {
     user
   } = ctx.session.passport;
+
+  delete ctx.session.passport;
+
   return user;
 };
 

@@ -140,7 +140,7 @@ export default observer(() => {
         </div>
       )}
       {state.active && (
-        <div className="absolute top-0 left-0 w-full md:flex md:justify-center bg-white z-30 h-12 md:h-auto">
+        <div className="absolute top-0 left-0 w-full md:flex md:justify-center bg-white z-30 h-12 md:h-auto md:py-2 md:-mt-2">
           <Fade in={true} timeout={500}>
             <div>
               {isPc && (

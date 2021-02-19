@@ -718,11 +718,7 @@ export default observer((props: any) => {
             )}
             onClick={() => (state.showMenu = true)}
           >
-            {isMixinImmersive && isMyself ? (
-              <RiSettings4Line className="text-22" />
-            ) : (
-              <MdMoreHoriz />
-            )}
+            {isMyself ? <RiSettings4Line className="text-22" /> : isMixin ? null : <MdMoreHoriz />}
             {isMixinImmersive && <div className="pr-24 mr-2" />}
           </div>
         </div>

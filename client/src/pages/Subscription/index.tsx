@@ -87,11 +87,6 @@ export default observer(() => {
                 />
               )}
               {state.hasMorePosts && (
-                <div className="pt-24 mt-5">
-                  <Loading />
-                </div>
-              )}
-              {state.hasMorePosts && (
                 <div className="mt-10">
                   <Loading />
                 </div>

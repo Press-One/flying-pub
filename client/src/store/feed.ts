@@ -13,7 +13,7 @@ export function createFeedStore() {
     stickyRIdsSet,
     postMap,
     filterType: '' as string,
-    filterDayRange: 7,
+    filterDayRange: 0,
     subscriptionType: 'author',
     latestType: 'PUB_DATE',
     limit: 15,
@@ -111,6 +111,9 @@ export function createFeedStore() {
     },
     setFilterType(type: string) {
       this.filterType = type;
+    },
+    setFilterDayRange(range: number) {
+      this.filterDayRange = range;
     },
     setFilter(options: any = {}) {
       const { type, dayRange, subscriptionType, latestType } = options;

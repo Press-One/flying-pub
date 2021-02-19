@@ -49,6 +49,12 @@ export default observer(() => {
   }
 
   React.useEffect(() => {
+    if (!filterDayRange && showPopularity) {
+      feedStore.setFilterDayRange(settings['filter.dayRangeOptions'][0]);
+    }
+  }, [ready, showPopularity, settings, feedStore, filterDayRange]);
+
+  React.useEffect(() => {
     if (feedStore.provider !== 'feed') {
       feedStore.setProvider('feed');
       feedStore.clear();
