@@ -243,7 +243,7 @@ export default observer((props: any) => {
                     className="flex items-center text-gray-99 mr-2"
                     onClick={() => (prevPath ? props.history.goBack() : props.history.push('/'))}
                   >
-                    <MdChevronLeft className="text-30 -ml-2" />
+                    <MdChevronLeft className="text-30 -ml-5" />
                   </div>
                   {prevPath && prevPath !== '/' && pathname !== '/settings' && (
                     <Link to="/" className="flex items-center text-24 text-gray-99 p-2 ml-2">
