@@ -5,8 +5,8 @@ const {
   createSyncInitializedQueue,
 } = require('./mixin');
 const {
-  createAtomCacheQueue
-} = require('./atom');
+  createChainSyncCacheQueue
+} = require('./chain');
 const {
   createViewSyncQueue,
 } = require('./view');
@@ -28,8 +28,8 @@ exports.up = async () => {
   if (!queueDisabledJobs.includes('notification')) {
     queues.push(createNotificationQueue());
   }
-  if (!queueDisabledJobs.includes('atom')) {
-    queues.push(createAtomCacheQueue());
+  if (!queueDisabledJobs.includes('chainSync')) {
+    queues.push(createChainSyncCacheQueue());
   }
   if (config.postView && config.postView.enabled && !queueDisabledJobs.includes('view')) {
     queues.push(createViewSyncQueue());

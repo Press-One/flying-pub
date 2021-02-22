@@ -26,7 +26,7 @@ exports.get = async ctx => {
   if (!authorResult) {
     try {
       await Author.upsert(address, {
-        status: 'deny',
+        status: 'allow',
       });
       authorResult = await Author.getByAddress(address, {
         returnRaw: true

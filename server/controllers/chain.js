@@ -14,7 +14,7 @@ const Author = require('../models/author');
 const Block = require('../models/block');
 const {
   saveChainPost
-} = require('../models/atom');
+} = require('../models/chainSync');
 
 const SIGN_URL = `https://press.one/api/v2/datasign`;
 const HASH_ALG = 'sha256';
@@ -47,10 +47,8 @@ const getFileUrl = (file, origin) => {
   const name = file.msghash;
   const postfix = getPostfix(file.mimeType);
   const isDev = origin.includes('localhost');
-  // using ip so that atom docker container can access it
-  const ipRoot = `http://${ip.address()}:${config.port}`;
   return `${
-    isDev ? ipRoot : origin
+    isDev ? config.serviceRoot : origin
   }/api/storage/${name}.${postfix}`;
 };
 
@@ -70,7 +68,6 @@ const getFilePayload = async ({
 
   const {
     updatedFile,
-    origin
   } = options;
   if (updatedFile) {
     assert(updatedFile.block, Errors.ERR_IS_REQUIRED('updatedFile.block'));
@@ -79,24 +76,31 @@ const getFilePayload = async ({
     data.updated_tx_id = rId;
   }
 
-  const mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
-    user.address
-  );
-  assert(
-    mixinWalletClientId,
-    Errors.ERR_NOT_FOUND('user mixinWalletClientId')
-  );
-
-  const payload = {
-    user_address: user.address,
-    type: 'PIP:2001',
-    meta: {
-      uris: [getFileUrl(file, origin)],
+  let meta = {
+    hash_alg: HASH_ALG
+  };
+  const isNotDeletedFile = !!file.content;
+  if (isNotDeletedFile) {
+    const mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
+      user.address
+    );
+    assert(
+      mixinWalletClientId,
+      Errors.ERR_NOT_FOUND('user mixinWalletClientId')
+    );
+    meta = {
+      uris: [getFileUrl(file, options.origin)],
       mime: `${file.mimeType};charset=UTF-8`,
       encryption: 'aes-256-cbc',
       payment_url: `mixin://transfer/${mixinWalletClientId}`,
       hash_alg: HASH_ALG
-    },
+    };
+  }
+
+  const payload = {
+    user_address: user.address,
+    type: 'PIP:2001',
+    meta,
     data,
     hash: PrsUtil.hashBlockData(data, HASH_ALG),
     signature: PrsUtil.signBlockData(data, user.privateKey, HASH_ALG).signature
@@ -163,7 +167,6 @@ exports.pushFile = async (file, options = {}) => {
       updated_tx_id: block.data.updated_tx_id || '',
       content: file.content,
       updated_at: block.createdAt,
-      deleted: false
     }
     await saveChainPost(chainPost, {
       fromPublish: true

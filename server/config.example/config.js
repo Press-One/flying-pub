@@ -86,13 +86,10 @@ module.exports = {
   },
 
   // 同步服务
-  atom: {
+  chainSync: {
     // 要同步哪个 topic 下的用户和文章
     topic: `0ea59a16e9df81b0780065e294235cf6327adb82`,
-    // 同步服务提供的 API，返回该 topic 下的用户列表
-    authorsUrl: `http://localhost:7070/users`,
-    // 同步服务提供的 API，返回该 topic 下的文章列表
-    postsUrl: `http://localhost:7070/json_posts`,
+    blockProducerEndpoint: 'https://prs-bp1.press.one'
   },
 
   // 前后端共用的配置

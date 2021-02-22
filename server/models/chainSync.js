@@ -1,7 +1,8 @@
 const request = require('request-promise');
 const {
-  fm
+  fm,
 } = require('../utils');
+const ase256cbcCrypto = require('../utils/ase256cbcCrypto');
 const config = require('../config');
 const Author = require('./author');
 const Post = require('./post');
@@ -13,7 +14,9 @@ const Comment = require('./comment');
 const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
-const type = `${config.serviceKey}_SYNC_ATOM`;
+const type = `${config.serviceKey}_SYNC_CHAIN`;
+const prsUtil = require('prs-utility');
+const qs = require('query-string');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
@@ -24,47 +27,33 @@ const syncAuthors = async (options = {}) => {
         step = 50
       } = options;
       const key = 'AUTHORS_OFFSET';
-      const lastUpdatedAtKey = 'AUTHORS_LAST_UPDATED_AT';
-      const cachedOffset = Number(await Cache.pGet(type, key));
-      const offset = cachedOffset > 0 ? cachedOffset : 0;
-      const uri = `${config.atom.authorsUrl}?topic=${
-        config.atom.topic
-      }&offset=${offset < 0 ? 0 : offset}&limit=${step}`;
-      const authors = await request({
+      const offsetUpdatedAt = await Cache.pGet(type, key) || '';
+      console.log(`${type}_${key}: ${offsetUpdatedAt}`);
+      const query = qs.stringify({ updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
+      const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001/${config.chainSync.topic}/authorization?${query}`;
+      const res = await request({
         uri,
         json: true,
-        timeout: 5000
+        timeout: 10000
       }).promise();
-      const length = authors.length;
-      if (offset === 0 && length === 0) {
-        stop = true;
-        return;
-      }
-      for (const author of authors) {
-        const cachedLastUpdatedAt = await Cache.pGet(type, lastUpdatedAtKey);
-        const isNew = !cachedLastUpdatedAt || new Date(author.updated_at) > new Date(cachedLastUpdatedAt);
-        if (isNew) {
-          await Author.upsert(author.user_address, {
-            status: author.status
-          });
-          await Cache.pSet(type, lastUpdatedAtKey, author.updated_at);
-        }
-      }
-      let offsetIncrement = 0;
-      if (length < step) {
-        // user 历史记录会改变，更新的 user 会排在最后，所以 offset 每次多抓 10 条，确保能抓到更新的 user 数据
-        if (length === 0) {
-          offsetIncrement = -10;
-        } else if (length > 10) {
-          offsetIncrement = length - 10;
-        }
+      const { authorization: authorizations } = res.data;
+      const length = authorizations.length;
+      if (length === 0) {
         stop = true;
         done = true;
-      } else {
-        offsetIncrement = length;
+        continue;
       }
-      const newOffset = offset + offsetIncrement;
-      await Cache.pSet(type, key, newOffset);
+      for (const authorization of authorizations) {
+        console.log({ authorization });
+        await Author.upsert(authorization.user_address, {
+          status: authorization.status
+        });
+        await Cache.pSet(type, key, authorization.updated_at);
+      }
+      if (length < step) {
+        stop = true;
+        done = true;
+      }
     } catch (err) {
       console.error(err);
       stop = true;
@@ -124,13 +113,12 @@ const pickPost = async chainPost => {
     avatar,
     bio
   };
-  const deleted = chainPost.deleted;
   const updatedRId = chainPost.updated_tx_id;
   return {
     author,
     post,
-    deleted,
-    updatedRId
+    updatedRId,
+    fileHash: JSON.parse(block.data).file_hash
   };
 };
 
@@ -176,34 +164,50 @@ const replacePost = async (rId, newRId) => {
 };
 
 const saveChainPost = async (chainPost, options = {}) => {
+  if (options.fromChainSync) {
+    console.log({ chainPost });
+  }
+
+  const IS_EMPTY_FOR_DELETE = !chainPost.content && chainPost.updated_tx_id;
+  const IS_EMPTY = !chainPost.content && !chainPost.updated_tx_id;
+
+  if (IS_EMPTY_FOR_DELETE) {
+    const post = await Post.getByRId(chainPost.updated_tx_id);
+    if (post) {
+      await Post.delete(post.rId);
+      Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+    }
+    return;
+  }
+
+  if (IS_EMPTY) {
+    return;
+  }
+
+  const rId = chainPost.publish_tx_id;
   const pickedPost = await pickPost(chainPost);
   const {
     author,
     post,
-    deleted,
-    updatedRId
+    updatedRId,
+    fileHash
   } = pickedPost;
-  const insertPost = await Post.getByRId(post.rId, {
+
+  const existedPost = await Post.getByRId(rId, {
     ignoreDeleted: true,
     ignoreInvisibility: true,
     includeAuthor: false
   });
 
-  if (insertPost) {
-    if (options.fromAtomSync && (!insertPost.status || insertPost.status === 'pending')) {
-      await Post.updateByRId(post.rId, {
+  if (existedPost) {
+    if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
+      if (prsUtil.sha256(chainPost.content) !== fileHash) {
+        console.log('WARNING: mismatch file hash');
+      }
+      await Post.updateByRId(rId, {
         status: 'finished'
       });
-      Log.createAnonymity('Atom 同步文章，状态改为 finished', `${post.rId} ${post.title}`);
-    }
-    return;
-  }
-
-  if (deleted) {
-    const exists = await Post.getByRId(post.rId);
-    if (exists) {
-      await Post.delete(post.rId);
-      Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
+      Log.createAnonymity('ChainSync 同步文章，状态改为 finished', `${rId}`);
     }
     return;
   }
@@ -222,7 +226,7 @@ const saveChainPost = async (chainPost, options = {}) => {
     console.log(err);
   }
 
-  if (options.fromAtomSync) {
+  if (options.fromChainSync) {
     post.status = 'finished';
   } else if (options.fromPublish) {
     post.status = 'pending';
@@ -236,11 +240,9 @@ const saveChainPost = async (chainPost, options = {}) => {
     if (updatedFile) {
       post.pubDate = updatedFile.pubDate;
       await Post.create(post);
-      // Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
       await Post.delete(updatedFile.rId);
-      // Log.createAnonymity('删除文章', `${updatedFile.rId} ${updatedFile.title}`);
       await replacePost(updatedRId, post.rId);
-      // Log.createAnonymity('迁移文章关联数据', `${updatedRId} ${post.rId}`);
+      Log.createAnonymity('更新文章，迁移文章关联数据', `${updatedRId} ${post.rId}`);
     } else {
       await Post.create(post);
       Log.createAnonymity('updatedFile not found', `${updatedRId} ${post.rId}`);
@@ -260,46 +262,58 @@ const syncPosts = async (options = {}) => {
         step = 20
       } = options;
       const key = 'POSTS_OFFSET';
-      const lastUpdatedAtKey = 'POSTS_LAST_UPDATED_AT';
-      const cachedOffset = Number(await Cache.pGet(type, key));
-      const offset = cachedOffset > 0 ? cachedOffset : 0;
-      const uri = `${config.atom.postsUrl}?topic=${config.atom.topic}&offset=${offset}&limit=${step}`;
-      const chainPosts = await request({
+      const offsetUpdatedAt = await Cache.pGet(type, key) || '';
+      console.log(`${type}_${key}: ${offsetUpdatedAt}`);
+      const query = qs.stringify({ topic: config.chainSync.topic, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
+      const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001?${query}`;
+      const res = await request({
         uri,
         json: true,
         timeout: 10000
       }).promise();
-      const length = chainPosts.length;
-      if (offset === 0 && length === 0) {
+      const { posts } = res.data;
+      const length = posts.length;
+      if (length === 0) {
         stop = true;
         continue;
       }
-      while (chainPosts.length > 0) {
-        const chainPost = chainPosts.shift();
-        const cachedLastUpdatedAt = await Cache.pGet(type, lastUpdatedAtKey);
-        const isNew = !cachedLastUpdatedAt || new Date(chainPost.updated_at) > new Date(cachedLastUpdatedAt);
-        if (isNew) {
-          await saveChainPost(chainPost, {
-            fromAtomSync: true
-          });
-          await Cache.pSet(type, lastUpdatedAtKey, chainPost.updated_at);
+      for (const post of posts) {
+        const IS_NEW_OR_UPDATED = post.status === 200 && post.content[0];
+        const IS_DELETE = post.status === 404;
+        const IS_EMPTY_FOR_DELETE = post.status === 0 && post.updated_tx_id;
+        const IS_EMPTY = post.status === 0 && !post.updated_tx_id;
+
+        let content = '';
+        if (IS_NEW_OR_UPDATED) {
+          const base64Content = post.content[0].replace('data:text/plain; charset=utf-8;base64,', '');
+          const rawContentString = Buffer.from(base64Content, 'base64');
+          const rawContent = JSON.parse(rawContentString);
+          content = ase256cbcCrypto.decrypt(rawContent.session, rawContent.content);
+        } else if (IS_EMPTY_FOR_DELETE || IS_DELETE) {
+          content = '';
+        } else if (IS_EMPTY) {
+          console.log(`Post content is empty, maybe it\'s domain is localhost so that block producer can not fetch it\'s content. ${post.publish_tx_id}`);
+        } else {
+          console.log('The status of this post is invalid');
+          console.log(post);
+          continue;
         }
+        const chainPost = {
+          publish_tx_id: post.publish_tx_id,
+          file_hash: post.file_hash,
+          topic: post.topic,
+          updated_tx_id: post.updated_tx_id,
+          updated_at: post.updated_at,
+          content,
+        }
+        await saveChainPost(chainPost, {
+          fromChainSync: true
+        });
+        await Cache.pSet(type, key, chainPost.updated_at);
       }
-      let offsetIncrement = 0;
       if (length < step) {
-        // post 历史记录会改变，更新的 post 会排在最后，所以 offset 每次多抓 10 条，确保能抓到更新的 post 数据
-        if (length === 0) {
-          offsetIncrement = -5;
-        } else if (length > 5) {
-          offsetIncrement = length - 5;
-        }
         stop = true;
-        done = true;
-      } else {
-        offsetIncrement = length;
       }
-      const newOffset = offset + offsetIncrement;
-      await Cache.pSet(type, key, newOffset);
     } catch (err) {
       console.log(err);
       stop = true;
@@ -308,20 +322,18 @@ const syncPosts = async (options = {}) => {
 };
 
 exports.sync = async () => {
-  if (!config.atom) {
+  if (!config.chainSync) {
     return;
   }
 
-  if (!config.shouldSyncPendingBlocks) {
-    // 同步所有 authors
-    const syncAuthorsDone = await syncAuthors({
-      step: 50
+  // 同步所有 authors
+  const syncAuthorsDone = await syncAuthors({
+    step: 50
+  });
+  if (syncAuthorsDone) {
+    // 同步所有 posts
+    await syncPosts({
+      step: 20
     });
-    if (syncAuthorsDone) {
-      // 同步所有 posts
-      await syncPosts({
-        step: 20
-      });
-    }
   }
 };

@@ -28,11 +28,10 @@ const encrypt = text => {
   }
 }
 
-const decrypt = (uuid, text) => {
+const decrypt = (uuid, content) => {
   const IV_uuid = getIV(uuid);
-  const encryptedText = Buffer.from(text, 'hex');
   const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), IV_uuid.IV);
-  let decrypted = decipher.update(encryptedText);
+  let decrypted = decipher.update(Buffer.from(content, 'hex'));
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
 }

@@ -155,26 +155,31 @@ exports.show = async ctx => {
   });
   await File.show(id);
   Log.create(user.id, `显示文章 ${file.title} ${file.id}`);
-  (async () => {
-    await postToSearchService(`/posts/${file.rId}`, file);
-    Log.createAnonymity('搜索服务',`更新文章《${file.title}》索引 /posts/${file.rId}`);
-  })();
+  if (config.search && config.search.enabled) {
+    (async () => {
+      await postToSearchService(`/posts/${file.rId}`, file);
+      Log.createAnonymity('搜索服务',`更新文章《${file.title}》索引 /posts/${file.rId}`);
+    })();
+  }
   ctx.body = true;
 };
 
 exports.remove = async ctx => {
-  const {
-    user
-  } = ctx.verification;
+  const userId = ctx.verification.user.id;
+  const user = await User.get(userId, {
+    withKeys: true
+  });
   const id = ~~ctx.params.id;
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
   assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
-  if (file.rId) {
-    await Post.updateByRId(file.rId, {
-      invisibility: true
-    });
-  }
+  const emptyFile = File.getEmptyFile(user.address);
+  const block = await Chain.pushFile(emptyFile, {
+    user,
+    updatedFile: file,
+    origin: ctx.request.body.origin
+  });
+  Log.create(user.id, `提交空文章以删除旧文章 ${block.id}`);
   await File.delete(id);
   Log.create(user.id, `删除文章 ${file.title} ${file.id}`);
   (async () => {
@@ -244,7 +249,8 @@ exports.update = async ctx => {
     };
   } else {
     const newFile = await createFile(user, data, {
-      updatedFile: file
+      updatedFile: file,
+      origin: ctx.request.body.origin
     });
     await File.delete(file.id);
     Log.create(

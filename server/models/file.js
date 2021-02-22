@@ -123,6 +123,20 @@ exports.create = async (userAddress, data) => {
   return derivedFile;
 };
 
+exports.getEmptyFile = (userAddress) => {
+  assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
+  const data = {
+    content: ''
+  }
+  const msghash = prsUtil.sha256(data.content);
+  return {
+    ...data,
+    userAddress,
+    msghash,
+    topicAddress: config.topic.address,
+  };
+};
+
 exports.list = async (userAddress, options = {}) => {
   const {
     type,

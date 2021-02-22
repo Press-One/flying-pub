@@ -149,17 +149,19 @@ exports.post = async ctx => {
     withContent: true,
   });
   assert(post, Errors.ERR_NOT_FOUND('post'))
-  try {
-    const json = await postToSearchService(uri, post);
-    const userId = ctx.verification && ctx.verification.user.id;
-    if (userId) {
-      Log.create(userId, `【更新搜索索引】${uri}`);
-    } else {
-      Log.createAnonymity('游客', `【更新搜索索引】${uri}`);
+  if (config.search && config.search.enabled) {
+    try {
+      const json = await postToSearchService(uri, post);
+      const userId = ctx.verification && ctx.verification.user.id;
+      if (userId) {
+        Log.create(userId, `【更新搜索索引】${uri}`);
+      } else {
+        Log.createAnonymity('游客', `【更新搜索索引】${uri}`);
+      }
+      ctx.body = json;
+    } catch(e) {
+      console.error(e);
     }
-    ctx.body = json;
-  } catch(e) {
-    console.error(e);
   }
 };
 
