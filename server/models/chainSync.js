@@ -14,7 +14,7 @@ const Comment = require('./comment');
 const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
-const type = `${config.serviceKey}_SYNC_CHAIN`;
+const type = `${config.serviceKey}_CHAIN_SYNC`;
 const prsUtil = require('prs-utility');
 const qs = require('query-string');
 
@@ -28,9 +28,9 @@ const syncAuthors = async (options = {}) => {
       } = options;
       const key = 'AUTHORS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      console.log(`${key}: ${offsetUpdatedAt}`);
       const query = qs.stringify({ updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001/${config.chainSync.topic}/authorization?${query}`;
+      console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
         uri,
         json: true,
@@ -263,9 +263,9 @@ const syncPosts = async (options = {}) => {
       } = options;
       const key = 'POSTS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      console.log(`${key}: ${offsetUpdatedAt}`);
       const query = qs.stringify({ topic: config.chainSync.topic, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001?${query}`;
+      console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
         uri,
         json: true,
