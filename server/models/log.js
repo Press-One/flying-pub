@@ -9,7 +9,7 @@ const {
 
 exports.create = async (userId, message, options = {}) => {
   const userDevice = await Cache.pGet('USER_DEVICE', String(userId));
-  const user = await User.get(userId);
+  const user = await User.get(userId) || {};
   const version = user.version ? `(v${user.version})` : '';
   const data = {
     userId,
