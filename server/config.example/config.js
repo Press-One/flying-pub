@@ -3,6 +3,7 @@ const serviceName = 'LOCAL_OS';
 const serviceKey = `${serviceName}_FLYING_PUB`;
 
 module.exports = {
+
   // 是否在终端打印日志
   debug: false,
 
@@ -103,15 +104,8 @@ module.exports = {
 
     'address': `68732f9416d325b827210a597d84e726ec756343`,
 
-  },
+    'blockProducerEndpoint': 'https://prs-bp1.press.one'
 
-  // 同步服务
-  chainSync: {
-
-    // 要同步哪个 topic 下的用户和文章
-    topic: `68732f9416d325b827210a597d84e726ec756343`,
-
-    blockProducerEndpoint: 'https://prs-bp1.press.one'
   },
 
   // 前后端共用的配置
