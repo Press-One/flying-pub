@@ -12,3 +12,5 @@ session.json
 /build
 
 yarn.lock
+
+uploads
