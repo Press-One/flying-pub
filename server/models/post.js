@@ -419,7 +419,7 @@ exports.delete = async rId => {
 
 exports.syncToSearchService = async () => {
   const startAt = await Cache.pGet(TYPE, 'startAt');
-  console.log('SYNC_SEARCH_START_AT: ', startAt);
+  console.log(`SYNC_SEARCH_START_AT: ${startAt}`);
   let filterParam = {
     order: [['createdAt', 'ASC']],
     limit: 20,

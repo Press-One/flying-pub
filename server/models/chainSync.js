@@ -28,7 +28,7 @@ const syncAuthors = async (options = {}) => {
       } = options;
       const key = 'AUTHORS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      console.log(`${type}_${key}: ${offsetUpdatedAt}`);
+      console.log(`${key}: ${offsetUpdatedAt}`);
       const query = qs.stringify({ updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001/${config.chainSync.topic}/authorization?${query}`;
       const res = await request({
@@ -263,7 +263,7 @@ const syncPosts = async (options = {}) => {
       } = options;
       const key = 'POSTS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      console.log(`${type}_${key}: ${offsetUpdatedAt}`);
+      console.log(`${key}: ${offsetUpdatedAt}`);
       const query = qs.stringify({ topic: config.chainSync.topic, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.chainSync.blockProducerEndpoint}/api/pip2001?${query}`;
       const res = await request({
