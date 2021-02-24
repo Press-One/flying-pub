@@ -16,6 +16,7 @@ const Permission = require('../models/permission');
 const Author = require('../models/author');
 const Chain = require('./chain');
 const Log = require('../models/log');
+const moment = require('moment');
 const {
   sendSmsCode,
   verifySmsCode
@@ -73,7 +74,6 @@ exports.oauthCallback = async ctx => {
         return;
       }
 
-      // add new record to profiles table
       const userId = ctx.verification && ctx.verification.user.id;
       await Profile.createProfile({
         userId,
@@ -204,7 +204,7 @@ const login = async (ctx, user, provider) => {
   });
 
   const cookieOptions = {
-    expires: new Date('2100-01-01')
+    expires: moment().add(360,'days').format('YYYY-MM-DD')
   }
   if (config.auth.tokenDomain) {
     cookieOptions.domain = config.auth.tokenDomain;
@@ -320,8 +320,6 @@ exports.loginWithPassword = async ctx => {
   }
 }
 
-// 绑定帐号，相当于为用户增加一个profile
-// 绑定手机号
 exports.phoneBind = async (ctx) => {
   const {
     user,
@@ -361,7 +359,6 @@ exports.phoneBind = async (ctx) => {
   Log.create(user.id, `绑定手机号`);
 }
 
-// 绑定其它帐号都通过 `oauthBind` 完成
 exports.oauthBind = async ctx => {
   return oauth(ctx, 'bind');
 };
