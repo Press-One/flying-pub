@@ -75,7 +75,7 @@ export default observer(() => {
           </div>
           <div className="transform scale-90">关注</div>
         </div>
-        {settings['notification.enabled'] && (
+        {settings.extra['messageSystem.enabled'] && (
           <div
             className={classNames(
               {

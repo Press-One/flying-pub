@@ -295,7 +295,7 @@ export default observer((props: any) => {
                         </div>
                       )}
                     <div className="flex items-center">
-                      {settings['notification.enabled'] && (
+                      {settings.extra['messageSystem.enabled'] && (
                         <Badge
                           badgeContent={unread}
                           className="mr-8 transform scale-90 cursor-pointer mt-1-p"

@@ -117,7 +117,7 @@ export default observer((props: RouteChildrenProps) => {
         <div className="p-dashboard-main-head-title">文章</div>
 
         <div className="p-dashboard-main-right">
-          {settings['notification.enabled'] && (
+          {settings.extra['messageSystem.enabled'] && (
             <Badge
               badgeContent={unread}
               className="text-gray-700 mr-8 transform scale-90 cursor-pointer"

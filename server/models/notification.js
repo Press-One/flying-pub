@@ -57,7 +57,7 @@ exports.tryNotify = async () => {
           }
         }
         await Cache.pSetWithExpired(TYPE, PENDING_KEY, '1', 60, true);
-        if (json.messageSystem) {
+        if (config.messageSystem && json.messageSystem) {
           const isSuccess = await MessageSystem.notify(json.messageSystem);
           if (!isSuccess) {
             Log.createAnonymity('站内信', `无法发送，保留消息，等待重试`);
@@ -65,7 +65,7 @@ exports.tryNotify = async () => {
             continue;
           }
         }
-        if (json.mixin) {
+        if (config.settings['notification.mixin.enabled'] && json.mixin) {
           await Mixin.notify(json.mixin);
         }
         await Cache.pDel(TYPE, PENDING_KEY);

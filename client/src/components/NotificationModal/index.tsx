@@ -23,7 +23,7 @@ export default observer(() => {
     }
   }, [socketStore, socketStore.isReady, notificationStore]);
 
-  if (!settings['notification.enabled']) {
+  if (!settings.extra['messageSystem.enabled']) {
     return null;
   }
 
