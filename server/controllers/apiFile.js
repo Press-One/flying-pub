@@ -135,10 +135,12 @@ exports.hide = async ctx => {
   });
   await File.hide(id);
   Log.create(user.id, `隐藏文章 ${file.title} ${file.id}`);
-  (async () => {
-    await deleteFromSearchService(`/posts/${file.rId}`, file);
-    Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
-  })();
+  if (config.search && config.search.enabled) {
+    (async () => {
+      await deleteFromSearchService(`/posts/${file.rId}`, file);
+      Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+    })();
+  }
   ctx.body = true;
 };
 
@@ -182,10 +184,12 @@ exports.remove = async ctx => {
   Log.create(user.id, `提交空文章以删除旧文章 ${block.id}`);
   await File.delete(id);
   Log.create(user.id, `删除文章 ${file.title} ${file.id}`);
-  (async () => {
-    await deleteFromSearchService(`/posts/${file.rId}`, file);
-    Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
-  })();
+  if (config.search && config.search.enabled) {
+    (async () => {
+      await deleteFromSearchService(`/posts/${file.rId}`, file);
+      Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+    })();
+  }
   ctx.body = true;
 };
 
@@ -261,10 +265,12 @@ exports.update = async ctx => {
       user.id,
       `被替换的文章 ${file.title}，id ${file.id}`
     );
-    (async () => {
-      await deleteFromSearchService(`/posts/${file.rId}`, file);
-      Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
-    })();
+    if (config.search && config.search.enabled) {
+      (async () => {
+        await deleteFromSearchService(`/posts/${file.rId}`, file);
+        Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+      })();
+    }
     ctx.body = {
       newFile,
       updatedFile: file
