@@ -135,18 +135,6 @@ exports.create = async (ctx) => {
         }
 
       }
-
-      if (data.content.includes('@新作小助手') || data.content.includes('@小助手')) {
-        if (config.assistantUserId) {
-          await pushToNotificationQueue({
-            mixin: {
-              userId: config.assistantUserId,
-              text: `有人@小助手`,
-              url: mixinReplyRedirectUrl,
-            },
-          })
-        }
-      }
     } catch (e) {
       console.log(e);
     }
