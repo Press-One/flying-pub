@@ -1,5 +1,5 @@
 const serviceRoot = 'http://localhost:9000';
-const serviceName = 'LOCAL';
+const serviceName = 'LOCAL_OS';
 const serviceKey = `${serviceName}_FLYING_PUB`;
 
 module.exports = {
@@ -33,32 +33,52 @@ module.exports = {
 
   // 数据库
   db: {
+
     host: `localhost`,
+
     database: "flying_pub",
+
     user: "postgres",
+
     password: "39f12851f5275222e8b50fddddf04ee4",
+
     dialect: `postgres`,
+
   },
 
   redis: {
+
     host: `localhost`,
+
     port: 6379,
+
     password: `a863a35d270fceb110f96374d75c219f`,
+
     connectTimeout: 3000,
+
   },
 
   session: {
+
     key: `session`,
+
     maxAge: 86400000,
+
     overwrite: true,
+
     httpOnly: true,
+
     signed: true,
+
     rolling: false,
+
     renew: false,
+
   },
 
   // 支持的登录方式
   provider: {
+
     mixin: {
       aesKey: `dpWgOfj+fF/EWdDyTjRFbAlupg2Tg9c3QzNKgrZdK+8=`,
       id: 7000102340,
@@ -72,115 +92,140 @@ module.exports = {
       callbackUrl: `${serviceRoot}/api/auth/mixin/callback`,
       domain: 'https://mixin-www.zeromesh.net',
       authorizationURL: 'https://mixin-www.zeromesh.net/oauth/authorize'
-    },
-
-    pressone: {
-      appAddress: "d6fe91f2711c805e7743304ac60fe18b35dc9fa1"
     }
+
   },
 
   // 要同步哪个 topic 下的用户和文章
   topic: {
-    'privateKey': `4be6b27d306bfb56a99f9affbf889a4f29790f03bffcdad9e58b6e98cd4f3fc6`,
-    'address': `0ea59a16e9df81b0780065e294235cf6327adb82`,
+
+    'privateKey': `6d88fc40e8664b245e2618a8d5480e7e97a899f8ba7964c53c4b05975ac03770`,
+
+    'address': `68732f9416d325b827210a597d84e726ec756343`,
+
   },
 
   // 同步服务
   chainSync: {
+
     // 要同步哪个 topic 下的用户和文章
-    topic: `0ea59a16e9df81b0780065e294235cf6327adb82`,
+    topic: `68732f9416d325b827210a597d84e726ec756343`,
+
     blockProducerEndpoint: 'https://prs-bp1.press.one'
   },
 
   // 前后端共用的配置
   settings: {
+
     // 站点名称
     'site.name': `飞帖开发版`,
+
     // 站点标题（浏览器 tab 显示的文案）
     'site.title': `飞帖开发版`,
+
     // 一句话介绍本站点
     'site.slogan': `飞帖开发版`,
+
     // 站点 logo
     'site.logo': `https://img-cdn.xue.cn/17-flying-pub.png`,
+
     // 是否开启 Mixin 消息通知
-    'notification.enabled': false,
+    'notification.mixin.enabled': true,
+
     // Mixin id
     'notification.mixin.id': 7000102340,
+
     // 是否开放作者详情页（取决于你是否提供关注作者的功能）
     'author.page.enabled': true,
+
     // 是否提供关注作者的功能
     'subscriptions.enabled': true,
+
     // 是否开启文章筛选器
     'filter.enabled': true,
+
     // 筛选器默认类型
     'filter.type': `LATEST`,
+
     // 是否开启热门排序
-    'filter.popularity.enabled': false,
+    'filter.popularity.enabled': true,
+
     'filter.latest.enabled': true,
+
     // 热门排序时间段
-    'filter.dayRangeOptions': [],
+    'filter.dayRangeOptions': [7, 30],
+
     // 支持的货币类型
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
+
     'site.url': `http://localhost:5000`,
+
     // 自定义菜单
     'menu.links': [],
+
     'mixinApp.name': '新生大讲堂',
+
     'mixinApp.downloadUrl': 'https://firesbox.com',
+
     'mixinApp.logo': 'https://static-assets.xue.cn/images/395b16fecce9f5bca118ee59c3b0ce82abcca800bcf8500eefa1750c3f11aff8',
+
     'mixinApp.onlyAllowedMobileDevice': true,
-    'auth.providers': ['mixin'],
+
+    'auth.providers': ['mixin']
+
   },
 
   postView: {
+
     enabled: true,
+
     visible: true,
+
     ipExpiredDuration: 10 * 60, // 10 分钟
+
   },
 
   // 权限认证
   auth: {
+
     SSOTokenDomain: 'localhost',
+
     tokenKey: `FLYING_PUB_${serviceName}_TOKEN`,
-    apiAccessKey: `1d612e68c74b7553d630267bbc7f7574`,
-    // 如果站点是私密的，把用户的 providerId 放入白名单，则该用户不需要通过校验就能访问私密
+
     adminList: {
       phone: [],
       mixin: []
     },
+  
     whitelist: {
       phone: [],
       mixin: []
     },
+
   },
 
   // 加密相关的 key
   encryption: {
+
     sessionKeys: ['e1b657856a2134217e5f2e4b15527a32'],
+
     jwtKey: `2492f6ba5ca50ced7d9580c56cd5a2fc64c9f4dcd91c2f11d15f80deeaf2dfa5`,
+
     // 加密文章的 key，访问加密过的文章，如果没有这对 key 解密，是看不到原文的
     aes256Cbc: {
       key: `99b32688c8bc95042e18991b47c18bde48d1c0f3ad3531efb9a79c2464124666`,
       ivPrefix: `dd4144175a607114419a86a136041c56f6cf8fd233cb1c38cd7b2fd18a8767b9`,
     },
-    aesKey256: [16,29,21,9,21,16,26,27,28,27,7,21,0,16,6,10,3,4,20,9,14,15,26,11,17,7,20,30,14,2,31,2],
-  },
 
-  messageSystem: {
-    enabled: false,
+    aesKey256: [16,29,21,9,21,16,26,27,28,27,7,21,0,16,6,10,3,4,20,9,14,15,26,11,17,7,20,30,14,2,31,2],
+    
   },
 
   recommendation: {
+
     authors: {
-      // 60 * 60 * 12 半天
-      cachedDuration: 60
+      cachedDuration: 60 * 60 * 12 // 半天
     }
+
   },
-
-  assistantUserId: 1,
-
-  search: {
-    enabled: false
-  },
-
-  queueDisabledJobs: ['atom'],
 };
