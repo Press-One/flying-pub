@@ -17,6 +17,7 @@ const Log = require('./log');
 const type = `${config.serviceKey}_CHAIN_SYNC`;
 const prsUtil = require('prs-utility');
 const qs = require('query-string');
+const { sleep } = require('../utils');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
@@ -54,6 +55,7 @@ const syncAuthors = async (options = {}) => {
         stop = true;
         done = true;
       }
+      await sleep(500);
     } catch (err) {
       console.error(err);
       stop = true;

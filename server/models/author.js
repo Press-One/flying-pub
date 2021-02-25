@@ -79,7 +79,7 @@ exports.upsert = async (address, data) => {
         address
       }
     });
-    if (data.status) {
+    if (data.status && author.status !== data.status) {
       Log.createAnonymity('更新作者状态', `${address} ${data.status}`);
     }
   } else {
