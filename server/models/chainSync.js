@@ -164,7 +164,7 @@ const replacePost = async (rId, newRId) => {
 };
 
 const saveChainPost = async (chainPost, options = {}) => {
-  if (options.fromChainSync) {
+  if (process.env.NODE_ENV !== 'production' && options.fromChainSync) {
     console.log({ chainPost });
   }
 
