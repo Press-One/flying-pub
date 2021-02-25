@@ -322,7 +322,7 @@ const syncPosts = async (options = {}) => {
 };
 
 exports.sync = async () => {
-  if (!config.chainSync) {
+  if (!config.topic.blockProducerEndpoint) {
     return;
   }
 
