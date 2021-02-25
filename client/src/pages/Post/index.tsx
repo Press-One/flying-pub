@@ -729,10 +729,9 @@ export default observer((props: any) => {
           }}
           items={[
             {
-              invisible: isMixin,
               name: '分享',
               onClick: () => {
-                copy(window.location.href);
+                copy(`${post.title} ${window.location.href}`);
                 snackbarStore.show({
                   message: '链接已复制',
                 });
