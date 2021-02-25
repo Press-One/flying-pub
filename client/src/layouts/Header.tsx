@@ -309,11 +309,14 @@ export default observer((props: any) => {
                           </div>
                         </Badge>
                       )}
-                      <Link to="/dashboard">
-                        <Button size="small" className="mr-5">
-                          写文章
-                        </Button>
-                      </Link>
+                      {(!settings['permission.isOnlyAdminCanPub'] ||
+                        (settings['permission.isOnlyAdminCanPub'] && user.isAdmin)) && (
+                        <Link to="/dashboard">
+                          <Button size="small" className="mr-5">
+                            写文章
+                          </Button>
+                        </Link>
+                      )}
                       {isLogin && (
                         <div className="flex items-center pl-1 mr-3">
                           <Link to={`/authors/${user.address}`}>

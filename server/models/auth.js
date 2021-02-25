@@ -37,7 +37,7 @@ const authenticate = {
   }),
 
   pressone: ctx => {
-    ctx.redirect(`https://press.one/developer/apps/${config.pressone.appAddress}/authorize?scope=user`);
+    ctx.redirect(`https://press.one/developer/apps/${config.provider.pressone.appAddress}/authorize?scope=user`);
   }
 };
 

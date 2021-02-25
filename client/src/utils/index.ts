@@ -110,8 +110,8 @@ export const sleep = (duration: number) =>
     setTimeout(resolve, duration);
   });
 
-export const getLoginUrl = () =>
-  `${getApiEndpoint()}/api/auth/mixin/login?redirect=${window.location.href}`;
+export const getLoginUrl = (provider: string) =>
+  `${getApiEndpoint()}/api/auth/${provider}/login?redirect=${window.location.href}`;
 
 export const getTokenUrl = () => {
   return isDevelopment ? 'https://dev-reader.prsdev.club/api/token' : '/api/token';

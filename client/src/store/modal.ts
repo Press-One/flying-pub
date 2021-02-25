@@ -1,5 +1,4 @@
-import { stopBodyScroll, isWeChat, getLoginUrl, isMobile } from 'utils';
-import Api from 'api';
+import { stopBodyScroll } from 'utils';
 import { IPost } from 'apis/post';
 import { IFile } from 'apis/file';
 
@@ -85,24 +84,13 @@ export function createModalStore() {
       this.authProviders = authProviders;
     },
     openLogin(data: any = {}) {
-      // 如果支持手机号，那么优先使用手机登录
       if (this.authProviders.includes('phone')) {
         this.openPhoneLogin();
-        return;
-      }
-      if (isMobile) {
-        this.showPageLoading = true;
-      }
-      if (isMobile && !isWeChat) {
-        window.location.href = getLoginUrl();
         return;
       }
       this.login.open = true;
       this.login.data = data;
       stopBodyScroll(true);
-      if (isWeChat) {
-        Api.setAutoLoginUrl(getLoginUrl());
-      }
     },
     closeLogin() {
       this.login.open = false;

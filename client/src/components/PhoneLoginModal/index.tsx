@@ -337,7 +337,7 @@ export default observer(() => {
                   >
                     <div className="-mt-3 md:mt-0 flex justify-center">
                       <a
-                        href={getLoginUrl()}
+                        href={getLoginUrl('mixin')}
                         className="block"
                         style={{
                           width: '60px',

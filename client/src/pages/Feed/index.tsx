@@ -10,6 +10,7 @@ import { isMobile, isPc } from 'utils';
 import postApi, { FilterType } from 'apis/post';
 import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import Button from 'components/Button';
+import classNames from 'classnames';
 
 export default observer(() => {
   const { preloadStore, feedStore, settingsStore, userStore, modalStore } = useStore();
@@ -31,6 +32,8 @@ export default observer(() => {
     () => !ready || !state.isFetchedStickyPosts || !feedStore.isFetched,
     [ready, state.isFetchedStickyPosts, feedStore.isFetched],
   );
+  const showRecommendationOfAuthors = isPc && settings.extra['recommendation.authors.enabled'];
+  const isSingleColumn = !showRecommendationOfAuthors;
   const tabs = [
     {
       type: 'POPULARITY',
@@ -232,8 +235,23 @@ export default observer(() => {
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
-      <div className="w-full md:w-916 md:m-auto pb-0 md:pb-10 flex justify-between items-start">
-        <div className="w-full md:w-8/12 box-border md:pr-3">
+      <div
+        className={classNames(
+          {
+            'justify-center': isSingleColumn,
+            'justify-between': !isSingleColumn,
+          },
+          'w-full md:w-916 md:m-auto pb-0 md:pb-10 flex items-start',
+        )}
+      >
+        <div
+          className={classNames(
+            {
+              'md:pr-3': !isSingleColumn,
+            },
+            'w-full box-border md:w-8/12',
+          )}
+        >
           <div className="bg-white md:px-5 pb-8 rounded-12">
             <div className="md:pt-2">
               {filterEnabled && (
@@ -310,7 +328,7 @@ export default observer(() => {
             </div>
           </div>
         </div>
-        {isPc && (
+        {showRecommendationOfAuthors && (
           <div className="w-4/12 box-border pl-1">
             <RecommendAuthors />
           </div>

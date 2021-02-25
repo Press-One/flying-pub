@@ -106,7 +106,7 @@ const start = () => {
         }
       }
     } catch (e) {
-      mixinWsLog(e);
+      console.log(e);
     }
   };
 
@@ -194,7 +194,7 @@ exports.tryConnect = async () => {
     try {
       start(mixin);
     } catch (e) {
-      mixinWsLog(e);
+      console.log(e);
     }
   }
 }
