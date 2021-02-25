@@ -204,7 +204,7 @@ const login = async (ctx, user, provider) => {
   });
 
   const cookieOptions = {
-    expires: moment().add(360,'days').format('YYYY-MM-DD')
+    expires: new Date(moment().add(360,'days').format('YYYY-MM-DD'))
   }
   if (config.auth.tokenDomain) {
     cookieOptions.domain = config.auth.tokenDomain;
