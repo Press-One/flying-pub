@@ -25,7 +25,9 @@ const style = css`
 export default observer(() => {
   const { userStore, settingsStore, modalStore } = useStore();
 
-  const supportPhoneBinding = !!settingsStore.settings['auth.providers']?.includes('phone');
+  const providers = settingsStore.settings['auth.providers'] ?? [];
+  const supportPhoneBinding = providers.includes('phone');
+  const supportMixinBinding = providers.includes('mixin');
   const phoneBinded = userStore.profiles.some((v) => v.provider === 'phone');
 
   const tab = modalStore.settings.tab;
@@ -151,16 +153,18 @@ export default observer(() => {
                 </TabButton>
               )}
 
-              <TabButton
-                className="pr-10"
-                isActive={tab === 'bind'}
-                onClick={() => modalStore.openSettings('bind')}
-              >
-                <span className="text-lg mr-2 flex items-center">
-                  <BsLink />
-                </span>
-                账号绑定
-              </TabButton>
+              {providers.length >= 2 && (supportPhoneBinding || supportMixinBinding) && (
+                <TabButton
+                  className="pr-10"
+                  isActive={tab === 'bind'}
+                  onClick={() => modalStore.openSettings('bind')}
+                >
+                  <span className="text-lg mr-2 flex items-center">
+                    <BsLink />
+                  </span>
+                  账号绑定
+                </TabButton>
+              )}
             </div>
           </div>
         </div>
