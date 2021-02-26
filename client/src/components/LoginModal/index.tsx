@@ -25,7 +25,7 @@ export default observer(() => {
     }
   }, [isOnlyMixinProvider]);
 
-  if (contextStore.isMixin && isOnlyMixinProvider) {
+  if (modalStore.login.open && contextStore.isMixin && isOnlyMixinProvider) {
     modalStore.openPageLoading();
     window.location.href = getLoginUrl('mixin');
     return null;
