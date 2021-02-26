@@ -250,6 +250,10 @@ const saveChainPost = async (chainPost, options = {}) => {
       Log.createAnonymity('updatedFile not found', `${updatedRId} ${post.rId}`);
     }
   } else {
+    if (!post.content) {
+      Log.createAnonymity('内容为空，不给这个区块创建文章', `${post.rId}`);
+      return;
+    }
     await Post.create(post);
     Log.createAnonymity('同步文章', `${post.rId} ${post.title}`);
   }
