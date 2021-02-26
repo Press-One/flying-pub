@@ -298,7 +298,7 @@ const syncPosts = async (options = {}) => {
         } else if (IS_EMPTY_FOR_DELETE || IS_DELETE) {
           content = '';
         } else if (IS_EMPTY) {
-          console.log(`Post content is empty, maybe it\'s domain is localhost so that block producer can not fetch it\'s content. ${post.publish_tx_id}`);
+          console.log(`Failed to access resource service. ${post.publish_tx_id}`);
         } else {
           console.log('The status of this post is invalid');
           console.log(post);
