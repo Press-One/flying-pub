@@ -175,21 +175,23 @@ exports.remove = async ctx => {
   const file = await File.get(id);
   assert(file, Errors.ERR_NOT_FOUND("file"));
   assert(file.userAddress === user.address, Errors.ERR_NO_PERMISSION);
-  const emptyFile = File.getEmptyFile(user.address);
-  const block = await Chain.pushFile(emptyFile, {
-    user,
-    updatedFile: file,
-    origin: ctx.request.body.origin
-  });
-  Log.create(user.id, `提交空文章以删除旧文章 ${block.id}`);
+  if (file.status !== 'draft') {
+    const emptyFile = File.getEmptyFile(user.address);
+    const block = await Chain.pushFile(emptyFile, {
+      user,
+      updatedFile: file,
+      origin: ctx.request.body.origin
+    });
+    Log.create(user.id, `提交空文章以删除旧文章 ${block.id}`);
+    if (config.search && config.search.enabled) {
+      (async () => {
+        await deleteFromSearchService(`/posts/${file.rId}`, file);
+        Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
+      })();
+    }
+  }
   await File.delete(id);
   Log.create(user.id, `删除文章 ${file.title} ${file.id}`);
-  if (config.search && config.search.enabled) {
-    (async () => {
-      await deleteFromSearchService(`/posts/${file.rId}`, file);
-      Log.createAnonymity('搜索服务',`删除文章《${file.title}》索引 /posts/${file.rId}`);
-    })();
-  }
   ctx.body = true;
 };
 
