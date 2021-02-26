@@ -253,9 +253,6 @@ export default observer(() => {
               )}
             </div>
             <div className="pb-1 md:pb-0" />
-            {!filterEnabled && (
-              <div className="mt-10 md:mt-12 md:border-t border-gray-300 md:border-gray-200" />
-            )}
             <div className="posts-container" ref={infiniteRef}>
               <div className="mt-2" />
               {stickyEnabled &&
