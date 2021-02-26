@@ -536,7 +536,7 @@ export default observer((props: any) => {
           </div>
         )}
         {isPaid && (
-          <div className="fixed-width text-center md:px-6 -mt-3 text-5xl text-blue-400">
+          <div className="fixed-width flex justify-center md:px-6 -mt-3 text-5xl text-blue-400">
             <Fade in={true} timeout={500}>
               <AiOutlineCheckCircle />
             </Fade>
