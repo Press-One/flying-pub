@@ -55,7 +55,7 @@
     "node-fetch": "^2.6.1",
     "passport-github2": "^0.1.11",
     "passport-mixin": "^0.1.24",
-    "pg": "7.0.2",
+    "pg": "8.5.1",
     "pg-hstore": "2.3.3",
     "pm2": "^3.5.1",
     "prs-utility": "^0.1.0",
