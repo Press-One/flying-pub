@@ -18,6 +18,7 @@ const type = `${config.serviceKey}_CHAIN_SYNC`;
 const prsUtil = require('prs-utility');
 const qs = require('query-string');
 const { sleep } = require('../utils');
+const Block = require('./block');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
@@ -77,19 +78,13 @@ const extractFrontMatter = chainPost => {
   };
 };
 
-const getBlock = async rId => {
-  const blocks = await request({
-    uri: `https://press.one/api/v2/blocks/${rId}`,
-    json: true,
-    timeout: 10000
-  }).promise();
-  const block = blocks[0];
-  return block;
-};
-
 const pickPost = async chainPost => {
   const rId = chainPost.publish_tx_id;
-  const block = await getBlock(rId);
+  console.log(` ------------- hard code: getBlock ---------------`);
+  const block = await Block.get(rId);
+  if (!block) {
+    return null;
+  }
   const {
     title,
     avatar,
@@ -188,6 +183,12 @@ const saveChainPost = async (chainPost, options = {}) => {
 
   const rId = chainPost.publish_tx_id;
   const pickedPost = await pickPost(chainPost);
+  
+  if (!pickedPost) {
+    console.log('WARNING: block is null');
+    return;
+  }
+
   const {
     author,
     post,

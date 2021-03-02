@@ -15,21 +15,27 @@ const Block = require('../models/block');
 const {
   saveChainPost
 } = require('../models/chainSync');
+const prsAtm = require('prs-atm');
+const uuidv4 = require('uuid/v4');
 
-const SIGN_URL = `https://press.one/api/v2/datasign`;
 const HASH_ALG = 'sha256';
 
-const signBlock = data => {
-  return request({
-    method: 'post',
-    uri: SIGN_URL,
-    json: true,
-    timeout: 10000,
-    headers: {
-      accept: 'application/json'
-    },
-    body: data
-  }).promise();
+const signBlock = async data => {
+  try {
+    const resp = await prsAtm.prsc.save(
+      config.topic.chainAccount.account,
+      config.topic.chainAccount.privateKey,
+      data
+    );
+    const block = {
+      ...data,
+      createdAt: resp.processed.block_time
+    }
+    return block;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
 };
 
 const getPostfix = mimeType => {
@@ -98,6 +104,7 @@ const getFilePayload = async ({
   }
 
   const payload = {
+    id: PrsUtil.sha256(uuidv4()),
     user_address: user.address,
     type: 'PIP:2001',
     meta,
@@ -119,6 +126,7 @@ const getTopicPayload = (options = {}) => {
     topic: topic.address
   };
   const payload = {
+    id: PrsUtil.sha256(uuidv4()),
     user_address: topic.address,
     type: 'PIP:2001',
     meta: {
@@ -159,6 +167,9 @@ exports.pushFile = async (file, options = {}) => {
   const block = await signBlock(payload);
   assert(block, Errors.ERR_NOT_FOUND('block'));
 
+  const packedBlock = packBlock(block);
+  const dbBlock = await Block.create(packedBlock);
+
   try {
     const chainPost = {
       publish_tx_id: block.id,
@@ -175,8 +186,6 @@ exports.pushFile = async (file, options = {}) => {
     console.log(e);
   }
 
-  const packedBlock = packBlock(block);
-  const dbBlock = await Block.create(packedBlock);
   return dbBlock;
 };
 
@@ -208,9 +217,7 @@ exports.pushTopic = async (options = {}) => {
     await Author.upsert(userAddress, {
       status: type
     });
-  } catch (e) {
-
-  }
+  } catch (e) {}
 
   const packedBlock = packBlock(block);
   const dbBlock = await Block.create(packedBlock);

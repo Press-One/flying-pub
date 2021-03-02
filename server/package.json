@@ -58,6 +58,7 @@
     "pg": "8.5.1",
     "pg-hstore": "2.3.3",
     "pm2": "^3.5.1",
+    "prs-atm": "^5.0.6",
     "prs-utility": "^0.1.0",
     "qingstor-sdk": "2.3.0",
     "query-string": "^6.14.0",
@@ -72,7 +73,6 @@
     "socket.io-redis": "^5.2.0",
     "turndown": "^5.0.3",
     "uuid": "^3.3.3",
-    "uuidv4": "^4.0.0",
     "wechat-oauth": "^1.5.0",
     "xml-js": "^1.6.11"
   },

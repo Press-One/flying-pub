@@ -1,6 +1,6 @@
 const config = require('../config');
 const jwt = require('jsonwebtoken');
-const uuidv4 = require('uuidv4');
+const uuidv4 = require('uuid/v4');
 const {
   pSetWithExpired,
   pGet,
