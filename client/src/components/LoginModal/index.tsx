@@ -139,24 +139,6 @@ export default observer(() => {
                     </a>
                   </div>
                 )}
-                {provider === 'pressone' && (
-                  <div className="py-2">
-                    <a href={getLoginUrl('pressone')} onClick={() => setDirecting(true)}>
-                      <Button fullWidth isDoing={directing}>
-                        使用 pressone 账号登录
-                      </Button>
-                    </a>
-                  </div>
-                )}
-                {provider === 'xue' && (
-                  <div className="py-2">
-                    <a href={getLoginUrl('xue')} onClick={() => setDirecting(true)}>
-                      <Button fullWidth isDoing={directing}>
-                        使用 xue 账号登录
-                      </Button>
-                    </a>
-                  </div>
-                )}
               </div>
             );
           })}

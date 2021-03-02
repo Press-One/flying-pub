@@ -323,7 +323,6 @@ exports.loginWithPassword = async ctx => {
 exports.phoneBind = async (ctx) => {
   const {
     user,
-    profile,
   } = ctx.verification;
   const userId = user.id;
   const provider = 'phone';
