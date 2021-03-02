@@ -104,7 +104,13 @@ module.exports = {
 
     'address': `68732f9416d325b827210a597d84e726ec756343`,
 
-    'blockProducerEndpoint': 'https://prs-bp1.press.one'
+    chainAccount: {
+      account: 'prs.1dt.ec',
+      privateKey: '5KMhf4R7DXAcQ7S496znqwhh4KBQ35hrNg3ZYkZ9qR1JU64HKmx',
+      publicKey: 'EOS5Mu4Jo5pGDZ4FrVJ5UJgJbw2tST2oYXBmwx5P8q8RtF1cYdJum'
+    },
+
+    'blockProducerEndpoint': 'https://prs-bp1.press.one',
 
   },
 
@@ -142,12 +148,12 @@ module.exports = {
     'filter.type': `LATEST`,
 
     // 是否开启热门排序
-    'filter.popularity.enabled': true,
+    'filter.popularity.enabled': false,
 
     'filter.latest.enabled': true,
 
     // 热门排序时间段
-    'filter.dayRangeOptions': [7, 30],
+    'filter.dayRangeOptions': [],
 
     // 支持的货币类型
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
@@ -182,7 +188,7 @@ module.exports = {
   // 权限认证
   auth: {
 
-    SSOTokenDomain: 'localhost',
+    tokenDomain: 'localhost',
 
     tokenKey: `FLYING_PUB_${serviceName}_TOKEN`,
 
