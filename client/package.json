@@ -1,6 +1,7 @@
 {
   "name": "client",
   "version": "2.0.0",
+  "license": "MIT",
   "dependencies": {
     "@editorjs/delimiter": "^1.2.0",
     "@editorjs/editorjs": "^2.19.1",

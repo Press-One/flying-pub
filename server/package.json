@@ -1,6 +1,7 @@
 {
   "name": "server",
   "version": "2.0.0",
+  "license": "MIT",
   "scripts": {
     "db-migrate": "./node_modules/.bin/sequelize db:migrate --debug && yarn wallet-db-migrate",
     "wallet-db-migrate": "./node_modules/.bin/sequelize --options-path ./wallet/.sequelizerc db:migrate --debug",
