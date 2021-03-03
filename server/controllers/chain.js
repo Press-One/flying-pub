@@ -21,17 +21,17 @@ const uuidv4 = require('uuid/v4');
 const HASH_ALG = 'sha256';
 
 const signBlock = async data => {
+  const block = Object.assign({}, data);
   try {
     const resp = await prsAtm.prsc.save(
       config.topic.chainAccount.account,
       config.topic.chainAccount.privateKey,
-      data
+      block
     );
-    const block = {
+    return {
       ...data,
-      createdAt: resp.processed.block_time
-    }
-    return block;
+      blockTransactionId: resp.transaction_id
+    };
   } catch (err) {
     console.log(err);
     return null;
@@ -141,7 +141,6 @@ const getTopicPayload = (options = {}) => {
 
 const packBlock = block => {
   const result = {};
-  delete block['createdAt'];
   for (const key in block) {
     const value = block[key];
     const isObj = typeof value === 'object';
@@ -172,12 +171,10 @@ exports.pushFile = async (file, options = {}) => {
 
   try {
     const chainPost = {
-      publish_tx_id: block.id,
-      file_hash: block.data.file_hash,
-      topic: block.data.topic,
-      updated_tx_id: block.data.updated_tx_id || '',
-      content: file.content,
-      updated_at: block.createdAt,
+      ...payload,
+      derive: {
+        rawContent: file.content
+      }
     }
     await saveChainPost(chainPost, {
       fromPublish: true

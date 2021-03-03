@@ -27,6 +27,7 @@ const blockTopic = require('./routes/blockTopic');
 const storage = require('./routes/storage');
 const importRoute = require('./routes/import');
 const upload = require('./routes/upload');
+const block = require('./routes/block');
 const logout = require('./routes/logout');
 const autoLogin = require('./routes/autoLogin');
 const ping = require('./routes/ping');
@@ -94,6 +95,7 @@ router.use('/api/block_topics', blockTopic.routes(), blockTopic.allowedMethods()
 router.use('/api/storage', storage.routes(), storage.allowedMethods());
 router.use('/api/import', importRoute.routes(), importRoute.allowedMethods());
 router.use('/api/upload', ensureAuthorization(), upload.routes(), upload.allowedMethods());
+router.use('/api/blocks', block.routes(), block.allowedMethods());
 router.use('/api/logout', ensureAuthorization({
   strict: false
 }), logout.routes(), logout.allowedMethods());

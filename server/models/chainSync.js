@@ -66,7 +66,7 @@ const syncAuthors = async (options = {}) => {
 };
 
 const extractFrontMatter = chainPost => {
-  const result = fm(chainPost.content);
+  const result = fm(chainPost.derive.rawContent);
   return {
     title: result.attributes.title,
     authorName: result.attributes.author,
@@ -78,13 +78,7 @@ const extractFrontMatter = chainPost => {
   };
 };
 
-const pickPost = async chainPost => {
-  const rId = chainPost.publish_tx_id;
-  console.log(` ------------- hard code: getBlock ---------------`);
-  const block = await Block.get(rId);
-  if (!block) {
-    return null;
-  }
+const pickPostAndAuthor = async chainPost => {
   const {
     title,
     avatar,
@@ -95,27 +89,24 @@ const pickPost = async chainPost => {
     content
   } = extractFrontMatter(chainPost);
   const post = {
-    rId,
-    userAddress: block.user_address,
+    rId: chainPost.id,
+    userAddress: chainPost.user_address,
     title,
     cover,
     content,
-    paymentUrl: JSON.parse(block.meta).payment_url,
+    paymentUrl: chainPost.meta.payment_url,
     pubDate: new Date(published),
-    mimeType: JSON.parse(block.meta).mime.split(';')[0]
+    mimeType: chainPost.meta.mime.split(';')[0]
   };
   const author = {
-    address: block.user_address,
+    address: chainPost.user_address,
     nickname: authorName,
     avatar,
     bio
   };
-  const updatedRId = chainPost.updated_tx_id;
   return {
     author,
     post,
-    updatedRId,
-    fileHash: JSON.parse(block.data).file_hash
   };
 };
 
@@ -165,11 +156,11 @@ const saveChainPost = async (chainPost, options = {}) => {
     console.log({ chainPost });
   }
 
-  const IS_EMPTY_FOR_DELETE = !chainPost.content && chainPost.updated_tx_id;
-  const IS_EMPTY = !chainPost.content && !chainPost.updated_tx_id;
+  const IS_EMPTY_FOR_DELETE = !chainPost.derive.rawContent && chainPost.data.updated_tx_id;
+  const IS_EMPTY = !chainPost.derive.rawContent && !chainPost.data.updated_tx_id;
 
   if (IS_EMPTY_FOR_DELETE) {
-    const post = await Post.getByRId(chainPost.updated_tx_id);
+    const post = await Post.getByRId(chainPost.data.updated_tx_id);
     if (post) {
       await Post.delete(post.rId);
       Log.createAnonymity('删除文章', `${post.rId} ${post.title}`);
@@ -181,20 +172,12 @@ const saveChainPost = async (chainPost, options = {}) => {
     return;
   }
 
-  const rId = chainPost.publish_tx_id;
-  const pickedPost = await pickPost(chainPost);
-  
-  if (!pickedPost) {
-    console.log('WARNING: block is null');
-    return;
-  }
-
+  const rId = chainPost.id;
+  const updatedRId = chainPost.data.updated_tx_id;
   const {
-    author,
     post,
-    updatedRId,
-    fileHash
-  } = pickedPost;
+    author,
+  } = await pickPostAndAuthor(chainPost);
 
   const existedPost = await Post.getByRId(rId, {
     ignoreDeleted: true,
@@ -204,9 +187,13 @@ const saveChainPost = async (chainPost, options = {}) => {
 
   if (existedPost) {
     if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
-      if (prsUtil.sha256(chainPost.content) !== fileHash) {
+      if (prsUtil.sha256(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
       }
+      await Block.update(rId, {
+        blockNum: chainPost.block_num,
+        blockTransactionId: chainPost.transaction_id
+      });
       await Post.updateByRId(rId, {
         status: 'finished'
       });
@@ -284,35 +271,29 @@ const syncPosts = async (options = {}) => {
         stop = true;
         continue;
       }
-      for (const post of posts) {
-        const IS_NEW_OR_UPDATED = post.status === 200 && post.content[0];
-        const IS_DELETE = post.status === 404;
-        const IS_EMPTY_FOR_DELETE = post.status === 0 && post.updated_tx_id;
-        const IS_EMPTY = post.status === 0 && !post.updated_tx_id;
+      for (const chainPost of posts) {
+        const IS_NEW_OR_UPDATED = chainPost.snapshot.status === 200 && chainPost.snapshot.content[0];
+        const IS_DELETE = chainPost.snapshot.status === 404;
+        const IS_EMPTY_FOR_DELETE = chainPost.snapshot.status === 0 && chainPost.data.updated_tx_id;
+        const IS_EMPTY = chainPost.snapshot.status === 0 && !chainPost.data.updated_tx_id;
 
-        let content = '';
+        let rawContent = '';
         if (IS_NEW_OR_UPDATED) {
-          const base64Content = post.content[0].replace('data:text/plain; charset=utf-8;base64,', '');
-          const rawContentString = Buffer.from(base64Content, 'base64');
-          const rawContent = JSON.parse(rawContentString);
-          content = ase256cbcCrypto.decrypt(rawContent.session, rawContent.content);
+          const base64EncryptedContent = chainPost.snapshot.content[0].replace('data:text/plain; charset=utf-8;base64,', '');
+          const encryptedContent = JSON.parse(Buffer.from(base64EncryptedContent, 'base64'));
+          rawContent = ase256cbcCrypto.decrypt(encryptedContent.session, encryptedContent.content);
         } else if (IS_EMPTY_FOR_DELETE || IS_DELETE) {
-          content = '';
+          rawContent = '';
         } else if (IS_EMPTY) {
-          console.log(`Failed to access resource service. ${post.publish_tx_id}`);
+          console.log(`Failed to access resource service. ${chainPost.publish_tx_id}`);
         } else {
           console.log('The status of this post is invalid');
-          console.log(post);
+          console.log(chainPost);
           continue;
         }
-        const chainPost = {
-          publish_tx_id: post.publish_tx_id,
-          file_hash: post.file_hash,
-          topic: post.topic,
-          updated_tx_id: post.updated_tx_id,
-          updated_at: post.updated_at,
-          content,
-        }
+        chainPost.derive = {
+          rawContent
+        };
         await saveChainPost(chainPost, {
           fromChainSync: true
         });
