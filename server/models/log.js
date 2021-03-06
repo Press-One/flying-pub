@@ -32,7 +32,7 @@ exports.create = async (userId, message, options = {}) => {
   }
 }
 
-exports.createAnonymity = async (identity, message) => {
+exports.createAnonymity = async (identity, message, options = {}) => {
   const data = {
     userId: 0,
     message: `【${config.serviceKey.replace('_FLYING_PUB', '')}】 ${identity}：${message}`,
@@ -40,7 +40,9 @@ exports.createAnonymity = async (identity, message) => {
   await Log.create(data);
   if (config.bot && config.bot.enabled) {
     try {
-      sendToBot(data);
+      sendToBot(data, {
+        toActiveMixinUser: options.toActiveMixinUser
+      });
     } catch (e) {
       log(e);
     }

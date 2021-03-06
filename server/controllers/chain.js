@@ -8,6 +8,7 @@ const config = require('../config');
 const Wallet = require('../models/wallet');
 const {
   assert,
+  throws,
   Errors
 } = require('../utils/validator');
 const Author = require('../models/author');
@@ -15,6 +16,7 @@ const Block = require('../models/block');
 const {
   saveChainPost
 } = require('../models/chainSync');
+const Log = require('../models/log');
 const prsAtm = require('prs-atm');
 const uuidv4 = require('uuid/v4');
 
@@ -34,6 +36,16 @@ const signBlock = async data => {
     };
   } catch (err) {
     console.log(err);
+    const noBalance = err.message.includes('no balance') || err.message.includes('overdrawn balance');
+    if (noBalance) {
+      Log.createAnonymity('提交区块', '链上账号余额不足，无法提交区块', {
+        toActiveMixinUser: true
+      });
+      throws({
+        code: 'ERR_NO_ENOUGH_BALANCE',
+        message: 'no enough balance of topic account'
+      });
+    }
     return null;
   }
 };
