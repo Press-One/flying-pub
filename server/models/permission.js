@@ -14,19 +14,19 @@ const packPermission = async permission => {
 
 /**
  * @param {object} option
- * @param {string} option.topicAddress
+ * @param {string} option.topic
  * @param {number} option.offset
  * @param {number} option.limit
  * @param {'allow' | 'deny'} option.type
  */
 exports.getPermissionList = async (option) => {
   const {
-    topicAddress,
+    topic,
     type,
     offset,
     limit
   } = option
-  assert(topicAddress, Errors.ERR_IS_REQUIRED('topicAddress'));
+  assert(topic, Errors.ERR_IS_REQUIRED('topic'));
   assert(type, Errors.ERR_IS_REQUIRED('type'));
 
   let {
@@ -34,7 +34,7 @@ exports.getPermissionList = async (option) => {
     rows
   } = await Permission.findAndCountAll({
     where: {
-      topicAddress,
+      topic,
       permission: type,
     },
     offset,
@@ -54,27 +54,27 @@ exports.getPermissionList = async (option) => {
 /**
  * @param {object} option
  * @param {number} option.userAddress
- * @param {string} option.topicAddress
+ * @param {string} option.topic
  * @param {'allow' | 'deny'} option.type
  */
 exports.setPermission = async (option) => {
   const {
     userAddress,
-    topicAddress,
+    topic,
     type
   } = option;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
-  assert(topicAddress, Errors.ERR_IS_REQUIRED('topicAddress'));
+  assert(topic, Errors.ERR_IS_REQUIRED('topic'));
   assert(type, Errors.ERR_IS_REQUIRED('type'));
 
   const [permissionItem] = await Permission.findOrCreate({
     where: {
       userAddress,
-      topicAddress,
+      topic,
     },
     defaults: {
       userAddress,
-      topicAddress,
+      topic,
       permission: type,
     },
   });

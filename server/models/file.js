@@ -2,7 +2,7 @@ const {
   assert,
   Errors
 } = require('../utils/validator');
-const PrsAtm = require('prs-atm');
+const prsAtm = require('prs-atm');
 const File = require('./sequelize/file');
 const Post = require('./post');
 const Block = require('./block');
@@ -106,7 +106,7 @@ const verifyData = (data, options = {}) => {
 exports.create = async (userAddress, data) => {
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   verifyData(data);
-  const msghash = PrsAtm.encryption.hash(data.content);
+  const msghash = prsAtm.encryption.hash(data.content);
   const maybeExistedFile = await exports.getByMsghash(msghash);
   assert(!maybeExistedFile, Errors.ERR_IS_DUPLICATED('msghash'), 409);
   const encryptedContent = JSON.stringify(ase256cbcCrypto.encrypt(data.content));
@@ -115,7 +115,7 @@ exports.create = async (userAddress, data) => {
     ...data,
     userAddress,
     msghash,
-    topicAddress: config.topic.address,
+    topic: config.topic.account,
     encryptedContent
   };
   const file = await File.create(payload);
@@ -128,12 +128,12 @@ exports.getEmptyFile = (userAddress) => {
   const data = {
     content: ''
   }
-  const msghash = PrsAtm.encryption.hash(data.content);
+  const msghash = prsAtm.encryption.hash(data.content);
   return {
     ...data,
     userAddress,
     msghash,
-    topicAddress: config.topic.address,
+    topic: config.topic.account,
   };
 };
 
@@ -151,7 +151,7 @@ exports.list = async (userAddress, options = {}) => {
     where: {
       userAddress,
       deleted: false,
-      topicAddress: config.topic.address
+      topic: config.topic.account
     },
     offset,
     limit,
@@ -184,7 +184,7 @@ exports.count = async (userAddress, options = {}) => {
     where: {
       userAddress,
       deleted: false,
-      topicAddress: config.topic.address
+      topic: config.topic.account
     },
   };
   if (type === 'DRAFT') {
@@ -236,7 +236,7 @@ exports.update = async (id, data) => {
   });
   const payload = data;
   if (data.content) {
-    const msghash = PrsAtm.encryption.hash(data.content);
+    const msghash = prsAtm.encryption.hash(data.content);
     const maybeExistedFile = await exports.getByMsghash(msghash);
     assert(!maybeExistedFile, Errors.ERR_IS_DUPLICATED('msghash'), 409);
     const encryptedContent = JSON.stringify(ase256cbcCrypto.encrypt(data.content));

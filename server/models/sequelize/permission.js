@@ -14,7 +14,7 @@ const Permission = sequelize.define('permissions', {
   userId: {
     type: Sequelize.BIGINT,
   },
-  topicAddress: {
+  topic: {
     type: Sequelize.STRING,
   },
   permission: {
@@ -26,7 +26,7 @@ const Permission = sequelize.define('permissions', {
   indexes: [{
     fields: ['userId']
   }, {
-    fields: ['topicAddress']
+    fields: ['topic']
   }, {
     fields: ['permission']
   }]

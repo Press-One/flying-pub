@@ -220,19 +220,18 @@ exports.getPermission = async ctx => {
   } = ctx.verification;
 
   try {
-    const topicAddress = config.topic.address;
-    const allowBlock = await Block.getAllowBlock(topicAddress, user.address);
+    const topic = config.topic.account;
+    const allowBlock = await Block.getAllowBlock(topic, user.address);
 
-    if (topicAddress && !allowBlock) {
+    if (topic && !allowBlock) {
       await Permission.setPermission({
         userAddress: user.address,
-        topicAddress,
+        topic,
         type: 'allow',
       })
 
-      const block = await Chain.pushTopic({
+      const block = await Chain.pushTopicAuthorization({
         userAddress: user.address,
-        topicAddress,
         type: 'allow',
       });
       Log.create(user.id, `提交 allow 区块, blockId ${block.id}`);

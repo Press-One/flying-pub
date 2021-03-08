@@ -1,6 +1,3 @@
-const request = require('request-promise');
-const PrsUtil = require('prs-utility');
-const ip = require('ip');
 const {
   mimeTypes
 } = require('../utils');
@@ -18,20 +15,31 @@ const {
 } = require('../models/chainSync');
 const Log = require('../models/log');
 const prsAtm = require('prs-atm');
-const uuidv4 = require('uuid/v4');
-
-const HASH_ALG = 'sha256';
 
 const signBlock = async data => {
-  const block = Object.assign({}, data);
+  data = Object.assign({}, data);
   try {
-    const resp = await prsAtm.prsc.save(
-      config.topic.chainAccount.account,
-      config.topic.chainAccount.privateKey,
-      block
+    const resp = await prsAtm.prsc.signSave(
+      data.type,
+      data.meta,
+      data.data,
+      config.topic.account,
+      config.topic.publicKey,
+      config.topic.privateKey,
+      {
+        userAddress: data.user_address,
+        privateKey: data.privateKey
+      }
     );
+    const block = resp.processed.action_traces[0].act.data;
     return {
-      ...data,
+      id: block.id,
+      user_address: block.user_address,
+      type: block.type,
+      meta: block.meta,
+      data: block.data,
+      hash: block.hash,
+      signature: block.signature,
       blockTransactionId: resp.transaction_id
     };
   } catch (err) {
@@ -70,18 +78,16 @@ const getFileUrl = (file, origin) => {
   }/api/storage/${name}.${postfix}`;
 };
 
-const getFilePayload = async ({
+const getFileData = async ({
   file,
   user,
-  topic
 }, options = {}) => {
   assert(file, Errors.ERR_IS_REQUIRED('file'));
   assert(user, Errors.ERR_IS_REQUIRED('user'));
-  assert(topic, Errors.ERR_IS_REQUIRED('topic'));
 
   const data = {
     file_hash: file.msghash,
-    topic
+    topic: config.topic.account
   };
 
   const {
@@ -94,9 +100,7 @@ const getFilePayload = async ({
     data.updated_tx_id = rId;
   }
 
-  let meta = {
-    hash_alg: HASH_ALG
-  };
+  let meta = {};
   const isNotDeletedFile = !!file.content;
   if (isNotDeletedFile) {
     const mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
@@ -111,54 +115,36 @@ const getFilePayload = async ({
       mime: `${file.mimeType};charset=UTF-8`,
       encryption: 'aes-256-cbc',
       payment_url: `mixin://transfer/${mixinWalletClientId}`,
-      hash_alg: HASH_ALG
     };
   }
 
   const payload = {
-    id: PrsUtil.sha256(uuidv4()),
     user_address: user.address,
     type: 'PIP:2001',
     meta,
     data,
-    hash: PrsUtil.hashBlockData(data, HASH_ALG),
-    signature: PrsUtil.signBlockData(data, user.privateKey, HASH_ALG).signature
+    privateKey: user.privateKey
   };
   return payload;
 };
 
-const getTopicPayload = (options = {}) => {
+const getTopicAuthorizationData = (options = {}) => {
   const {
     userAddress,
-    topic,
     type
   } = options;
   const data = {
     [type]: userAddress,
-    topic: topic.address
+    topic: config.topic.account
   };
   const payload = {
-    id: PrsUtil.sha256(uuidv4()),
-    user_address: topic.address,
+    user_address: config.topic.account,
     type: 'PIP:2001',
-    meta: {
-      hash_alg: HASH_ALG
-    },
+    meta: {},
     data,
-    hash: PrsUtil.hashBlockData(data, HASH_ALG),
-    signature: PrsUtil.signBlockData(data, topic.privateKey, HASH_ALG).signature
+    privateKey: config.topic.account.privateKey
   };
   return payload;
-};
-
-const packBlock = block => {
-  const result = {};
-  for (const key in block) {
-    const value = block[key];
-    const isObj = typeof value === 'object';
-    result[key] = isObj ? JSON.stringify(value) : value;
-  }
-  return result;
 };
 
 exports.pushFile = async (file, options = {}) => {
@@ -167,27 +153,28 @@ exports.pushFile = async (file, options = {}) => {
     updatedFile,
     origin
   } = options;
-  const payload = await getFilePayload({
+  const fileData = await getFileData({
     file,
     user,
-    topic: config.topic.address
   }, {
     updatedFile,
     origin: origin || config.serviceRoot
   });
-  const block = await signBlock(payload);
+  const block = await signBlock(fileData);
   assert(block, Errors.ERR_NOT_FOUND('block'));
 
-  const packedBlock = packBlock(block);
-  const dbBlock = await Block.create(packedBlock);
+  const dbBlock = await Block.create(block);
 
   try {
     const chainPost = {
-      ...payload,
+      ...block,
+      meta: JSON.parse(block.meta),
+      data: JSON.parse(block.data),
       derive: {
         rawContent: file.content
       }
     }
+    console.log({ chainPost });
     await saveChainPost(chainPost, {
       fromPublish: true
     });
@@ -198,28 +185,18 @@ exports.pushFile = async (file, options = {}) => {
   return dbBlock;
 };
 
-/**
- * @param {object} options
- * @param {number} options.userAddress
- * @param {string} options.topicAddress
- * @param {'allow' | 'deny'} [options.type]
- */
-exports.pushTopic = async (options = {}) => {
+exports.pushTopicAuthorization = async (options = {}) => {
   const {
     userAddress,
-    topicAddress,
     type = 'allow'
   } = options;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
-  assert(topicAddress, Errors.ERR_IS_REQUIRED('topicAddress'));
   assert(['allow', 'deny'].includes(type), Errors.ERR_IS_INVALID('type'));
-  const topic = config.topic;
-  const payload = getTopicPayload({
+  const topicAuthorizationData = getTopicAuthorizationData({
     userAddress,
     type,
-    topic
   });
-  const block = await signBlock(payload);
+  const block = await signBlock(topicAuthorizationData);
   assert(block, Errors.ERR_NOT_FOUND('block'));
 
   try {
@@ -228,7 +205,6 @@ exports.pushTopic = async (options = {}) => {
     });
   } catch (e) {}
 
-  const packedBlock = packBlock(block);
-  const dbBlock = await Block.create(packedBlock);
+  const dbBlock = await Block.create(block);
   return dbBlock;
 };

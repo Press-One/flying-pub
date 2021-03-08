@@ -32,7 +32,7 @@ const getPermissionList = async (ctx, type) => {
     count,
     rows
   } = await Permission.getPermissionList({
-    topicAddress: config.topic.address,
+    topic: config.topic.account,
     type,
     offset,
     limit,
@@ -67,14 +67,13 @@ const changePermission = async (ctx, type) => {
     updated
   } = await Permission.setPermission({
     userAddress: user.address,
-    topicAddress: config.topic.address,
+    topic: config.topic.account,
     type,
   });
 
   if (updated) {
-    const block = await Chain.pushTopic({
+    const block = await Chain.pushTopicAuthorization({
       userAddress: user.address,
-      topicAddress: config.topic.address,
       type,
     });
     Log.create(user.id, `提交 ${type} 区块, blockId ${block.id}`);

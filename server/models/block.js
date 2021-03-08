@@ -40,11 +40,11 @@ exports.update = async (id, data) => {
   return true;
 };
 
-exports.getAllowBlock = async (topicAddress, address) => {
+exports.getAllowBlock = async (topic, address) => {
   const block = await Block.findOne({
     where: {
       data: {
-        [Op.like]: `%"allow":"${address}","topic":"${topicAddress}"%`
+        [Op.like]: `%"allow":"${address}","topic":"${topic}"%`
       }
     }
   });

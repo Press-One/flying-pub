@@ -41,7 +41,7 @@ const File = sequelize.define('files', {
     type: Sequelize.STRING,
     allowNull: true
   },
-  topicAddress: {
+  topic: {
     type: Sequelize.STRING,
   },
   deleted: {

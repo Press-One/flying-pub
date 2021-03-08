@@ -24,7 +24,7 @@ export interface IFile {
   rId: string;
   status: string;
   title: string;
-  topicAddress: string;
+  topic: string;
   createdAt: string;
   updatedAt: string;
   userAddress: string;

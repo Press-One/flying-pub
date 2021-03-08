@@ -15,7 +15,7 @@ const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
 const type = `${config.serviceKey}_CHAIN_SYNC`;
-const PrsAtm = require('prs-atm');
+const prsAtm = require('prs-atm');
 const qs = require('query-string');
 const { sleep } = require('../utils');
 const Block = require('./block');
@@ -31,7 +31,7 @@ const syncAuthors = async (options = {}) => {
       const key = 'AUTHORS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
       const query = qs.stringify({ updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
-      const uri = `${config.topic.blockProducerEndpoint}/api/pip2001/${config.topic.address}/authorization?${query}`;
+      const uri = `${config.topic.blockProducerEndpoint}/api/pip2001/${config.topic.account}/authorization?${query}`;
       console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
         uri,
@@ -187,7 +187,7 @@ const saveChainPost = async (chainPost, options = {}) => {
 
   if (existedPost) {
     if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
-      if (PrsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
+      if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
       }
       await Block.update(rId, {
@@ -257,7 +257,7 @@ const syncPosts = async (options = {}) => {
       } = options;
       const key = 'POSTS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      const query = qs.stringify({ topic: config.topic.address, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
+      const query = qs.stringify({ topic: config.topic.account, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.topic.blockProducerEndpoint}/api/pip2001?${query}`;
       console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
