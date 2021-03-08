@@ -268,7 +268,6 @@ export default observer((props: any) => {
     }
     try {
       if (state.file.title && state.file.content) {
-        isDirtyRef.current = false;
         confirmDialogStore.setLoading(true);
         let param: EditableFile = {
           title: state.file.title,
@@ -300,6 +299,7 @@ export default observer((props: any) => {
           publishDialogStore.show(res);
           rId = res.rId;
         }
+        isDirtyRef.current = false;
         EditorStorage.remove(idRef.current, 'TITLE');
         EditorStorage.remove(idRef.current, state.contentStorageKey);
         EditorStorage.remove(idRef.current, 'COVER');
@@ -373,7 +373,6 @@ export default observer((props: any) => {
     if (state.file.invisibility) {
       content = '这篇文章目前已隐藏，更新文章将重新发布，并且对所有人可见，确定更新吗？';
     }
-    isDirtyRef.current = false;
     confirmDialogStore.show({
       content,
       okText: isPublished ? '更新' : '发布',

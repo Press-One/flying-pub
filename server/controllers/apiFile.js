@@ -71,11 +71,17 @@ const createFile = async (user, data, options = {}) => {
       updatedFile,
       origin
     } = options;
-    const block = await Chain.pushFile(fileToChain, {
-      user,
-      updatedFile,
-      origin
-    });
+    let block;
+    try {
+      block = await Chain.pushFile(fileToChain, {
+        user,
+        updatedFile,
+        origin
+      });
+    } catch (err) {
+      await File.delete(file.id);
+      throw err;
+    }
     const rId = block.id;
     file = await File.update(file.id, {
       rId
