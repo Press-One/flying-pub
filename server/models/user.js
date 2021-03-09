@@ -1,6 +1,6 @@
 const User = require("./sequelize/user");
 const Profile = require("./profile");
-const PrsUtil = require("prs-utility");
+const PrsAtm = require("prs-atm");
 const util = require("../utils");
 const config = require("../config");
 const Wallet = require("./wallet");
@@ -60,24 +60,40 @@ const packMixinAccount = (mixinAccountRaw) => {
   };
 };
 
-const generateKey = () => {
-  const {
-    privateKey,
-    publicKey,
-    address
-  } = PrsUtil.createKeyPair({
-    dump: true,
-  });
-  const aesEncryptedHexOfPrivateKey = util.crypto.aesCrypto(
-    privateKey,
-    config.encryption.aesKey256
-  );
-  return {
-    aesEncryptedHexOfPrivateKey,
-    publicKey,
-    address,
-  };
+const generateKey = async () => {
+  // (async () => {
+    // const password = '123123abc';
+    // const keystore = await PrsAtm.wallet.createKeystore(password);
+    // const { privatekey, publickey } = PrsAtm.wallet.recoverPrivateKey(password, keystore);
+  //   const { privatekey, publickey } = {
+  //     publickey: 'EOS7WeqmVXhweZn5xGLBWZbkVgiePNGdmqJw8aGMwBE326bB3P9Bj',
+  //     privatekey: '5Hzz2ydiPafoeWcVJQYv1aSZatDdbe8FGRXcpwS9EAWVMpjxMgr'
+  //   }
+  //   const freeAccount = await PrsAtm.atm.openFreeAccount(publickey, privatekey);
+  //   console.log({ freeAccount });
+  // })();
+
+  // const keystore = await PrsAtm.wallet.createKeystore(config.encryption.accountKeystorePassword);
+  // console.log({ keystore, password: config.encryption.accountKeystorePassword });
+  // const {
+  //   privatekey,
+  //   publickey
+  // } = PrsAtm.wallet.recoverPrivateKey(config.encryption.accountKeystorePassword, keystore);
+  // console.log({ publickey, privatekey });
+  // const freeAccount = await PrsAtm.atm.openFreeAccount(publickey, privatekey);
+  // console.log({ freeAccount, privatekey, publickey });
+  // const aesEncryptedHexOfPrivateKey = util.crypto.aesCrypto(
+  //   privatekey,
+  //   config.encryption.aesKey256
+  // );
+  // return {
+  //   aesEncryptedHexOfPrivateKey,
+  //   publicKey: publickey,
+  //   address: freeAccount.account,
+  // };
 };
+
+generateKey();
 
 exports.create = async (data) => {
   const {
@@ -90,7 +106,7 @@ exports.create = async (data) => {
     aesEncryptedHexOfPrivateKey,
     publicKey,
     address
-  } = generateKey();
+  } = await generateKey();
 
   assert(data, Errors.ERR_IS_REQUIRED("data"));
   assert(nickname, Errors.ERR_IS_REQUIRED("nickname"));
