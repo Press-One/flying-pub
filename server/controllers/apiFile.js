@@ -7,9 +7,12 @@ const {
 } = require("../utils/validator");
 const Log = require("../models/log");
 const Post = require("../models/post");
+const Block = require('../models/block');
+const Permission = require('../models/permission');
 const Chain = require("./chain");
 const {
-  truncate
+  truncate,
+  sleep
 } = require("../utils");
 const {
   pushToNotificationQueue,
@@ -121,6 +124,22 @@ exports.create = async ctx => {
   const data = ctx.request.body.payload;
   const isDraft = ctx.query.type === "DRAFT";
   assert(data, Errors.ERR_IS_REQUIRED("data"));
+
+  const topic = config.topic.account;
+  const allowBlock = await Block.getAllowBlock(topic, user.address);
+  if (topic && !allowBlock) {
+    await Permission.setPermission({
+      userAddress: user.address,
+      topic,
+      type: 'allow',
+    })
+    const block = await Chain.pushTopicAuthorization({
+      userAddress: user.address,
+      type: 'allow',
+    });
+    Log.create(user.id, `提交 allow 区块, blockId ${block.id}`);
+  }
+
   const file = await createFile(user, data, {
     isDraft,
     origin: ctx.request.body.origin

@@ -11,10 +11,7 @@ const User = require('../models/user');
 const Profile = require('../models/profile');
 const Wallet = require('../models/wallet');
 const Token = require('../models/token');
-const Block = require('../models/block');
-const Permission = require('../models/permission');
 const Author = require('../models/author');
-const Chain = require('./chain');
 const Log = require('../models/log');
 const moment = require('moment');
 const {
@@ -215,31 +212,6 @@ const login = async (ctx, user, provider) => {
 }
 
 exports.getPermission = async ctx => {
-  const {
-    user
-  } = ctx.verification;
-
-  try {
-    const topic = config.topic.account;
-    const allowBlock = await Block.getAllowBlock(topic, user.address);
-
-    if (topic && !allowBlock) {
-      await Permission.setPermission({
-        userAddress: user.address,
-        topic,
-        type: 'allow',
-      })
-
-      const block = await Chain.pushTopicAuthorization({
-        userAddress: user.address,
-        type: 'allow',
-      });
-      Log.create(user.id, `提交 allow 区块, blockId ${block.id}`);
-    }
-  } catch (err) {
-    console.log(err);
-  }
-
   ctx.body = {
     success: true
   }
