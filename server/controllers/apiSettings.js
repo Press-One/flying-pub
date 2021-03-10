@@ -1,6 +1,5 @@
 const config = require('../config');
 const Settings = require('../models/settings');
-const Log = require('../models/log');
 const {
   assert,
   Errors
