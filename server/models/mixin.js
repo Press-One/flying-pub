@@ -71,11 +71,11 @@ const start = () => {
         } = msgObj.data;
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
+          const title = '新作';
+          const url = `${config.settings['site.url'] || config.serviceRoot}`;
+          const desc = '点击打开新作';
           if (!profile) {
-            await trySendToUser(profile.userId, '新作', {
-              url: `${config.settings['site.url'] || config.serviceRoot}`,
-              desc: '点击打开新作',
-            });
+            await mixin.sendCard(`{"app_id":"${config.provider.mixin.clientId}", "icon_url":"${config.logo || config.settings['site.logo']}", "title":"${title}", "description":"${desc}", "action": "${url}"}`, msgObj);
             await sleep(1000);
             await mixin.sendText('如有疑问，可以联系技术支持，Mixin ID 是：', msgObj);
             await sleep(1000);
@@ -86,14 +86,14 @@ const start = () => {
             const conversation = await tryCreateConversation(profile.userId, msgObj);
             if (conversation) {
               await trySendText(profile.userId, '你成功开通了消息提醒。当有新的消息，我会第一时间通知你');
-              await trySendToUser(profile.userId, '新作', {
-                url: `${config.settings['site.url'] || config.serviceRoot}`,
-                desc: '点击打开新作',
+              await trySendToUser(profile.userId, title, {
+                url,
+                desc
               });
             } else {
-              await trySendToUser(profile.userId, '新作', {
-                url: `${config.settings['site.url'] || config.serviceRoot}`,
-                desc: '点击打开新作',
+              await trySendToUser(profile.userId, title, {
+                url,
+                desc
               });
               await trySendText(profile.userId, '哈喽，如果你在使用的时候遇到了问题，可以联系技术支持，Mixin ID 是：');
               await sleep(1000);
