@@ -19,9 +19,9 @@ export default observer(() => {
     return (
       <div>
         <div>
-          <div className="p-12 px-16 bg-white md:rounded text-center main">
+          <div className="p-12 px-16 bg-white md:rounded-12 text-center main">
             <div className="text-lg font-bold text-gray-700 leading-none">
-              {settings['mixinApp.name']} 通知设置
+              开通 {settings['mixinApp.name']} 通知
             </div>
             <div className="mt-6 text-gray-600">
               {isWeChat && (

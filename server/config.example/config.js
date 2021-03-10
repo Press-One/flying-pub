@@ -79,7 +79,6 @@ module.exports = {
     'site.slogan': `飞帖开发版`,
     'site.logo': `https://img-cdn.xue.cn/17-flying-pub.png`,
     'notification.mixin.enabled': true,
-    'notification.mixin.id': 7000102340,
     'author.page.enabled': true,
     'subscriptions.enabled': true,
     'filter.enabled': true,
