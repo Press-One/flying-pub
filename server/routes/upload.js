@@ -28,7 +28,10 @@ const storage = multer.diskStorage({
     if (!fs.existsSync('build')) {
       fs.mkdirSync('build');
     }
-    cb(null, 'build/')
+    if (!fs.existsSync('build/uploads')) {
+      fs.mkdirSync('build/uploads');
+    }
+    cb(null, 'build/uploads')
   },
   filename: function (req, file, cb) {
     const { mimetype } = file;
@@ -59,7 +62,7 @@ router.post('/', upload.single('file'), async (ctx) => {
     console.log({ filename, path });
     ctx.body = {
       filename: filename,
-      url: `${config.serviceRoot}/${filename}`
+      url: `${config.serviceRoot}/uploads/${filename}`
     }
     return;
   }
