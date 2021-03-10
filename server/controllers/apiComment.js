@@ -3,8 +3,6 @@ const Comment = require("../models/comment");
 const Post = require("../models/post");
 const User = require("../models/user");
 const Log = require("../models/log");
-const Mixin = require("../models/mixin");
-let scanner = null;
 const {
   truncate
 } = require("../utils");
@@ -35,15 +33,6 @@ exports.create = async (ctx) => {
   delete data.options;
   assert(data, Errors.ERR_IS_REQUIRED("data"));
   assert(data.content, Errors.ERR_IS_REQUIRED("comment"));
-  let offWords = [];
-  if (process.env.NODE_ENV === 'production') {
-    offWords = Object.keys(
-      scanner.hits(data.content, {
-        longest: false,
-      })
-    );
-  }
-
   const post = await Post.getLatestByRId(data.objectId);
   assert(post, Errors.ERR_NOT_FOUND("post"));
   data.objectId = post.rId;
