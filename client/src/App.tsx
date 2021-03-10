@@ -21,7 +21,6 @@ import NotificationSocket from 'components/NotificationSocket';
 import SnackBar from 'components/SnackBar';
 import SettingsModal from 'components/SettingsModal';
 import PageLoading from './components/PageLoading';
-import Contact from './components/Contact';
 import MixinNotificationModal from 'components/MixinNotificationModal';
 import ConfirmDialog from './components/ConfirmDialog';
 import UserListModal from './components/UserListModal';
@@ -141,7 +140,6 @@ const AppRouter = () => {
           <FavoritesModal />
           <NotificationModal />
           <PhotoSwipe />
-          {isPc && <Contact />}
           <style jsx global>{`
             body {
               min-height: ${isIPhone ? '110vh' : '100vh'};
