@@ -6,7 +6,7 @@ import ImageEditor from 'components/ImageEditor';
 import { TextField } from '@material-ui/core';
 import Button from 'components/Button';
 import { useStore } from 'store';
-import { isMobile, sleep } from 'utils';
+import { isMobile } from 'utils';
 import Api from 'api';
 
 import './index.sass';
@@ -21,7 +21,7 @@ export const ProfileChange = observer(() => {
     submitDone: false,
   }));
 
-  const { userStore, modalStore } = useStore();
+  const { userStore } = useStore();
 
   const handleSubmit = async () => {
     state.submitDone = false;
@@ -40,12 +40,6 @@ export const ProfileChange = observer(() => {
       user.nickname = state.nickname;
       user.bio = state.bio;
       state.submitDone = true;
-      if (isMobile) {
-        (async () => {
-          await sleep(500);
-          modalStore.closeSettings();
-        })();
-      }
     } finally {
       state.submitting = false;
     }
