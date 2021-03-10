@@ -190,10 +190,14 @@ const saveChainPost = async (chainPost, options = {}) => {
       if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
       }
-      await Block.update(rId, {
-        blockNum: chainPost.block_num,
-        blockTransactionId: chainPost.transaction_id
-      });
+      try {
+        await Block.update(rId, {
+          blockNum: chainPost.block_num,
+          blockTransactionId: chainPost.transaction_id
+        });
+      } catch (err) {
+        console.log(err);
+      }
       await Post.updateByRId(rId, {
         status: 'finished'
       });
