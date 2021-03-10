@@ -44,15 +44,6 @@ exports.create = async (ctx) => {
   const originUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?commentId=${comment.id}`;
   const mixinCommentRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=1`;
   const mixinReplyRedirectUrl = `${config.settings['site.url'] || config.serviceRoot}/posts/${data.objectId}?action=OPEN_NOTIFICATION_MODAL&tab=2`;
-
-  // 两个词的也暂时不管了，因为误伤率还是太高了 (By Junhong)
-  offWords = offWords.filter(word => word.length > 2);
-  if (offWords && offWords.length > 0) {
-    Log.create(user.id, `评论包含敏感词：${offWords.join('，')} ${originUrl}`, {
-      toActiveMixinUser: true
-    });
-  }
-
   Log.create(user.id, `评论文章 ${originUrl}`);
   ctx.body = comment;
 
