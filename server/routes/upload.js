@@ -25,10 +25,10 @@ const getPostfix = mimetype => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (!fs.existsSync('uploads')) {
-      fs.mkdirSync('uploads');
+    if (!fs.existsSync('build')) {
+      fs.mkdirSync('build');
     }
-    cb(null, 'uploads/')
+    cb(null, 'build/')
   },
   filename: function (req, file, cb) {
     const { mimetype } = file;

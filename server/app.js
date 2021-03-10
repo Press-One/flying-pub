@@ -71,7 +71,6 @@ if (!config.staticCDN) {
   serveOptions.maxage = 365 * 24 * 60 * 60;
 }
 app.use(serve('build', serveOptions));
-app.use(serve('uploads', serveOptions));
 
 router.all('*', errorHandler);
 router.all('*', extendCtx);
