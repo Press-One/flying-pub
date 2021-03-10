@@ -310,8 +310,7 @@ export default observer((props: any) => {
               )}
             </div>
             <div className="flex items-center">
-              {(settingsStore.settings.extra['search.enabled'] ||
-                localStorage.getItem('SEARCH_ENABLED')) && (
+              {settingsStore.settings.extra['search.enabled'] && (
                 <div
                   className="pl-5 pr-3 flex items-center text-26 py-2"
                   onClick={() => {

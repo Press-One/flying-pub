@@ -203,8 +203,9 @@ export default observer((props: any) => {
                 {
                   'pt-1': !isMixinImmersive,
                   'border-b border-gray-200': showBack,
+                  'h-11': !(pathname === '/' && !settings.extra['search.enabled']),
                 },
-                'flex justify-between items-center pb-1 px-3 h-11',
+                'flex justify-between items-center pb-1 px-3',
               )}
             >
               {!showBack && !userStore.isLogin && (
@@ -220,7 +221,7 @@ export default observer((props: any) => {
                   </div>
                 </Link>
               )}
-              {!showBack && userStore.isLogin && (
+              {settings.extra['search.enabled'] && !showBack && userStore.isLogin && (
                 <div>
                   <Link to={`/authors/${user.address}`}>
                     <Img
@@ -233,8 +234,7 @@ export default observer((props: any) => {
               )}
 
               <div className="flex-1 pr-2 pl-3">
-                {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
-                  showSearchEntry && <Search />}
+                {settings.extra['search.enabled'] && showSearchEntry && <Search />}
               </div>
 
               {showBack && (
@@ -273,8 +273,7 @@ export default observer((props: any) => {
                 </Link>
                 {!userStore.isLogin && (
                   <div className="flex items-center">
-                    {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
-                      showSearchEntry && <Search />}
+                    {settings.extra['search.enabled'] && showSearchEntry && <Search />}
                     <Button
                       size="small"
                       onClick={() => {
@@ -288,12 +287,11 @@ export default observer((props: any) => {
                 )}
                 {userStore.isLogin && (
                   <div className="flex items-center -mr-2">
-                    {(settings.extra['search.enabled'] || localStorage.getItem('SEARCH_ENABLED')) &&
-                      showSearchEntry && (
-                        <div className="mt-2-px">
-                          <Search />
-                        </div>
-                      )}
+                    {settings.extra['search.enabled'] && showSearchEntry && (
+                      <div className="mt-2-px">
+                        <Search />
+                      </div>
+                    )}
                     <div className="flex items-center">
                       {settings.extra['messageSystem.enabled'] && (
                         <Badge
