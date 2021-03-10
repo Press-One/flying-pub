@@ -353,7 +353,7 @@ export default observer((props: any) => {
           }}
           items={[
             {
-              invisible: !userStore.canPublish,
+              invisible: !settingsStore.settings['import.enabled'] || !userStore.canPublish,
               name: '导入微信公众号文章',
               onClick: () => {
                 state.showPostImportModal = true;
