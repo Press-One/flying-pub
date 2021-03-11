@@ -67,6 +67,7 @@ export default observer(() => {
                       withPendingTopicUuids: true,
                     });
                     setPost(post);
+                    publishDialogStore.hide();
                   } catch (err) {
                     console.log(err);
                   }
@@ -91,6 +92,7 @@ export default observer(() => {
                       withPendingTopicUuids: true,
                     });
                     setPost(post);
+                    publishDialogStore.hide();
                   } catch (err) {
                     console.log(err);
                   }
