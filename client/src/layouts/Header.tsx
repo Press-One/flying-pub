@@ -203,9 +203,8 @@ export default observer((props: any) => {
                 {
                   'pt-1': !isMixinImmersive,
                   'border-b border-gray-200': showBack,
-                  'h-11': !(pathname === '/' && !settings.extra['search.enabled']),
                 },
-                'flex justify-between items-center pb-1 px-3',
+                'flex justify-between items-center pb-1 px-3 h-11',
               )}
             >
               {!showBack && (!settings.extra['search.enabled'] || !userStore.isLogin) && (
