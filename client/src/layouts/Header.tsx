@@ -208,7 +208,7 @@ export default observer((props: any) => {
                 'flex justify-between items-center pb-1 px-3',
               )}
             >
-              {!showBack && !userStore.isLogin && (
+              {!showBack && (!settings.extra['search.enabled'] || !userStore.isLogin) && (
                 <Link to="/">
                   <div className="flex items-center">
                     <img
