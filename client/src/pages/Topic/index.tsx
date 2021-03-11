@@ -20,7 +20,7 @@ import useWindowInfiniteScroll from 'hooks/useWindowInfiniteScroll';
 import marked from 'marked';
 import { MdChevronRight, MdChevronLeft } from 'react-icons/md';
 import TopicIntroductionModal from './TopicIntroductionModal';
-import { MdMoreHoriz } from 'react-icons/md';
+import { RiSettings4Line } from 'react-icons/ri';
 import { toJS } from 'mobx';
 import { resizeImage } from 'utils';
 import Img from 'components/Img';
@@ -37,7 +37,8 @@ const TopView = observer(
     fetchTopic: any;
     history: any;
   }) => {
-    const { userStore, modalStore, pathStore, photoSwipeStore } = useStore();
+    const { userStore, modalStore, pathStore, photoSwipeStore, contextStore } = useStore();
+    const { isMixinImmersive } = contextStore;
     const state = useLocalStore(() => ({
       showTopicContributionModal: false,
       showTopicIntroductionModal: false,
@@ -100,14 +101,19 @@ const TopView = observer(
                   <MdChevronLeft className="text-30" />
                 </div>
               </div>
-              <div>
-                <div
-                  className="pl-5 pr-4 flex items-center text-26"
-                  onClick={() => props.openTopicManagerMenu()}
-                >
-                  <MdMoreHoriz />
+              {props.isMyself && (
+                <div className="flex">
+                  <div>
+                    <div
+                      className="pl-5 pr-4 flex items-center text-26"
+                      onClick={() => props.openTopicManagerMenu()}
+                    >
+                      <RiSettings4Line />
+                    </div>
+                  </div>
+                  {isMixinImmersive && <div className="pr-24 mr-4" />}
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -227,15 +233,7 @@ export default observer((props: any) => {
     showTopicManagerMenu: false,
     showPosts: false,
   }));
-  const {
-    snackbarStore,
-    userStore,
-    preloadStore,
-    confirmDialogStore,
-    feedStore,
-    contextStore,
-  } = useStore();
-  const { isMixin } = contextStore;
+  const { snackbarStore, userStore, preloadStore, confirmDialogStore, feedStore } = useStore();
   const loading = React.useMemo(() => !state.isFetchedTopic || !preloadStore.ready, [
     state.isFetchedTopic,
     preloadStore.ready,
@@ -603,7 +601,6 @@ export default observer((props: any) => {
               }}
               items={[
                 {
-                  invisible: isMixin,
                   name: '分享',
                   onClick: () => {
                     copy(window.location.href);
@@ -613,21 +610,18 @@ export default observer((props: any) => {
                   },
                 },
                 {
-                  invisible: !isMyself,
                   name: '编辑',
                   onClick: () => {
                     state.showTopicEditorModal = true;
                   },
                 },
                 {
-                  invisible: !isMyself,
                   name: '管理文章',
                   onClick: () => {
                     state.showTopicPostManagerModal = true;
                   },
                 },
                 {
-                  invisible: !isMyself,
                   name: '删除',
                   onClick: onDelete,
                   className: 'text-red-400',
