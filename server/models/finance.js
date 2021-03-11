@@ -488,7 +488,7 @@ const updateReceiptByUuid = async (uuid, data) => {
       await pushToNotificationQueue({
         mixin: {
           userId,
-          text: `收到打赏 ${String(updatedReceipt.amount)} ${updatedReceipt.currency}`,
+          text: `收到打赏 ${parseFloat(String(updatedReceipt.amount))} ${updatedReceipt.currency}`,
           url: mixinRedirectUrl
         },
         messageSystem: getArticleRewardPayload({
@@ -500,7 +500,7 @@ const updateReceiptByUuid = async (uuid, data) => {
           toNickName: user.nickname,
           fromArticleId: file.rId,
           fromArticleTitle: file.title,
-          amount: String(updatedReceipt.amount),
+          amount: parseFloat(String(updatedReceipt.amount)),
           currency: updatedReceipt.currency,
         })
       });

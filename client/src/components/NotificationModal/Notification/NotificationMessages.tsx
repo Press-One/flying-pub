@@ -65,7 +65,7 @@ export default observer(() => {
           >
             {extras.fromArticleTitle}
           </ModalLink>
-          》 <span className="text-green-500 amount font-bold">{extras.amount}</span>{' '}
+          》 <span className="text-green-500 amount font-bold">{parseFloat(extras.amount)}</span>{' '}
           <span className="text-xs text-gray-600 font-bold">{extras.currency || ''}</span>
         </div>
       );
