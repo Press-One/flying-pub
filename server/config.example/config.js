@@ -67,10 +67,10 @@ module.exports = {
   },
 
   topic: {
-    account: "prs.1gb.1vv",
-    publicKey: "EOS5BQaTtjRKQXxMSwwnpNJRqavd184VaMzPt3MFwkVgoNFhW1cBz",
-    privateKey: "5J6xSngVaqthMEUwT7QPNZdCiuKAz5dSwxA23nL9jRBMn5YtfKf",
-    'blockProducerEndpoint': 'https://prs-bp1.press.one',
+    accountName: "prs.1gw.nw",
+    publicKey: "EOS6RybF7Bb11xfMfhiy4sVJLuYW6Pe2bkVyctXfso2webXYmXAGe",
+    privateKey: "5K9bPkXAgdegw6DYAZu6XEaN1okaFzhRhDVhab6v4RYES2B1XdA",
+    blockProducerEndpoint: 'https://prs-bp1.press.one',
   },
 
   settings: {
@@ -99,7 +99,7 @@ module.exports = {
   postView: {
     enabled: true,
     visible: true,
-    ipExpiredDuration: 10 * 60, // 10 分钟
+    ipExpiredDuration: 10 * 60,
   },
 
   auth: {
@@ -128,7 +128,7 @@ module.exports = {
 
   recommendation: {
     authors: {
-      cachedDuration: 60 * 60 * 12 // 半天
+      cachedDuration: 60 * 60 * 12
     }
   },
 
