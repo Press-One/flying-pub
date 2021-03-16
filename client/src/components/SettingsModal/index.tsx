@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
-import css from 'styled-jsx/css';
 import { Dialog } from '@material-ui/core';
 import { BsLink } from 'react-icons/bs';
 import { RiAccountCircleLine, RiSettings4Fill } from 'react-icons/ri';
@@ -14,13 +13,6 @@ import { PhoneChangePassword } from './PhoneChangePassword';
 import { Preference } from './Preference';
 import DrawerModal from 'components/DrawerModal';
 import { isMobile } from 'utils';
-
-const style = css`
-  .settings-modal {
-    width: 700px;
-    height: 550px;
-  }
-`;
 
 export default observer(() => {
   const { userStore, settingsStore, modalStore } = useStore();
@@ -171,7 +163,12 @@ export default observer(() => {
 
         <div className="flex-1 border-l border-gray-400 wallet-content">{renderTabContent()}</div>
       </div>
-      <style jsx>{style}</style>
+      <style jsx>{`
+        .settings-modal {
+          width: 700px;
+          height: 550px;
+        }
+      `}</style>
     </Dialog>
   );
 });
