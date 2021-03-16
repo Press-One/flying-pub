@@ -67,7 +67,7 @@ module.exports = {
   },
 
   topic: {
-    accountName: "prs.1gw.nw",
+    account: "prs.1gw.nw",
     publicKey: "EOS6RybF7Bb11xfMfhiy4sVJLuYW6Pe2bkVyctXfso2webXYmXAGe",
     privateKey: "5K9bPkXAgdegw6DYAZu6XEaN1okaFzhRhDVhab6v4RYES2B1XdA",
     blockProducerEndpoint: 'https://prs-bp1.press.one',
