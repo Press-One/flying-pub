@@ -10,7 +10,9 @@ const buildPassport = () => {
     clientID: config.provider.mixin.clientId,
     clientSecret: config.provider.mixin.clientSecret,
     callbackURL: config.provider.mixin.callbackUrl,
-    authorizationURL: config.provider.mixin.authorizationURL || ''
+    authorizationURL: config.provider.mixin.authorizationURL || '',
+    tokenURL: config.provider.mixin.tokenURL || '',
+    userProfileURL: config.provider.mixin.userProfileURL || ''
   }, (accessToken, refreshToken, profile, callback) => {
     profile.auth = {
       accessToken: accessToken,

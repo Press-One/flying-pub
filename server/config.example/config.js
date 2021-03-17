@@ -51,18 +51,19 @@ module.exports = {
 
   provider: {
     mixin: {
-      aesKey: `dpWgOfj+fF/EWdDyTjRFbAlupg2Tg9c3QzNKgrZdK+8=`,
-      id: 7000102340,
-      clientSecret: `e1e531350e33f21cc6e0813bbd10ebb0385f148b2dcebf082ba5f43c14af3443`,
-      pinCode: `988795`,
+      id: `7000102340`,
+      pinCode: `093526`,
       clientId: `44931a6d-2029-4c8d-888f-cbb3afe509bb`,
-      sessionId: `6943eb4b-714e-4b41-b187-f73564c16e71`,
-      pinToken: `ejUM3nBzx28yWhj6eJ9v36N7UOdSpLRi7qEFgzbTm2CDoVzMDFIBXDUSM68MRxCQa8LPWwv/Z3aNDJ0qA6x9tDldJqewus4J61u00EFOK7wmHh7V7dKegzepBNsEnJVG+bxZVDf3TRnrs76vqrMLe0kwdgSgu/THoYNzuLLyl3g=`,
-      privateKey: `-----BEGIN RSA PRIVATE KEY-----\r\nMIICXQIBAAKBgQCet3iDdTqsY1R6ZR69CfvQzTJRWhk58OJ/2DnPek23IXZ5X4JW\r\nWFndsbYeFNaAIIpZ+z9XUS40b2NfsfpRi6B8KH83y+tWkRDE7p8gPScYEwAN+Er7\r\nT2CD2npjVz6MTSqciTpmHTdaTdmvqpx2svitV24F+KZ7mSeJwx7mvwCj2wIDAQAB\r\nAoGBAJKRqcf0NTfHDtdslGNMWfBr3iDETHF2YyReoJxaPHR2gXr6WVm1g1+4Yg8L\r\nfT6bTkhkPg07maiwiJtxt1Eg2RT5joWmleJ1xt4CHerlmPmHIr9VnoJsnehk3Yic\r\nhvcj+RSumT5wWqxBs2ichXJkxbmaRZ/6wRElgILl8eKISQ2ZAkEA200RJ3HYxnK7\r\nagcWZO+T4GYS2BJ454dFNGytMcRRi1vWuge2NdaP/zx+u6qscj3FryUfxLGZkpfB\r\nEwgMXnSlzwJBALlG8tvwgTKwdrSTCvezaSR8Kpe4qeIUZny14QvQ8/2QJmJol+El\r\nnGGOniEmPMXyfSob6JddNvgEL5VXDqZksDUCQEvcshVyFao4oEqCXyXVltMmnFgw\r\ns7BsI+2JtrQjlI3f3D0IU+j162RA+hpTZUozwkHfVskFIvoKExlRTG4UbhMCQQCS\r\n+1T45IAqTVGuiSRfQyY7OoGzoVysLNDtSICDFj4pvuykjyNGCsdXoYOS+rmls2xW\r\nNpO7WMid0vxItiq6GBCtAkBAffOSGcgicdg/Tf4WSM16HYMJdD+LFd92I6ZhFv8n\r\nSSPEot1uAD+WXtiaa4CM2/9Ku+jtPadSIcFli3fJTR8G\r\n-----END RSA PRIVATE KEY-----\r\n`,
-      loginUrl: `/api/auth/mixin/login`,
-      callbackUrl: `${serviceRoot}/api/auth/mixin/callback`,
-      domain: 'https://mixin-www.zeromesh.net',
-      authorizationURL: 'https://mixin-www.zeromesh.net/oauth/authorize'
+      sessionId: `feb1e0a8-8ab2-4f51-8966-d0a76613af81`,
+      clientSecret: `94a506c1f412bf0dd2a96bd6a9f981aa8385bf71206f4295d52eb5509ba0010c`,
+      pinToken: `OppUDB9OQo4RyjhBAuRCmmTRUsNk3Y+yW1w6ve31uurpqeuSlFJk7+tj+p9gPj10O/PPljUZtDv0lSwQKj2EOZWgqBqwGIeqYmT55GA2vXGtjoYiZe5IT2AY7QcMhsferS8bvNI31nrocRlm8RdrECaATQr5+oruRPB1BPChs0s=`,
+      privateKey: `-----BEGIN RSA PRIVATE KEY-----\r\nMIICXgIBAAKBgQDYsuddh4gXwBRY8QKFF0/miNIqS7OIep9irHFcXqCotV3BhLKn\r\nEe6M7azNXlzcKf9jjZW3YLt+HbUkp2ovJNvj7hGaolsvz732s4nd6Mj9iiMwpF1J\r\nK9pp67ANW438LyYqIXGIcAyhdnllsP4+z7PDP+oFO+g8F/c+AB2ab/8o1wIDAQAB\r\nAoGBAIEAD6eoFSY+XF6OKvfb5t7QOHyhUCFBDj0JdvqMAowsW8HmIww+KoqOur4P\r\nHKyb+8Lh+GyQE02CleFaIGYsRRGUgOh+bzH+8hd35vn30tHCnXPWRdDrKr0t7DR3\r\nE+ULWiMJaTcU6Ka0/mf/Gmx3uZh2NS/u5/rfK8DxIJ7Fy84hAkEA8+QsUakDZhXu\r\nId5RCQovfoXVHfErgR+xlup1yPH6+IY9wMaEqgvQFUqJ0y7WUHaFjVeWe7nrjQ31\r\nYxiwzvUTqQJBAON1Hja2qK2b+GNGkNu5cKmMR+hCn+ycj1rxpSWn4XWfcsc9VqXC\r\nsZwnGKu6adWrjk2nljZigho98UwGG4WYKH8CQQCKyIODsGZzt/T7JtP8DeS63ZNJ\r\nZ4w2/P8EfsSppTEILPOE+DJTxUcSZokJODTSMq+Kn5XNMB3e9Vt2mX07N3CJAkEA\r\nwoY3ALPWLiNlmgGPgVpmb5n5JTlVbBW4xB5FDp80wlNK5fofUEPhgZouDy+ts360\r\nhNT+MiSs/6RZ6JqQjwBCIQJAbyojMzkK8pbsTMmq8e0BynwVscLayrp0GDKGppig\r\nkeBVuSDKiuSvP7iN8m3OcGs9Gkt6yFWIFwA7fooyM6JVaw==\r\n-----END RSA PRIVATE KEY-----\r\n`,
+      aesKey: `hGRhhGD3lKkzowugU1gaXgzi4bLcRY0VR1KBg8yGNG0=`,
+      domain: `https://mixin-www.zeromesh.net`,
+      authorizationURL: `https://mixin-www.zeromesh.net/oauth/authorize`,
+      tokenURL: 'https://mixin-api.zeromesh.net/oauth/token',
+      userProfileURL: 'https://mixin-api.zeromesh.net/me',
+      callbackUrl: `${serviceRoot}/api/auth/mixin/callback`
     }
   },
 
