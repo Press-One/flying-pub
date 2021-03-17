@@ -283,8 +283,9 @@ const syncPosts = async (options = {}) => {
 
         let rawContent = '';
         if (IS_NEW_OR_UPDATED) {
-          const base64EncryptedContent = chainPost.snapshot.content[0].replace('data:text/plain; charset=utf-8;base64,', '');
-          const encryptedContent = JSON.parse(Buffer.from(base64EncryptedContent, 'base64'));
+          const base64EncryptedContent = chainPost.snapshot.content[0].split(';base64,').pop();
+          const encryptedContentString = Buffer.from(base64EncryptedContent, 'base64').toString();
+          const encryptedContent = JSON.parse(encryptedContentString);
           rawContent = ase256cbcCrypto.decrypt(encryptedContent.session, encryptedContent.content);
         } else if (IS_EMPTY_FOR_DELETE || IS_DELETE) {
           rawContent = '';
