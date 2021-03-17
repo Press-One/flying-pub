@@ -71,33 +71,26 @@ const start = () => {
         } = msgObj.data;
         if (conversation_id && user_id) {
           const profile = await Profile.getByMixinAccountId(user_id);
-          const title = '新作';
+          const siteName = config.settings['site.name'];
           const url = `${config.settings['site.url'] || config.serviceRoot}`;
-          const desc = '点击打开新作';
+          const desc = `点击打开${siteName}`;
           if (!profile) {
-            await mixin.sendCard(`{"app_id":"${config.provider.mixin.clientId}", "icon_url":"${config.logo || config.settings['site.logo']}", "title":"${title}", "description":"${desc}", "action": "${url}"}`, msgObj);
-            await sleep(1000);
-            await mixin.sendText('如有疑问，可以联系技术支持，Mixin ID 是：', msgObj);
-            await sleep(1000);
-            await mixin.sendText('39150127', msgObj);
+            await mixin.sendCard(`{"app_id":"${config.provider.mixin.clientId}", "icon_url":"${config.logo || config.settings['site.logo']}", "title":"${siteName}", "description":"${desc}", "action": "${url}"}`, msgObj);
             return;
           }
           try {
             const conversation = await tryCreateConversation(profile.userId, msgObj);
             if (conversation) {
               await trySendText(profile.userId, '你成功开通了消息提醒。当有新的消息，我会第一时间通知你');
-              await trySendToUser(profile.userId, title, {
+              await trySendToUser(profile.userId, siteName, {
                 url,
                 desc
               });
             } else {
-              await trySendToUser(profile.userId, title, {
+              await trySendToUser(profile.userId, siteName, {
                 url,
                 desc
               });
-              await trySendText(profile.userId, '哈喽，如果你在使用的时候遇到了问题，可以联系技术支持，Mixin ID 是：');
-              await sleep(1000);
-              await trySendText(profile.userId, '39150127');
             }
           } catch (e) {
             console.log(e);
@@ -110,7 +103,7 @@ const start = () => {
     }
   };
 
-  mixin.start();
+  mixin.start(config.provider.mixin.wsDomain);
 }
 
 const tryCreateConversation = async (userId, msgObj) => {

@@ -63,6 +63,7 @@ module.exports = {
       authorizationURL: `https://mixin-www.zeromesh.net/oauth/authorize`,
       tokenURL: 'https://mixin-api.zeromesh.net/oauth/token',
       userProfileURL: 'https://mixin-api.zeromesh.net/me',
+      wsDomain: 'wss://mixin-blaze.zeromesh.net/',
       callbackUrl: `${serviceRoot}/api/auth/mixin/callback`
     }
   },
@@ -71,7 +72,7 @@ module.exports = {
     account: "prs.1gw.nw",
     publicKey: "EOS6RybF7Bb11xfMfhiy4sVJLuYW6Pe2bkVyctXfso2webXYmXAGe",
     privateKey: "5K9bPkXAgdegw6DYAZu6XEaN1okaFzhRhDVhab6v4RYES2B1XdA",
-    blockProducerEndpoint: 'https://prs-bp1.press.one',
+    blockProducerEndpoint: 'https://prs-bp-cn1.xue.cn',
   },
 
   settings: {
