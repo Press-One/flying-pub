@@ -15,7 +15,9 @@ const mixin = new Mixin({
   aeskey: config.provider.mixin.aesKey,
   pin: config.provider.mixin.pinCode,
   session_id: config.provider.mixin.sessionId,
-  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8')
+  privatekey: Buffer.from(config.provider.mixin.privateKey, 'utf8'),
+  api_domain: config.provider.mixin.apiDomain,
+  ws_domain: config.provider.mixin.wsDomain,
 });
 
 const mixinWsLog = (message) => {
