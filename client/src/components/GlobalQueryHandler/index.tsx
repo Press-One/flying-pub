@@ -79,7 +79,7 @@ export default observer(() => {
         }
 
         if (action === 'OPEN_NOTIFICATION_MODAL') {
-          if (getQuery('tab')) {
+          if (getQuery('tab') && settingsStore.settings.extra['messageSystem.enabled']) {
             modalStore.openNotification({
               tab: Number(getQuery('tab')),
               messageId: Number(getQuery('messageId') || 0),
