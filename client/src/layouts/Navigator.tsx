@@ -75,7 +75,7 @@ export default observer(() => {
           </div>
           <div className="transform scale-90">关注</div>
         </div>
-        {isMixin && !userStore.user.notificationEnabled && (
+        {isMixin && userStore.isLogin && !userStore.user.notificationEnabled && (
           <div
             className={classNames(
               {
