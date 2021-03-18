@@ -15,10 +15,9 @@ import { useStore } from 'store';
 import { useHistory, useLocation } from 'react-router-dom';
 
 export default observer(() => {
-  const { modalStore, userStore, contextStore, preloadStore, notificationStore } = useStore();
+  const { modalStore, userStore, preloadStore, notificationStore, settingsStore } = useStore();
   const { user, isLogin } = userStore;
   const history = useHistory();
-  const { isMixin } = contextStore;
   const { pathname } = useLocation();
   const unread = notificationStore.getUnread() || 0;
   const hidden = !(
@@ -75,7 +74,7 @@ export default observer(() => {
           </div>
           <div className="transform scale-90">关注</div>
         </div>
-        {isMixin && !userStore.user.notificationEnabled && (
+        {settingsStore.settings.extra['messageSystem.enabled'] && (
           <div
             className={classNames(
               {
