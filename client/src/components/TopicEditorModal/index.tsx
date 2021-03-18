@@ -200,21 +200,6 @@ const TopicEditor = observer((props: IProps) => {
           />
         </div>
 
-        {state.topic.contributionEnabled && (
-          <div className="flex items-center mt-2">
-            <div className="font-bold text-base text-gray-700">投稿需要我审核：</div>
-            <div>
-              <Switch
-                color="primary"
-                checked={state.topic.reviewEnabled}
-                onChange={(e) => {
-                  state.topic.reviewEnabled = e.target.checked;
-                }}
-              />
-            </div>
-          </div>
-        )}
-
         <div className="mt-8 flex justify-end">
           <Button onClick={submit} isDoing={state.isDoing} className="w-full md:w-auto">
             保存
