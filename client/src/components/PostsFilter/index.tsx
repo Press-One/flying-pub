@@ -33,7 +33,7 @@ interface ITabItem {
 }
 
 export default observer((props: IProps) => {
-  const { userStore, contextStore } = useStore();
+  const { userStore, contextStore, settingsStore } = useStore();
   const selectorId = 'feed-filter';
   const { enableScroll = true } = props;
   const showSubTabs =
@@ -123,6 +123,8 @@ export default observer((props: IProps) => {
         <div
           className={classNames({
             'w-916 m-auto': isPc && fixed,
+            'flex justify-center':
+              isPc && fixed && !settingsStore.settings.extra['recommendation.authors.enabled'],
           })}
         >
           <div
