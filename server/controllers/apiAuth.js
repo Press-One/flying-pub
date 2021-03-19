@@ -23,6 +23,25 @@ const providers = ['mixin', 'phone'];
 
 const DEFAULT_AVATAR = 'https://static-assets.xue.cn/images/435d111.jpg';
 
+const checkPermission = async (provider, profile) => {
+  const {
+    providerId
+  } = profile;
+  const whitelist = config.auth.whitelist[provider];
+  const isInWhiteList = whitelist && whitelist.includes(parseInt(providerId));
+  if (isInWhiteList) {
+    return true;
+  }
+  const checkResult = await providerPermissionChecker[provider](profile);
+  return checkResult;
+}
+
+const providerPermissionChecker = {
+  mixin: async profile => {
+    return false;
+  },
+};
+
 const oauth = (ctx, oauthType) => {
   const {
     authenticate
@@ -61,6 +80,14 @@ exports.oauthCallback = async ctx => {
     assert(oauthType, Errors.ERR_IS_REQUIRED('oauthType'));
 
     if (oauthType === 'login') {
+      if (config.settings['permission.isPrivate']) {
+        const hasPermission = await checkPermission(provider, profile);
+        if (!hasPermission) {
+          const clientHost = ctx.session.auth.redirect.split('/').slice(0, 3).join('/');
+          ctx.redirect(`${clientHost}?action=PERMISSION_DENY`);
+          return false;
+        }
+      }
       await login(ctx, user, provider);
     } else if (oauthType === 'bind') {
       assert(user, Errors.ERR_NOT_FOUND(`${provider} user`));
@@ -212,6 +239,17 @@ const login = async (ctx, user, provider) => {
 }
 
 exports.getPermission = async ctx => {
+  const {
+    user
+  } = ctx.verification;
+
+  if (config.settings['permission.isOnlyPubPrivate']) {
+    const mixinProfile = await Profile.getByUserIdAndProvider(user.id, 'mixin');
+    assert(mixinProfile, Errors.ERR_NO_PERMISSION);
+    const mixinGroupUser = await checkPermission('mixin', mixinProfile);
+    assert(mixinGroupUser, Errors.ERR_NO_PERMISSION);
+  }
+
   ctx.body = {
     success: true
   }
