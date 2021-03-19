@@ -88,15 +88,19 @@ module.exports = {
     'filter.type': `LATEST`,
     'filter.popularity.enabled': false,
     'filter.latest.enabled': true,
-    'filter.dayRangeOptions': [],
+    'filter.dayRangeOptions': [7, 30],
     'wallet.currencies': ['CNB', 'PRS', 'BOX', 'BTC', 'EOS', 'ETH'],
     'site.url': `http://localhost:5000`,
     'menu.links': [],
+    'permission.isPrivate': false,
+    'permission.isOnlyPubPrivate': false,
+    'permission.denyText': `您需要加入【飞帖】才能阅读内容`,
+    'permission.denyActionText': `如何加入？`,
+    'permission.denyActionLink': `https://abc.com/如何加入？`,
+    'auth.providers': ['mixin'],
     'mixinApp.name': '新生大讲堂',
     'mixinApp.downloadUrl': 'https://firesbox.com',
-    'mixinApp.logo': 'https://static-assets.xue.cn/images/395b16fecce9f5bca118ee59c3b0ce82abcca800bcf8500eefa1750c3f11aff8',
-    'mixinApp.onlyAllowedMobileDevice': true,
-    'auth.providers': ['mixin']
+    'mixinApp.logo': 'https://static-assets.xue.cn/images/395b16fecce9f5bca118ee59c3b0ce82abcca800bcf8500eefa1750c3f11aff8'
   },
 
   postView: {
@@ -109,11 +113,9 @@ module.exports = {
     tokenDomain: 'localhost',
     tokenKey: `FLYING_PUB_${serviceName}_TOKEN`,
     adminList: {
-      phone: [],
       mixin: []
     },
     whitelist: {
-      phone: [],
       mixin: []
     },
   },

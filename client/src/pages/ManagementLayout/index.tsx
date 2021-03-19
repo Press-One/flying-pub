@@ -64,7 +64,7 @@ export default observer((props: RouteChildrenProps) => {
       text: '【管理后台】搜索服务',
       icon: MdSearch,
       path: '/searchManager',
-      show: user.isAdmin,
+      show: user.isAdmin && settings.extra['search.enabled'],
     },
   ];
 
