@@ -51,7 +51,7 @@
     "lodash": "^4.17.20",
     "marked": "^0.7.0",
     "mathjs": "^6.2.3",
-    "mixin-node": "^1.0.32",
+    "mixin-node": "^1.0.34",
     "mysql2": "1.7.0",
     "node-fetch": "^2.6.1",
     "passport-github2": "^0.1.11",
