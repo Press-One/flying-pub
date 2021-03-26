@@ -1,5 +1,4 @@
 const Block = require('../models/sequelize/block');
-const File = require('./file');
 const {
   assert,
   Errors
@@ -35,8 +34,6 @@ exports.update = async (id, data) => {
       id
     }
   });
-  const file = await File.getByRId(id);
-  assert(file, Errors.ERR_NOT_FOUND('file'));
   return true;
 };
 

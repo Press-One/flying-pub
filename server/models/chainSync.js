@@ -38,19 +38,29 @@ const syncAuthors = async (options = {}) => {
         json: true,
         timeout: 10000
       }).promise();
-      const { authorization: authorizations } = res.data;
-      const length = authorizations.length;
+      const { authorization: chainAuthorizations } = res.data;
+      const length = chainAuthorizations.length;
       if (length === 0) {
         stop = true;
         done = true;
         continue;
       }
-      for (const authorization of authorizations) {
-        console.log({ authorization });
+      for (const chainAuthorization of chainAuthorizations) {
+        console.log({ chainAuthorization });
+        const { authorization } = chainAuthorization;
+        try {
+          await Block.update(chainAuthorization.id, {
+            blockNum: chainAuthorization.block_num,
+            blockTransactionId: chainAuthorization.transaction_id
+          });
+        } catch (err) {
+          console.log(err);
+        }
         await Author.upsert(authorization.user_address, {
           status: authorization.status
         });
-        await Cache.pSet(type, key, authorization.updated_at);
+        await Cache.pSet(type, key, chainAuthorization.updated_at);
+        Log.createAnonymity(`ChainSync 同步作者，状态改为 ${authorization.status}`, `${chainAuthorization.id}`);
       }
       if (length < step) {
         stop = true;
