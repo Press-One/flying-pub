@@ -12,13 +12,16 @@ import { RiSettings4Line } from 'react-icons/ri';
 import { MdMoreHoriz } from 'react-icons/md';
 import { faCommentDots, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faStar as faSolidStar } from '@fortawesome/free-solid-svg-icons';
+import { FaCheck } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MdShare } from 'react-icons/md';
 import Badge from '@material-ui/core/Badge';
+import Tooltip from '@material-ui/core/Tooltip';
 import classNames from 'classnames';
 import RewardSummary from './rewardSummary';
 import RewardModal from './rewardModal';
 import DrawerMenu from 'components/DrawerMenu';
+import DrawerModal from 'components/DrawerModal';
 import CommentApi from 'apis/comment';
 import Comment from './comment';
 import { IPost } from 'apis/post';
@@ -72,6 +75,8 @@ export default observer((props: any) => {
     anchorEl: null as any,
     showMenu: false,
     imgSrc: [] as any,
+    openPrsIdentityModal: false,
+    preloadPrsIdentityIframe: false,
   }));
 
   const { isMixinImmersive, isMixin } = contextStore;
@@ -81,6 +86,8 @@ export default observer((props: any) => {
     () => post && post.author && user.address === post.author.address,
     [user.address, post],
   );
+  const prsIdentityUrl =
+    post && post.block ? `https://press.one/blockchain/blocks/${post.block.blockNum}` : '';
 
   const postHTMLContent = React.useMemo(() => {
     if (!post) {
@@ -113,6 +120,16 @@ export default observer((props: any) => {
       })();
     }
   }, [state, state.isFetchedPost]);
+
+  React.useEffect(() => {
+    (async () => {
+      if (!state.isFetchedPost || !post) {
+        return;
+      }
+      await sleep(4000);
+      state.preloadPrsIdentityIframe = true;
+    })();
+  }, [state, state.isFetchedPost, post]);
 
   React.useEffect(() => {
     const commentId = getQuery('commentId');
@@ -829,11 +846,86 @@ export default observer((props: any) => {
               className: 'text-red-400',
               stayOpenAfterClick: true,
             },
+            {
+              invisible: !post.block.blockNum,
+              name: '查看链上存证',
+              onClick: () => {
+                state.openPrsIdentityModal = true;
+              },
+            },
           ]}
         />
       </div>
     </Fade>
   );
+
+  const showPrsIdentityModal = (e: any) => {
+    if (isMobile) {
+      e.preventDefault();
+    }
+    state.openPrsIdentityModal = true;
+  };
+
+  const prsIdentityView = () => {
+    const content = () => (
+      <a
+        href={prsIdentityUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex justify-center items-center text-12 rounded leading-none overflow-hidden badge"
+        onClick={showPrsIdentityModal}
+      >
+        <div className="px-5-px">
+          <FaCheck />
+        </div>
+        <div className="bg-green py-5-px px-2 font-bold text-white">上链存证</div>
+        <style jsx>{`
+          .badge {
+            border: 1px solid #a5ce48;
+            color: #a5ce48;
+          }
+          .bg-green {
+            background: #a5ce48;
+          }
+        `}</style>
+      </a>
+    );
+    return (
+      <div className="flex justify-center">
+        {isMobile ? (
+          content()
+        ) : (
+          <Tooltip placement="top" title="点击查看文章在区块链上的凭证">
+            {content()}
+          </Tooltip>
+        )}
+      </div>
+    );
+  };
+
+  const prsIdentityIframeView = () => {
+    return <iframe className="hidden" title="press.one 认证" src={prsIdentityUrl}></iframe>;
+  };
+
+  const prsIdentityModal = () => {
+    return (
+      <DrawerModal
+        open={state.openPrsIdentityModal}
+        onClose={() => (state.openPrsIdentityModal = false)}
+        darkMode
+      >
+        <div>
+          <iframe title="press.one 认证" src={prsIdentityUrl}></iframe>
+          <style jsx>{`
+            iframe {
+              width: 100vw;
+              height: 97vh;
+            }
+          `}</style>
+        </div>
+      </DrawerModal>
+    );
+  };
 
   return (
     <Fade in={true} timeout={isMobile ? 0 : 500}>
@@ -877,6 +969,7 @@ export default observer((props: any) => {
               <span className="mr-5">阅读 {post.viewCount}</span>
             )}
             {isMyself && !isMobile && <Link to={`/editor?id=${post.fileId}`}>编辑</Link>}
+            {isPc && <div className="ml-5">{prsIdentityView()}</div>}
           </div>
         </div>
         <div
@@ -909,6 +1002,8 @@ export default observer((props: any) => {
             />
           </div>
         </div>
+        {state.preloadPrsIdentityIframe && prsIdentityIframeView()}
+        {isMobile && prsIdentityModal()}
         {isPc && post.content.length > 100 && <BackToTop />}
         {state.isFetchedReward && state.isFetchedComments && (
           <div>

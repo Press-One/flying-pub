@@ -1,8 +1,8 @@
 const Post = require('../models/post');
 const Author = require('../models/author');
 const Topic = require('../models/topic');
+const Block = require('../models/block');
 const sequelize = require('../models/sequelize/database');
-const Settings = require('../models/settings');
 const View = require('../models/view');
 const config = require('../config');
 const Sequelize = require('sequelize');
@@ -40,6 +40,10 @@ exports.get = async ctx => {
   if (!includeDeleted && post.deleted && !post.latestRId) {
     throws(Errors.ERR_POST_HAS_BEEN_DELETED, 404);
   }
+
+  const block = await Block.get(rId);
+  post.block = block || {};
+
   if (post.author && post.author.address) {
     const { author, sequelizeAuthor } = await Author.getByAddress(post.author.address, {
       returnRaw: true,

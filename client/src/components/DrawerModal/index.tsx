@@ -43,13 +43,13 @@ export default (props: Props) => {
             onClick={onClose}
             className={classNames(
               {
-                'text-white': !darkMode,
-                'text-gray': darkMode,
+                'text-black': !darkMode,
+                'text-white': darkMode,
               },
               'absolute top-0 right-0 p-3 mr-1',
             )}
           >
-            <div className="flex justify-center items-center w-6 h-6 rounded-full text-32 text-black pr-1">
+            <div className="flex justify-center items-center w-6 h-6 rounded-full text-32 pr-1">
               <MdClear />
             </div>
           </div>

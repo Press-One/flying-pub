@@ -169,6 +169,17 @@ const saveChainPost = async (chainPost, options = {}) => {
   const IS_EMPTY_FOR_DELETE = !chainPost.derive.rawContent && chainPost.data.updated_tx_id;
   const IS_EMPTY = !chainPost.derive.rawContent && !chainPost.data.updated_tx_id;
 
+  if (options.fromChainSync) {
+    try {
+      await Block.update(chainPost.id, {
+        blockNum: chainPost.block_num,
+        blockTransactionId: chainPost.transaction_id
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   if (IS_EMPTY_FOR_DELETE) {
     const post = await Post.getByRId(chainPost.data.updated_tx_id);
     if (post) {
@@ -199,14 +210,6 @@ const saveChainPost = async (chainPost, options = {}) => {
     if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
       if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
-      }
-      try {
-        await Block.update(rId, {
-          blockNum: chainPost.block_num,
-          blockTransactionId: chainPost.transaction_id
-        });
-      } catch (err) {
-        console.log(err);
       }
       await Post.updateByRId(rId, {
         status: 'finished'
