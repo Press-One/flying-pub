@@ -149,6 +149,8 @@ export const stopBodyScroll = (isFixed: boolean, options: any = {}) => {
   stoppedBodyScroll = isFixed;
 };
 
+export const onlyForLogin = () => false;
+
 export const getDefaultDeprecatedAvatar = () => 'https://static.press.one/pub/avatar.png';
 
 export const getDefaultAvatar = () => 'https://static-assets.xue.cn/images/435d111.jpg';
