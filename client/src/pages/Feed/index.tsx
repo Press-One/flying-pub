@@ -331,6 +331,16 @@ export default observer(() => {
         {showRecommendationOfAuthors && (
           <div className="w-4/12 box-border pl-1">
             <RecommendAuthors />
+            {settings['site.copyright'] && (
+              <div className="mt-5 text-12 text-gray-500 pl-3">
+                {settings['site.copyright'].split(';').map((item: string) => {
+                  if (!item) {
+                    return null;
+                  }
+                  return <div className="mb-2">{item}</div>;
+                })}
+              </div>
+            )}
           </div>
         )}
         <style jsx>{`
