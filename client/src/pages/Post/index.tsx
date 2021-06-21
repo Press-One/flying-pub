@@ -531,6 +531,7 @@ export default observer((props: any) => {
     try {
       await postApi.favorite(rId);
       feedStore.updatePost(post.rId, {
+        favoriteCount: post.favoriteCount + 1,
         favorite: true,
       });
       await sleep(100);
@@ -557,6 +558,7 @@ export default observer((props: any) => {
     try {
       await postApi.unfavorite(rId);
       feedStore.updatePost(post.rId, {
+        favoriteCount: post.favoriteCount - 1,
         favorite: false,
       });
     } catch (err) {
@@ -638,26 +640,29 @@ export default observer((props: any) => {
       <div
         className={classNames(
           {
-            'border-yellow-500 active': post.favorite,
+            'border-yellow-500 active yellow': post.favorite,
             'border-gray-400': !post.favorite,
+            'badge-visible': post.favoriteCount > 0,
           },
-          'mt-6 rounded-full border flex justify-center items-center cursor-pointer w-10 h-10',
+          'mt-6 rounded-full border flex justify-center items-center w-10 h-10 badge small-icon-badge cursor-pointer relative border-gray-400',
         )}
         onClick={() => {
           post.favorite ? unfavorite(post.rId) : favorite(post.rId);
         }}
       >
-        <div
-          className={classNames(
-            {
-              'text-yellow-500': post.favorite,
-              'text-gray-600': !post.favorite,
-            },
-            'flex items-center text-xl transform scale-90 ml-1-px',
-          )}
-        >
-          <FontAwesomeIcon icon={post.favorite ? faSolidStar : faStar} />
-        </div>
+        <Badge badgeContent={post.favoriteCount} invisible={post.favoriteCount === 0}>
+          <div
+            className={classNames(
+              {
+                'text-yellow-500': post.favorite,
+                'text-gray-600': !post.favorite,
+              },
+              'flex items-center text-xl transform scale-90 -ml-2-px',
+            )}
+          >
+            <FontAwesomeIcon icon={post.favorite ? faSolidStar : faStar} />
+          </div>
+        </Badge>
       </div>
     );
   };
@@ -959,6 +964,10 @@ export default observer((props: any) => {
           .post-page :global(.badge.active .MuiBadge-badge) {
             color: #fff;
             background: #63b3ed;
+          }
+          .post-page :global(.badge.active.yellow .MuiBadge-badge) {
+            color: #fff;
+            background: rgba(236, 201, 75, 1);
           }
           .post-page .markdown-body {
             font-size: 16px;

@@ -443,6 +443,11 @@ export default observer((props: IProps) => {
                 )}
               >
                 <FontAwesomeIcon icon={feedStore.post.favorite ? faSolidStar : faStar} />
+                {feedStore.post.favoriteCount > 0 && (
+                  <span className="absolute top-0 right-0 comment-badge">
+                    {feedStore.post.favoriteCount}
+                  </span>
+                )}
               </div>
               {total > 0 && (
                 <div

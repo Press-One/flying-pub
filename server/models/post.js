@@ -85,12 +85,14 @@ const packPost = async (post, options = {}) => {
   }
 
   if (withFavorite) {
-    const count = !!userId && await post.countFavoriteUsers({
+    const currentUserFavoriteCount = !!userId && await post.countFavoriteUsers({
       where: {
         id: userId
       }
     });
-    postJson.favorite = userId ? count > 0 : false;
+    postJson.favorite = userId ? currentUserFavoriteCount > 0 : false;
+    const favoriteCount = await post.countFavoriteUsers();
+    postJson.favoriteCount = favoriteCount;
   }
 
   postJson.upVotesCount = ~~postJson.upVotesCount;
