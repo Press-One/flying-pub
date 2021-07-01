@@ -73,7 +73,7 @@ module.exports = {
     account: "prs.1gw.nw",
     publicKey: "EOS6RybF7Bb11xfMfhiy4sVJLuYW6Pe2bkVyctXfso2webXYmXAGe",
     privateKey: "5K9bPkXAgdegw6DYAZu6XEaN1okaFzhRhDVhab6v4RYES2B1XdA",
-    blockProducerEndpoint: 'https://prs-bp-cn1.xue.cn',
+    blockProducerEndpoint: 'https://prs-bp2.press.one',
   },
 
   settings: {

@@ -59,7 +59,7 @@
     "pg": "8.5.1",
     "pg-hstore": "2.3.3",
     "pm2": "^4.5.5",
-    "prs-atm": "^5.0.11",
+    "prs-atm": "^7.0.2",
     "qingstor-sdk": "2.3.0",
     "query-string": "^6.14.0",
     "request": "^2.88.0",
