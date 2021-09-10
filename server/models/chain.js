@@ -373,6 +373,7 @@ exports.submit = async () => {
         privateKey,
         { id: pendingBlock.id, official: true }
       );
+      Log.createAnonymity('提交区块', `${pendingBlock.id} 上链成功`);
       const payload = {
         hash: resp.transactions[0].params.hash,
         signature: resp.transactions[0].params.signature,
