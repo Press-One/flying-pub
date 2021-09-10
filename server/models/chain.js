@@ -194,21 +194,17 @@ const saveChainPost = async (chainPost, options = {}) => {
     includeAuthor: false
   });
 
-  const existBlock = await Block.get(rId);
-
-  if (existBlock) {
-    if (existedPost) {
-      if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
-        if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
-          console.log('WARNING: mismatch file hash');
-        }
-        const post = await Post.getByRId(rId);
-        if (post && post.status !== 'finished') {
-          await Post.updateByRId(rId, {
-            status: 'finished'
-          });
-          Log.createAnonymity('ChainSync 同步文章，状态改为 finished', `${rId}`);
-        }
+  if (existedPost) {
+    if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
+      if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
+        console.log('WARNING: mismatch file hash');
+      }
+      const post = await Post.getByRId(rId);
+      if (post && post.status !== 'finished') {
+        await Post.updateByRId(rId, {
+          status: 'finished'
+        });
+        Log.createAnonymity('ChainSync 同步文章，状态改为 finished', `${rId}`);
       }
     }
     return;
