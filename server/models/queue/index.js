@@ -5,6 +5,7 @@ const {
   createSyncInitializedQueue,
 } = require('./mixin');
 const {
+  createChainSubmitBlockQueue,
   createChainSyncCacheQueue
 } = require('./chain');
 const {
@@ -28,7 +29,8 @@ exports.up = async () => {
   if (!queueDisabledJobs.includes('notification')) {
     queues.push(createNotificationQueue());
   }
-  if (!queueDisabledJobs.includes('chainSync')) {
+  if (!queueDisabledJobs.includes('chain')) {
+    queues.push(createChainSubmitBlockQueue());
     queues.push(createChainSyncCacheQueue());
   }
   if (config.postView && config.postView.enabled && !queueDisabledJobs.includes('view')) {

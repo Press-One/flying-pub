@@ -16,6 +16,16 @@ exports.get = async id => {
   return block ? block.toJSON() : null;
 };
 
+exports.getPendingBlocks = async (options = {}) => {
+  const blocks = await Block.findAll({
+    where: {
+      blockHash: null,
+    },
+    limit: options.limit || 10
+  });
+  return blocks.map(block => block.toJSON());
+};
+
 exports.create = async (block) => {
   const dbBlock = await Block.create(block);
   return dbBlock.toJSON();
@@ -24,11 +34,11 @@ exports.create = async (block) => {
 exports.update = async (id, data) => {
   assert(id, Errors.ERR_IS_REQUIRED('id'));
   assert(data, Errors.ERR_IS_REQUIRED('data'));
-  assert(data.blockNum, Errors.ERR_IS_REQUIRED('blockNum'));
-  assert(data.blockTransactionId, Errors.ERR_IS_REQUIRED('blockTransactionId'));
   await Block.update({
-    blockNum: data.blockNum,
-    blockTransactionId: data.blockTransactionId
+    hash: data.hash,
+    signature: data.signature,
+    blockNumber: data.blockNumber,
+    blockHash: data.blockHash
   }, {
     where: {
       id

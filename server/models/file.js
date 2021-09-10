@@ -151,7 +151,14 @@ exports.list = async (userAddress, options = {}) => {
     where: {
       userAddress,
       deleted: false,
+<<<<<<< HEAD
       topic: config.topic.account
+=======
+      topicAddress: config.topic.address,
+      rId: {
+        [Op.not]: null
+      }
+>>>>>>> f81b172... feat(chain): use Bistrot instead of prs-atm && submit block by async
     },
     offset,
     limit,
@@ -199,11 +206,7 @@ exports.count = async (userAddress, options = {}) => {
 }
 
 const getStatusByBlock = block => {
-  const {
-    blockNum,
-    blockTransactionId
-  } = block;
-  if (blockNum && blockTransactionId) {
+  if (block && block.blockNumber && block.blockHash) {
     return FILE_STATUS.PUBLISHED;
   }
   return FILE_STATUS.PENDING;

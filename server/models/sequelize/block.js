@@ -31,12 +31,12 @@ const Block = sequelize.define('blocks', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  blockNum: {
+  blockNumber: {
     type: Sequelize.BIGINT,
     unique: true,
     allowNull: true
   },
-  blockTransactionId: {
+  blockHash: {
     type: Sequelize.STRING,
     allowNull: true
   }
@@ -48,9 +48,9 @@ const Block = sequelize.define('blocks', {
   }, {
     fields: ['type']
   }, {
-    fields: ['blockNum']
+    fields: ['blockNumber']
   }, {
-    fields: ['blockTransactionId']
+    fields: ['blockHash']
   }]
 });
 

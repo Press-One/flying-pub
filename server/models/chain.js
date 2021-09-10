@@ -19,6 +19,8 @@ const prsAtm = require('prs-atm');
 const qs = require('query-string');
 const { sleep } = require('../utils');
 const Block = require('./block');
+const Bistrot = require('bistrot');
+const moment = require('moment');
 
 const syncAuthors = async (options = {}) => {
   let stop = false;
@@ -31,14 +33,14 @@ const syncAuthors = async (options = {}) => {
       const key = 'AUTHORS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
       const query = qs.stringify({ updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
-      const uri = `${config.topic.blockProducerEndpoint}/api/pip2001/${config.topic.account}/authorization?${query}`;
+      const uri = `${config.topic.blockProducerEndpoint}/api/pip2001/${config.topic.address}/authorization?${query}`;
       console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
         uri,
         json: true,
         timeout: 10000
       }).promise();
-      const { authorization: chainAuthorizations } = res.data;
+      const chainAuthorizations = res.data || [];
       const length = chainAuthorizations.length;
       if (length === 0) {
         stop = true;
@@ -47,19 +49,16 @@ const syncAuthors = async (options = {}) => {
       }
       for (const chainAuthorization of chainAuthorizations) {
         console.log({ chainAuthorization });
-        const { authorization } = chainAuthorization;
-        try {
-          await Block.update(chainAuthorization.id, {
-            blockNum: chainAuthorization.block_num,
-            blockTransactionId: chainAuthorization.transaction_id
-          });
-        } catch (err) {
-          console.log(err);
+        const timestamp = length === 1 ? moment(chainAuthorization.timestamp).add(0.1, 'seconds').toISOString() : chainAuthorization.timestamp;
+        await Cache.pSet(type, key, timestamp);
+        const existBlock = await Block.get(chainAuthorization.id);
+        if (existBlock) {
+          continue;
         }
+        const { authorization } = chainAuthorization;
         await Author.upsert(authorization.user_address, {
           status: authorization.status
         });
-        await Cache.pSet(type, key, chainAuthorization.updated_at);
         Log.createAnonymity(`ChainSync 同步作者，状态改为 ${authorization.status}`, `${chainAuthorization.id}`);
       }
       if (length < step) {
@@ -200,18 +199,13 @@ const saveChainPost = async (chainPost, options = {}) => {
       if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
       }
-      try {
-        await Block.update(rId, {
-          blockNum: chainPost.block_num,
-          blockTransactionId: chainPost.transaction_id
+      const post = await Post.getByRId(rId);
+      if (post && post.status !== 'finished') {
+        await Post.updateByRId(rId, {
+          status: 'finished'
         });
-      } catch (err) {
-        console.log(err);
+        Log.createAnonymity('ChainSync 同步文章，状态改为 finished', `${rId}`);
       }
-      await Post.updateByRId(rId, {
-        status: 'finished'
-      });
-      Log.createAnonymity('ChainSync 同步文章，状态改为 finished', `${rId}`);
     }
     return;
   }
@@ -271,7 +265,7 @@ const syncPosts = async (options = {}) => {
       } = options;
       const key = 'POSTS_OFFSET';
       const offsetUpdatedAt = await Cache.pGet(type, key) || '';
-      const query = qs.stringify({ topic: config.topic.account, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
+      const query = qs.stringify({ topic: config.topic.address, updated_at: offsetUpdatedAt, count: step }, { skipEmptyString: true });
       const uri = `${config.topic.blockProducerEndpoint}/api/pip2001?${query}`;
       console.log(`【CHAIN SYNC】${key}: ${offsetUpdatedAt} | ${uri}`);
       const res = await request({
@@ -279,7 +273,7 @@ const syncPosts = async (options = {}) => {
         json: true,
         timeout: 10000
       }).promise();
-      const { posts } = res.data;
+      const posts = res.data || [];
       const length = posts.length;
       if (length === 0) {
         stop = true;
@@ -312,7 +306,8 @@ const syncPosts = async (options = {}) => {
         await saveChainPost(chainPost, {
           fromChainSync: true
         });
-        await Cache.pSet(type, key, chainPost.updated_at);
+        const timestamp = length === 1 ? moment(chainPost.timestamp).add(0.1, 'seconds').toISOString() : chainPost.timestamp;
+        await Cache.pSet(type, key, timestamp);
       }
       if (length < step) {
         stop = true;
@@ -338,5 +333,63 @@ exports.sync = async () => {
     await syncPosts({
       step: 20
     });
+  }
+};
+
+exports.submit = async () => {
+  try {
+    const pendingBlocks = await Block.getPendingBlocks({
+      limit: 10
+    });
+    if (pendingBlocks.length === 0) {
+      return;
+    }
+    for (const pendingBlock of pendingBlocks) {
+      let privateKey = '';
+      if (pendingBlock.user_address === config.topic.address) {
+        privateKey = config.topic.privateKey;
+      } else {
+        const user = await User.getByAddress(pendingBlock.user_address, {
+          withKeys: true
+        });
+        if (!user || !user.privateKey) {
+          Log.createAnonymity('提交区块', `区块：${pendingBlock.id}，没有找到 user，无法获取密钥`);
+          const payload = {
+            hash: '',
+            signature: '',
+            blockNumber: null,
+            blockHash: 'Invalid: user not found'
+          };
+          await Block.update(pendingBlock.id, payload);
+          continue;
+        }
+
+        privateKey = user.privateKey;
+      }
+      const resp = await Bistrot.rumsc.signSave(
+        pendingBlock.type,
+        JSON.parse(pendingBlock.meta),
+        JSON.parse(pendingBlock.data),
+        privateKey,
+        { id: pendingBlock.id, official: true }
+      );
+      const payload = {
+        hash: resp.transactions[0].params.hash,
+        signature: resp.transactions[0].params.signature,
+        blockNumber: resp.number,
+        blockHash: resp.hash
+      };
+      await Block.update(pendingBlock.id, payload);
+    }
+  } catch (err) {
+    console.log(err);
+    const minutes = moment().format('mm');
+    const seconds = moment().format('ss');
+    if (~~minutes % 10 === 0 && ~~seconds < 10) {
+      Log.createAnonymity('提交区块', '上链失败了', {
+        toActiveMixinUser: true
+      });
+    }
+    return null;
   }
 };

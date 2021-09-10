@@ -5,58 +5,17 @@ const config = require('../config');
 const Wallet = require('../models/wallet');
 const {
   assert,
-  throws,
   Errors
 } = require('../utils/validator');
 const Author = require('../models/author');
 const Block = require('../models/block');
 const {
   saveChainPost
-} = require('../models/chainSync');
-const Log = require('../models/log');
-const prsAtm = require('prs-atm');
+} = require('../models/chain');
+const Bistrot = require('bistrot');
+const uuidv4 = require('uuid/v4');
 
-const signBlock = async data => {
-  data = Object.assign({}, data);
-  try {
-    const resp = await prsAtm.prsc.signSave(
-      data.type,
-      data.meta,
-      data.data,
-      config.topic.account,
-      config.topic.publicKey,
-      config.topic.privateKey,
-      {
-        userAddress: data.user_address,
-        privateKey: data.privateKey
-      }
-    );
-    const block = resp.processed.action_traces[0].act.data;
-    return {
-      id: block.id,
-      user_address: block.user_address,
-      type: block.type,
-      meta: block.meta,
-      data: block.data,
-      hash: block.hash,
-      signature: block.signature,
-      blockTransactionId: resp.transaction_id
-    };
-  } catch (err) {
-    console.log(err);
-    const noBalance = err.message.includes('no balance') || err.message.includes('overdrawn balance');
-    if (noBalance) {
-      Log.createAnonymity('提交区块', '链上账号余额不足，无法提交区块', {
-        toActiveMixinUser: true
-      });
-      throws({
-        code: 'ERR_NO_ENOUGH_BALANCE',
-        message: 'no enough balance of topic account'
-      });
-    }
-    return null;
-  }
-};
+const HASH_ALG = 'sha256';
 
 const getPostfix = mimeType => {
   let postfix;
@@ -78,16 +37,18 @@ const getFileUrl = (file, origin) => {
   }/api/storage/${name}.${postfix}`;
 };
 
-const getFileData = async ({
+const getFilePayload = async ({
   file,
   user,
+  topic
 }, options = {}) => {
   assert(file, Errors.ERR_IS_REQUIRED('file'));
   assert(user, Errors.ERR_IS_REQUIRED('user'));
+  assert(topic, Errors.ERR_IS_REQUIRED('topic'));
 
   const data = {
     file_hash: file.msghash,
-    topic: config.topic.account
+    topic
   };
 
   const {
@@ -100,7 +61,9 @@ const getFileData = async ({
     data.updated_tx_id = rId;
   }
 
-  let meta = {};
+  let meta = {
+    hash_alg: HASH_ALG
+  };
   const isNotDeletedFile = !!file.content;
   if (isNotDeletedFile) {
     const mixinWalletClientId = await Wallet.getMixinClientIdByUserAddress(
@@ -115,34 +78,38 @@ const getFileData = async ({
       mime: `${file.mimeType};charset=UTF-8`,
       encryption: 'aes-256-cbc',
       payment_url: `mixin://transfer/${mixinWalletClientId}`,
+      hash_alg: HASH_ALG
     };
   }
 
   const payload = {
+    id: Bistrot.encryption.hash(uuidv4()),
     user_address: user.address,
     type: 'PIP:2001',
     meta,
-    data,
-    privateKey: user.privateKey
+    data
   };
   return payload;
 };
 
-const getTopicAuthorizationData = (options = {}) => {
+const getTopicPayload = (options = {}) => {
   const {
     userAddress,
+    topic,
     type
   } = options;
   const data = {
     [type]: userAddress,
-    topic: config.topic.account
+    topic: topic.address
   };
   const payload = {
-    user_address: config.topic.account,
+    id: Bistrot.encryption.hash(uuidv4()),
+    user_address: topic.address,
     type: 'PIP:2001',
-    meta: {},
+    meta: {
+      hash_alg: HASH_ALG
+    },
     data,
-    privateKey: config.topic.account.privateKey
   };
   return payload;
 };
@@ -153,28 +120,34 @@ exports.pushFile = async (file, options = {}) => {
     updatedFile,
     origin
   } = options;
-  const fileData = await getFileData({
+  const payload = await getFilePayload({
     file,
     user,
+    topic: config.topic.address
   }, {
     updatedFile,
     origin: origin || config.serviceRoot
   });
-  const block = await signBlock(fileData);
-  assert(block, Errors.ERR_NOT_FOUND('block'));
+  const block = {
+    id: payload.id,
+    user_address: payload.user_address,
+    type: payload.type,
+    meta: payload.meta,
+    data: payload.data,
+    hash: '',
+    signature: '',
+  };
 
-  const dbBlock = await Block.create(block);
+  const packedBlock = packBlock(block);
+  const dbBlock = await Block.create(packedBlock);
 
   try {
     const chainPost = {
       ...block,
-      meta: JSON.parse(block.meta),
-      data: JSON.parse(block.data),
       derive: {
         rawContent: file.content
       }
     }
-    console.log({ chainPost });
     await saveChainPost(chainPost, {
       fromPublish: true
     });
@@ -192,12 +165,12 @@ exports.pushTopicAuthorization = async (options = {}) => {
   } = options;
   assert(userAddress, Errors.ERR_IS_REQUIRED('userAddress'));
   assert(['allow', 'deny'].includes(type), Errors.ERR_IS_INVALID('type'));
-  const topicAuthorizationData = getTopicAuthorizationData({
+  const topic = config.topic;
+  const payload = getTopicPayload({
     userAddress,
     type,
+    topic
   });
-  const block = await signBlock(topicAuthorizationData);
-  assert(block, Errors.ERR_NOT_FOUND('block'));
 
   try {
     await Author.upsert(userAddress, {
@@ -205,6 +178,17 @@ exports.pushTopicAuthorization = async (options = {}) => {
     });
   } catch (e) {}
 
-  const dbBlock = await Block.create(block);
+  const block = {
+    id: payload.id,
+    user_address: payload.user_address,
+    type: payload.type,
+    meta: payload.meta,
+    data: payload.data,
+    hash: '',
+    signature: '',
+  };
+
+  const packedBlock = packBlock(block);
+  const dbBlock = await Block.create(packedBlock);
   return dbBlock;
 };
