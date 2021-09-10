@@ -60,6 +60,7 @@
     "pg-hstore": "2.3.3",
     "pm2": "^4.5.5",
     "bistrot": "^7.1.29",
+    "prs-utility": "^0.1.0",
     "qingstor-sdk": "2.3.0",
     "query-string": "^6.14.0",
     "request": "^2.88.0",

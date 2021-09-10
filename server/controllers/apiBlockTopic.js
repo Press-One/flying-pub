@@ -32,7 +32,7 @@ const getPermissionList = async (ctx, type) => {
     count,
     rows
   } = await Permission.getPermissionList({
-    topic: config.topic.account,
+    topic: config.topic.address,
     type,
     offset,
     limit,
@@ -67,7 +67,7 @@ const changePermission = async (ctx, type) => {
     updated
   } = await Permission.setPermission({
     userAddress: user.address,
-    topic: config.topic.account,
+    topic: config.topic.address,
     type,
   });
 

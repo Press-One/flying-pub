@@ -125,7 +125,7 @@ exports.create = async ctx => {
   const isDraft = ctx.query.type === "DRAFT";
   assert(data, Errors.ERR_IS_REQUIRED("data"));
 
-  const topic = config.topic.account;
+  const topic = config.topic.address;
   const allowBlock = await Block.getAllowBlock(topic, user.address);
   if (topic && !allowBlock) {
     await Permission.setPermission({

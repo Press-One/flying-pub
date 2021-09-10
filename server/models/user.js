@@ -1,9 +1,9 @@
 const User = require("./sequelize/user");
 const Profile = require("./profile");
-const prsAtm = require("prs-atm");
 const util = require("../utils");
 const config = require("../config");
 const Wallet = require("./wallet");
+const prsUtil = require('prs-utility');
 
 const {
   assert,
@@ -60,21 +60,22 @@ const packMixinAccount = (mixinAccountRaw) => {
   };
 };
 
-const generateKey = async () => {
-  const keystore = await prsAtm.wallet.createKeystore(config.encryption.accountKeystorePassword);
+const generateKey = () => {
   const {
-    privatekey,
-    publickey
-  } = prsAtm.wallet.recoverPrivateKey(config.encryption.accountKeystorePassword, keystore);
-  const freeAccount = await prsAtm.atm.openFreeAccount(publickey, privatekey);
+    privateKey,
+    publicKey,
+    address
+  } = prsUtil.createKeyPair({
+    dump: true,
+  });
   const aesEncryptedHexOfPrivateKey = util.crypto.aesCrypto(
-    privatekey,
+    privateKey,
     config.encryption.aesKey256
   );
   return {
     aesEncryptedHexOfPrivateKey,
-    publicKey: publickey,
-    address: freeAccount.account,
+    publicKey,
+    address,
   };
 };
 

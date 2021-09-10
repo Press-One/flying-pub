@@ -15,7 +15,6 @@ const Sync = require('./sync');
 const Finance = require('./finance');
 const Log = require('./log');
 const type = `${config.serviceKey}_CHAIN_SYNC`;
-const prsAtm = require('prs-atm');
 const qs = require('query-string');
 const { sleep } = require('../utils');
 const Block = require('./block');
@@ -196,7 +195,7 @@ const saveChainPost = async (chainPost, options = {}) => {
 
   if (existedPost) {
     if (options.fromChainSync && (!existedPost.status || existedPost.status === 'pending')) {
-      if (prsAtm.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
+      if (Bistrot.encryption.hash(chainPost.derive.rawContent) !== chainPost.data.file_hash) {
         console.log('WARNING: mismatch file hash');
       }
       const post = await Post.getByRId(rId);
