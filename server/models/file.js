@@ -151,7 +151,7 @@ exports.list = async (userAddress, options = {}) => {
     where: {
       userAddress,
       deleted: false,
-      topicAddress: config.topic.address,
+      topic: config.topic.address,
       rId: {
         [Op.not]: null
       }

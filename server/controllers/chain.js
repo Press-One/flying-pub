@@ -114,6 +114,16 @@ const getTopicPayload = (options = {}) => {
   return payload;
 };
 
+const packBlock = block => {
+  const result = {};
+  for (const key in block) {
+    const value = block[key];
+    const isObj = typeof value === 'object';
+    result[key] = isObj ? JSON.stringify(value) : value;
+  }
+  return result;
+};
+
 exports.pushFile = async (file, options = {}) => {
   const {
     user,
